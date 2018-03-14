@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Don't run Babel at all if there are no meaningful changes to make.
 <!-- Add new, unreleased changes here. -->
 
 ## [2.3.2] - 2018-03-13

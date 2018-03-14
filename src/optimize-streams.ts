@@ -120,6 +120,11 @@ export class JsTransform extends GenericOptimizeTransform {
         options.minify ? notExcluded(options.minify) : () => false;
 
     const transformer = (content: string, file: File) => {
+      // Even with no transform plugins, parsing and serializing with Babel will
+      // make some minor formatting changes to the code. Skip Babel altogether
+      // if we have no meaningful changes to make.
+      let doBabel = false;
+
       // Note that Babel plugins run in this order:
       // 1) plugins, first to last
       // 2) presets, last to first
@@ -127,10 +132,12 @@ export class JsTransform extends GenericOptimizeTransform {
       const presets = [];
 
       if (shouldMinifyFile(file)) {
+        doBabel = true;
         // Minify last, so push first.
         presets.push(babelPresetMinify);
       }
       if (shouldCompileFile(file)) {
+        doBabel = true;
         presets.push(babelPresetES2015NoModules);
         plugins.push(
             babelPluginExternalHelpers,
@@ -138,10 +145,13 @@ export class JsTransform extends GenericOptimizeTransform {
         );
       }
       if (options.moduleResolution === 'node') {
+        doBabel = true;
         plugins.push(resolveBareSpecifiers(file.path, false));
       }
 
-      content = babelTransform(content, {presets, plugins}).code!;
+      if (doBabel) {
+        content = babelTransform(content, {presets, plugins}).code!;
+      }
       content = this._replaceTemplateObjectNames(content);
       return content;
     };

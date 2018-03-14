@@ -201,11 +201,19 @@ suite('optimize-streams', () => {
         contents: 'const foo = 3;',
         expected: 'var foo=3;',
       },
+      {
+        path: 'neither.js',
+        // Even with no transform plugins, Babel will make minor code formatting
+        // changes, such as trimming newlines. This newline remaining shows that
+        // Babel did not run at all.
+        contents: 'const foo = 3;\n',
+        expected: 'const foo = 3;\n',
+      },
     ];
     const opts = {
       js: {
-        compile: {exclude: ['minify.js']},
-        minify: {exclude: ['compile.js']},
+        compile: {exclude: ['minify.js', 'neither.js']},
+        minify: {exclude: ['compile.js', 'neither.js']},
       },
     };
 
