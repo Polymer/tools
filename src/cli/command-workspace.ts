@@ -132,6 +132,7 @@ export default async function run(options: CliOptions) {
     deleteFiles: options['delete-files'],
     flat: options.flat,
     private: options.private,
+    addImportPath: options['add-import-path'],
   });
 
   logStep(3, 3, '🎉', `Conversion Complete!`);
