@@ -18,8 +18,8 @@ import * as path from 'path';
 import {run, WorkspaceRepo} from 'polymer-workspaces';
 
 import {ConversionResultsMap, GIT_STAGING_BRANCH_NAME, WorkspaceConversionSettings} from './convert-workspace';
-import {generatePackageJson, localDependenciesBranch, writeJson} from './manifest-converter';
 import {YarnConfig} from './npm-config';
+import {generatePackageJson, localDependenciesBranch, writeJson} from './package-manifest';
 import {lookupNpmPackageName} from './urls/workspace-url-handler';
 import {exec, logRepoError, logStep, readJsonIfExists} from './util';
 

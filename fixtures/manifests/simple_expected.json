@@ -1,0 +1,67 @@
+[
+  [
+    [
+      "paper-behaviors/paper-button-behavior.html",
+      {
+        "type": "js-module",
+        "originalUrl": "paper-behaviors/paper-button-behavior.html",
+        "convertedUrl": "./@polymer/paper-behaviors/paper-button-behavior.js",
+        "convertedFilePath": "paper-behaviors/paper-button-behavior.js",
+        "exportMigrationRecords": [
+          {
+            "es6ExportName": "PaperButtonBehaviorImpl",
+            "oldNamespacedName": "Polymer.PaperButtonBehaviorImpl"
+          },
+          {
+            "es6ExportName": "PaperButtonBehavior",
+            "oldNamespacedName": "Polymer.PaperButtonBehavior"
+          }
+        ]
+      }
+    ],
+    [
+      "paper-behaviors/index.html",
+      {
+        "type": "html-document",
+        "originalUrl": "paper-behaviors/index.html",
+        "convertedUrl": "./@polymer/paper-behaviors/index.html",
+        "convertedFilePath": "paper-behaviors/index.html"
+      }
+    ],
+    [
+      "paper-behaviors/demo/index.html",
+      {
+        "type": "html-document",
+        "originalUrl": "paper-behaviors/demo/index.html",
+        "convertedUrl": "./@polymer/paper-behaviors/demo/index.html",
+        "convertedFilePath": "paper-behaviors/demo/index.html"
+      }
+    ],
+    [
+      "paper-behaviors/demo/paper-button.html",
+      {
+        "convertedFilePath": "paper-behaviors/demo/paper-button.js",
+        "convertedUrl": "./@polymer/paper-behaviors/demo/paper-button.js",
+        "exportMigrationRecords": [],
+        "originalUrl": "paper-behaviors/demo/paper-button.html",
+        "type": "js-module"
+      }
+    ]
+  ],
+  [
+    [
+      "Polymer.PaperButtonBehaviorImpl",
+      {
+        "url": "./@polymer/paper-behaviors/paper-button-behavior.js",
+        "name": "PaperButtonBehaviorImpl"
+      }
+    ],
+    [
+      "Polymer.PaperButtonBehavior",
+      {
+        "url": "./@polymer/paper-behaviors/paper-button-behavior.js",
+        "name": "PaperButtonBehavior"
+      }
+    ]
+  ]
+]

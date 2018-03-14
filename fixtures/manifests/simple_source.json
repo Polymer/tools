@@ -1,0 +1,23 @@
+{
+  "files": {
+    "paper-button-behavior.html": {
+      "convertedUrl": "paper-button-behavior.js",
+      "exports": {
+        "Polymer.PaperButtonBehaviorImpl": "PaperButtonBehaviorImpl",
+        "Polymer.PaperButtonBehavior": "PaperButtonBehavior"
+      }
+    },
+    "index.html": {
+      "convertedUrl": "index.html",
+      "exports": {}
+    },
+    "demo/index.html": {
+      "convertedUrl": "demo/index.html",
+      "exports": {}
+    },
+    "demo/paper-button.html": {
+      "convertedUrl": "demo/paper-button.js",
+      "exports": {}
+    }
+  }
+}

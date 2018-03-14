@@ -13,18 +13,17 @@
  */
 
 import * as fse from 'fs-extra';
+import {safeDump, safeLoad} from 'js-yaml';
 import * as path from 'path';
-
-import { safeDump, safeLoad } from 'js-yaml';
 
 const travisConfigFile = '.travis.yml';
 
 // https://docs.travis-ci.com/user/languages/javascript-with-nodejs/
 interface TravisConfig {
-  before_script?: string | string[];
-  install?: string | string[];
-  script?: string | string[];
-  cache?: string | Array<string | { directories: string[] } | { [key: string]: boolean }>;
+  before_script?: string|string[];
+  install?: string|string[];
+  script?: string|string[];
+  cache?: string|Array<string|{directories: string[]}|{[key: string]: boolean}>;
 }
 
 function addNPMFlag(scripts: string[]): string[] {
@@ -40,18 +39,21 @@ function addNPMFlag(scripts: string[]): string[] {
 }
 
 function removeBowerAndPolymerInstall(scripts: string[]): string[] {
-  return scripts.map((script) => {
-    if (script.match(/bower i(?:nstall)?/) || script.indexOf('polymer install') > -1) {
-      return '';
-    }
-    if (script.match(/npm i(?:install)?|yarn add/)) {
-      return script.split(' ').filter((s) => s !== 'bower').join(' ');
-    }
-    return script;
-  }).filter((s) => !!s);
+  return scripts
+      .map((script) => {
+        if (script.match(/bower i(?:nstall)?/) ||
+            script.indexOf('polymer install') > -1) {
+          return '';
+        }
+        if (script.match(/npm i(?:install)?|yarn add/)) {
+          return script.split(' ').filter((s) => s !== 'bower').join(' ');
+        }
+        return script;
+      })
+      .filter((s) => !!s);
 }
 
-function configToArray(yamlPart: string | string[] | undefined): string[] {
+function configToArray(yamlPart: string|string[]|undefined): string[] {
   if (!yamlPart) {
     return [];
   } else if (typeof yamlPart === 'string') {
@@ -69,8 +71,7 @@ function configToArray(yamlPart: string | string[] | undefined): string[] {
  * @param outDir Root path of output travis config
  */
 export async function transformTravisConfig(
-  inDir: string, outDir: string): Promise<void> {
-
+    inDir: string, outDir: string): Promise<void> {
   const inTravisPath = path.join(inDir, travisConfigFile);
 
   if (!await fse.pathExists(inTravisPath)) {

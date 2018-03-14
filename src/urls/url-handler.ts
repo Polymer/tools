@@ -14,7 +14,7 @@
 
 import {Document} from 'polymer-analyzer/lib/model/document';
 
-import {ConvertedDocumentUrl, OriginalDocumentUrl} from './types';
+import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './types';
 
 
 /**
@@ -33,4 +33,18 @@ export interface UrlHandler {
       string;
   convertUrl(url: OriginalDocumentUrl): ConvertedDocumentUrl;
   createConvertedUrl(partialUrl: string): ConvertedDocumentUrl;
+
+  originalUrlToPackageRelative(url: OriginalDocumentUrl): string;
+  convertedUrlToPackageRelative(url: ConvertedDocumentUrl): string;
+  convertedDocumentFilePathToPackageRelative(url: ConvertedDocumentFilePath):
+      string;
+
+  packageRelativeToOriginalUrl(originalPackageName: string, url: string):
+      OriginalDocumentUrl;
+  packageRelativeToConvertedUrl(convertedPackageName: string, url: string):
+      ConvertedDocumentUrl;
+  packageRelativeToConvertedDocumentFilePath(packageName: string, url: string):
+      ConvertedDocumentFilePath;
+
+  getPackageDir(packageName: string): string;
 }

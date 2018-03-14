@@ -19,8 +19,8 @@ import {run, WorkspaceRepo} from 'polymer-workspaces';
 
 import {BowerConfig} from './bower-config';
 import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
-import {generatePackageJson, writeJson} from './manifest-converter';
 import {YarnConfig} from './npm-config';
+import {generatePackageJson, writeJson} from './package-manifest';
 import {ProjectConverter} from './project-converter';
 import {polymerFileOverrides} from './special-casing';
 import {transformTravisConfig} from './travis-config';
@@ -62,6 +62,18 @@ async function writePackageJson(
       undefined,
       existingPackageJson);
   writeJson(packageJson, packageJsonPath);
+}
+
+/**
+ * For a given repo, generate a new package.json and write it to disk.
+ */
+async function writeConversionManifest(
+    repo: WorkspaceRepo, converter: ProjectConverter) {
+  const bowerPackageName = path.basename(repo.dir);
+  const manifestJsonPath = path.join(repo.dir, 'manifest.json');
+  const packageManifest =
+      await converter.getConversionManifest(bowerPackageName);
+  writeJson(packageManifest, manifestJsonPath);
 }
 
 /**
@@ -111,24 +123,16 @@ export default async function convert(options: WorkspaceConversionSettings):
       continue;
     }
     scannedPackageResults.set(npmPackageName, repo.dir);
-    converter.convertPackage(repoDirName);
+    await converter.convertPackage(repoDirName);
   }
 
   // Process & write each conversion result:
   const results = converter.getResults();
   await writeFileResults(options.workspaceDir, results);
 
+  // update .travis.yml files for repos
   for (const repo of options.reposToConvert) {
     await transformTravisConfig(repo.dir, repo.dir);
-  }
-
-  // Delete files that were explicitly requested to be deleted. Note we apply
-  // the glob with each repo as the root directory (e.g. a glob of "types"
-  // will delete "types" from each individual repo).
-  if (options.deleteFiles !== undefined) {
-    for (const repo of options.reposToConvert) {
-      await deleteGlobsSafe(options.deleteFiles, repo.dir);
-    }
   }
 
   // Generate a new package.json for each repo:
@@ -139,6 +143,20 @@ export default async function convert(options: WorkspaceConversionSettings):
                                 private: options.private,
                               }));
   packageJsonResults.failures.forEach(logRepoError);
+
+  const manifestResults = await run(options.reposToConvert, async (repo) => {
+    return writeConversionManifest(repo, converter);
+  });
+  manifestResults.failures.forEach(logRepoError);
+
+  // Delete files that were explicitly requested to be deleted. Note we apply
+  // the glob with each repo as the root directory (e.g. a glob of "types"
+  // will delete "types" from each individual repo).
+  if (options.deleteFiles !== undefined) {
+    for (const repo of options.reposToConvert) {
+      await deleteGlobsSafe(options.deleteFiles, repo.dir);
+    }
+  }
 
   // Commit all changes to a staging branch for easy state resetting.
   // Useful when performing actions that modify the repo, like installing deps.
