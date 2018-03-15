@@ -45,6 +45,8 @@ export interface UrlHandler {
       ConvertedDocumentUrl;
   packageRelativeToConvertedDocumentFilePath(packageName: string, url: string):
       ConvertedDocumentFilePath;
+  packageRelativeConvertedUrlToConvertedDocumentFilePath(
+      originalPackageName: string, url: string): ConvertedDocumentFilePath;
 
   getPackageDir(packageName: string): string;
 }

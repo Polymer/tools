@@ -70,6 +70,22 @@ suite('src/conversion-manifest', () => {
           assert.deepEqual([...actualResult[0]], expectedResult[0]);
           assert.deepEqual([...actualResult[1]], expectedResult[1]);
         });
+
+    test(
+        '`convertedFilePath` is generated from `convertedUrl`, not `originalUrl`.',
+        async () => {
+          const manifestJson =
+              await readJson(path.join(manifestsDir, 'renaming_source.json'));
+          const expectedResult =
+              await readJson(path.join(manifestsDir, 'renaming_expected.json'));
+          const actualResult = filesJsonObjectToMap(
+              'some-package',
+              '@some-owner/some-package',
+              manifestJson,
+              urlHandler);
+          assert.deepEqual([...actualResult[0]], expectedResult[0]);
+          assert.deepEqual([...actualResult[1]], expectedResult[1]);
+        });
   });
 
 

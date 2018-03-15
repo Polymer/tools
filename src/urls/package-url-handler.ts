@@ -238,4 +238,9 @@ export class PackageUrlHandler implements UrlHandler {
     return this.packageRelativeToOriginalUrl(packageName, url) as string as
         ConvertedDocumentFilePath;
   }
+
+  packageRelativeConvertedUrlToConvertedDocumentFilePath(
+      _originalPackageName: string, url: string): ConvertedDocumentFilePath {
+    return url as ConvertedDocumentFilePath;
+  }
 }

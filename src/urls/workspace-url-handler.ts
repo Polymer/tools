@@ -178,4 +178,9 @@ export class WorkspaceUrlHandler implements UrlHandler {
     return this.packageRelativeToOriginalUrl(packageName, url) as string as
         ConvertedDocumentFilePath;
   }
+
+  packageRelativeConvertedUrlToConvertedDocumentFilePath(
+      originalPackageName: string, url: string): ConvertedDocumentFilePath {
+    return originalPackageName + '/' + url as ConvertedDocumentFilePath;
+  }
 }

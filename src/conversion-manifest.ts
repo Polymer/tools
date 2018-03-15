@@ -16,9 +16,8 @@
 import {JsModuleScanResult, ScanResult} from './document-converter';
 import {JsExport} from './js-module';
 import {PackageScanExports, PackageScanFiles} from './package-scanner';
-import {ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
+import {OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
-import {getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath} from './urls/util';
 
 type FileExportJson = {
   [originalExportId: string]: string
@@ -88,10 +87,12 @@ export function serializePackageScanResult(
 }
 
 function fileMappingToScanResult(
+    originalPackageName: string,
+    convertedPackageName: string,
     originalUrl: OriginalDocumentUrl,
-    convertedUrl: ConvertedDocumentUrl|undefined,
-    fileData: PackageFileJson): ScanResult {
-  if (convertedUrl === undefined) {
+    fileData: PackageFileJson|null,
+    urlHandler: UrlHandler): ScanResult {
+  if (fileData === null) {
     return {
       type: 'delete-file',
       originalUrl: originalUrl,
@@ -99,19 +100,24 @@ function fileMappingToScanResult(
       convertedFilePath: undefined,
     };
   }
+  const convertedUrl = urlHandler.packageRelativeToConvertedUrl(
+      convertedPackageName, fileData.convertedUrl);
+  const convertedFilePath =
+      urlHandler.packageRelativeConvertedUrlToConvertedDocumentFilePath(
+          originalPackageName, fileData.convertedUrl);
   if (convertedUrl.endsWith('.html')) {
     return {
       type: 'html-document',
       originalUrl: originalUrl,
       convertedUrl: convertedUrl,
-      convertedFilePath: getHtmlDocumentConvertedFilePath(originalUrl),
+      convertedFilePath: convertedFilePath,
     };
   }
   return {
     type: 'js-module',
     originalUrl: originalUrl,
     convertedUrl: convertedUrl,
-    convertedFilePath: getJsModuleConvertedFilePath(originalUrl),
+    convertedFilePath: convertedFilePath,
     exportMigrationRecords:
         Object.entries(fileData.exports).map(([exportId, exportName]) => ({
                                                oldNamespacedName: exportId,
@@ -131,13 +137,13 @@ export function filesJsonObjectToMap(
            conversionManifest.files)) {
     const originalUrl = urlHandler.packageRelativeToOriginalUrl(
         originalPackageName, relativeFromUrl);
-    const convertedUrl = fileData === null ?
-        undefined :
-        urlHandler.packageRelativeToConvertedUrl(
-            convertedPackageName, fileData.convertedUrl);
-    filesMap.set(
+    const scanResult = fileMappingToScanResult(
+        originalPackageName,
+        convertedPackageName,
         originalUrl,
-        fileMappingToScanResult(originalUrl, convertedUrl, fileData!));
+        fileData,
+        urlHandler);
+    filesMap.set(originalUrl, scanResult);
   }
   for (const scanResult of filesMap.values()) {
     if (scanResult.type !== 'js-module') {
