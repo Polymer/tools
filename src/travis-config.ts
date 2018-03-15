@@ -30,11 +30,22 @@ interface TravisConfig {
 // modify travis scripts, credit to @stramel for the modifications to make
 function addNPMFlag(scripts: string[]): string[] {
   return scripts.map((script) => {
-    if (script.indexOf('polymer test') > -1 && script.indexOf('--npm') === -1) {
-      script = script.replace('polymer test', 'polymer test --npm');
+    if (script.indexOf('polymer test') > -1) {
+      if (script.indexOf('--npm') === -1) {
+        script = script.replace('polymer test', 'polymer test --npm');
+      }
+      if (script.indexOf('--module-resolution') === -1) {
+        script = script.replace(
+            'polymer test', 'polymer test --module-resolution=node');
+      }
     }
-    if (script.indexOf('wct') > -1 && script.indexOf('--npm') === -1) {
-      script = script.replace('wct', 'wct --npm');
+    if (script.indexOf('wct') > -1) {
+      if (script.indexOf('--npm') === -1) {
+        script = script.replace('wct', 'wct --npm');
+      }
+      if (script.indexOf('--module-resolution') === -1) {
+        script = script.replace('wct', 'wct --module-resolution=node');
+      }
     }
     return script;
   });
