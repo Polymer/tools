@@ -16,7 +16,7 @@ addons:
     packages:
       - google-chrome-stable
 script:
-  - xvfb-run polymer test --npm
-  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test --npm -s ''default''; fi'
+  - xvfb-run polymer test --module-resolution=node --npm
+  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test --module-resolution=node --npm -s ''default''; fi'
 dist: trusty
 
