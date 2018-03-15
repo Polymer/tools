@@ -18,6 +18,7 @@ import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlRes
 
 import {BowerConfig} from './bower-config';
 import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
+import {ignoreNodeModules} from './gitignore';
 import {YarnConfig} from './npm-config';
 import {generatePackageJson, writeJson} from './package-manifest';
 import {ProjectConverter} from './project-converter';
@@ -141,6 +142,10 @@ export default async function convert(options: PackageConversionSettings) {
 
   // transform travis config
   await transformTravisConfig(options.inDir, options.outDir);
+
+  // add `node_modules` to gitignore
+  const gitIgnoreFile = path.join(options.inDir, '.gitignore');
+  await ignoreNodeModules(gitIgnoreFile);
 
   const packageJsonPath = path.join(options.inDir, 'package.json');
   const existingPackageJson =
