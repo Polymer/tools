@@ -39,7 +39,16 @@ export class FsUrlResolver extends UrlResolver {
   protected readonly packageDir: string;
   // file:// URL format of `packageDir`.
   protected readonly packageUrl: ResolvedUrl;
-  constructor(packageDir: string|undefined, private readonly host?: string) {
+  constructor(
+      packageDir: string|undefined,
+      // If provided, any URL which matches `host` will attempt to resolve
+      // to a `file` protocol URL regardless of the protocol represented in the
+      // URL to-be-resolved.
+      private readonly host?: string,
+      // When attempting to resolve a protocol-relative URL (that is a URL which
+      // begins `//`), the default protocol to resolve to if the resolver can
+      // not produce a `file` URL.
+      protected readonly protocol: string = 'https') {
     super();
     this.packageDir =
         normalizeFsPath(pathlib.resolve(packageDir || process.cwd()));
@@ -55,7 +64,8 @@ export class FsUrlResolver extends UrlResolver {
       _import?: ScannedImport): ResolvedUrl|undefined {
     const [baseUrl = this.packageUrl, unresolvedHref] =
         this.getBaseAndUnresolved(firstHref, secondHref);
-    const resolvedHref = this.simpleUrlResolve(baseUrl, unresolvedHref);
+    const resolvedHref =
+        this.simpleUrlResolve(baseUrl, unresolvedHref, this.protocol);
     if (resolvedHref === undefined) {
       return undefined;
     }

@@ -16,25 +16,28 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   before it may have been resolved to a file-relative url by the node module
   resolution algorithm.
 * Parse concatenated strings in expressions
+* Fixed issue where FsUrlResolver and IndirectUrlResolver didn't correctly
+  resolve protocol-relative URLs.  These classes now accept a protocol option
+  which defaults to `https` that is prepended when resolving these URLs.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.14] - 2018-03-09
-* [breaking] JavascriptDocument#ast is now a `babel.File` rather than a
+* [BREAKING] JavascriptDocument#ast is now a `babel.File` rather than a
   `babel.Program`. Use `jsDoc.ast.program` instead of `jsDoc.ast` in the
   unlikely case that the `Program` is required.
 * Fix bug where if a package's name was a prefix of one of its dependencies,
   that dependency would not resolve to its components directory.
 
 ## [3.0.0-pre.13] - 2018-03-05
- * Support specifying tag names in jsdoc, e.g. `@customElement fancy-button`
- * Add "bare" module specifier support for JavaScript imports and exports. ie,
-   `import * as jquery from 'jquery'`.
+* Support specifying tag names in jsdoc, e.g. `@customElement fancy-button`
+* Add "bare" module specifier support for JavaScript imports and exports. ie,
+  `import * as jquery from 'jquery'`.
 
 ## [3.0.0-pre.12] - 2018-02-14
- * Functions and methods will now be automatically inferred as returning `void`
-   in certain cases. This occurs when all of the following are true: 1) it has
-   no `@return` or `@returns` JSDoc annotation, 2) it is not async or a
-   generator, 3) its body contains no return statements with arguments.
+* Functions and methods will now be automatically inferred as returning `void`
+  in certain cases. This occurs when all of the following are true: 1) it has
+  no `@return` or `@returns` JSDoc annotation, 2) it is not async or a
+  generator, 3) its body contains no return statements with arguments.
 
 ## [3.0.0-pre.11] - 2018-02-14
 * Support Windows line endings in JSDoc annotations

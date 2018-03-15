@@ -54,7 +54,8 @@ export class IndirectUrlResolver extends FsUrlResolver implements UrlResolver {
    */
   constructor(
       rootPath: string, packagePath: string,
-      indirectionMap: Map<string, string>) {
+      indirectionMap: Map<string, string>,
+      protected readonly protocol: string = 'https') {
     super(packagePath);
 
     const rootResolver = new FsUrlResolver(rootPath);
@@ -98,8 +99,8 @@ export class IndirectUrlResolver extends FsUrlResolver implements UrlResolver {
   private runtimeResolve(
       url: FileRelativeUrl|PackageRelativeUrl,
       runtimeBaseUrl: RuntimeUrl): RuntimeUrl {
-    const resolved: ResolvedUrl =
-        this.simpleUrlResolve(this.brandAsResolved(runtimeBaseUrl), url);
+    const resolved: ResolvedUrl = this.simpleUrlResolve(
+        this.brandAsResolved(runtimeBaseUrl), url, this.protocol);
     return resolved as any as RuntimeUrl;
   }
 

@@ -22,7 +22,7 @@ class SimplestUrlResolver extends UrlResolver {
       firstUrl: ResolvedUrl|PackageRelativeUrl, secondUrl?: FileRelativeUrl) {
     const [baseUrl = '/test/' as ResolvedUrl, url] =
         this.getBaseAndUnresolved(firstUrl, secondUrl);
-    return this.simpleUrlResolve(baseUrl, url);
+    return this.simpleUrlResolve(baseUrl, url, 'https');
   }
 
   relative(to: ResolvedUrl): PackageRelativeUrl;

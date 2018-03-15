@@ -12,17 +12,31 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {parse as parseUrl_, Url} from 'url';
+import {parse as parseUrl_, resolve as resolveUrl_, Url} from 'url';
 
-const unspecifiedProtocol = '-:';
-export function parseUrl(url: string): Url {
-  if (!url.startsWith('//')) {
-    return parseUrl_(url);
+const unspecifiedProtocol = '-';
+export function parseUrl(
+    url: string, defaultProtocol: string = unspecifiedProtocol): Url {
+  const urlObject = parseUrl_(ensureProtocol(url, defaultProtocol));
+  if (urlObject.protocol &&
+      urlObject.protocol.slice(0, -1) === unspecifiedProtocol) {
+    urlObject.protocol = undefined;
+    urlObject.href =
+        urlObject.href && urlObject.href.slice(unspecifiedProtocol.length + 1);
   }
-  const urlObject = parseUrl_(`${unspecifiedProtocol}${url}`);
-  urlObject.protocol = undefined;
-  urlObject.href = urlObject.href!.replace(/^-:/, '');
   return urlObject;
+}
+
+export function ensureProtocol(url: string, defaultProtocol: string): string {
+  return url.startsWith('//') ? `${defaultProtocol}:${url}` : url;
+}
+
+export function resolveUrl(
+    baseUrl: string, targetUrl: string, defaultProtocol: string): string {
+  const baseProtocol = (parseUrl_(baseUrl).protocol || '').slice(0, -1);
+  const protocol = baseProtocol !== 'file' && baseProtocol || defaultProtocol;
+  return resolveUrl_(
+      ensureProtocol(baseUrl, protocol), ensureProtocol(targetUrl, protocol));
 }
 
 export function trimLeft(str: string, char: string): string {

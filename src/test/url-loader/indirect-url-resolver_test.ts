@@ -18,7 +18,7 @@ import {Analyzer} from '../../core/analyzer';
 import {FsUrlResolver} from '../../url-loader/fs-url-resolver';
 import {IndirectUrlResolver} from '../../url-loader/indirect-url-resolver';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
-import {fileRelativeUrl, packageRelativeUrl, rootedFileUrl} from '../test-utils';
+import {fileRelativeUrl, packageRelativeUrl, resolvedUrl, rootedFileUrl} from '../test-utils';
 
 suite('IndirectUrlResolver', function() {
   const mapping = new Map<string, string>([
@@ -47,6 +47,18 @@ suite('IndirectUrlResolver', function() {
             rootedFileUrl`root/sub/package/foo/foo.html`,
             fileRelativeUrl`../bar/bar.html`),
         rootedFileUrl`root/different/x/y/bar.html`);
+
+    // Protocol-relative urls are resolved with default https: protocol
+    assert.deepEqual(
+        indirectResolver.resolve(packageRelativeUrl`//foo.com/bar.html`),
+        resolvedUrl`https://foo.com/bar.html`);
+
+    // Protocol-relative urls are resolved with provided protocol
+    assert.deepEqual(
+        (new IndirectUrlResolver(
+             '/root', '/root/sub/package', mapping, 'potato'))
+            .resolve(packageRelativeUrl`//foo.com/bar.html`),
+        resolvedUrl`potato://foo.com/bar.html`);
   });
 
   test('relative', async () => {
