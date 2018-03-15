@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.15] - 2018-03-15
 * Now recognizes classes, behaviors, elements, and mixins that are
   declared in an ES6 `export` declaration.
 * Document#getFeatures now supports querying by `statement`. Given the
@@ -19,7 +22,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Fixed issue where FsUrlResolver and IndirectUrlResolver didn't correctly
   resolve protocol-relative URLs.  These classes now accept a protocol option
   which defaults to `https` that is prepended when resolving these URLs.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.14] - 2018-03-09
 * [BREAKING] JavascriptDocument#ast is now a `babel.File` rather than a
