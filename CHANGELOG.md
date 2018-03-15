@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
 
 * Module bare specifier rewriting Babel plugin now works on Windows, does not rewrite fully qualified URLs, and will follow the "module" or "jsnext:main" fields when a package.json uses them instead of "main".
 
