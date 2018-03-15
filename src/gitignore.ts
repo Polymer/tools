@@ -16,7 +16,7 @@ import * as fse from 'fs-extra';
 import {EOL} from 'os';
 
 const nodeModulesLine = 'node_modules';
-const searchNodeModulesLine = new RegExp(`^${nodeModulesLine}`);
+const searchNodeModulesLine = new RegExp(`^/?${nodeModulesLine}`);
 
 export async function ignoreNodeModules(ignoreFile: string) {
   let ignoreLines: string[] = [];
