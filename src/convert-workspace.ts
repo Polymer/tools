@@ -19,6 +19,7 @@ import {run, WorkspaceRepo} from 'polymer-workspaces';
 
 import {BowerConfig} from './bower-config';
 import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
+import {ignoreNodeModules} from './gitignore';
 import {YarnConfig} from './npm-config';
 import {generatePackageJson, writeJson} from './package-manifest';
 import {ProjectConverter} from './project-converter';
@@ -133,6 +134,12 @@ export default async function convert(options: WorkspaceConversionSettings):
   // update .travis.yml files for repos
   for (const repo of options.reposToConvert) {
     await transformTravisConfig(repo.dir, repo.dir);
+  }
+
+  // add `node_modules` to gitignore
+  for (const repo of options.reposToConvert) {
+    const gitIgnoreFile = path.join(repo.dir, '.gitignore');
+    await ignoreNodeModules(gitIgnoreFile);
   }
 
   // Generate a new package.json for each repo:
