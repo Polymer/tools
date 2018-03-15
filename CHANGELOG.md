@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 <!-- Add new, unreleased changes here. -->
 * Fix dependency specification for `babel-core`
+* Add `jsTransform` function, factored out of `optimize-streams` module (so that it can be shared with Polyserve).
 
 ## [2.3.3] - 2018-03-14
 * Don't run Babel at all if there are no meaningful changes to make.

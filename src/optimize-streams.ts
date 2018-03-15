@@ -12,31 +12,17 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {transform as babelTransform} from 'babel-core';
 import * as cssSlam from 'css-slam';
 import * as gulpif from 'gulp-if';
 import {minify as htmlMinify, Options as HTMLMinifierOptions} from 'html-minifier';
 import * as logging from 'plylog';
 import {ModuleResolutionStrategy} from 'polymer-project-config';
 import {Transform} from 'stream';
-import * as uuid from 'uuid/v1';
 import * as vinyl from 'vinyl';
 
 import matcher = require('matcher');
 
-import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
-
-const babelSyntaxPlugins = [
-  require('babel-plugin-syntax-dynamic-import'),
-  require('babel-plugin-syntax-object-rest-spread'),
-];
-const babelPresetMinify =
-    require('babel-preset-minify')({}, {simplifyComparisons: false});
-const babelPresetES2015NoModules =
-    require('babel-preset-es2015').buildPreset({}, {modules: false});
-const babelPluginExternalHelpers = require('babel-plugin-external-helpers');
-const babelTransformPluginObjectRestSpread =
-    require('babel-plugin-transform-object-rest-spread');
+import {jsTransform} from './js-transform';
 
 // TODO(fks) 09-22-2016: Latest npm type declaration resolves to a non-module
 // entity. Upgrade to proper JS import once compatible .d.ts file is released,
@@ -62,7 +48,6 @@ export interface OptimizeOptions {
     moduleResolution?: ModuleResolutionStrategy,
   };
 }
-;
 
 /**
  * GenericOptimizeTransform is a generic optimization stream. It can be extended
@@ -119,79 +104,14 @@ export class JsTransform extends GenericOptimizeTransform {
     const shouldMinifyFile =
         options.minify ? notExcluded(options.minify) : () => false;
 
-    const transformer = (content: string, file: File) => {
-      // Even with no transform plugins, parsing and serializing with Babel will
-      // make some minor formatting changes to the code. Skip Babel altogether
-      // if we have no meaningful changes to make.
-      let doBabel = false;
+    const transformer = (content: string, file: File) => jsTransform(content, {
+      compile: shouldCompileFile(file),
+      minify: shouldMinifyFile(file),
+      moduleResolution: options.moduleResolution,
+      filePath: file.path,
+    });
 
-      // Note that Babel plugins run in this order:
-      // 1) plugins, first to last
-      // 2) presets, last to first
-      const plugins = [...babelSyntaxPlugins];
-      const presets = [];
-
-      if (shouldMinifyFile(file)) {
-        doBabel = true;
-        // Minify last, so push first.
-        presets.push(babelPresetMinify);
-      }
-      if (shouldCompileFile(file)) {
-        doBabel = true;
-        presets.push(babelPresetES2015NoModules);
-        plugins.push(
-            babelPluginExternalHelpers,
-            babelTransformPluginObjectRestSpread,
-        );
-      }
-      if (options.moduleResolution === 'node') {
-        doBabel = true;
-        plugins.push(resolveBareSpecifiers(file.path, false));
-      }
-
-      if (doBabel) {
-        content = babelTransform(content, {presets, plugins}).code!;
-      }
-      content = this._replaceTemplateObjectNames(content);
-      return content;
-    };
     super('babel-compile', transformer);
-  }
-
-  /**
-   * Modifies variables names of tagged template literals (`"_templateObject"`)
-   * from a given string so that they're all unique.
-   *
-   * This is needed to workaround a potential naming collision when
-   * individually transpiled scripts are bundled. See #950.
-   */
-  _replaceTemplateObjectNames(code: string): string {
-    // Breakdown of regular expression to match "_templateObject" variables
-    //
-    // Pattern                | Meaning
-    // -------------------------------------------------------------------
-    // (                      | Group1
-    // _templateObject        | Match "_templateObject"
-    // \d*                    | Match 0 or more digits
-    // \b                     | Match word boundary
-    // )                      | End Group1
-    const searchValueRegex = /(_templateObject\d*\b)/g;
-
-    // The replacement pattern appends an underscore and UUID to the matches:
-    //
-    // Pattern                | Meaning
-    // -------------------------------------------------------------------
-    // $1                     | Insert matching Group1 (from above)
-    // _                      | Insert "_"
-    // ${uniqueId}            | Insert previously generated UUID
-    const uniqueId = uuid().replace(/-/g, '');
-    const replaceValue = `$1_${uniqueId}`;
-
-    // Example output:
-    // _templateObject  -> _templateObject_200817b1154811e887be8b38cea68555
-    // _templateObject2 -> _templateObject2_5e44de8015d111e89b203116b5c54903
-
-    return code.replace(searchValueRegex, replaceValue);
   }
 }
 
