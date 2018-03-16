@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, DocumentBackreference, Import, ScannedImport, Severity, Warning} from '../model/model';
+import {Document, DocumentBackreference, Import, ScannedImport} from '../model/model';
 
 /**
  * <script> tags are represented in two different ways: as inline documents,
@@ -24,13 +24,11 @@ export class ScriptTagImport extends Import { readonly type = 'html-script'; }
 
 export class ScannedScriptTagImport extends ScannedImport {
   resolve(document: Document): ScriptTagImport|undefined {
-    if (this.url === undefined) {
-      return;
-    }
-    const resolvedUrl = document._analysisContext.resolver.resolve(
-        document.parsedDocument.baseUrl, this.url, this);
-    if (resolvedUrl === undefined) {
-      return;
+    const resolvedUrl = this.getLoadableUrlOrWarn(document);
+    if (this.url === undefined || resolvedUrl === undefined) {
+      // Warning will already have been added to the document if necessary, so
+      // we can just return here.
+      return undefined;
     }
 
     // TODO(justinfagnani): warn if the same URL is loaded from more than one
@@ -75,14 +73,7 @@ export class ScannedScriptTagImport extends ScannedImport {
           false);
     } else {
       // not found or syntax error
-      const error = (this.error ? (this.error.message || this.error) : '');
-      document.warnings.push(new Warning({
-        code: 'could-not-load',
-        message: `Unable to load import: ${error}`,
-        sourceRange: (this.urlSourceRange || this.sourceRange)!,
-        severity: Severity.ERROR,
-        parsedDocument: document.parsedDocument
-      }));
+      this.addCouldNotLoadWarning(document);
       return undefined;
     }
   }

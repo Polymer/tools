@@ -67,27 +67,17 @@ export class ScannedImport implements Resolvable {
   }
 
   resolve(document: Document): Import|undefined {
-    if (this.url === undefined) {
-      // We don't issue a warning here because the scanner should have when it
-      // produced an undefined URL.
+    const resolvedUrl = this.getLoadableUrlOrWarn(document);
+    if (this.url === undefined || resolvedUrl === undefined) {
+      // Warning will already have been added to the document if necessary, so
+      // we can just return here.
       return undefined;
     }
-    const resolvedUrl = document._analysisContext.resolver.resolve(
-        document.parsedDocument.baseUrl, this.url, this);
-    if (resolvedUrl === undefined) {
-      return;
-    }
+
     const importedDocumentOrWarning =
         document._analysisContext.getDocument(resolvedUrl);
     if (!(importedDocumentOrWarning instanceof Document)) {
-      const error = this.error ? (this.error.message || this.error) : '';
-      document.warnings.push(new Warning({
-        code: 'could-not-load',
-        message: `Unable to load import: ${error}`,
-        sourceRange: (this.urlSourceRange || this.sourceRange)!,
-        severity: Severity.ERROR,
-        parsedDocument: document.parsedDocument,
-      }));
+      this.addCouldNotLoadWarning(document, importedDocumentOrWarning);
       return undefined;
     }
     return this.constructImport(
@@ -107,6 +97,44 @@ export class ScannedImport implements Resolvable {
         this.astNode,
         this.warnings,
         this.lazy);
+  }
+
+  protected addCouldNotLoadWarning(document: Document, warning?: Warning) {
+    const error = this.error && this.error.message || this.error ||
+        warning && warning.message || '';
+    document.warnings.push(new Warning({
+      code: 'could-not-load',
+      message: `Unable to load import: ${error}`,
+      sourceRange: (this.urlSourceRange || this.sourceRange)!,
+      severity: Severity.ERROR,
+      parsedDocument: document.parsedDocument,
+    }));
+  }
+
+  /**
+   * Resolve the URL for this import and return it if the analyzer
+   */
+  protected getLoadableUrlOrWarn(document: Document): ResolvedUrl|undefined {
+    if (this.url === undefined) {
+      return;
+    }
+    const resolvedUrl = document._analysisContext.resolver.resolve(
+        document.parsedDocument.baseUrl, this.url, this);
+    if (!resolvedUrl) {
+      return;
+    }
+    if (!document._analysisContext.loader.canLoad(resolvedUrl)) {
+      // We have no way to load this resolved URL, so we will warn.
+      document.warnings.push(new Warning({
+        code: 'not-loadable',
+        message: `URL loader not configured to load '${resolvedUrl}'`,
+        sourceRange: (this.urlSourceRange || this.sourceRange)!,
+        severity: Severity.WARNING,
+        parsedDocument: document.parsedDocument,
+      }));
+      return undefined;
+    }
+    return resolvedUrl;
   }
 }
 
