@@ -46,6 +46,7 @@ export interface OptimizeOptions {
     minify?: boolean|{exclude?: string[]},
     compile?: boolean|{exclude?: string[]},
     moduleResolution?: ModuleResolutionStrategy,
+    transformEsModulesToAmd?: boolean,
   };
 }
 
@@ -105,10 +106,11 @@ export class JsTransform extends GenericOptimizeTransform {
         options.minify ? notExcluded(options.minify) : () => false;
 
     const transformer = (content: string, file: File) => jsTransform(content, {
-      compile: shouldCompileFile(file),
+      compileToEs5: shouldCompileFile(file),
       minify: shouldMinifyFile(file),
       moduleResolution: options.moduleResolution,
       filePath: file.path,
+      transformEsModulesToAmd: options.transformEsModulesToAmd,
     });
 
     super('babel-compile', transformer);

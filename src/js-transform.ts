@@ -32,19 +32,26 @@ const babelPresetES2015NoModules =
 const babelPluginExternalHelpers = require('babel-plugin-external-helpers');
 const babelTransformPluginObjectRestSpread =
     require('babel-plugin-transform-object-rest-spread');
+const babelTransformModulesAmd =
+    require('babel-plugin-transform-es2015-modules-amd');
 
 /**
  * Options for jsTransform.
  */
 export interface JsTransformOptions {
   // Whether to compile JavaScript to ES5.
-  compile?: boolean;
+  compileToEs5?: boolean;
   // Whether to minify JavaScript.
   minify?: boolean;
   // What kind of ES module resolution/remapping to apply.
   moduleResolution?: ModuleResolutionStrategy;
   // The path of the file being transformed, used for module resolution.
   filePath?: string;
+  // For Polyserve or other servers with similar component directory mounting
+  // behavior. Whether this is a request for a package in node_modules/.
+  isComponentRequest?: boolean;
+  // Whether to replace ES modules with AMD modules.
+  transformEsModulesToAmd?: boolean;
 }
 
 /**
@@ -67,7 +74,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     // Minify last, so push first.
     presets.push(babelPresetMinify);
   }
-  if (options.compile) {
+  if (options.compileToEs5) {
     doBabel = true;
     presets.push(babelPresetES2015NoModules);
     plugins.push(
@@ -81,7 +88,12 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
           'Cannot perform node module resolution without filePath.');
     }
     doBabel = true;
-    plugins.push(resolveBareSpecifiers(options.filePath, false));
+    plugins.push(
+        resolveBareSpecifiers(options.filePath, options.isComponentRequest));
+  }
+  if (options.transformEsModulesToAmd) {
+    doBabel = true;
+    plugins.push(babelTransformModulesAmd);
   }
 
   if (doBabel) {
