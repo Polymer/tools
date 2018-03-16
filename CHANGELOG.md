@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Add `jsTransform` function, factored out of `optimize-streams` module (so that it can be shared with Polyserve).
 * Renamed `jsTransform` option from `compile` to `compileToEs5` to clarify its behavior.
 * Added `transformEsModulesToAmd` option to `jsTransform` and JS stream transformer.
+* Add exponentiation, async/await, and async generator syntax/transform support to `jsTransform`.
 
 ## [2.3.3] - 2018-03-14
 * Don't run Babel at all if there are no meaningful changes to make.

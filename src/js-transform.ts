@@ -21,35 +21,74 @@ import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 // TODO(aomarks) Switch to babel-preset-env. But how do we get just syntax
 // plugins without turning on transformation, for the case where we are
 // minifying but not compiling?
-const babelSyntaxPlugins = [
-  require('babel-plugin-syntax-dynamic-import'),
-  require('babel-plugin-syntax-object-rest-spread'),
-];
-const babelPresetMinify =
-    require('babel-preset-minify')({}, {simplifyComparisons: false});
-const babelPresetES2015NoModules =
+
+// Syntax and transform plugins for ES2015.
+const babelPresetEs2015NoModules =
     require('babel-preset-es2015').buildPreset({}, {modules: false});
-const babelPluginExternalHelpers = require('babel-plugin-external-helpers');
-const babelTransformPluginObjectRestSpread =
-    require('babel-plugin-transform-object-rest-spread');
+
+// The ES2016 and ES2017 presets do not inherit the plugins of previous years,
+// and there is no ES2018 preset yet. Since the additions in ES2016 and ES2017
+// are small, and we have to list syntax plugins separately anyway (see below),
+// just enumerate the transform plugins here instead of merging the 3 presets.
+const babelTransformPlugins = [
+  // Don't emit helpers inline.
+  require('babel-plugin-external-helpers'),
+  // ES2016
+  require('babel-plugin-transform-exponentiation-operator'),
+  // ES2017
+  require('babel-plugin-transform-async-to-generator'),
+  // ES2018 (partial)
+  require('babel-plugin-transform-object-rest-spread'),
+  require('babel-plugin-transform-async-generator-functions'),
+];
+
 const babelTransformModulesAmd =
     require('babel-plugin-transform-es2015-modules-amd');
+
+// We enumerate syntax plugins that would automatically be loaded by our
+// transform plugins because we need to support the configuration where we
+// minify but don't compile, and don't want Babel to error when it encounters
+// syntax that we support when compiling.
+const babelSyntaxPlugins = [
+  // ES2015 and below syntax plugins are included by default.
+  // ES2016
+  require('babel-plugin-syntax-exponentiation-operator'),
+  // ES2017
+  require('babel-plugin-syntax-async-functions'),
+  // ES2018 (partial)
+  require('babel-plugin-syntax-object-rest-spread'),
+  require('babel-plugin-syntax-async-generators'),
+  // Future
+  require('babel-plugin-syntax-export-extensions'),
+  require('babel-plugin-syntax-dynamic-import'),
+];
+
+const babelPresetMinify =
+    require('babel-preset-minify')({}, {simplifyComparisons: false});
 
 /**
  * Options for jsTransform.
  */
 export interface JsTransformOptions {
   // Whether to compile JavaScript to ES5.
+  //
+  // Note that some JavaScript features may require the Babel helper polyfills,
+  // which this function will not insert and must be loaded separately.
   compileToEs5?: boolean;
+
   // Whether to minify JavaScript.
   minify?: boolean;
+
   // What kind of ES module resolution/remapping to apply.
   moduleResolution?: ModuleResolutionStrategy;
+
   // The path of the file being transformed, used for module resolution.
   filePath?: string;
+
   // For Polyserve or other servers with similar component directory mounting
   // behavior. Whether this is a request for a package in node_modules/.
   isComponentRequest?: boolean;
+
   // Whether to replace ES modules with AMD modules.
   transformEsModulesToAmd?: boolean;
 }
@@ -76,11 +115,8 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   }
   if (options.compileToEs5) {
     doBabel = true;
-    presets.push(babelPresetES2015NoModules);
-    plugins.push(
-        babelPluginExternalHelpers,
-        babelTransformPluginObjectRestSpread,
-    );
+    presets.push(babelPresetEs2015NoModules);
+    plugins.push(...babelTransformPlugins);
   }
   if (options.moduleResolution === 'node') {
     if (!options.filePath) {

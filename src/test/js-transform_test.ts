@@ -42,6 +42,87 @@ suite('jsTransform', () => {
     assert.equal(jsTransform('const foo = 3;\n', {}), 'const foo = 3;\n');
   });
 
+  suite('exponentiation', () => {
+    const js = 'const foo = 2**2;';
+
+    test('minifies', () => {
+      assert.equal(jsTransform(js, {minify: true}), 'const foo=4;');
+    });
+
+    test('compiles to ES5', () => {
+      assert.equal(
+          jsTransform(js, {compileToEs5: true}), 'var foo = Math.pow(2, 2);');
+    });
+  });
+
+  suite('rest properties', () => {
+    const js = 'let { x, y, ...z } = { x: 1, y: 2, a: 3, b: 4 };';
+
+    test('minifies', () => {
+      assert.equal(
+          jsTransform(js, {minify: true}), 'let{x,y,...z}={x:1,y:2,a:3,b:4};');
+    });
+
+    test('compiles to ES5', () => {
+      assert.include(
+          jsTransform(js, {compileToEs5: true}),
+          // Some compiled features are very verbose. Just look for the Babel
+          // helper call so we know the plugin ran.
+          'babelHelpers.objectWithoutProperties');
+    });
+  });
+
+  suite('spread properties', () => {
+    const js = 'let n = { x, y, ...z };';
+
+    test('minifies', () => {
+      assert.equal(jsTransform(js, {minify: true}), 'let n={x,y,...z};');
+    });
+
+    test('compiles to ES5', () => {
+      assert.include(
+          jsTransform(js, {compileToEs5: true}), 'babelHelpers.extends');
+    });
+  });
+
+  suite('async/await', () => {
+    const js = 'async function foo() { await bar(); }';
+
+    test('minifies', () => {
+      assert.equal(
+          jsTransform(js, {minify: true}), 'async function foo(){await bar()}');
+    });
+
+    test('compiles to ES5', () => {
+      assert.include(
+          jsTransform(js, {compileToEs5: true}),
+          'babelHelpers.asyncToGenerator');
+    });
+  });
+
+  suite('async generator', () => {
+    const js = 'async function* foo() { yield bar; }';
+
+    test('minifies', () => {
+      assert.equal(
+          jsTransform(js, {minify: true}), 'async function*foo(){yield bar}');
+    });
+
+    test('compiles to ES5', () => {
+      assert.include(
+          jsTransform(js, {compileToEs5: true}), 'babelHelpers.asyncGenerator');
+    });
+  });
+
+  suite('dynamic import', () => {
+    const js = 'const foo = import("bar.js");';
+
+    test('minifies', () => {
+      assert.equal(
+          jsTransform(js, {minify: true}), 'const foo=import("bar.js");');
+    });
+  });
+
   test('rewrites bare module specifiers to paths', () => {
     const fixtureRoot =
         path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
