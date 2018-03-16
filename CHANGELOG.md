@@ -5,12 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.16] - 2018-03-15
 * Import URLs which are resolved, but for which the URL loader returns
   `canLoad() === false` result in a `not-loadable` Warning instead of
   `could-not-load`, which is reserved for other failures, such as parser
   errors or load errors.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.15] - 2018-03-15
 * Now recognizes classes, behaviors, elements, and mixins that are
