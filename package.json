@@ -22,7 +22,8 @@
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
     "minimatch": "^3.0.4",
-    "polymer-analyzer": "=3.0.0-pre.14"
+    "polymer-analyzer": "=3.0.0-pre.14",
+    "vscode-uri": "^1.0.3"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",

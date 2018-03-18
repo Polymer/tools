@@ -13,7 +13,7 @@ import * as minimatch from 'minimatch';
 import * as path from 'path';
 import * as analyzer from 'polymer-analyzer';
 import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/function';
-import * as url from 'url';
+import Uri from 'vscode-uri';
 
 import {closureParamToTypeScript, closureTypeToTypeScript} from './closure-types';
 import * as ts from './ts-ast';
@@ -183,11 +183,11 @@ function analyzerToAst(
  */
 function analyzerUrlToRelativePath(
     analyzerUrl: string, rootDir: string): string|undefined {
-  const parsed = url.parse(analyzerUrl);
-  if (parsed.protocol !== 'file:' || parsed.host || !parsed.path) {
+  const parsed = Uri.parse(analyzerUrl);
+  if (parsed.scheme !== 'file' || parsed.authority || !parsed.fsPath) {
     return undefined;
   }
-  return path.relative(rootDir, parsed.path);
+  return path.relative(rootDir, parsed.fsPath);
 }
 
 /**
