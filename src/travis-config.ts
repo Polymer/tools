@@ -110,12 +110,19 @@ export async function transformTravisConfig(
     inDir: string, outDir: string): Promise<void> {
   const inTravisPath = path.join(inDir, travisConfigFile);
 
+  // If no `travis.yml` file exists, do nothing.
   if (!await fse.pathExists(inTravisPath)) {
     return;
   }
 
   const travisBlob = await fse.readFile(inTravisPath, 'utf-8');
-  const travisConfig = safeLoad(travisBlob) as Partial<TravisConfig>;
+  const travisConfig = safeLoad(travisBlob) as Partial<TravisConfig>|undefined;
+
+  // It's possible for a `travis.yml` to be empty, or otherwise not an object.
+  // If this happens, do nothing.
+  if (!travisConfig) {
+    return;
+  }
 
   let beforeScripts = configToArray(travisConfig.before_script);
   let testScripts = configToArray(travisConfig.script);
