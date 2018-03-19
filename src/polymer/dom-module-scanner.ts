@@ -140,7 +140,8 @@ export class DomModuleScanner implements HtmlScanner {
                   .map(
                       (e) => new LocalId(
                           dom5.getAttribute(e, 'id')!,
-                          document.sourceRangeForNode(e)!));
+                          document.sourceRangeForNode(e)!,
+                          e.nodeName));
           const results =
               scanDatabindingTemplateForExpressions(document, template);
           warnings = results.warnings;

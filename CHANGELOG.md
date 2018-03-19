@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+* Add `nodeName` to `LocalId` references
 
 ## [3.0.0-pre.16] - 2018-03-15
 * Import URLs which are resolved, but for which the URL loader returns

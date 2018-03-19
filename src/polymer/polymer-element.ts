@@ -120,10 +120,12 @@ export function mergePropertyDeclarations(
 export class LocalId {
   name: string;
   range: SourceRange;
+  nodeName: string;
 
-  constructor(name: string, range: SourceRange) {
+  constructor(name: string, range: SourceRange, nodeName: string) {
     this.name = name;
     this.range = range;
+    this.nodeName = nodeName;
   }
 }
 

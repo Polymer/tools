@@ -40,6 +40,9 @@ suite('DomModuleScanner', () => {
     assert.deepEqual(
         features.map((f: ScannedDomModule) => f.localIds.map((l) => l.name)),
         [['foo', 'bar']]);
+    assert.deepEqual(
+        features.map((f: ScannedDomModule) => f.localIds.map((l) => l.nodeName)),
+        [['div', 'span']]);
   });
 
   test('finds databinding expressions IDs', async () => {
