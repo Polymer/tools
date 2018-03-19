@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- Add new, unreleased changes here. -->
+* Reference resolution now supports javascript scoping rules, and will follow
+  javascript module imports, including aliased imports, namespace imports, and
+  re-exports. References to super classes, mixins, and behaviors use this
+  resolution system.
 * Add `nodeName` to `LocalId` references
+* Added an `Export` feature, for JS module exports.
+
 
 ## [3.0.0-pre.16] - 2018-03-15
 * Import URLs which are resolved, but for which the URL loader returns

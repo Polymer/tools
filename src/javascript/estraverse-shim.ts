@@ -55,7 +55,7 @@ export function traverse(ast: babel.Node, visitor: Visitor): void {
       dispatchVisitMethods(
           ['leave', `leave${path.type}` as keyof Visitor], path, visitor);
     },
-    noScope: true,
+    noScope: !babel.isFile(ast),
   });
 }
 

@@ -21,9 +21,9 @@ let NotAClass; // this comment should not be attached to a class
 class ClassWithNoJsDoc { }
 
 /** An exported class. */
-export class ExportedClass { }
+export class ExportedClass { method1() { } }
 
 /** A default exported class. */
-export default class { };
+export default class { method2() { } };
 
-export const ExportedConstClass = class { };
+export const ExportedConstClass = class { method3() { } };

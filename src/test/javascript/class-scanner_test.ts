@@ -158,17 +158,23 @@ suite('Class', () => {
         {
           description: 'An exported class.',
           name: 'ExportedClass',
-          privacy: 'public'
+          privacy: 'public',
+          methods:
+              [{description: '', name: 'method1', return: {type: 'void'}}]
         },
         {
           description: 'A default exported class.',
           name: undefined,
-          privacy: 'public'
+          privacy: 'public',
+          methods:
+              [{description: '', name: 'method2', return: {type: 'void'}}]
         },
         {
           description: '',
           name: 'ExportedConstClass',
           privacy: 'public',
+          methods:
+              [{description: '', name: 'method3', return: {type: 'void'}}]
         }
       ]);
     });
@@ -476,17 +482,23 @@ suite('Class', () => {
         {
           description: 'An exported class.',
           name: 'ExportedClass',
-          privacy: 'public'
+          privacy: 'public',
+          methods:
+              [{description: '', name: 'method1', return: {type: 'void'}}]
         },
         {
           description: 'A default exported class.',
           name: undefined,
-          privacy: 'public'
+          privacy: 'public',
+          methods:
+              [{description: '', name: 'method2', return: {type: 'void'}}]
         },
         {
           description: '',
           name: 'ExportedConstClass',
           privacy: 'public',
+          methods:
+              [{description: '', name: 'method3', return: {type: 'void'}}]
         }
       ]);
     });
@@ -722,6 +734,58 @@ suite('Class', () => {
             {statement: class_.statementAst, kind: 'class'});
         assert.deepEqual([...features].map((c) => c.name), [class_.name]);
       }
+    });
+
+    test('we resolve superclasses by scope when possible', async () => {
+      const filename = 'class/super-class-scoped.js';
+      const {classes} = await getClasses(filename);
+      assert.deepEqual(classes.map((c) => c.name), [
+        'Foo',
+        'Foo',
+        'One',
+        'Foo',
+        'Two',
+        'Three',
+      ]);
+
+      const subclasses = classes.filter((c) => c.superClass !== undefined);
+      assert.deepEqual(
+          subclasses.map(((c) => c.name)), ['One', 'Two', 'Three']);
+
+      // Despite the fact that their superclasses all have the same name,
+      // we're able to use JS scoping rules to resolve them to the correct
+      // referant.
+      assert.deepEqual(
+          subclasses.map((c) => [...c.methods.keys()]),
+          [['method1'], ['method2'], ['method3']]);
+    });
+
+    test('we resolve imported super classes', async () => {
+      const filename = 'class/super-class-imported.js';
+      const analysis = await analyzer.analyze([filename]);
+      const result = analysis.getDocument(filename);
+      if (result.successful === false) {
+        throw new Error('Could not get document');
+      }
+      const document = result.value;
+      const classes = Array.from(document.getFeatures({kind: 'class'}));
+      assert.deepEqual(classes.map((c) => c.name), [
+        'CL1',
+        'CL2',
+        'CL3',
+        'CL4',
+        'CL5',
+        'CL6',
+      ]);
+
+      assert.deepEqual(classes.map((c) => [...c.methods.keys()]), [
+        ['method1'],
+        ['method2'],
+        ['method3'],
+        ['method1'],
+        ['method1'],
+        ['method1']
+      ]);
     });
   });
 });

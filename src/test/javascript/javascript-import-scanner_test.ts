@@ -108,4 +108,25 @@ suite('JavaScriptImportScanner', () => {
       },
     ]);
   });
+
+  test('recognizes reexports as imports', async () => {
+    const {features, warnings} = await runScanner(
+        analyzer,
+        new JavaScriptImportScanner(),
+        'javascript/all-export-types.js');
+
+    assert.equal(warnings.length, 0);
+    assert.containSubset(features, [
+      {
+        type: 'js-import',
+        url: './module-with-export.js',
+        lazy: false,
+      },
+      {
+        type: 'js-import',
+        url: './module-with-export.js',
+        lazy: false,
+      },
+    ]);
+  });
 });
