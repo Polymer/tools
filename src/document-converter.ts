@@ -554,8 +554,8 @@ export class DocumentConverter {
       const htmlDocumentUrl =
           this.urlHandler.getDocumentUrl(htmlImport.document);
       const importedJsDocumentUrl = this.convertDocumentUrl(htmlDocumentUrl);
-      const importUrl =
-          this.formatImportUrl(importedJsDocumentUrl, htmlImport.originalUrl);
+      const importUrl = this.formatImportUrl(
+          importedJsDocumentUrl, htmlImport.originalUrl, true);
       const scriptTag = parse5.parseFragment(`<script type="module"></script>`)
                             .childNodes![0];
       dom5.setAttribute(scriptTag, 'src', importUrl);
@@ -581,7 +581,7 @@ export class DocumentConverter {
       const convertedUrl = this.convertDocumentUrl(
           this.urlHandler.getDocumentUrl(scriptImport.document));
       const formattedUrl =
-          this.formatImportUrl(convertedUrl, scriptImport.originalUrl);
+          this.formatImportUrl(convertedUrl, scriptImport.originalUrl, true);
       dom5.setAttribute(scriptImport.astNode, 'src', formattedUrl);
 
       // Temporary: Check if imported script is a known module.
@@ -1129,7 +1129,8 @@ export class DocumentConverter {
    * TODO(fks): Make this run on Windows/Non-Unix systems (#236)
    */
   private formatImportUrl(
-      toUrl: ConvertedDocumentUrl, originalHtmlImportUrl?: string): string {
+      toUrl: ConvertedDocumentUrl, originalHtmlImportUrl?: string,
+      forcePath = false): string {
     // Return an absolute URL path if the original HTML import was absolute.
     // TODO(fks) 11-06-2017: Still return true absolute paths when using
     // bare/named imports?
@@ -1142,10 +1143,10 @@ export class DocumentConverter {
       return this.urlHandler.getPathImportUrl(this.convertedUrl, toUrl);
     }
     // Otherwise, return the external import URL formatted for names or paths.
-    if (this.conversionSettings.npmImportStyle === 'name') {
-      return this.urlHandler.getNameImportUrl(toUrl);
-    } else {
+    if (forcePath || this.conversionSettings.npmImportStyle === 'path') {
       return this.urlHandler.getPathImportUrl(this.convertedUrl, toUrl);
+    } else {
+      return this.urlHandler.getNameImportUrl(toUrl);
     }
   }
 

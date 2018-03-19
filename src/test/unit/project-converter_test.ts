@@ -18,7 +18,7 @@ import * as estree from 'estree';
 import {EOL} from 'os';
 import {Analyzer, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 
-import {createDefaultConversionSettings, PartialConversionSettings} from '../../conversion-settings';
+import {createDefaultConversionSettings, NpmImportStyle, PartialConversionSettings} from '../../conversion-settings';
 import {getMemberPath} from '../../document-util';
 import {ProjectConverter} from '../../project-converter';
 import {PackageUrlHandler} from '../../urls/package-url-handler';
@@ -66,6 +66,7 @@ suite('AnalysisConverter', () => {
       bowerPackageName: string;
       npmPackageName: string;
       packageType: PackageType;
+      npmImportStyle: NpmImportStyle;
       expectedWarnings: string[];
       includes: string[];
     }
@@ -83,6 +84,7 @@ suite('AnalysisConverter', () => {
         namespaces: partialOptions.namespaces || ['Polymer'],
         excludes: partialOptions.excludes,
         referenceExcludes: partialOptions.referenceExcludes,
+        npmImportStyle: partialOptions.npmImportStyle,
         addImportPath: partialOptions.addImportPath,
         flat: false,
         private: false,
@@ -289,6 +291,40 @@ import '/node_modules/@polymer/app-route/app-route.js';
 `,
           });
         });
+
+
+    test(
+        'converts dependency imports for an element using name-style imports',
+        async () => {
+          setSources({
+            'test.html': `
+            <link rel="import" href="./nested/test.html">
+            <link rel="import" href="../app-storage/app-storage.html">
+            <script></script>
+          `,
+            'nested/test.html': `
+            <link rel="import" href="../../app-route/app-route.html">
+            <script></script>
+          `,
+            'bower_components/app-route/app-route.html': `<h1>Hi</h1>`,
+            'bower_components/app-storage/app-storage.html': `<h1>Hi</h1>`,
+          });
+          assertSources(
+              await convert({
+                npmPackageName: '@some-scope/some-package',
+                npmImportStyle: 'name'
+              }),
+              {
+                'test.js': `
+import './nested/test.js';
+import '@polymer/app-storage/app-storage.js';
+`,
+                'nested/test.js': `
+import '@polymer/app-route/app-route.js';
+`
+              });
+        });
+
 
     test('converts imports to .js without scripts', async () => {
       setSources({
@@ -1390,29 +1426,70 @@ export const Element = class Element {};
           });
     });
 
-    test('converts unimported html to use script type=module', async () => {
-      setSources({
-        'test.html': `
+    test(
+        'correctly handles top-level html imports when import style=path',
+        async () => {
+          setSources({
+            'test.html': `
                 <script>
                   Polymer.Element = class Element {};
                 </script>`,
-        'index.html': `
+            'index.html': `
                 <link rel="import" href="./test.html">
+                <link rel="import" href="../shadycss/a.html">
+                <script src="../shadycss/b.js"></script>
 
-                <div>Hello world!</div>`
-      });
-      assertSources(await convert(), {
-        'test.js': `
+                <div>Hello world!</div>`,
+            'bower_components/shadycss/a.html': ``,
+            'bower_components/shadycss/b.js': ``,
+          });
+          assertSources(await convert({npmImportStyle: 'path'}), {
+            'test.js': `
 export const Element = class Element {};
 `,
 
-        'index.html': `
+            'index.html': `
 
                 <script type="module" src="./test.js"></script>
+                <script type="module" src="../@webcomponents/shadycss/a.js"></script>
+                <script src="../@webcomponents/shadycss/b.js"></script>
 
                 <div>Hello world!</div>`
-      });
-    });
+          });
+        });
+
+
+    test(
+        'correctly handles top-level html imports when import style=name',
+        async () => {
+          setSources({
+            'test.html': `
+                <script>
+                  Polymer.Element = class Element {};
+                </script>`,
+            'index.html': `
+                <link rel="import" href="./test.html">
+                <link rel="import" href="../shadycss/a.html">
+                <script src="../shadycss/b.js"></script>
+
+                <div>Hello world!</div>`,
+            'bower_components/shadycss/a.html': ``,
+            'bower_components/shadycss/b.js': ``,
+          });
+          assertSources(await convert({npmImportStyle: 'name'}), {
+            'test.js': `
+export const Element = class Element {};
+`,
+
+            'index.html': `
+
+                <script type="module" src="./test.js"></script>
+                <script type="module" src="../@webcomponents/shadycss/a.js"></script>
+                <script src="../@webcomponents/shadycss/b.js"></script>
+
+                <div>Hello world!</div>`
+          });
+        });
 
     test('converts multiple scripts in one html file', async () => {
       setSources({
