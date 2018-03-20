@@ -89,6 +89,14 @@ export interface JsTransformOptions {
   // behavior. Whether this is a request for a package in node_modules/.
   isComponentRequest?: boolean;
 
+  // The component directory to use when rewriting bare specifiers to relative
+  // paths. A resolved path that begins with the component directory will be
+  // rewritten to be relative to the root.
+  componentDir?: string;
+
+  // The root directory of the package containing the component directory.
+  rootDir?: string;
+
   // Whether to replace ES modules with AMD modules.
   transformEsModulesToAmd?: boolean;
 }
@@ -124,8 +132,11 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
           'Cannot perform node module resolution without filePath.');
     }
     doBabel = true;
-    plugins.push(
-        resolveBareSpecifiers(options.filePath, options.isComponentRequest));
+    plugins.push(resolveBareSpecifiers(
+        options.filePath,
+        options.isComponentRequest,
+        options.componentDir,
+        options.rootDir));
   }
   if (options.transformEsModulesToAmd) {
     doBabel = true;

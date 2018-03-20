@@ -160,6 +160,29 @@ suite('jsTransform', () => {
     assert.equal(result.trim(), expected.trim());
   });
 
+  test('rewrites bare module specifiers to paths for dependencies', () => {
+    const fixtureRoot =
+        path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
+    const filePath = path.join(fixtureRoot, 'npm-module.js');
+
+    const input = stripIndent(`
+      import { dep1 } from 'dep1';
+    `);
+
+    const expected = stripIndent(`
+      import { dep1 } from '../dep1/index.js';
+    `);
+
+    const result = jsTransform(input, {
+      moduleResolution: 'node',
+      filePath,
+      isComponentRequest: true,
+      componentDir: path.join(fixtureRoot, 'node_modules'),
+      rootDir: fixtureRoot
+    });
+    assert.equal(result.trim(), expected.trim());
+  });
+
   test('transforms ES modules to AMD', () => {
     const input = stripIndent(`
       import { dep1 } from 'dep1';

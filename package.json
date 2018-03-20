@@ -60,6 +60,7 @@
     "multipipe": "^1.0.2",
     "mz": "^2.6.0",
     "parse5": "^2.2.3",
+    "path-is-inside": "^1.0.2",
     "plylog": "^0.5.0",
     "polymer-analyzer": "^2.7.0",
     "polymer-bundler": "^3.1.1",
