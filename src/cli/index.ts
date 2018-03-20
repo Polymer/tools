@@ -101,8 +101,10 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     type: String,
     multiple: true,
     description: 'A set of mapping instructions to map unknown bower ' +
-        'dependencies to npm. Must be of the format "bower,npm,semver".' +
-        'Example: "polymer,@polymer/polymer,^X.X.X". Multiple mappings allowed.',
+        'dependencies to npm. ' +
+        'Must be of the format: "[bower name],[npm name],[npm semver range]".' +
+        'Example: "polymer,@polymer/polymer,^X.X.X". ' +
+        'Multiple mappings allowed.',
     defaultValue: []
   },
   {

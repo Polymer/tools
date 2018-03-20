@@ -32,7 +32,8 @@ suite('src/cli/util', () => {
     test('properly parses three comma-seperated values', () => {
       assert.deepEqual(parseDependencyMappingInput('a,b,c'), ['a', 'b', 'c']);
       assert.deepEqual(
-          parseDependencyMappingInput('a-a,b-b,^c.c.c'), ['a-a', 'b-b', '^c.c.c']);
+          parseDependencyMappingInput('a-a,b-b,^c.c.c'),
+          ['a-a', 'b-b', '^c.c.c']);
       assert.deepEqual(
           parseDependencyMappingInput('a.js,b.js,~c.c.c'),
           ['a.js', 'b.js', '~c.c.c']);
