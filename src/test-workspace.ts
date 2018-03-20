@@ -60,7 +60,7 @@ async function installNpmDependencies(repo: WorkspaceRepo) {
  */
 async function testRepo(repo: WorkspaceRepo) {
   const repoDirName = path.basename(repo.dir);
-  const results = await exec(repo.dir, 'wct', ['--npm']);
+  const results = await exec(repo.dir, 'wct', ['--npm', '-l', 'chrome']);
   if (results.stdout.length > 0) {
     console.log(chalk.dim(`${repoDirName}: ${results.stdout}`));
   }

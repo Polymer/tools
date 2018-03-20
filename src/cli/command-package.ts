@@ -18,7 +18,10 @@ import * as semver from 'semver';
 
 import {CliOptions} from '../cli';
 import convertPackage from '../convert-package';
+import {saveDependencyMapping} from '../package-manifest';
 import {exec, logStep} from '../util';
+
+import {parseDependencyMappingInput} from './util';
 
 export default async function run(options: CliOptions) {
   const inDir = path.resolve(options.in || process.cwd());
@@ -32,6 +35,17 @@ export default async function run(options: CliOptions) {
         `Git repo is dirty. Check all changes in to source control and ` +
         `then try again.`);
     process.exit(1);
+  }
+
+  for (const rawMapping of options['dependency-mapping']) {
+    try {
+      const [bowerName, npmName, npmSemver] =
+          parseDependencyMappingInput(rawMapping);
+      saveDependencyMapping(bowerName, npmName, npmSemver);
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   }
 
   // TODO: each file is not always needed, refactor to optimize loading

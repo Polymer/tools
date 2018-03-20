@@ -78,8 +78,11 @@ export class PackageScanner {
    * fetch a package manifest from npm. Failing that (no manifest exists, npm
    * cannot be reached, etc.) it will scan the package manually.
    */
-  async scanPackage(): Promise<PackageScanResult> {
-    const resultsFromManifest = await this.getResultsFromManifest();
+  async scanPackage(forceScan = false): Promise<PackageScanResult> {
+    let resultsFromManifest;
+    if (forceScan !== false) {
+      resultsFromManifest = await this.getResultsFromManifest();
+    }
     if (resultsFromManifest !== undefined) {
       this.scanPackageFromManifest(resultsFromManifest);
     } else {

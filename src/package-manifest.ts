@@ -30,8 +30,12 @@ interface DependencyMapEntry {
 interface DependencyMap {
   [bower: string]: DependencyMapEntry|undefined;
 }
-const dependencyMap: DependencyMap =
+
+/** The default dependency map from bower->npm. */
+const defualtDependencyMap: DependencyMap =
     fse.readJSONSync(path.join(__dirname, '..', 'dependency-map.json'));
+/** A custom dependency map that the user can add to. */
+const customDependencyMap: DependencyMap = {};
 const warningCache: Set<String> = new Set();
 
 /**
@@ -49,12 +53,22 @@ function getLocalDependencyValue(path: string) {
 }
 
 /**
+ * Save a custom bower->npm dependency mapping for lookup.
+ */
+export function saveDependencyMapping(
+    bowerPackageName: string, npm: string, semver: string) {
+  customDependencyMap[bowerPackageName] = {npm, semver};
+}
+
+
+/**
  * Lookup the corresponding npm package name in our local map. By default, this
  * method will log a standard warning message to the user if no mapping was
  * found.
  */
 export function lookupDependencyMapping(bowerPackageName: string) {
-  const result = dependencyMap[bowerPackageName];
+  const result = customDependencyMap[bowerPackageName] ||
+      defualtDependencyMap[bowerPackageName];
   if (!result && !warningCache.has(bowerPackageName)) {
     warningCache.add(bowerPackageName);
     console.warn(

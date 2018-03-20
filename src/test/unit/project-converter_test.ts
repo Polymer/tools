@@ -20,6 +20,7 @@ import {Analyzer, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-an
 
 import {createDefaultConversionSettings, NpmImportStyle, PartialConversionSettings} from '../../conversion-settings';
 import {getMemberPath} from '../../document-util';
+import {saveDependencyMapping} from '../../package-manifest';
 import {ProjectConverter} from '../../project-converter';
 import {PackageUrlHandler} from '../../urls/package-url-handler';
 import {PackageType} from '../../urls/types';
@@ -36,6 +37,11 @@ A few conventions in these tests:
  */
 
 suite('AnalysisConverter', () => {
+
+  suiteSetup(() => {
+    saveDependencyMapping('some-package', 'some-package', '^1.2.34567890');
+  });
+
   suite('_convertDocument', () => {
     let urlLoader: InMemoryOverlayUrlLoader;
     const urlResolver = new PackageUrlResolver();
@@ -165,7 +171,6 @@ suite('AnalysisConverter', () => {
         'bower_components/dep/dep.html': `<h1>Hi</h1>`,
       });
       const expectedWarnings = [
-        `WARN: bower->npm mapping for "some-package" not found`,
         `WARN: bower->npm mapping for "dep" not found`,
       ];
       assertSources(await convert({expectedWarnings}), {

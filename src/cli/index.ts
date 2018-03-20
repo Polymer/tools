@@ -97,6 +97,15 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     defaultValue: []
   },
   {
+    name: 'dependency-mapping',
+    type: String,
+    multiple: true,
+    description: 'A set of mapping instructions to map unknown bower ' +
+        'dependencies to npm. Must be of the format "bower,npm,semver".' +
+        'Example: "polymer,@polymer/polymer,^X.X.X". Multiple mappings allowed.',
+    defaultValue: []
+  },
+  {
     name: 'npm-name',
     type: String,
     description: 'npm package name to use for package.json'
@@ -189,6 +198,7 @@ export interface CliOptions {
   exclude: string[];
   include: string[];
   'delete-files': string[];
+  'dependency-mapping': string[];
   'npm-name'?: string;
   'npm-version'?: string;
   clean: boolean;

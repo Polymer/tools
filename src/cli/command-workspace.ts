@@ -19,10 +19,13 @@ import {Workspace} from 'polymer-workspaces';
 
 import {CliOptions} from '../cli';
 import convertWorkspace from '../convert-workspace';
+import {saveDependencyMapping} from '../package-manifest';
 import npmPublishWorkspace from '../publish-workspace';
 import githubPushWorkspace from '../push-workspace';
 import {testWorkspace, testWorkspaceInstallOnly} from '../test-workspace';
 import {logStep} from '../util';
+
+import {parseDependencyMappingInput} from './util';
 
 const githubTokenMessage = `
 You need to create a github token and place it in a file named 'github-token'.
@@ -97,6 +100,17 @@ function loadGitHubToken(): string|null {
 export default async function run(options: CliOptions) {
   const workspaceDir = path.resolve(options['workspace-dir']);
   logStep(1, 3, '🚧', `Setting Up Workspace "${workspaceDir}"...`);
+
+  for (const rawMapping of options['dependency-mapping']) {
+    try {
+      const [bowerName, npmName, npmSemver] =
+          parseDependencyMappingInput(rawMapping);
+      saveDependencyMapping(bowerName, npmName, npmSemver);
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
+  }
 
   if (!options['npm-version']) {
     throw new Error('--npm-version required');
