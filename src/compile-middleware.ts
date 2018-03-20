@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babelCore from 'babel-core';
 import * as babylon from 'babylon';
 import {browserCapabilities} from 'browser-capabilities';
 import {parse as parseContentType} from 'content-type';
@@ -22,8 +21,8 @@ import * as fs from 'fs';
 import * as LRU from 'lru-cache';
 import * as parse5 from 'parse5';
 import * as path from 'path';
+import {jsTransform} from 'polymer-build';
 
-import {resolveBareSpecifiers} from 'polymer-build';
 import {transformResponse} from './transform-middleware';
 
 const p = dom5.predicates;
@@ -35,31 +34,6 @@ const isJsScriptNode = p.AND(
         p.hasAttrValue('type', 'text/javascript'),
         p.hasAttrValue('type', 'application/javascript'),
         p.hasAttrValue('type', 'module')));
-
-const es2015Plugins = [
-  'babel-plugin-transform-es2015-arrow-functions',
-  'babel-plugin-transform-es2015-block-scoped-functions',
-  'babel-plugin-transform-es2015-block-scoping',
-  'babel-plugin-transform-es2015-classes',
-  'babel-plugin-transform-es2015-computed-properties',
-  'babel-plugin-transform-es2015-destructuring',
-  'babel-plugin-transform-es2015-duplicate-keys',
-  'babel-plugin-transform-es2015-for-of',
-  'babel-plugin-transform-es2015-function-name',
-  'babel-plugin-transform-es2015-literals',
-  'babel-plugin-transform-es2015-object-super',
-  'babel-plugin-transform-es2015-parameters',
-  'babel-plugin-transform-es2015-shorthand-properties',
-  'babel-plugin-transform-es2015-spread',
-  'babel-plugin-transform-es2015-sticky-regex',
-  'babel-plugin-transform-es2015-template-literals',
-  'babel-plugin-transform-es2015-typeof-symbol',
-  'babel-plugin-transform-es2015-unicode-regex',
-  'babel-plugin-transform-regenerator',
-].map((name) => require(name));
-
-const modulesPlugins =
-    ['babel-plugin-transform-es2015-modules-amd'].map((name) => require(name));
 
 const javaScriptMimeTypes = [
   'application/javascript',
@@ -161,10 +135,21 @@ export function babelCompile(
 
       if (contentType === htmlMimeType) {
         transformed = compileHtml(
-            body, filePath, isComponentRequest, componentUrl, options);
+            body,
+            filePath,
+            isComponentRequest,
+            componentUrl,
+            moduleResolution,
+            options);
       } else if (javaScriptMimeTypes.includes(contentType)) {
-        transformed =
-            compileScript(body, filePath, isComponentRequest, options);
+        transformed = jsTransform(body, {
+          compileToEs5: options.transformES2015,
+          transformEsModulesToAmd:
+              options.transformModules && hasImportOrExport(body),
+          moduleResolution,
+          filePath,
+          isComponentRequest,
+        });
       } else {
         transformed = body;
       }
@@ -179,6 +164,7 @@ function compileHtml(
     filePath: string,
     isComponentRequest: boolean,
     componentUrl: string,
+    moduleResolution: 'none'|'node',
     options: CompileOptions): string {
   const document = parse5.parse(source);
   let requireScriptTag, wctScriptTag;
@@ -188,6 +174,7 @@ function compileHtml(
   // Assume that if this document has a nomodule script, the author is
   // already handling browsers that don't support modules, and we don't need
   // to transform anything.
+  // TODO(aomarks) Shouldn't this only affect module transform?
   if (jsNodes.find((node) => dom5.hasAttribute(node, 'nomodule'))) {
     return source;
   }
@@ -227,17 +214,15 @@ function compileHtml(
 
     } else if (isInline) {
       let js = dom5.getTextContent(scriptTag);
-      const plugins = [resolveBareSpecifiers(filePath, isComponentRequest)];
-      if (options.transformES2015) {
-        plugins.push(...es2015Plugins);
-      }
-      if (transformingModule) {
-        plugins.push(...modulesPlugins);
-      }
-
       let compiled;
       try {
-        compiled = babelCore.transform(js, {plugins}).code;
+        compiled = jsTransform(js, {
+          compileToEs5: options.transformES2015,
+          transformEsModulesToAmd: transformingModule,
+          moduleResolution,
+          filePath,
+          isComponentRequest,
+        });
       } catch (e) {
         // Continue so that we leave the original script as-is. It might
         // work?
@@ -333,21 +318,6 @@ function compileHtml(
   }
 
   return parse5.serialize(document);
-}
-
-function compileScript(
-    source: string,
-    filePath: string,
-    isComponentRequest: boolean,
-    options: CompileOptions): string {
-  const plugins = [resolveBareSpecifiers(filePath, isComponentRequest)];
-  if (options.transformES2015) {
-    plugins.push(...es2015Plugins);
-  }
-  if (options.transformModules && hasImportOrExport(source)) {
-    plugins.push(...modulesPlugins);
-  }
-  return babelCore.transform(source, {plugins}).code;
 }
 
 function hasImportOrExport(js: string): boolean {
