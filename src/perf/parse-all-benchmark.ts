@@ -16,13 +16,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {Analyzer} from '../core/analyzer';
-import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {FsUrlLoader} from '../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 
 import now = require('performance-now');
 
 const bowerDir = path.resolve(__dirname, `../../bower_components`);
-const inMemoryOverlay = new InMemoryOverlayUrlLoader(new FSUrlLoader(bowerDir));
+const inMemoryOverlay = new InMemoryOverlayUrlLoader(new FsUrlLoader(bowerDir));
 const analyzer = new Analyzer({urlLoader: inMemoryOverlay});
 
 const filesToAnalyze: string[] = [];

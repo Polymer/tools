@@ -33,7 +33,8 @@ export {Analysis as AnalysisFormat} from './analysis-format/analysis-format';
 
 // URL Loaders and Resolvers
 export {FetchUrlLoader} from './url-loader/fetch-url-loader';
-export {FSUrlLoader} from './url-loader/fs-url-loader';
+export {FsUrlLoader} from './url-loader/fs-url-loader';
+export {FsUrlResolver} from './url-loader/fs-url-resolver';
 export {InMemoryOverlayUrlLoader} from './url-loader/overlay-loader';
 export {MultiUrlLoader} from './url-loader/multi-url-loader';
 export {MultiUrlResolver} from './url-loader/multi-url-resolver';

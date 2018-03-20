@@ -26,7 +26,7 @@ import {UrlLoader} from './url-loader';
 /**
  * Resolves requests via the file system.
  */
-export class FSUrlLoader implements UrlLoader {
+export class FsUrlLoader implements UrlLoader {
   root: string;
 
   constructor(root: string = '') {
@@ -43,7 +43,7 @@ export class FSUrlLoader implements UrlLoader {
     return new Promise((resolve, reject) => {
       const result = this.getFilePath(url);
       if (!result.successful) {
-        throw new Error(`FSUrlLoader can not load url ${
+        throw new Error(`FsUrlLoader can not load url ${
             JSON.stringify(url)} - ${result.error}`);
       }
       fs.readFile(result.value, 'utf8', (error: Error, contents: string) => {

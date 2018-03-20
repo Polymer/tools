@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 <!-- Add new, unreleased changes here. -->
+* [BREAKING] `FSUrlLoader` is now `FsUrlLoader`.
 * Reference resolution now supports javascript scoping rules, and will follow
   javascript module imports, including aliased imports, namespace imports, and
   re-exports. References to super classes, mixins, and behaviors use this

@@ -49,7 +49,7 @@ export class IndirectUrlResolver extends FsUrlResolver implements UrlResolver {
    *     files on the filesystem.
    *
    *     The keys must be relative paths, like `paper-button/paper-button.html`.
-   *     The filesystem paths must be be relative FS paths from `rootPath` to
+   *     The filesystem paths must be be relative Fs paths from `rootPath` to
    *     the file on disk that corresponds to the runtime URL.
    */
   constructor(

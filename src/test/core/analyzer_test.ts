@@ -28,7 +28,7 @@ import {HtmlParser} from '../../html/html-parser';
 import {ScriptTagImport} from '../../html/html-script-tag';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {Document, ScannedImport, ScannedInlineDocument, Severity, Warning} from '../../model/model';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {FsUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
 import {CodeUnderliner, fixtureDir, invertPromise, resolvedUrl} from '../test-utils';
@@ -70,7 +70,7 @@ suite('Analyzer', () => {
   };
 
   setup(() => {
-    const underlyingUrlLoader = new FSUrlLoader(testDir);
+    const underlyingUrlLoader = new FsUrlLoader(testDir);
     inMemoryOverlay = new InMemoryOverlayUrlLoader(underlyingUrlLoader);
     analyzer = new Analyzer({
       urlLoader: inMemoryOverlay,

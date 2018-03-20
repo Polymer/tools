@@ -19,13 +19,13 @@ import * as path from 'path';
 import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {PolymerElement} from '../../polymer/polymer-element';
-import {FSUrlLoader} from '../../url-loader/fs-url-loader';
+import {FsUrlLoader} from '../../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 import {fixtureDir} from '../test-utils';
 
 suite('PolymerElement with old jsdoc annotations', () => {
   const testFilesDir = path.resolve(fixtureDir, 'polymer2-old-jsdoc/');
-  const urlLoader = new FSUrlLoader(testFilesDir);
+  const urlLoader = new FsUrlLoader(testFilesDir);
   const analyzer = new Analyzer({
     urlLoader: urlLoader,
     urlResolver: new PackageUrlResolver({packageDir: testFilesDir}),

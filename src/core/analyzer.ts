@@ -20,7 +20,7 @@ import {Analysis, Document, Warning} from '../model/model';
 import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
 import {Scanner} from '../scanning/scanner';
-import {FSUrlLoader} from '../url-loader/fs-url-loader';
+import {FsUrlLoader} from '../url-loader/fs-url-loader';
 import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
@@ -90,13 +90,13 @@ export class Analyzer {
   /**
    * Returns an analyzer with configuration inferred for the given directory.
    *
-   * Currently this just creates a simple analyzer with a FS loader rooted
+   * Currently this just creates a simple analyzer with a Fs loader rooted
    * at the given directory, but in the future it may take configuration from
    * files including polymer.json or similar.
    */
   static createForDirectory(dirname: string): Analyzer {
     return new Analyzer({
-      urlLoader: new FSUrlLoader(dirname),
+      urlLoader: new FsUrlLoader(dirname),
       urlResolver: new PackageUrlResolver({packageDir: dirname})
     });
   }
