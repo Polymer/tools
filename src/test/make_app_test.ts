@@ -90,7 +90,7 @@ suite('makeApp', () => {
   test('serves scoped component files', async () => {
     let app = makeApp({
       root,
-      componentDir: path.join(root, 'node_modules'),
+      componentDir: path.join(root, 'npm-package/node_modules'),
       packageName: '@polymer/polyserve-test',
     });
     await supertest(app)

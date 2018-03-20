@@ -253,50 +253,71 @@ suite('compile-middleware', () => {
 
   });
 
-  suite('module transformations', () => {
+  suite('module specifier rewriting', () => {
     const userAgent = chrome61UA;
 
     setup(() => {
       app = getApp({
-        root: root,
+        root: path.join(root, 'npm-package'),
         compile: 'never',
         moduleResolution: 'node',
-        componentDir: path.join(root, 'node_modules'),
+        componentDir: path.join(root, 'npm-package/node_modules'),
+        packageName: 'an-npm-package',
       });
       babelCompileCache.reset();
     });
 
-    async function assertGolden(
-        filename: string, componentRequest: boolean, index = false) {
-      let filePath = path.join('node_modules/golden', filename);
-      if (index) {
-        filePath = path.join(filePath, 'index.html');
-      }
-      const golden = readTestFile(filePath);
+    async function assertGolden(requestPath: string, goldenPath: string) {
+      const golden = readTestFile(goldenPath);
       const response =
-          await supertest(app)
-              .get(
-                  path.join((componentRequest ? '/components/' : ''), filename))
-              .set('User-Agent', userAgent);
+          await supertest(app).get(requestPath).set('User-Agent', userAgent);
       assert.equal(response.text.trim(), golden.trim());
     }
 
-    test('rewrites bare specifiers in component requests', async () => {
-      await assertGolden('@polymer/test-component/test-module.js', true);
+    suite('root package', () => {
+
+      test(
+          'root package bare specifiers in scoped component requests',
+          async () => {
+            await assertGolden(
+                '/components/an-npm-package/npm-module.js',
+                'golden/npm-package/npm-module.js');
+          });
+
+      test('root package bare specifiers in app requests', async () => {
+        await assertGolden('/app.js', 'golden/npm-package/app.js');
+      });
+
     });
 
-    test('rewrites bare specifiers in HTML in component requests', async () => {
-      await assertGolden('@polymer/test-component/index.html', true);
+    test('bare specifiers in scoped component requests', async () => {
+      await assertGolden(
+          '/components/@polymer/test-component/test-module-1.js',
+          'golden/npm-package/node_modules/@polymer/test-component/test-module-1.js');
     });
 
-    test(
-        'rewrites bare specifiers in index.html in component requests',
-        async () => {
-          await assertGolden('@polymer/test-component/', true, true);
-        });
+    test('bare specifiers in un-scoped component requests', async () => {
+      await assertGolden(
+          '/components/test-package/test-module-1.js',
+          'golden/npm-package/node_modules/test-package/test-module-1.js');
+    });
 
-    test('rewrites bare specifiers in app requests', async () => {
-      await assertGolden('/app.js', false);
+    test('bare + path specifiers in un-scoped component requests', async () => {
+      await assertGolden(
+          '/components/test-package/test-module-2.js',
+          'golden/npm-package/node_modules/test-package/test-module-2.js');
+    });
+
+    test('bare specifiers in HTML in component requests', async () => {
+      await assertGolden(
+          '/components/@polymer/test-component/index.html',
+          'golden/npm-package/node_modules/@polymer/test-component/index.html');
+    });
+
+    test('bare specifiers in index.html in component requests', async () => {
+      await assertGolden(
+          '/components/@polymer/test-component/',
+          'golden/npm-package/node_modules/@polymer/test-component/index.html');
     });
 
   });

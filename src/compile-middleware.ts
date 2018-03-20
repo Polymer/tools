@@ -75,7 +75,7 @@ export const getCompileCacheKey =
 export function babelCompile(
     compile: 'always'|'never'|'auto',
     moduleResolution: 'none'|'node',
-    rootdir: string,
+    rootDir: string,
     packageName: string,
     componentUrl: string,
     componentDir: string): RequestHandler {
@@ -116,11 +116,22 @@ export function babelCompile(
 
       let transformed;
       const contentType = getContentType(response);
-      const isComponentRequest = request.baseUrl === `/${componentUrl}` &&
-          !request.path.startsWith(`/${packageName}`);
+      let requestPath = request.path;
+      // TODO(justinfagnani): Use path-is-inside, but test on Windows
+      const isRootPathRequest = request.path.startsWith(`/${packageName}`);
+      const isComponentRequest = request.baseUrl === `/${componentUrl}`;
 
-      let filePath =
-          path.join(isComponentRequest ? componentDir : rootdir, request.path);
+      let filePath: string;
+
+      if (isRootPathRequest) {
+        requestPath = requestPath.substring(`/${packageName}`.length);
+      }
+
+      if (isComponentRequest && !isRootPathRequest) {
+        filePath = path.join(componentDir, requestPath);
+      } else {
+        filePath = path.join(rootDir, requestPath);
+      }
 
       // The file path needs to include the filename for correct relative
       // path calculation
@@ -149,6 +160,8 @@ export function babelCompile(
           moduleResolution,
           filePath,
           isComponentRequest,
+          componentDir,
+          rootDir,
         });
       } else {
         transformed = body;
