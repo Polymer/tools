@@ -85,6 +85,10 @@ export interface JsTransformOptions {
   // The path of the file being transformed, used for module resolution.
   filePath?: string;
 
+  // The package name of the file being transformed, required when
+  // `isComponentRequest` is true.
+  packageName?: string;
+
   // For Polyserve or other servers with similar component directory mounting
   // behavior. Whether this is a request for a package in node_modules/.
   isComponentRequest?: boolean;
@@ -135,6 +139,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     plugins.push(resolveBareSpecifiers(
         options.filePath,
         !!options.isComponentRequest,
+        options.packageName,
         options.componentDir,
         options.rootDir));
   }

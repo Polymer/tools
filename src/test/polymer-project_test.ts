@@ -27,7 +27,6 @@ import {waitFor} from '../streams';
 const testProjectRoot = path.resolve('test-fixtures/test-project');
 
 suite('PolymerProject', () => {
-
   let defaultProject: PolymerProject;
 
   const unroot = ((p: string) => p.substring(testProjectRoot.length + 1));
@@ -82,7 +81,6 @@ suite('PolymerProject', () => {
   });
 
   suite('.bundler()', () => {
-
     test('returns a different bundler each time', () => {
       const bundlerA = defaultProject.bundler();
       const bundlerB = defaultProject.bundler();
@@ -108,7 +106,6 @@ suite('PolymerProject', () => {
   });
 
   suite('.dependencies()', () => {
-
     test('reads dependencies', (done) => {
       const files: File[] = [];
       const dependencyStream = defaultProject.dependencies();
@@ -175,7 +172,5 @@ suite('PolymerProject', () => {
             done();
           });
         });
-
   });
-
 });

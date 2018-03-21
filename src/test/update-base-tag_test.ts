@@ -24,7 +24,6 @@ import {PolymerProject} from '../polymer-project';
 const testProjectRoot = path.resolve('test-fixtures/differential-serving');
 
 suite('updateBaseTag', () => {
-
   let defaultProject: PolymerProject;
 
   const unroot = ((p: string) => p.substring(testProjectRoot.length + 1));

@@ -24,7 +24,6 @@ const MacRootPath = '/Users/TEST_USER/TEST_ROOT';
 const RootPath = pathSeparator === '\\' ? WindowsRootPath : MacRootPath;
 
 suite('pathFromUrl()', () => {
-
   test('creates a filesystem path using the platform separators', () => {
     const otherSeparator = pathSeparator === '/' ? '\\' : '/';
     const path = pathFromUrl(RootPath, '/some/url/pathname');
@@ -54,7 +53,6 @@ suite('pathFromUrl()', () => {
 });
 
 suite('urlFromPath()', () => {
-
   test('throws error when path is not in root', () => {
     assert.throws(() => {
       urlFromPath('/this/is/a/path', '/some/other/path/shop-app.html');

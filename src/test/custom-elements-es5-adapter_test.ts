@@ -25,7 +25,6 @@ const testProjectRoot =
     path.resolve('test-fixtures/custom-elements-es5-adapter');
 
 suite('Custom Elements ES5 Adapter', () => {
-
   let defaultProject: PolymerProject;
 
   const unroot = ((p: string) => p.substring(testProjectRoot.length + 1));
