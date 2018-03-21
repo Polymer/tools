@@ -183,8 +183,8 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
     logger.debug(`writing service worker...`, swPrecacheConfig);
     swPrecacheGenerate(
         swPrecacheConfig, (err?: Error, fileContents?: string) => {
-          if (err) {
-            reject(err);
+          if (err || fileContents == null) {
+            reject(err || 'No file contents provided.');
           } else {
             resolve(new Buffer(fileContents));
           }

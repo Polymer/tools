@@ -80,7 +80,7 @@ export class HtmlSplitter {
     this._parts.set(childPath, splitFile);
   }
 
-  getParentFile(childPath: string): SplitFile {
+  getParentFile(childPath: string): SplitFile|undefined {
     return this._parts.get(childPath);
   }
 }
@@ -90,9 +90,9 @@ export class HtmlSplitter {
  */
 export class SplitFile {
   path: string;
-  parts: Map<string, string> = new Map();
+  parts: Map<string, string|null> = new Map();
   outstandingPartCount = 0;
-  vinylFile: File = null;
+  vinylFile: File|null = null;
 
   constructor(path: string) {
     this.path = path;
@@ -221,7 +221,7 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
         const parentFile = this._state.getParentFile(filePath);
         if (parentFile) {
           // this is a child file
-          parentFile.setPartContent(filePath, file.contents.toString());
+          parentFile.setPartContent(filePath, file.contents!.toString());
           if (parentFile.isComplete) {
             yield await this._rejoin(parentFile);
           }
@@ -234,6 +234,10 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
 
   async _rejoin(splitFile: SplitFile) {
     const file = splitFile.vinylFile;
+    if (file == null) {
+      throw new Error(`Internal error: no vinylFIle found for splitfile: ${
+          splitFile.path}`);
+    }
     const filePath = osPath.normalize(file.path);
     const contents = await getFileContents(file);
     const doc = parse5.parse(contents, {locationInfo: true});
@@ -242,11 +246,11 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
 
     for (let i = 0; i < scriptTags.length; i++) {
       const scriptTag = scriptTags[i];
-      const srcAttribute = dom5.getAttribute(scriptTag, 'src');
+      const srcAttribute = dom5.getAttribute(scriptTag, 'src')!;
       const scriptPath =
           osPath.join(osPath.dirname(splitFile.path), srcAttribute);
-      if (splitFile.parts.has(scriptPath)) {
-        const scriptSource = splitFile.parts.get(scriptPath);
+      const scriptSource = splitFile.parts.get(scriptPath);
+      if (scriptSource != null) {
         dom5.setTextContent(scriptTag, scriptSource);
         dom5.removeAttribute(scriptTag, 'src');
       }

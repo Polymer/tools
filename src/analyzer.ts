@@ -106,10 +106,10 @@ export class BuildAnalyzer {
   started: boolean = false;
   sourceFilesLoaded: boolean = false;
 
-  private _sourcesStream: NodeJS.ReadableStream;
-  private _sourcesProcessingStream: NodeJS.ReadWriteStream;
-  private _dependenciesStream: Transform;
-  private _dependenciesProcessingStream: NodeJS.ReadWriteStream;
+  private _sourcesStream!: NodeJS.ReadableStream;
+  private _sourcesProcessingStream!: NodeJS.ReadWriteStream;
+  private _dependenciesStream!: Transform;
+  private _dependenciesProcessingStream!: NodeJS.ReadWriteStream;
   private _warningsFilter: WarningFilter;
 
   files = new Map<string, File>();
@@ -123,7 +123,7 @@ export class BuildAnalyzer {
     fragmentToDeps: new Map(),
     fragmentToFullDeps: new Map()
   };
-  _resolveDependencyAnalysis: (index: DepsIndex) => void;
+  _resolveDependencyAnalysis!: (index: DepsIndex) => void;
 
   constructor(config: ProjectConfig) {
     this.config = config;
@@ -409,8 +409,7 @@ export class BuildAnalyzer {
     this._dependencyAnalysis.fragmentToFullDeps.set(filePath, deps);
     this._dependencyAnalysis.fragmentToDeps.set(filePath, deps.imports);
     deps.imports.forEach((url) => {
-      const entrypointList: string[] =
-          this._dependencyAnalysis.depsToFragments.get(url);
+      const entrypointList = this._dependencyAnalysis.depsToFragments.get(url);
       if (entrypointList) {
         entrypointList.push(filePath);
       } else {
@@ -484,12 +483,20 @@ export class StreamLoader implements UrlLoader {
 
   resolveDeferredFile(filePath: string, file: File): void {
     const deferredCallbacks = this.deferredFiles.get(filePath);
-    deferredCallbacks.resolve(file.contents.toString());
+    if (deferredCallbacks == null) {
+      throw new Error(
+          `Internal error: could not get deferredCallbacks for ${filePath}`);
+    }
+    deferredCallbacks.resolve(file.contents!.toString());
     this.deferredFiles.delete(filePath);
   }
 
   rejectDeferredFile(filePath: string, err: Error): void {
     const deferredCallbacks = this.deferredFiles.get(filePath);
+    if (deferredCallbacks == null) {
+      throw new Error(
+          `Internal error: could not get deferredCallbacks for ${filePath}`);
+    }
     deferredCallbacks.reject(err);
     this.deferredFiles.delete(filePath);
   }
@@ -507,12 +514,12 @@ export class StreamLoader implements UrlLoader {
       throw new Error('Unable to load ${url}.');
     }
 
-    const urlPath = urlObject.pathname;
+    const urlPath = urlObject.pathname || '/';
     const filePath = pathFromUrl(this.config.root, urlPath);
     const file = this._buildAnalyzer.getFile(filePath);
 
     if (file) {
-      return file.contents.toString();
+      return file.contents!.toString();
     }
 
     return new Promise(

@@ -26,7 +26,6 @@ import {HtmlSplitter} from '../html-splitter';
 const testProjectRoot = path.resolve('test-fixtures/splitter-project');
 
 suite('HtmlSplitter', () => {
-
   let defaultProject: PolymerProject;
 
   const unroot = ((p: string) => p.substring(testProjectRoot.length + 1));
@@ -123,7 +122,7 @@ suite('HtmlSplitter', () => {
         .pipe(htmlSplitter.rejoin())
         .on('data',
             (file: File) => {
-              const contents = file.contents.toString();
+              const contents = file.contents!.toString();
               assert.equal(contents, source);
             })
         .on('end', done)

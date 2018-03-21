@@ -35,14 +35,15 @@ export class FileMapUrlLoader implements UrlLoader {
 
   // Return true if we can return load the given url.
   canLoad(url: ResolvedUrl): boolean {
-    return this.files.has(url) ||
-        this.fallbackLoader && this.fallbackLoader.canLoad(url);
+    return !!(
+        this.files.has(url) ||
+        this.fallbackLoader && this.fallbackLoader.canLoad(url));
   }
 
   // Try to load the file from the map.  If not in the map, try to load
   // from the fallback loader.
   async load(url: ResolvedUrl): Promise<string> {
-    const file = this.files.get(parseUrl(url).pathname)!;
+    const file = this.files.get(parseUrl(url).pathname || '/')!;
 
     if (file == null) {
       if (this.fallbackLoader) {

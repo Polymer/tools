@@ -8,9 +8,9 @@
     "lint": "gulp lint",
     "build": "gulp build",
     "test": "gulp lint test",
+    "test:watch": "tsc-then -- mocha -c",
     "prepublishOnly": "npm test",
-    "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i",
-    "test:watch": "watchy -w src/ -- npm test --loglevel=silent"
+    "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
   },
   "repository": {
     "type": "git",
@@ -95,10 +95,10 @@
     "sinon": "^1.17.6",
     "strip-indent": "^2.0.0",
     "temp": "^0.8.3",
+    "tsc-then": "^1.1.0",
     "tslint": "^5.2.0",
     "typescript": "^2.3.2",
     "uglify-js": "^2.8.26",
-    "vinyl-fs-fake": "^1.1.0",
-    "watchy": "^0.6.7"
+    "vinyl-fs-fake": "^1.1.0"
   }
 }

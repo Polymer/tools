@@ -79,6 +79,6 @@ export function addCustomElementsEs5Adapter(html: string): string {
     <!--! do not remove -->
 `);
 
-  dom5.insertBefore(script.parentNode, script, es5AdapterFragment);
+  dom5.insertBefore(script.parentNode!, script, es5AdapterFragment);
   return parse5.serialize(parsed);
 }

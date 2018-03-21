@@ -35,14 +35,12 @@ class NoopStream extends Writable {
     super({objectMode: true});
   }
   _write(_chunk: any, _encoding?: string, callback?: Function): void {
-    callback();
+    callback!();
   }
 }
 
 suite('Analyzer', () => {
-
   suite('DepsIndex', () => {
-
     test('fragment to deps list has only uniques', () => {
       const config = new ProjectConfig({
         root: `test-fixtures/analyzer-data`,
@@ -96,11 +94,9 @@ suite('Analyzer', () => {
             assert.isFalse(depsIndex.depsToFragments.has('/shared-2.html'));
           });
     });
-
   });
 
   suite('ProjectConfig componentDir', () => {
-
     test(
         'setting `componentDir` searches for dependencies in the given ' +
             'directory',
@@ -158,11 +154,9 @@ suite('Analyzer', () => {
                     root, 'node_modules/a_component/a_component.js')));
               });
         });
-
   });
 
   suite('.dependencies', () => {
-
     test('outputs all dependencies needed by source', () => {
       const foundDependencies = new Set();
       const root = `test-fixtures/analyzer-data`;
@@ -228,7 +222,6 @@ suite('Analyzer', () => {
                     foundDependencies.has(path.resolve(root, 'shared-2.html')));
               });
         });
-
   });
 
   test(
@@ -353,7 +346,6 @@ suite('Analyzer', () => {
     return waitFor(analyzer.sources()).then(() => {
       assert.isTrue(analyzer.warnings.size === 0);
     });
-
   });
 
   test('calling sources() starts analysis', async () => {

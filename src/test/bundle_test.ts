@@ -46,7 +46,6 @@ class FileTransform extends AsyncTransformStream<File, {}> {
 }
 
 suite('BuildBundler', () => {
-
   let root: string;
   let bundler: BuildBundler;
   let bundledStream: Stream;
@@ -56,8 +55,9 @@ suite('BuildBundler', () => {
       projectOptions: ProjectOptions,
       bundlerOptions?: BuildBundlerOptions,
       transform?: FileTransform) => new Promise((resolve, reject) => {
-
-    assert.isDefined(projectOptions.root);
+    if (projectOptions.root === undefined) {
+      throw new Error('projectOptions.root is undefined');
+    }
     root = projectOptions.root;
     const config = new ProjectConfig(projectOptions);
     const analyzer = new BuildAnalyzer(config);
@@ -81,16 +81,18 @@ suite('BuildBundler', () => {
     });
   });
 
-  teardown(() => {
-    bundler = null;
-    bundledStream = null;
-    files = null;
-  });
-
   const getFile = (filename: string) => {
     // we're getting FS paths, so add root
     const file = files.get(path.resolve(root, filename));
     return file && file.contents && file.contents.toString();
+  };
+
+  const getFileOrDie = (filename: string) => {
+    const file = getFile(filename);
+    if (file == null) {
+      throw new Error(`Unable to get file with filename ${filename}`);
+    }
+    return file;
   };
 
   const hasMarker = (doc: ASTNode, id: string) => {
@@ -128,7 +130,7 @@ suite('BuildBundler', () => {
       root: defaultRoot,
       entrypoint: 'entrypoint-only.html',
     });
-    const doc = parse5(getFile('entrypoint-only.html'));
+    const doc = parse5(getFileOrDie('entrypoint-only.html'));
     assert.isTrue(hasMarker(doc, 'framework'), 'has framework');
     assert.isFalse(hasImport(doc, 'framework.html'));
     assert.isNotOk(getFile('shared_bundle_1.html'));
@@ -142,17 +144,17 @@ suite('BuildBundler', () => {
     });
 
     // shell doesn't import framework
-    const shellDoc = parse5(getFile('shell.html'));
+    const shellDoc = parse5(getFileOrDie('shell.html'));
     assert.isFalse(hasMarker(shellDoc, 'framework'));
     assert.isFalse(hasImport(shellDoc, 'framework.html'));
 
     // entrypoint doesn't import framework
-    const entrypointDoc = parse5(getFile('entrypoint-a.html'));
+    const entrypointDoc = parse5(getFileOrDie('entrypoint-a.html'));
     assert.isFalse(hasMarker(entrypointDoc, 'framework'));
     assert.isFalse(hasImport(entrypointDoc, 'framework.html'));
 
     // No shared-bundle bundles framework
-    const sharedDoc = parse5(getFile('shared_bundle_1.html'));
+    const sharedDoc = parse5(getFileOrDie('shared_bundle_1.html'));
     assert.isTrue(hasMarker(sharedDoc, 'framework'));
     assert.isFalse(hasImport(sharedDoc, 'framework.html'));
 
@@ -174,11 +176,11 @@ suite('BuildBundler', () => {
     });
 
     // shell bundles framework
-    const shellDoc = parse5(getFile('shell.html'));
+    const shellDoc = parse5(getFileOrDie('shell.html'));
     assert.isTrue(hasMarker(shellDoc, 'framework'));
 
     // entrypoint doesn't import framework
-    const entrypointDoc = parse5(getFile('entrypoint-a.html'));
+    const entrypointDoc = parse5(getFileOrDie('entrypoint-a.html'));
     assert.isFalse(hasMarker(entrypointDoc, 'framework'));
     assert.isFalse(hasImport(entrypointDoc, 'framework.html'));
 
@@ -198,7 +200,7 @@ suite('BuildBundler', () => {
     });
 
     // shell bundles framework
-    const shellDoc = parse5(getFile('shell.html'));
+    const shellDoc = parse5(getFileOrDie('shell.html'));
     assert.isTrue(hasMarker(shellDoc, 'framework'));
     assert.isFalse(hasImport(shellDoc, 'framework.html'));
 
@@ -207,12 +209,12 @@ suite('BuildBundler', () => {
     assert.isFalse(hasImport(shellDoc, 'common-dependency.html'));
 
     // entrypoint B doesn't import commonDep
-    const entrypointBDoc = parse5(getFile('entrypoint-b.html'));
+    const entrypointBDoc = parse5(getFileOrDie('entrypoint-b.html'));
     assert.isFalse(hasMarker(entrypointBDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointBDoc, 'common-dependency.html'));
 
     // entrypoint C doesn't import commonDep
-    const entrypointCDoc = parse5(getFile('entrypoint-c.html'));
+    const entrypointCDoc = parse5(getFileOrDie('entrypoint-c.html'));
     assert.isFalse(hasMarker(entrypointCDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointCDoc, 'common-dependency.html'));
 
@@ -237,7 +239,7 @@ suite('BuildBundler', () => {
     });
 
     // shared bundle was emitted
-    const bundle = getFile('shared_bundle_1.html');
+    const bundle = getFileOrDie('shared_bundle_1.html');
     assert.ok(bundle);
     const bundleDoc = parse5(bundle);
 
@@ -250,22 +252,22 @@ suite('BuildBundler', () => {
     assert.isFalse(hasImport(bundleDoc, 'common-dependency.html'));
 
     // entrypoint doesn't import framework
-    const entrypointDoc = parse5(getFile('entrypoint-a.html'));
+    const entrypointDoc = parse5(getFileOrDie('entrypoint-a.html'));
     assert.isFalse(hasMarker(entrypointDoc, 'framework'));
     assert.isFalse(hasImport(entrypointDoc, 'framework.html'));
 
     // shell doesn't import framework
-    const shellDoc = parse5(getFile('entrypoint-a.html'));
+    const shellDoc = parse5(getFileOrDie('entrypoint-a.html'));
     assert.isFalse(hasMarker(shellDoc, 'framework'));
     assert.isFalse(hasImport(shellDoc, 'framework.html'));
 
     // entrypoint B doesn't import commonDep
-    const entrypointBDoc = parse5(getFile('entrypoint-b.html'));
+    const entrypointBDoc = parse5(getFileOrDie('entrypoint-b.html'));
     assert.isFalse(hasMarker(entrypointBDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointBDoc, 'common-dependency.html'));
 
     // entrypoint C doesn't import commonDep
-    const entrypointCDoc = parse5(getFile('entrypoint-c.html'));
+    const entrypointCDoc = parse5(getFileOrDie('entrypoint-c.html'));
     assert.isFalse(hasMarker(entrypointCDoc, 'commonDep'));
     assert.isFalse(hasImport(entrypointCDoc, 'common-dependency.html'));
 
@@ -285,7 +287,7 @@ suite('BuildBundler', () => {
         {},
         addHeaders);
 
-    const bundledHtml = getFile('index.html');
+    const bundledHtml = getFileOrDie('index.html');
 
     // In setupTest, we use a transform stream that to prepends
     // each file with a comment including its basename before it makes it
@@ -312,7 +314,7 @@ suite('BuildBundler', () => {
         {},
         platformSepPaths);
 
-    const bundledHtml = getFile('index.html');
+    const bundledHtml = getFileOrDie('index.html');
 
     // In setupTest, we use a transform stream that forces the file paths to
     // be in the original platform form (this only changes/matters for win32)
@@ -341,7 +343,7 @@ suite('BuildBundler', () => {
         {},
         posixSepPaths);
 
-    const bundledHtml = getFile('index.html');
+    const bundledHtml = getFileOrDie('index.html');
 
     // In setupTest, we use a transform stream that forces the file paths to
     // be in the posix form (this only changes/matters for win32)
@@ -401,7 +403,6 @@ suite('BuildBundler', () => {
   });
 
   suite('options', () => {
-
     const projectOptions = {
       root: 'test-fixtures/test-project',
       entrypoint: 'index.html',
@@ -416,14 +417,14 @@ suite('BuildBundler', () => {
           getFile('bower_components/loads-external-dependencies.html'),
           'Excluded import is passed through the bundler');
       assert.include(
-          getFile('shell.html'),
+          getFileOrDie('shell.html'),
           '<link rel="import" href="bower_components/loads-external-dependencies.html">');
     });
 
     test('excludes: html files in folders listed are not inlined', async () => {
       await setupTest(projectOptions, {excludes: ['bower_components/']});
       assert.include(
-          getFile('shell.html'),
+          getFileOrDie('shell.html'),
           '<link rel="import" href="bower_components/dep.html">');
     });
 
@@ -433,56 +434,56 @@ suite('BuildBundler', () => {
           getFile('bower_components/loads-external-dependencies.html'),
           'Inlined imports are not passed through the bundler');
       assert.notInclude(
-          getFile('shell.html'),
+          getFileOrDie('shell.html'),
           '<link rel="import" href="bower_components/loads-external-dependencies.html">');
       assert.include(
-          getFile('shell.html'),
+          getFileOrDie('shell.html'),
           '<script src="https://www.example.com/script.js">',
           'Inlined import content');
     });
 
     test('inlineCss: false, does not inline external stylesheets', async () => {
       await setupTest(projectOptions, {inlineCss: false});
-      assert.notInclude(getFile('shell.html'), '.test-project-style');
+      assert.notInclude(getFileOrDie('shell.html'), '.test-project-style');
     });
 
     test('inlineCss: true, inlines external stylesheets', async () => {
       await setupTest(projectOptions, {inlineCss: true});
-      assert.include(getFile('shell.html'), '.test-project-style');
+      assert.include(getFileOrDie('shell.html'), '.test-project-style');
     });
 
     test('inlineScripts: false, does not inline external scripts', async () => {
       await setupTest(projectOptions, {inlineScripts: false});
-      assert.notInclude(getFile('shell.html'), 'console.log(\'shell\')');
+      assert.notInclude(getFileOrDie('shell.html'), 'console.log(\'shell\')');
     });
 
     test('inlineScripts: true, inlines external scripts', async () => {
       await setupTest(projectOptions, {inlineScripts: true});
-      assert.include(getFile('shell.html'), 'console.log(\'shell\')');
+      assert.include(getFileOrDie('shell.html'), 'console.log(\'shell\')');
     });
 
     test('rewriteUrlsInTemplates: false, does not rewrite urls', async () => {
       await setupTest(projectOptions, {rewriteUrlsInTemplates: false});
-      assert.include(getFile('shell.html'), 'url(\'dep-bg.png\')');
+      assert.include(getFileOrDie('shell.html'), 'url(\'dep-bg.png\')');
     });
 
     test('rewriteUrlsInTemplates: true, rewrites relative urls', async () => {
       await setupTest(projectOptions, {rewriteUrlsInTemplates: true});
       assert.include(
-          getFile('shell.html'), 'url("bower_components/dep-bg.png")');
+          getFileOrDie('shell.html'), 'url("bower_components/dep-bg.png")');
     });
 
     test('stripComments: false, does not strip html comments', async () => {
       await setupTest(projectOptions, {stripComments: false});
       assert.include(
-          getFile('shell.html'),
+          getFileOrDie('shell.html'),
           '<!-- remote dependencies should be ignored during build -->');
     });
 
     test('stripComments: true, strips html comments', async () => {
       await setupTest(projectOptions, {stripComments: true});
       assert.notInclude(
-          getFile('shell.html'),
+          getFileOrDie('shell.html'),
           '<!-- remote dependencies should be ignored during build -->');
     });
 
@@ -505,7 +506,7 @@ suite('BuildBundler', () => {
       });
       assert.isOk(getFile('shared_bundle_1.html'));
       assert.include(
-          getFile('shared_bundle_1.html'),
+          getFileOrDie('shared_bundle_1.html'),
           '<dom-module id="dep" assetpath="bower_components/"');
     });
 

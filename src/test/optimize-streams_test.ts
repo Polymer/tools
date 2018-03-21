@@ -34,7 +34,7 @@ suite('optimize-streams', () => {
     return new Promise<Map<string, string>>((resolve, reject) => {
       stream.on(
           'data',
-          (file: Vinyl) => fileMap.set(file.path, file.contents.toString()));
+          (file: Vinyl) => fileMap.set(file.path, file.contents!.toString()));
       stream.on('end', () => resolve(fileMap));
       stream.on('error', reject);
     });

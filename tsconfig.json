@@ -16,7 +16,7 @@
     "preserveConstEnums": true,
     "suppressImplicitAnyIndexErrors": false,
     "strict": true,
-    "strictNullChecks": false,
+    "pretty": true,
     "outDir": "lib",
     "rootDir": "src"
   },

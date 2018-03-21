@@ -41,7 +41,11 @@ export class PolymerProject {
     if (config.constructor.name === 'ProjectConfig') {
       this.config = <ProjectConfig>config;
     } else if (typeof config === 'string') {
-      this.config = ProjectConfig.loadConfigFromFile(config);
+      const maybeConfig = ProjectConfig.loadConfigFromFile(config);
+      if (maybeConfig == null) {
+        throw new Error(`Unable to load config from file: ${config}`);
+      }
+      this.config = maybeConfig;
     } else {
       this.config = new ProjectConfig(config);
     }

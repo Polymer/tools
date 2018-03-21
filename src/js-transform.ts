@@ -134,7 +134,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     doBabel = true;
     plugins.push(resolveBareSpecifiers(
         options.filePath,
-        options.isComponentRequest,
+        !!options.isComponentRequest,
         options.componentDir,
         options.rootDir));
   }

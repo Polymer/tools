@@ -17,22 +17,21 @@
 // TODO Migrate to async tests.
 
 import {assert} from 'chai';
-import * as fs from 'fs';
+import * as fs from 'mz/fs';
 import * as path from 'path';
 import * as vfs from 'vinyl-fs';
-const temp = require('temp').track();
-const mergeStream = require('merge-stream');
 
 import {PolymerProject} from '../polymer-project';
 import * as serviceWorker from '../service-worker';
 
-suite('service-worker', () => {
+const temp = require('temp').track();
+const mergeStream = require('merge-stream');
 
+suite('service-worker', () => {
   let testBuildRoot: string;
   let defaultProject: PolymerProject;
 
   setup((done) => {
-
     defaultProject = new PolymerProject({
       root: path.resolve('test-fixtures/test-project'),
       entrypoint: 'index.html',
@@ -43,8 +42,8 @@ suite('service-worker', () => {
     });
 
     temp.mkdir('polymer-build-test', (err: Error, dir?: string) => {
-      if (err) {
-        return done(err);
+      if (err || dir === undefined) {
+        return done(err || 'no dir given');
       }
       testBuildRoot = dir;
       vfs.src(path.join('test-fixtures/test-project/**'))
@@ -55,7 +54,6 @@ suite('service-worker', () => {
                 .on('end', () => done())
                 .on('error', done);
           });
-
     });
   });
 
@@ -92,7 +90,6 @@ suite('service-worker', () => {
   });
 
   suite('generateServiceWorker()', () => {
-
     test('should throw when options are not provided', () => {
       return (<any>serviceWorker.generateServiceWorker)().then(
           () => {
@@ -240,12 +237,9 @@ suite('service-worker', () => {
             assert.notInclude(fileContents, '"/my/base/path//index.html"');
           });
     });
-
-
   });
 
   suite('addServiceWorker()', () => {
-
     test('should write generated service worker to file system', () => {
       return serviceWorker
           .addServiceWorker({
@@ -260,7 +254,5 @@ suite('service-worker', () => {
                 '// This generated service worker JavaScript will precache your site\'s resources.');
           });
     });
-
   });
-
 });

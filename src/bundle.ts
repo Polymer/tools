@@ -64,10 +64,10 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
     const forkedAnalyzer = analyzer ? analyzer._fork({urlLoader}) :
                                       buildAnalyzer.analyzer._fork({urlLoader});
 
-    strategy = strategy ||
-        this.config.shell &&
-            generateShellMergeStrategy(
-                urlFromPath(this.config.root, this.config.shell));
+    if (strategy === undefined && this.config.shell !== undefined) {
+      strategy = generateShellMergeStrategy(
+          urlFromPath(this.config.root, this.config.shell));
+    }
 
     this._bundler = new Bundler({
       analyzer: forkedAnalyzer,
@@ -124,8 +124,12 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
     const filesChanged = [];
     for (const [url, originalFile] of this._buildAnalyzer.files) {
       const downstreamFile = this.files.get(url);
-      if (downstreamFile.contents.toString() !==
-          originalFile.contents.toString()) {
+      if (downstreamFile == null) {
+        throw new Error(
+            `Internal error: could not find downstreamFile at ${url}`);
+      }
+      if (downstreamFile.contents!.toString() !==
+          originalFile.contents!.toString()) {
         filesChanged.push(url);
       }
     }
