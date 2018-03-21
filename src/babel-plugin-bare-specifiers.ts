@@ -77,7 +77,7 @@ export const resolveBareSpecifiers = (
       // If we have an import that crosses the top-level / componentDir
       // boundary, fix up the path to generate polyserve-style ../ cross-package
       // imports.
-      if (isComponentRequest !== undefined &&
+      if (isComponentRequest === true &&
           componentDir !== undefined && rootDir !== undefined &&
           pathIsInside(resolvedSpecifier, componentDir) &&
           !pathIsInside(filePath, componentDir)) {
