@@ -151,6 +151,7 @@ export function babelCompile(
         transformed = compileHtml(
             body,
             filePath,
+            isComponentRequest,
             packageName,
             componentUrl,
             moduleResolution,
@@ -164,6 +165,7 @@ export function babelCompile(
               options.transformModules && hasImportOrExport(body),
           moduleResolution,
           filePath,
+          isComponentRequest,
           packageName,
           componentDir,
           rootDir,
@@ -180,6 +182,7 @@ export function babelCompile(
 function compileHtml(
     source: string,
     filePath: string,
+    isComponentRequest: boolean,
     packageName: string,
     componentUrl: string,
     moduleResolution: 'none'|'node',
@@ -241,6 +244,7 @@ function compileHtml(
           transformEsModulesToAmd: transformingModule,
           moduleResolution,
           filePath,
+          isComponentRequest,
           packageName,
           componentDir,
           rootDir,
