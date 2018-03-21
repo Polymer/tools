@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Fix import specifier rewriting when given a relative componentDir.
 
 ## [0.25.1](https://github.com/PolymerLabs/polyserve/tree/0.25.1) (2018-03-21)
 

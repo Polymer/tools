@@ -123,6 +123,11 @@ export function babelCompile(
       // TODO(justinfagnani): Use path-is-inside, but test on Windows
       const isRootPathRequest = request.path.startsWith(`/${packageName}`);
       const isComponentRequest = request.baseUrl === `/${componentUrl}`;
+      let componentRequestRelationship: undefined|'../../'|'../';
+      if (isComponentRequest) {
+        const isScopedComponent = packageName.startsWith('@');
+        componentRequestRelationship = isScopedComponent ? '../../' : '../';
+      }
 
       let filePath: string;
 
@@ -151,7 +156,7 @@ export function babelCompile(
         transformed = compileHtml(
             body,
             filePath,
-            isComponentRequest,
+            componentRequestRelationship,
             componentUrl,
             moduleResolution,
             componentDir,
@@ -164,7 +169,7 @@ export function babelCompile(
               options.transformModules && hasImportOrExport(body),
           moduleResolution,
           filePath,
-          isComponentRequest,
+          componentRequestRelationship,
           componentDir,
           rootDir,
         });
@@ -180,7 +185,7 @@ export function babelCompile(
 function compileHtml(
     source: string,
     filePath: string,
-    isComponentRequest: boolean,
+    componentRequestRelationship: string,
     componentUrl: string,
     moduleResolution: 'none'|'node',
     componentDir: string,
@@ -241,7 +246,7 @@ function compileHtml(
           transformEsModulesToAmd: transformingModule,
           moduleResolution,
           filePath,
-          isComponentRequest,
+          componentRequestRelationship,
           componentDir,
           rootDir,
         });

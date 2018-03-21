@@ -156,8 +156,8 @@ suite('startServer', () => {
     const testCompilation = (options: {
       url: string,
       agent?: string,
-           compile: 'always'|'never'|'auto',
-           result: 'compiled'|'uncompiled'
+      compile: 'always' | 'never' | 'auto',
+      result: 'compiled' | 'uncompiled'
     }) => async () => {
       const url = options.url;
       const agent = options.agent;
