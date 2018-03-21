@@ -261,7 +261,7 @@ suite('compile-middleware', () => {
         root: path.join(root, 'npm-package'),
         compile: 'never',
         moduleResolution: 'node',
-        componentDir: path.join(root, 'npm-package/node_modules'),
+        componentDir: 'node_modules',
         packageName: 'an-npm-package',
       });
       babelCompileCache.reset();
@@ -276,16 +276,24 @@ suite('compile-middleware', () => {
 
     suite('root package', () => {
 
-      test(
-          'root package bare specifiers in scoped component requests',
-          async () => {
-            await assertGolden(
-                '/components/an-npm-package/npm-module.js',
-                'golden/npm-package/npm-module.js');
-          });
+      test('bare specifiers in scoped component requests', async () => {
+        await assertGolden(
+            '/components/an-npm-package/npm-module.js',
+            'golden/npm-package/npm-module.js');
+      });
 
-      test('root package bare specifiers in app requests', async () => {
+      test('bare specifiers in scoped component HTML requests', async () => {
+        await assertGolden(
+            '/components/an-npm-package/component.html',
+            'golden/npm-package/component.html');
+      });
+
+      test('bare specifiers in app requests', async () => {
         await assertGolden('/app.js', 'golden/npm-package/app.js');
+      });
+
+      test('bare specifiers in app HTML requests', async () => {
+        await assertGolden('/index.html', 'golden/npm-package/index.html');
       });
 
     });

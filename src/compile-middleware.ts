@@ -114,6 +114,9 @@ export function babelCompile(
         return cached;
       }
 
+      // Make sure that componentDir is absolute, like jsTransform expects
+      componentDir = path.resolve(rootDir, componentDir);
+
       let transformed;
       const contentType = getContentType(response);
       let requestPath = request.path;
@@ -151,6 +154,8 @@ export function babelCompile(
             isComponentRequest,
             componentUrl,
             moduleResolution,
+            componentDir,
+            rootDir,
             options);
       } else if (javaScriptMimeTypes.includes(contentType)) {
         transformed = jsTransform(body, {
@@ -178,6 +183,8 @@ function compileHtml(
     isComponentRequest: boolean,
     componentUrl: string,
     moduleResolution: 'none'|'node',
+    componentDir: string,
+    rootDir: string,
     options: CompileOptions): string {
   const document = parse5.parse(source);
   let requireScriptTag, wctScriptTag;
@@ -235,6 +242,8 @@ function compileHtml(
           moduleResolution,
           filePath,
           isComponentRequest,
+          componentDir,
+          rootDir,
         });
       } catch (e) {
         // Continue so that we leave the original script as-is. It might

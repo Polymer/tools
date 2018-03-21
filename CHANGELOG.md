@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+* Fix import specifier rewriting when given a relative componentDir.
+
 ## [0.25.0](https://github.com/PolymerLabs/polyserve/tree/0.25.0) (2018-03-20)
 
 * Module bare specifier rewriting Babel plugin now works on Windows, does not rewrite fully qualified URLs, and will follow the "module" or "jsnext:main" fields when a package.json uses them instead of "main".
