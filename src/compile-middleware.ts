@@ -152,6 +152,7 @@ export function babelCompile(
             body,
             filePath,
             isComponentRequest,
+            packageName,
             componentUrl,
             moduleResolution,
             componentDir,
@@ -165,6 +166,7 @@ export function babelCompile(
           moduleResolution,
           filePath,
           isComponentRequest,
+          packageName,
           componentDir,
           rootDir,
         });
@@ -181,6 +183,7 @@ function compileHtml(
     source: string,
     filePath: string,
     isComponentRequest: boolean,
+    packageName: string,
     componentUrl: string,
     moduleResolution: 'none'|'node',
     componentDir: string,
@@ -242,6 +245,7 @@ function compileHtml(
           moduleResolution,
           filePath,
           isComponentRequest,
+          packageName,
           componentDir,
           rootDir,
         });
