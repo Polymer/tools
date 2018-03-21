@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [0.25.1](https://github.com/PolymerLabs/polyserve/tree/0.25.1) (2018-03-21)
+
 * Fix import specifier rewriting when given a relative componentDir.
 
 ## [0.25.0](https://github.com/PolymerLabs/polyserve/tree/0.25.0) (2018-03-20)
