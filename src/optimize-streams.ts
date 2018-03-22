@@ -23,6 +23,7 @@ import * as vinyl from 'vinyl';
 import matcher = require('matcher');
 
 import {jsTransform} from './js-transform';
+import {LocalFsPath} from './path-transformers';
 
 // TODO(fks) 09-22-2016: Latest npm type declaration resolves to a non-module
 // entity. Upgrade to proper JS import once compatible .d.ts file is released,
@@ -112,7 +113,7 @@ export class JsTransform extends GenericOptimizeTransform {
       compileToEs5: shouldCompileFile(file),
       minify: shouldMinifyFile(file),
       moduleResolution: options.moduleResolution,
-      filePath: file.path,
+      filePath: file.path as LocalFsPath,
       transformEsModulesToAmd: options.transformEsModulesToAmd,
     });
 

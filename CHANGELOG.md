@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Renamed `jsTransform` option from `compile` to `compileToEs5` to clarify its behavior.
 * Added `transformEsModulesToAmd` option to `jsTransform` and JS stream transformer.
 * Add exponentiation, async/await, and async generator syntax/transform support to `jsTransform`.
+* Upgraded to `polymer-analyzer@3.0.0-pre.17` and `polymer-bundler@4.0.0-pre.2`.
+* Converted from `PackageUrlResolver` to `FsUrlResolver` as more appropriate to application build context.
 
 ## [2.3.3] - 2018-03-14
 * Don't run Babel at all if there are no meaningful changes to make.

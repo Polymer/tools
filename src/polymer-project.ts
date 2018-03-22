@@ -13,6 +13,7 @@
  */
 
 import * as logging from 'plylog';
+import {PackageRelativeUrl} from 'polymer-analyzer';
 import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
 import {src as vinylSrc} from 'vinyl-fs';
 
@@ -21,6 +22,7 @@ import {BaseTagUpdater} from './base-tag-updater';
 import {BuildBundler, Options as BuildBundlerOptions} from './bundle';
 import {CustomElementsEs5AdapterInjector} from './custom-elements-es5-adapter';
 import {BabelHelpersInjector} from './inject-babel-helpers';
+import {LocalFsPath} from './path-transformers';
 import {AddPrefetchLinks} from './prefetch-links';
 import {AddPushManifest} from './push-manifest';
 
@@ -113,7 +115,8 @@ export class PolymerProject {
    * Returns a stream transformer that adds a push manifest file to the set
    * of all input files that pass through.
    */
-  addPushManifest(outPath?: string, basePath?: string): NodeJS.ReadWriteStream {
+  addPushManifest(outPath?: LocalFsPath, basePath?: PackageRelativeUrl):
+      NodeJS.ReadWriteStream {
     return new AddPushManifest(this.config, outPath, basePath);
   }
 
@@ -137,6 +140,6 @@ export class PolymerProject {
    * `<base>` tag does not already exist.
    */
   updateBaseTag(baseHref: string): NodeJS.ReadWriteStream {
-    return new BaseTagUpdater(this.config.entrypoint, baseHref);
+    return new BaseTagUpdater(this.config.entrypoint as LocalFsPath, baseHref);
   }
 }

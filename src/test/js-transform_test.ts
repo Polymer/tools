@@ -17,6 +17,7 @@ import * as path from 'path';
 import stripIndent = require('strip-indent');
 
 import {jsTransform} from '../js-transform';
+import {LocalFsPath} from '../path-transformers';
 
 suite('jsTransform', () => {
   test('compiles to ES5', () => {
@@ -126,7 +127,7 @@ suite('jsTransform', () => {
   test('rewrites bare module specifiers to paths', () => {
     const fixtureRoot =
         path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
-    const filePath = path.join(fixtureRoot, 'foo.js');
+    const filePath = path.join(fixtureRoot, 'foo.js') as LocalFsPath;
 
     const input = stripIndent(`
       import { dep1 } from 'dep1';
@@ -163,7 +164,7 @@ suite('jsTransform', () => {
   test('rewrites bare module specifiers to paths for dependencies', () => {
     const fixtureRoot =
         path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
-    const filePath = path.join(fixtureRoot, 'npm-module.js');
+    const filePath = path.join(fixtureRoot, 'npm-module.js') as LocalFsPath;
 
     const input = stripIndent(`
       import { dep1 } from 'dep1';
@@ -189,7 +190,7 @@ suite('jsTransform', () => {
       () => {
         const fixtureRoot =
             path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
-        const filePath = path.join(fixtureRoot, 'npm-module.js');
+        const filePath = path.join(fixtureRoot, 'npm-module.js') as LocalFsPath;
 
         const input = stripIndent(`
       import { dep1 } from 'dep1';

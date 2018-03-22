@@ -21,6 +21,7 @@ import * as fs from 'mz/fs';
 import * as path from 'path';
 import * as vfs from 'vinyl-fs';
 
+import {LocalFsPath} from '../path-transformers';
 import {PolymerProject} from '../polymer-project';
 import * as serviceWorker from '../service-worker';
 
@@ -28,7 +29,7 @@ const temp = require('temp').track();
 const mergeStream = require('merge-stream');
 
 suite('service-worker', () => {
-  let testBuildRoot: string;
+  let testBuildRoot: LocalFsPath;
   let defaultProject: PolymerProject;
 
   setup((done) => {
@@ -45,7 +46,7 @@ suite('service-worker', () => {
       if (err || dir === undefined) {
         return done(err || 'no dir given');
       }
-      testBuildRoot = dir;
+      testBuildRoot = dir as LocalFsPath;
       vfs.src(path.join('test-fixtures/test-project/**'))
           .pipe(vfs.dest(dir))
           .on('end', () => {
@@ -216,7 +217,7 @@ suite('service-worker', () => {
           .generateServiceWorker({
             project: defaultProject,
             buildRoot: testBuildRoot,
-            basePath: '/my/base/path'
+            basePath: '/my/base/path' as LocalFsPath,
           })
           .then((swFile: Buffer) => {
             const fileContents = swFile.toString();
@@ -229,7 +230,7 @@ suite('service-worker', () => {
           .generateServiceWorker({
             project: defaultProject,
             buildRoot: testBuildRoot,
-            basePath: '/my/base/path/'
+            basePath: '/my/base/path/' as LocalFsPath,
           })
           .then((swFile: Buffer) => {
             const fileContents = swFile.toString();

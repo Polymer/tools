@@ -18,6 +18,7 @@ const mergeStream = require('merge-stream');
 import {PolymerProject} from '../polymer-project';
 import {createLinks} from '../prefetch-links';
 import {emittedFiles} from './util';
+import {FsUrlResolver, PackageRelativeUrl} from 'polymer-analyzer';
 
 suite('prefetch-links', () => {
   suite('AddPrefetchLinks', () => {
@@ -132,32 +133,35 @@ suite('prefetch-links', () => {
   });
 
   suite('createLinks', () => {
+    const urlResolver = new FsUrlResolver('');
     const html = '<html><body>foo</body></html>';
     const htmlWithBase = '<html><base href="/base/"><body>foo</body></html>';
     const deps = new Set([
       'bower_components/polymer/polymer.html',
       'src/my-icons.html',
-    ]);
+    ].map((u: any) => urlResolver.resolve(u)!));
 
     test('with no base tag and absolute true', () => {
-      const url = 'index.html';
+      const url = 'index.html' as PackageRelativeUrl;
       const expected =
           ('<html>' +
            '<link rel="prefetch" href="/bower_components/polymer/polymer.html">' +
            '<link rel="prefetch" href="/src/my-icons.html">' +
            '<body>foo</body></html>');
-      const actual = createLinks(html, url, deps, true);
+      const actual =
+          createLinks(urlResolver, html, urlResolver.resolve(url)!, deps, true);
       assert.equal(actual, expected);
     });
 
     test('with a base tag and absolute true', () => {
-      const url = 'index.html';
+      const url = 'index.html' as PackageRelativeUrl;
       const expected =
           ('<html><base href="/base/">' +
            '<link rel="prefetch" href="bower_components/polymer/polymer.html">' +
            '<link rel="prefetch" href="src/my-icons.html">' +
            '<body>foo</body></html>');
-      const actual = createLinks(htmlWithBase, url, deps, true);
+      const actual = createLinks(
+          urlResolver, htmlWithBase, urlResolver.resolve(url)!, deps, true);
       assert.equal(actual, expected);
     });
   });

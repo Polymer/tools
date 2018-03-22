@@ -14,12 +14,13 @@
 
 import File = require('vinyl');
 import * as parse5 from 'parse5';
+import {ResolvedUrl} from 'polymer-analyzer';
 import {Bundler, Options, BundleManifest, generateShellMergeStrategy} from 'polymer-bundler';
 import {ProjectConfig} from 'polymer-project-config';
 
 import {BuildAnalyzer} from './analyzer';
 import {FileMapUrlLoader} from './file-map-url-loader';
-import {pathFromUrl, urlFromPath} from './path-transformers';
+import {pathFromUrl, urlFromPath, LocalFsPath} from './path-transformers';
 import {AsyncTransformStream} from './streams';
 
 export {Options} from 'polymer-bundler';
@@ -34,7 +35,7 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
   // coming into the stream, it collects all files here.  After bundlling,
   // we remove files from this set that have been inlined and replace
   // entrypoint/fragment files with bundled versions.
-  files = new Map<string, File>();
+  files = new Map<ResolvedUrl, File>();
 
   constructor(
       config: ProjectConfig,
@@ -60,13 +61,14 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
 
     const urlLoader =
         new FileMapUrlLoader(this.files, analyzer || buildAnalyzer.analyzer);
-
-    const forkedAnalyzer = analyzer ? analyzer._fork({urlLoader}) :
-                                      buildAnalyzer.analyzer._fork({urlLoader});
+    const forkedAnalyzer =
+        (analyzer || buildAnalyzer.analyzer)._fork({urlLoader});
 
     if (strategy === undefined && this.config.shell !== undefined) {
-      strategy = generateShellMergeStrategy(
-          urlFromPath(this.config.root, this.config.shell));
+      strategy =
+          generateShellMergeStrategy(forkedAnalyzer.resolveUrl(urlFromPath(
+              this.config.root as LocalFsPath,
+              this.config.shell as LocalFsPath))!);
     }
 
     this._bundler = new Bundler({
@@ -101,29 +103,32 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
 
     const {documents, manifest} =
         await this._bundler.bundle(await this._generateBundleManifest());
-
     // Remove the bundled files from the file map so they are not emitted later.
     this._unmapBundledFiles(manifest);
 
     // Map the bundles into the file map.
-    for (const [filename, document] of documents) {
+    for (const [url, document] of documents) {
       this._mapFile(new File({
-        path: pathFromUrl(this.config.root, filename),
+        path: pathFromUrl(
+            this.config.root as LocalFsPath,
+            this._bundler.analyzer.urlResolver.relative(url)),
         contents: new Buffer(parse5.serialize(document.ast)),
       }));
     }
   }
 
   private async _generateBundleManifest(): Promise<BundleManifest> {
-    const entrypoints = Array.from(this.config.allFragments)
-                            .map((e) => urlFromPath(this.config.root, e));
+    const entrypoints = this.config.allFragments.map(
+        (e) => this._bundler.analyzer.resolveUrl(
+            urlFromPath(this.config.root as LocalFsPath, e as LocalFsPath))!);
     return this._bundler.generateManifest(entrypoints);
   }
 
   private _getFilesChangedSinceInitialAnalysis(): string[] {
     const filesChanged = [];
     for (const [url, originalFile] of this._buildAnalyzer.files) {
-      const downstreamFile = this.files.get(url);
+      const downstreamFile =
+          this.files.get(this._buildAnalyzer.analyzer.resolveUrl(url)!);
       if (downstreamFile == null) {
         throw new Error(
             `Internal error: could not find downstreamFile at ${url}`);
@@ -137,7 +142,10 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
   }
 
   private _mapFile(file: File) {
-    this.files.set(urlFromPath(this.config.root, file.path), file);
+    this.files.set(
+        this._buildAnalyzer.analyzer.resolveUrl(urlFromPath(
+            this.config.root as LocalFsPath, file.path as LocalFsPath))!,
+        file);
   }
 
   /**
@@ -147,9 +155,9 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
     for (const {inlinedHtmlImports,
                 inlinedScripts,
                 inlinedStyles} of manifest.bundles.values()) {
-      for (const filename of
+      for (const url of
                [...inlinedHtmlImports, ...inlinedScripts, ...inlinedStyles]) {
-        this.files.delete(filename);
+        this.files.delete(url);
       }
     }
   }

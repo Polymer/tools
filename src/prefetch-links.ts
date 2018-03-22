@@ -15,13 +15,12 @@
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {Analyzer, Document} from 'polymer-analyzer';
-import {relativeUrl} from 'polymer-bundler/lib/url-utils';
+import {Analyzer, PackageRelativeUrl, ResolvedUrl, UrlResolver} from 'polymer-analyzer';
 import {ProjectConfig} from 'polymer-project-config';
 
 import File = require('vinyl');
 
-import {pathFromUrl, urlFromPath} from './path-transformers';
+import {pathFromUrl, urlFromPath, LocalFsPath} from './path-transformers';
 import {FileMapUrlLoader} from './file-map-url-loader';
 import {AsyncTransformStream} from './streams';
 
@@ -30,7 +29,7 @@ import {AsyncTransformStream} from './streams';
  * file's transitive dependencies.
  */
 export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
-  files: Map<string, File>;
+  files: Map<ResolvedUrl, File>;
   private _analyzer: Analyzer;
   private _config: ProjectConfig;
 
@@ -44,11 +43,12 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
-    const htmlFileUrls = [];
+    const htmlFileUrls: ResolvedUrl[] = [];
 
     // Map all files; pass-through all non-HTML files.
     for await (const file of files) {
-      const fileUrl = urlFromPath(this._config.root, file.path);
+      const fileUrl = this._analyzer.resolveUrl(urlFromPath(
+          this._config.root as LocalFsPath, file.path as LocalFsPath))!;
       this.files.set(fileUrl, file);
       if (path.extname(file.path) !== '.html') {
         yield file;
@@ -61,13 +61,15 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
     const analysis = await this._analyzer.analyze(htmlFileUrls);
 
     for (const documentUrl of htmlFileUrls) {
-      const document = analysis.getDocument(documentUrl);
-      if (!(document instanceof Document)) {
-        const message = document && document.message;
+      const result = analysis.getDocument(documentUrl);
+
+      if (result.successful === false) {
+        const message = result.error && result.error.message;
         console.warn(`Unable to get document ${documentUrl}: ${message}`);
         continue;
       }
 
+      const document = result.value;
       const allDependencyUrls = [
         ...document.getFeatures({
           kind: 'import',
@@ -98,12 +100,17 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
       const prefetchUrls = new Set(onlyTransitiveDependencyUrls);
 
       const html = createLinks(
+          this._analyzer.urlResolver,
           document.parsedDocument.contents,
           document.parsedDocument.baseUrl,
           prefetchUrls,
           document.url ===
-              urlFromPath(this._config.root, this._config.entrypoint));
-      const filePath = pathFromUrl(this._config.root, documentUrl);
+              this._analyzer.resolveUrl(urlFromPath(
+                  this._config.root as LocalFsPath,
+                  this._config.entrypoint as LocalFsPath)));
+      const filePath = pathFromUrl(
+          this._config.root as LocalFsPath,
+          this._analyzer.urlResolver.relative(documentUrl));
       yield new File({contents: new Buffer(html, 'utf-8'), path: filePath})
     }
   }
@@ -116,9 +123,10 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
  * `true` and there is no base tag in the document.
  */
 export function createLinks(
+    urlResolver: UrlResolver,
     html: string,
-    baseUrl: string,
-    deps: Set<string>,
+    baseUrl: ResolvedUrl,
+    deps: Set<ResolvedUrl>,
     absolute: boolean = false): string {
   const ast = parse5.parse(html, {locationInfo: true});
   const baseTag = dom5.query(ast, dom5.predicates.hasTagName('base'));
@@ -129,9 +137,9 @@ export function createLinks(
   for (const dep of deps) {
     let href;
     if (absolute && !baseTagHref) {
-      href = absUrl(dep);
+      href = absUrl(urlResolver.relative(dep));
     } else {
-      href = relativeUrl(absUrl(baseUrl), absUrl(dep));
+      href = urlResolver.relative(baseUrl, dep);
     }
     const link = dom5.constructors.element('link');
     dom5.setAttribute(link, 'rel', 'prefetch');
@@ -142,6 +150,6 @@ export function createLinks(
   return parse5.serialize(ast);
 }
 
-function absUrl(url: string): string {
-  return url.startsWith('/') ? url : '/' + url;
+function absUrl(url: string): PackageRelativeUrl {
+  return (url.startsWith('/') ? url : '/' + url) as PackageRelativeUrl;
 }

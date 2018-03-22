@@ -16,8 +16,9 @@
 
 
 import {assert} from 'chai';
-import {Analyzer, FSUrlLoader} from 'polymer-analyzer';
+import {Analyzer, FsUrlLoader, FsUrlResolver, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {Bundle} from 'polymer-bundler/lib/bundle-manifest';
+
 import File = require('vinyl');
 import * as path from 'path';
 
@@ -88,10 +89,14 @@ suite('PolymerProject', () => {
     });
 
     test('takes options to configure bundler', () => {
+      const urlResolver = new FsUrlResolver('test-fixtures/test-project');
       const bundler = defaultProject.bundler({
-        analyzer: new Analyzer(
-            {urlLoader: new FSUrlLoader('test-fixtures/test-project')}),
-        excludes: ['bower_components/loads-external-dependencies.html'],
+        analyzer: new Analyzer({
+          urlResolver,
+          urlLoader: new FsUrlLoader('test-fixtures/test-project')
+        }),
+        excludes: ['bower_components/loads-external-dependencies.html'].map(
+            (p) => urlResolver.resolve(p as PackageRelativeUrl)!),
         inlineCss: true,
         inlineScripts: false,
         rewriteUrlsInTemplates: true,
@@ -99,7 +104,8 @@ suite('PolymerProject', () => {
         strategy: (b) => b,
         // TODO(usergenic): Replace this with a BundleUrlMapper when
         // https://github.com/Polymer/polymer-bundler/pull/483 is released.
-        urlMapper: (b) => new Map(<[string, Bundle][]>b.map((b) => ['x', b])),
+        urlMapper: (b) =>
+            new Map(<[ResolvedUrl, Bundle][]>b.map((b) => ['x', b])),
       });
       assert.isOk(bundler);
     });

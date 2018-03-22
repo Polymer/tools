@@ -24,6 +24,7 @@ import {Writable} from 'stream';
 import {getFlowingState} from './util';
 import {BuildAnalyzer} from '../analyzer';
 import {waitFor, waitForAll} from '../streams';
+import {PackageRelativeUrl} from 'polymer-analyzer';
 
 /**
  * Streams will remain paused unless something is listening for it's data.
@@ -64,7 +65,9 @@ suite('Analyzer', () => {
             const ftd = depsIndex.fragmentToDeps;
             for (const frag of ftd.keys()) {
               assert.deepEqual(
-                  ftd.get(frag), ['shared-1.html', 'shared-2.html']);
+                  ftd.get(frag),
+                  ['shared-1.html', 'shared-2.html'].map(
+                      (u) => u as PackageRelativeUrl));
             }
           });
     });
@@ -89,71 +92,14 @@ suite('Analyzer', () => {
             return analyzer.analyzeDependencies;
           })
           .then((depsIndex) => {
-            assert.isTrue(depsIndex.depsToFragments.has('shared-2.html'));
-            assert.isFalse(depsIndex.depsToFragments.has('/shell.html'));
-            assert.isFalse(depsIndex.depsToFragments.has('/shared-2.html'));
+            assert.isTrue(depsIndex.depsToFragments.has(
+                'shared-2.html' as PackageRelativeUrl));
+            assert.isFalse(depsIndex.depsToFragments.has(
+                'shell.html' as PackageRelativeUrl));
+            assert.isFalse(depsIndex.depsToFragments.has(
+                'shared-banana.html' as PackageRelativeUrl));
           });
     });
-  });
-
-  suite('ProjectConfig componentDir', () => {
-    test(
-        'setting `componentDir` searches for dependencies in the given ' +
-            'directory',
-        () => {
-          const foundDependencies = new Set();
-          const root = `test-fixtures/analyzer-componentDir`;
-          const sourceFiles =
-              ['my-component.js'].map((p) => path.resolve(root, p));
-          const config = new ProjectConfig({
-            root: root,
-            entrypoint: 'my-component.js',
-            sources: sourceFiles,
-
-            componentDir: 'path/to/some/components/',
-          });
-
-          const analyzer = new BuildAnalyzer(config);
-          analyzer.sources().pipe(new NoopStream());
-          analyzer.dependencies().on('data', (file: File) => {
-            foundDependencies.add(file.path);
-          });
-
-          return waitForAll([analyzer.sources(), analyzer.dependencies()])
-              .then(() => {
-                assert.isTrue(foundDependencies.has(path.resolve(
-                    root,
-                    'path/to/some/components/a_component/a_component.js')));
-              });
-        });
-
-    test(
-        'setting `npm: true` searches for dependencies in "node_modules/"',
-        () => {
-          const foundDependencies = new Set();
-          const root = `test-fixtures/analyzer-componentDir-npm`;
-          const sourceFiles =
-              ['my-component.js'].map((p) => path.resolve(root, p));
-          const config = new ProjectConfig({
-            root: root,
-            entrypoint: 'my-component.js',
-            sources: sourceFiles,
-
-            npm: true,
-          });
-
-          const analyzer = new BuildAnalyzer(config);
-          analyzer.sources().pipe(new NoopStream());
-          analyzer.dependencies().on('data', (file: File) => {
-            foundDependencies.add(file.path);
-          });
-
-          return waitForAll([analyzer.sources(), analyzer.dependencies()])
-              .then(() => {
-                assert.isTrue(foundDependencies.has(path.resolve(
-                    root, 'node_modules/a_component/a_component.js')));
-              });
-        });
   });
 
   suite('.dependencies', () => {
@@ -243,7 +189,6 @@ suite('Analyzer', () => {
             done();
           }
         };
-
         analyzer.sources().pipe(new NoopStream());
         analyzer.sources().on('error', errorListener);
         analyzer.dependencies().pipe(new NoopStream());

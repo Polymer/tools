@@ -20,18 +20,18 @@ import * as logging from 'plylog';
 import {generate as swPrecacheGenerate, SWConfig} from 'sw-precache';
 
 import {DepsIndex} from './analyzer';
-import {posixifyPath} from './path-transformers';
+import {LocalFsPath, posixifyPath, PosixPath} from './path-transformers';
 import {PolymerProject} from './polymer-project';
 
 const logger = logging.getLogger('polymer-build.service-worker');
 
 export interface AddServiceWorkerOptions {
   project: PolymerProject;
-  buildRoot: string;
+  buildRoot: LocalFsPath;
   bundled?: boolean;
-  path?: string;
+  path?: LocalFsPath;
   swPrecacheConfig?: SWConfig|null;
-  basePath?: string;
+  basePath?: LocalFsPath;
 }
 
 /**
@@ -150,9 +150,9 @@ export async function generateServiceWorkerConfig(
 
   if (options.basePath) {
     // TODO Drop this feature once CLI doesn't depend on it.
-    let replacePrefix = options.basePath;
+    let replacePrefix = posixifyPath(options.basePath);
     if (!replacePrefix.endsWith('/')) {
-      replacePrefix = replacePrefix + '/';
+      replacePrefix = replacePrefix + '/' as PosixPath;
     }
     if (swPrecacheConfig.replacePrefix) {
       console.info(

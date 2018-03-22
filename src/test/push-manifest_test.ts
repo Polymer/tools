@@ -16,11 +16,14 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
+import {PackageRelativeUrl} from 'polymer-analyzer';
 import * as vfs from 'vinyl-fs';
+
 import File = require('vinyl');
 
 import {PolymerProject} from '../polymer-project';
 import {PushManifest} from '../push-manifest';
+import {LocalFsPath} from '../path-transformers';
 import {AsyncTransformStream} from '../streams';
 
 /**
@@ -33,7 +36,7 @@ class CheckPushManifest extends AsyncTransformStream<File, File> {
   filePath: string;
   expectedManifest: PushManifest;
 
-  constructor(filePath: string, expectedManifest: PushManifest) {
+  constructor(filePath: LocalFsPath, expectedManifest: PushManifest) {
     super({objectMode: true});
     this.filePath = filePath;
     this.expectedManifest = expectedManifest;
@@ -71,12 +74,14 @@ class CheckPushManifest extends AsyncTransformStream<File, File> {
  */
 function testPushManifest(
     project: PolymerProject,
-    manifestRelativePath: string|undefined,
-    prefix: string|undefined,
+    manifestRelativePath: LocalFsPath|undefined,
+    prefix: PackageRelativeUrl|undefined,
     expectedManifest: PushManifest,
     done: (err?: Error) => void): void {
-  const expectedManifestAbsolutePath = path.join(
-      project.config.root, manifestRelativePath || 'push-manifest.json');
+  const expectedManifestAbsolutePath =
+      path.join(
+          project.config.root, manifestRelativePath || 'push-manifest.json') as
+      LocalFsPath;
   const pushManifestChecker =
       new CheckPushManifest(expectedManifestAbsolutePath, expectedManifest);
 
@@ -230,7 +235,8 @@ suite('AddPushManifest', () => {
         'common-dependency.html',
       ],
     });
-    const pushManifestRelativePath = 'custom/push-manifest/path.json';
+    const pushManifestRelativePath =
+        'custom/push-manifest/path.json' as LocalFsPath;
     const expectedPushManifest: PushManifest = {
       'shell.html': {
         'framework.html': {
@@ -307,6 +313,11 @@ suite('AddPushManifest', () => {
       },
     };
 
-    testPushManifest(project, undefined, '/foo/', expectedPushManifest, done);
+    testPushManifest(
+        project,
+        undefined,
+        '/foo/' as PackageRelativeUrl,
+        expectedPushManifest,
+        done);
   });
 });

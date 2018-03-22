@@ -13,12 +13,13 @@
  */
 
 import * as path from 'path';
-import {Analyzer, Document, Import} from 'polymer-analyzer';
+import {Analyzer, Import, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {buildDepsIndex} from 'polymer-bundler/lib/deps-index';
 import {ProjectConfig} from 'polymer-project-config';
+
 import File = require('vinyl');
 
-import {urlFromPath} from './path-transformers';
+import {urlFromPath, LocalFsPath} from './path-transformers';
 import {FileMapUrlLoader} from './file-map-url-loader';
 import {AsyncTransformStream} from './streams';
 
@@ -123,15 +124,17 @@ function createPushEntryFromImport(importFeature: Import): PushManifestEntry {
  * to be added to the overall push manifest.
  */
 async function generatePushManifestEntryForUrl(
-    analyzer: Analyzer, url: string): Promise<PushManifestEntryCollection> {
+    analyzer: Analyzer,
+    url: ResolvedUrl): Promise<PushManifestEntryCollection> {
   const analysis = await analyzer.analyze([url]);
-  const analyzedDocument = analysis.getDocument(url);
+  const result = analysis.getDocument(url);
 
-  if (!(analyzedDocument instanceof Document)) {
-    const message = analyzedDocument && analyzedDocument.message || 'unknown';
+  if (result.successful === false) {
+    const message = result.error && result.error.message || 'unknown';
     throw new Error(`Unable to get document ${url}: ${message}`);
   }
 
+  const analyzedDocument = result.value;
   const rawImports = [...analyzedDocument.getFeatures({
     kind: 'import',
     externalPackages: true,
@@ -148,9 +151,10 @@ async function generatePushManifestEntryForUrl(
     // Probably an issue more generally with all URLs analyzed out of
     // documents, but base tags are somewhat rare.
     const analyzedImportUrl = analyzedImport.url;
-    const analyzedImportEntry = pushManifestEntries[analyzedImportUrl];
+    const relativeImportUrl = analyzer.urlResolver.relative(analyzedImportUrl);
+    const analyzedImportEntry = pushManifestEntries[relativeImportUrl];
     if (!analyzedImportEntry) {
-      pushManifestEntries[analyzedImportUrl] =
+      pushManifestEntries[relativeImportUrl] =
           createPushEntryFromImport(analyzedImport);
     }
   }
@@ -164,25 +168,33 @@ async function generatePushManifestEntryForUrl(
  * manifest that gets injected into the stream.
  */
 export class AddPushManifest extends AsyncTransformStream<File, File> {
-  files: Map<string, File>;
-  outPath: string;
+  files: Map<ResolvedUrl, File>;
+  outPath: LocalFsPath;
   private config: ProjectConfig;
   private analyzer: Analyzer;
-  private basePath: string;
+  private basePath: PackageRelativeUrl;
 
-  constructor(config: ProjectConfig, outPath?: string, basePath?: string) {
+  constructor(
+      config: ProjectConfig,
+      outPath?: LocalFsPath,
+      basePath?: PackageRelativeUrl) {
     super({objectMode: true});
     this.files = new Map();
     this.config = config;
     this.analyzer = new Analyzer({urlLoader: new FileMapUrlLoader(this.files)});
-    this.outPath = path.join(this.config.root, outPath || 'push-manifest.json');
-    this.basePath = (basePath || '');
+    this.outPath =
+        path.join(this.config.root, outPath || 'push-manifest.json') as
+        LocalFsPath;
+    this.basePath = (basePath || '') as PackageRelativeUrl;
   }
 
   protected async *
       _transformIter(files: AsyncIterable<File>): AsyncIterable<File> {
     for await (const file of files) {
-      this.files.set(urlFromPath(this.config.root, file.path), file);
+      this.files.set(
+          this.analyzer.resolveUrl(urlFromPath(
+              this.config.root as LocalFsPath, file.path as LocalFsPath))!,
+          file);
       yield file;
     }
 
@@ -200,25 +212,29 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     // Bundler's buildDepsIndex code generates an index with all fragments and
     // all lazy-imports encountered are the keys, so we'll use that function to
     // produce the set of all fragments to generate push-manifest entries for.
-    const allFragments =
-        new Set((await buildDepsIndex(
-                     this.config.allFragments.map(
-                         (path) => urlFromPath(this.config.root, path)),
-                     this.analyzer))
-                    .entrypointToDeps.keys());
+    const allFragments = new Set(
+        (await buildDepsIndex(
+             this.config.allFragments.map(
+                 (path) => this.analyzer.resolveUrl(urlFromPath(
+                     this.config.root as LocalFsPath, path as LocalFsPath))!),
+             this.analyzer))
+            .entrypointToDeps.keys());
 
     // If an app-shell exists, use that as our main push URL because it has a
     // reliable URL. Otherwise, support the single entrypoint URL.
-    const mainPushEntrypointUrl = urlFromPath(
-        this.config.root, this.config.shell || this.config.entrypoint);
+    const mainPushEntrypointUrl = this.analyzer.resolveUrl(urlFromPath(
+        this.config.root as LocalFsPath,
+        this.config.shell as LocalFsPath ||
+            this.config.entrypoint as LocalFsPath))!;
     allFragments.add(mainPushEntrypointUrl);
 
     // Generate the dependencies to push for each fragment.
     const pushManifest: PushManifest = {};
     for (const fragment of allFragments) {
-      const absoluteFragmentUrl = fragment;
-      pushManifest[absoluteFragmentUrl] = await generatePushManifestEntryForUrl(
-          this.analyzer, absoluteFragmentUrl);
+      const absoluteFragmentUrl =
+          '/' + this.analyzer.urlResolver.relative(fragment);
+      pushManifest[absoluteFragmentUrl] =
+          await generatePushManifestEntryForUrl(this.analyzer, fragment);
     }
 
     // The URLs we got may be absolute or relative depending on how they were

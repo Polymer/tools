@@ -16,6 +16,7 @@ import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
 import File = require('vinyl');
 import {AsyncTransformStream, getFileContents} from './streams';
+import {LocalFsPath} from './path-transformers';
 
 const baseMatcher = dom5.predicates.hasTagName('base');
 
@@ -24,7 +25,7 @@ const baseMatcher = dom5.predicates.hasTagName('base');
  * with the given new value.
  */
 export class BaseTagUpdater extends AsyncTransformStream<File, File> {
-  constructor(private filePath: string, private newHref: string) {
+  constructor(private filePath: LocalFsPath, private newHref: string) {
     super({objectMode: true});
   }
 

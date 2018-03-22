@@ -14,13 +14,12 @@
 
 import * as path from 'path';
 import * as logging from 'plylog';
-import {Analyzer, Document, PackageUrlResolver, Severity, UrlLoader, Warning, WarningFilter, WarningPrinter} from 'polymer-analyzer';
-import {parseUrl} from 'polymer-analyzer/lib/core/utils';
+import {Analyzer, FsUrlResolver, PackageRelativeUrl, ResolvedUrl, Severity, UrlLoader, Warning, WarningFilter, WarningPrinter} from 'polymer-analyzer';
 import {ProjectConfig} from 'polymer-project-config';
 import {PassThrough, Transform} from 'stream';
 import {src as vinylSrc} from 'vinyl-fs';
 
-import {pathFromUrl, urlFromPath} from './path-transformers';
+import {LocalFsPath, pathFromUrl, urlFromPath} from './path-transformers';
 import {AsyncTransformStream, VinylReaderTransform} from './streams';
 
 import File = require('vinyl');
@@ -28,19 +27,19 @@ import File = require('vinyl');
 const logger = logging.getLogger('cli.build.analyzer');
 
 export interface DocumentDeps {
-  imports: Array<string>;
-  scripts: Array<string>;
-  styles: Array<string>;
+  imports: PackageRelativeUrl[];
+  scripts: PackageRelativeUrl[];
+  styles: PackageRelativeUrl[];
 }
 
 export interface DepsIndex {
   // An index of dependency -> fragments that depend on it
-  depsToFragments: Map<string, string[]>;
+  depsToFragments: Map<PackageRelativeUrl, PackageRelativeUrl[]>;
   // TODO(garlicnation): Remove this map.
   // An index of fragments -> html dependencies
-  fragmentToDeps: Map<string, string[]>;
+  fragmentToDeps: Map<PackageRelativeUrl, PackageRelativeUrl[]>;
   // A map from frament urls to html, js, and css dependencies.
-  fragmentToFullDeps: Map<string, DocumentDeps>;
+  fragmentToFullDeps: Map<PackageRelativeUrl, DocumentDeps>;
 }
 
 /**
@@ -112,10 +111,9 @@ export class BuildAnalyzer {
   private _dependenciesProcessingStream!: NodeJS.ReadWriteStream;
   private _warningsFilter: WarningFilter;
 
-  files = new Map<string, File>();
+  files = new Map<PackageRelativeUrl, File>();
   warnings = new Set<Warning>();
-  allFragmentsToAnalyze: Set<string>;
-  foundDependencies = new Set<string>();
+  allFragmentsToAnalyze: Set<LocalFsPath>;
 
   analyzeDependencies: Promise<DepsIndex>;
   _dependencyAnalysis: DepsIndex = {
@@ -131,12 +129,13 @@ export class BuildAnalyzer {
     this.loader = new StreamLoader(this);
     this.analyzer = new Analyzer({
       urlLoader: this.loader,
-      urlResolver: (config.componentDir) ?
-          new PackageUrlResolver({componentDir: config.componentDir}) :
-          undefined,
+      // TODO(usergenic): Add option to polymer-build to propagate a protocol
+      // and host option to the FsUrlResolver.
+      urlResolver: new FsUrlResolver(config.root),
     });
 
-    this.allFragmentsToAnalyze = new Set(this.config.allFragments);
+    this.allFragmentsToAnalyze =
+        new Set(this.config.allFragments.map((f) => f as LocalFsPath));
     this.analyzeDependencies = new Promise((resolve, _reject) => {
       this._resolveDependencyAnalysis = resolve;
     });
@@ -220,9 +219,8 @@ export class BuildAnalyzer {
    * Resolve a file in our loader so that the analyzer can read it.
    */
   resolveFile(file: File) {
-    const filePath = file.path;
+    const filePath = file.path as LocalFsPath;
     this.addFile(file);
-
     // If our resolver is waiting for this file, resolve its deferred loader
     if (this.loader.hasDeferredFile(filePath)) {
       this.loader.resolveDeferredFile(filePath, file);
@@ -235,12 +233,12 @@ export class BuildAnalyzer {
    * analyzed, we call _done() to signal that analysis is complete.
    */
   async analyzeFile(file: File): Promise<void> {
-    const filePath = file.path;
+    const filePath = file.path as LocalFsPath;
 
     // If the file is a fragment, begin analysis on its dependencies
     if (this.config.isFragment(filePath)) {
-      const deps =
-          await this._getDependencies(urlFromPath(this.config.root, filePath));
+      const deps = await this._getDependencies(this.analyzer.resolveUrl(
+          urlFromPath(this.config.root as LocalFsPath, filePath))!);
       this._addDependencies(filePath, deps);
       this.allFragmentsToAnalyze.delete(filePath);
       // If there are no more fragments to analyze, we are done
@@ -306,14 +304,15 @@ export class BuildAnalyzer {
     this._resolveDependencyAnalysis(this._dependencyAnalysis);
   }
 
-  getFile(filepath: string): File|undefined {
-    const url = urlFromPath(this.config.root, filepath);
-    return this.getFileByUrl(url);
+  getFile(filepath: LocalFsPath): File|undefined {
+    const url = urlFromPath(this.config.root as LocalFsPath, filepath);
+    return this.getFileByUrl(url as PackageRelativeUrl);
   }
 
-  getFileByUrl(url: string): File|undefined {
+  getFileByUrl(url: PackageRelativeUrl): File|undefined {
+    // TODO(usergenic): url carefulness bug, take an extra careful look at this.
     if (url.startsWith('/')) {
-      url = url.substring(1);
+      url = url.substring(1) as PackageRelativeUrl;
     }
     return this.files.get(url);
   }
@@ -328,9 +327,10 @@ export class BuildAnalyzer {
     logger.debug(`addFile: ${file.path}`);
     // Badly-behaved upstream transformers (looking at you gulp-html-minifier)
     // may use posix path separators on Windows.
-    const filepath = path.normalize(file.path);
+    const filepath = path.normalize(file.path) as LocalFsPath;
     // Store only root-relative paths, in URL/posix format
-    this.files.set(urlFromPath(this.config.root, filepath), file);
+    this.files.set(
+        urlFromPath(this.config.root as LocalFsPath, filepath), file);
   }
 
   printWarnings(): void {
@@ -354,35 +354,36 @@ export class BuildAnalyzer {
   /**
    * Attempts to retreive document-order transitive dependencies for `url`.
    */
-  async _getDependencies(url: string): Promise<DocumentDeps> {
+  async _getDependencies(url: ResolvedUrl): Promise<DocumentDeps> {
     const analysis = await this.analyzer.analyze([url]);
-    const doc = analysis.getDocument(url);
+    const result = analysis.getDocument(url);
 
-    if (!(doc instanceof Document)) {
-      const message = doc && doc.message || 'unknown';
+    if (result.successful === false) {
+      const message = result.error && result.error.message || 'unknown';
       throw new Error(`Unable to get document ${url}: ${message}`);
     }
 
+    const doc = result.value;
     doc.getWarnings({imported: true})
         .filter((w) => !this._warningsFilter.shouldIgnore(w))
         .forEach((w) => this.warnings.add(w));
 
-    const scripts = new Set<string>();
-    const styles = new Set<string>();
-    const imports = new Set<string>();
+    const scripts = new Set<PackageRelativeUrl>();
+    const styles = new Set<PackageRelativeUrl>();
+    const imports = new Set<PackageRelativeUrl>();
 
     const importFeatures = doc.getFeatures(
         {kind: 'import', externalPackages: true, imported: true});
     for (const importFeature of importFeatures) {
       const importUrl = importFeature.url;
-      if (!this.analyzer.canResolveUrl(importUrl)) {
+      if (!this.analyzer.canLoad(importUrl)) {
         logger.debug(`ignoring external dependency: ${importUrl}`);
       } else if (importFeature.type === 'html-script') {
-        scripts.add(importUrl);
+        scripts.add(this.analyzer.urlResolver.relative(importUrl));
       } else if (importFeature.type === 'html-style') {
-        styles.add(importUrl);
+        styles.add(this.analyzer.urlResolver.relative(importUrl));
       } else if (importFeature.type === 'html-import') {
-        imports.add(importUrl);
+        imports.add(this.analyzer.urlResolver.relative(importUrl));
       } else {
         logger.debug(
             `unexpected import type encountered: ${importFeature.type}`);
@@ -390,30 +391,31 @@ export class BuildAnalyzer {
     }
 
     const deps = {
-      scripts: Array.from(scripts),
-      styles: Array.from(styles),
-      imports: Array.from(imports),
+      scripts: [...scripts],
+      styles: [...styles],
+      imports: [...imports],
     };
     logger.debug(`dependencies analyzed for: ${url}`, deps);
     return deps;
   }
 
-  _addDependencies(filePath: string, deps: DocumentDeps) {
+  _addDependencies(filePath: LocalFsPath, deps: DocumentDeps) {
     // Make sure function is being called properly
     if (!this.allFragmentsToAnalyze.has(filePath)) {
       throw new Error(`Dependency analysis incorrectly called for ${filePath}`);
     }
 
+    const relativeUrl = urlFromPath(this.config.root as LocalFsPath, filePath);
     // Add dependencies to _dependencyAnalysis object, and push them through
     // the dependency stream.
-    this._dependencyAnalysis.fragmentToFullDeps.set(filePath, deps);
-    this._dependencyAnalysis.fragmentToDeps.set(filePath, deps.imports);
+    this._dependencyAnalysis.fragmentToFullDeps.set(relativeUrl, deps);
+    this._dependencyAnalysis.fragmentToDeps.set(relativeUrl, deps.imports);
     deps.imports.forEach((url) => {
       const entrypointList = this._dependencyAnalysis.depsToFragments.get(url);
       if (entrypointList) {
-        entrypointList.push(filePath);
+        entrypointList.push(relativeUrl);
       } else {
-        this._dependencyAnalysis.depsToFragments.set(url, [filePath]);
+        this._dependencyAnalysis.depsToFragments.set(url, [relativeUrl]);
       }
     });
   }
@@ -423,7 +425,7 @@ export class BuildAnalyzer {
    * time
    * this file was analyzed.
    */
-  sourcePathAnalyzed(filePath: string): void {
+  sourcePathAnalyzed(filePath: LocalFsPath): void {
     // If we've analyzed a new path to a source file after the sources
     // stream has completed, we can assume that that file does not
     // exist. Reject with a "Not Found" error.
@@ -440,7 +442,7 @@ export class BuildAnalyzer {
    * Push the given filepath into the dependencies stream for loading.
    * Each dependency is only pushed through once to avoid duplicates.
    */
-  dependencyPathAnalyzed(filePath: string): void {
+  dependencyPathAnalyzed(filePath: LocalFsPath): void {
     if (this.getFile(filePath)) {
       logger.debug(
           'dependency has already been pushed, ignoring...', {dep: filePath});
@@ -466,14 +468,14 @@ export class StreamLoader implements UrlLoader {
   // Store files that have not yet entered the Analyzer stream here.
   // Later, when the file is seen, the DeferredFileCallback can be
   // called with the file contents to resolve its loading.
-  deferredFiles = new Map<string, DeferredFileCallbacks>();
+  deferredFiles = new Map<LocalFsPath, DeferredFileCallbacks>();
 
   constructor(buildAnalyzer: BuildAnalyzer) {
     this._buildAnalyzer = buildAnalyzer;
     this.config = this._buildAnalyzer.config;
   }
 
-  hasDeferredFile(filePath: string): boolean {
+  hasDeferredFile(filePath: LocalFsPath): boolean {
     return this.deferredFiles.has(filePath);
   }
 
@@ -481,7 +483,7 @@ export class StreamLoader implements UrlLoader {
     return this.deferredFiles.size > 0;
   }
 
-  resolveDeferredFile(filePath: string, file: File): void {
+  resolveDeferredFile(filePath: LocalFsPath, file: File): void {
     const deferredCallbacks = this.deferredFiles.get(filePath);
     if (deferredCallbacks == null) {
       throw new Error(
@@ -491,7 +493,7 @@ export class StreamLoader implements UrlLoader {
     this.deferredFiles.delete(filePath);
   }
 
-  rejectDeferredFile(filePath: string, err: Error): void {
+  rejectDeferredFile(filePath: LocalFsPath, err: Error): void {
     const deferredCallbacks = this.deferredFiles.get(filePath);
     if (deferredCallbacks == null) {
       throw new Error(
@@ -502,20 +504,18 @@ export class StreamLoader implements UrlLoader {
   }
 
   // We can't load external dependencies.
-  canLoad(url: string): boolean {
-    return this._buildAnalyzer.analyzer.canResolveUrl(url);
+  canLoad(url: ResolvedUrl): boolean {
+    return url.startsWith('file:///');
   }
 
-  async load(url: string): Promise<string> {
+  async load(url: ResolvedUrl): Promise<string> {
     logger.debug(`loading: ${url}`);
-    const urlObject = parseUrl(url);
-
     if (!this.canLoad(url)) {
       throw new Error('Unable to load ${url}.');
     }
 
-    const urlPath = urlObject.pathname || '/';
-    const filePath = pathFromUrl(this.config.root, urlPath);
+    const urlPath = this._buildAnalyzer.analyzer.urlResolver.relative(url);
+    const filePath = pathFromUrl(this.config.root as LocalFsPath, urlPath);
     const file = this._buildAnalyzer.getFile(filePath);
 
     if (file) {

@@ -17,6 +17,7 @@ import {ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
 
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
+import {LocalFsPath} from './path-transformers';
 
 // TODO(aomarks) Switch to babel-preset-env. But how do we get just syntax
 // plugins without turning on transformation, for the case where we are
@@ -83,7 +84,7 @@ export interface JsTransformOptions {
   moduleResolution?: ModuleResolutionStrategy;
 
   // The path of the file being transformed, used for module resolution.
-  filePath?: string;
+  filePath?: LocalFsPath;
 
   // The package name of the file being transformed, required when
   // `isComponentRequest` is true.
