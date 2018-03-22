@@ -123,7 +123,11 @@ export class BuildAnalyzer {
   };
   _resolveDependencyAnalysis!: (index: DepsIndex) => void;
 
-  constructor(config: ProjectConfig) {
+  constructor(
+      config: ProjectConfig,
+      /** If null is given, we do not log warnings. */
+      private readonly streamToWarnTo: (NodeJS.WriteStream|
+                                        null) = process.stdout) {
     this.config = config;
 
     this.loader = new StreamLoader(this);
@@ -142,10 +146,12 @@ export class BuildAnalyzer {
 
     const lintOptions: Partial<typeof config.lint> = (this.config.lint || {});
 
-    this._warningsFilter = new WarningFilter({
-      warningCodesToIgnore: new Set(lintOptions.ignoreWarnings || []),
-      minimumSeverity: Severity.WARNING
-    });
+    const warningCodesToIgnore = new Set(lintOptions.ignoreWarnings || []);
+    // These are expected, as we never want to load remote URLs like
+    // `https://example.com/` when we're building
+    warningCodesToIgnore.add('not-loadable');
+    this._warningsFilter = new WarningFilter(
+        {warningCodesToIgnore, minimumSeverity: Severity.WARNING});
   }
 
   /**
@@ -334,7 +340,10 @@ export class BuildAnalyzer {
   }
 
   printWarnings(): void {
-    const warningPrinter = new WarningPrinter(process.stdout);
+    if (this.streamToWarnTo === null) {
+      return;
+    }
+    const warningPrinter = new WarningPrinter(this.streamToWarnTo);
     warningPrinter.printWarnings(this.warnings);
   }
 

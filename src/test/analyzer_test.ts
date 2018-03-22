@@ -53,7 +53,7 @@ suite('Analyzer', () => {
         sources: ['a.html', 'b.html', 'entrypoint.html'],
       });
 
-      const analyzer = new BuildAnalyzer(config);
+      const analyzer = new BuildAnalyzer(config, null);
       analyzer.sources().pipe(new NoopStream());
       analyzer.dependencies().pipe(new NoopStream());
 
@@ -83,7 +83,7 @@ suite('Analyzer', () => {
         sources: sourceFiles,
       });
 
-      const analyzer = new BuildAnalyzer(config);
+      const analyzer = new BuildAnalyzer(config, null);
       analyzer.sources().pipe(new NoopStream());
       analyzer.dependencies().pipe(new NoopStream());
 
@@ -115,7 +115,7 @@ suite('Analyzer', () => {
         sources: sourceFiles,
       });
 
-      const analyzer = new BuildAnalyzer(config);
+      const analyzer = new BuildAnalyzer(config, null);
       analyzer.sources().pipe(new NoopStream());
       analyzer.dependencies().on('data', (file: File) => {
         foundDependencies.add(file.path);
@@ -150,7 +150,7 @@ suite('Analyzer', () => {
             ],
             sources: sourceFiles,
           });
-          const analyzer = new BuildAnalyzer(config);
+          const analyzer = new BuildAnalyzer(config, null);
           analyzer.sources().pipe(new NoopStream());
           analyzer.dependencies().on('data', (file: File) => {
             foundDependencies.add(file.path);
@@ -179,7 +179,7 @@ suite('Analyzer', () => {
           entrypoint: 'index.html',
           sources: ['src/**/*'],
         });
-        const analyzer = new BuildAnalyzer(config);
+        const analyzer = new BuildAnalyzer(config, null);
 
         let errorCounter = 0;
         const errorListener = (err: Error) => {
@@ -204,7 +204,7 @@ suite('Analyzer', () => {
           entrypoint: 'index.html',
           sources: ['src/**/*'],
         });
-        const analyzer = new BuildAnalyzer(config);
+        const analyzer = new BuildAnalyzer(config, null);
 
         analyzer.dependencies().pipe(new NoopStream());
         analyzer.dependencies().on('error', (err: Error) => {
@@ -224,7 +224,7 @@ suite('Analyzer', () => {
           root: root,
           sources: [sourceFiles],
         });
-        const analyzer = new BuildAnalyzer(config);
+        const analyzer = new BuildAnalyzer(config, null);
 
         let errorCounter = 0;
         const errorListener = (err: Error) => {
@@ -255,7 +255,7 @@ suite('Analyzer', () => {
         const prematurePrintWarningsCheck = () => prematurePrintWarnings =
             prematurePrintWarnings ||
             analyzer.allFragmentsToAnalyze.size > 0 && printWarningsSpy.called;
-        const analyzer = new BuildAnalyzer(config);
+        const analyzer = new BuildAnalyzer(config, null);
         const printWarningsSpy = sinon.spy(analyzer, 'printWarnings');
 
         analyzer.sources().on('data', prematurePrintWarningsCheck);
@@ -285,7 +285,7 @@ suite('Analyzer', () => {
       }
     });
 
-    const analyzer = new BuildAnalyzer(config);
+    const analyzer = new BuildAnalyzer(config, null);
     analyzer.sources().pipe(new NoopStream());
 
     return waitFor(analyzer.sources()).then(() => {
@@ -304,7 +304,7 @@ suite('Analyzer', () => {
       sources: ['a.html', 'b.html', 'entrypoint.html'],
     });
 
-    const analyzer = new BuildAnalyzer(config);
+    const analyzer = new BuildAnalyzer(config, null);
     assert.isFalse(analyzer.started);
     analyzer.sources().pipe(new NoopStream());
     assert.isTrue(analyzer.started);
@@ -322,7 +322,7 @@ suite('Analyzer', () => {
       sources: ['a.html', 'b.html', 'entrypoint.html'],
     });
 
-    const analyzer = new BuildAnalyzer(config);
+    const analyzer = new BuildAnalyzer(config, null);
     assert.isFalse(analyzer.started);
     analyzer.dependencies().pipe(new NoopStream());
     assert.isTrue(analyzer.started);
@@ -338,7 +338,7 @@ suite('Analyzer', () => {
       ],
       sources: ['a.html', 'b.html', 'entrypoint.html'],
     });
-    const analyzer = new BuildAnalyzer(config);
+    const analyzer = new BuildAnalyzer(config, null);
 
     // Cast analyzer to <any> so that we can check private properties of it.
     // We need to access these private streams directly because the public
