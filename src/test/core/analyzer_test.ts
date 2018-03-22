@@ -31,7 +31,7 @@ import {Document, ScannedImport, ScannedInlineDocument, Severity, Warning} from 
 import {FsUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-import {CodeUnderliner, fixtureDir, invertPromise, resolvedUrl} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, invertPromise, resolvedUrl} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');
@@ -804,8 +804,8 @@ var DuplicateNamespace = {};
 
   suite('analyzePackage', () => {
     test('produces a package with the right documents', async () => {
-      const analyzer =
-          Analyzer.createForDirectory(path.join(fixtureDir, 'project'));
+      const {analyzer} =
+          await createForDirectory(path.join(fixtureDir, 'project'));
       const pckage = await analyzer.analyzePackage();
 
       // The root documents of the package are a minimal set of documents whose
@@ -885,7 +885,7 @@ var DuplicateNamespace = {};
     });
 
     test('can get warnings from within and without the package', async () => {
-      const analyzer = Analyzer.createForDirectory(
+      const {analyzer} = await createForDirectory(
           path.join(fixtureDir, 'project-with-errors'));
       const pckage = await analyzer.analyzePackage();
       assert.deepEqual(

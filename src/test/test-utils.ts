@@ -22,7 +22,9 @@ import {FileRelativeUrl, PackageRelativeUrl, ParsedDocument, ResolvedUrl, Scanne
 import {makeParseLoader, SourceRange, Warning} from '../model/model';
 import {scan} from '../scanning/scan';
 import {Scanner} from '../scanning/scanner';
+import {FsUrlLoader} from '../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
+import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 import {UrlLoader} from '../url-loader/url-loader';
 import {underlineCode} from '../warning/code-printer';
 
@@ -183,4 +185,19 @@ export const fixtureDir = path.join(__dirname, '../../src/test/static');
 export async function assertIsCancelled(promise: Promise<any>): Promise<void> {
   const rejection = await invertPromise(promise);
   assert.isTrue(isCancel(rejection), `Expected ${rejection} to be a Cancel.`);
+}
+
+/**
+ * Returns an analyzer with configuration inferred for the given directory.
+ *
+ * Currently this just creates a simple analyzer with a Fs loader rooted
+ * at the given directory, but in the future it may take configuration from
+ * files including polymer.json or similar.
+ */
+export async function createForDirectory(dirname: string) {
+  const urlLoader = new FsUrlLoader(dirname);
+  const urlResolver = new PackageUrlResolver({packageDir: dirname});
+  const analyzer = new Analyzer({urlLoader, urlResolver});
+  const underliner = new CodeUnderliner(analyzer);
+  return {urlLoader, urlResolver, analyzer, underliner};
 }

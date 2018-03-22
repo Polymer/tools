@@ -16,15 +16,13 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {PolymerElementMixin, ScannedPolymerElementMixin} from '../../polymer/polymer-element-mixin';
-import {CodeUnderliner, fixtureDir, runScanner} from '../test-utils';
+import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
-suite('Polymer2MixinScanner', () => {
-  const analyzer =
-      Analyzer.createForDirectory(path.resolve(fixtureDir, 'polymer2/'));
-  const underliner = new CodeUnderliner(analyzer);
+suite('Polymer2MixinScanner', async () => {
+  const {analyzer, underliner} =
+      await createForDirectory(path.resolve(fixtureDir, 'polymer2/'));
 
   async function getScannedMixins(filename: string) {
     const {features} = await runScanner(analyzer, new ClassScanner(), filename);

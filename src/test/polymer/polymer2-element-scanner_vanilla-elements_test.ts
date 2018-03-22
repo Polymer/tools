@@ -16,10 +16,9 @@
 import * as chai from 'chai';
 import {assert} from 'chai';
 
-import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
-import {fixtureDir, runScanner} from '../test-utils';
+import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
 
 //
@@ -38,7 +37,7 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
   let elementsList: ScannedPolymerElement[];
 
   suiteSetup(async () => {
-    const analyzer = Analyzer.createForDirectory(fixtureDir);
+    const {analyzer} = await createForDirectory(fixtureDir);
     const {features} =
         await runScanner(analyzer, new ClassScanner(), 'vanilla-elements.js');
 

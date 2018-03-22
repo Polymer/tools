@@ -13,13 +13,14 @@
  */
 
 import {Analyzer, Severity, Warning, WarningPrinter} from '../index';
+import {createForDirectory} from '../test/test-utils';
 
 /**
  * A basic demo of a linter CLI using the Analyzer API.
  */
 async function main() {
   const basedir = process.cwd();
-  const analyzer = Analyzer.createForDirectory(basedir);
+  const {analyzer} = await createForDirectory(basedir);
   const warnings = await getWarnings(analyzer, process.argv[2]);
   const warningPrinter = new WarningPrinter(process.stderr);
   await warningPrinter.printWarnings(warnings);

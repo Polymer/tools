@@ -15,11 +15,10 @@
 
 import {assert} from 'chai';
 
-import {Analyzer} from '../../core/analyzer';
-import {fixtureDir} from '../test-utils';
+import {createForDirectory, fixtureDir} from '../test-utils';
 
-suite('JavaScriptExportScanner', () => {
-  const analyzer = Analyzer.createForDirectory(fixtureDir);
+suite('JavaScriptExportScanner', async () => {
+  const {analyzer} = await createForDirectory(fixtureDir);
 
   async function getExports(filename: string) {
     const analysis = await analyzer.analyze([filename]);

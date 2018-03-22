@@ -15,10 +15,9 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../../core/analyzer';
 import {ScannedPolymerCoreFeature} from '../../polymer/polymer-core-feature';
 import {PolymerCoreFeatureScanner} from '../../polymer/polymer-core-feature-scanner';
-import {fixtureDir, runScannerOnContents} from '../test-utils';
+import {createForDirectory, fixtureDir, runScannerOnContents} from '../test-utils';
 
 suite('PolymerCoreFeatureScanner', () => {
   test('scans _addFeature calls and the Polymer.Base assignment', async () => {
@@ -113,7 +112,7 @@ suite('PolymerCoreFeatureScanner', () => {
 
   test('resolves the Polymer.Base class', async () => {
     // This directory contains files copied from Polymer 1.x core.
-    const analyzer = Analyzer.createForDirectory(
+    const {analyzer} = await createForDirectory(
         path.resolve(fixtureDir, 'polymer-core-feature/'));
 
     const analysis = await analyzer.analyzePackage();

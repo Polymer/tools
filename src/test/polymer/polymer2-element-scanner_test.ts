@@ -16,16 +16,15 @@
 import {assert, use as chaiUse} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
-import {CodeUnderliner, fixtureDir, runScanner} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
 chaiUse(require('chai-subset'));
 
-suite('Polymer2ElementScanner', () => {
-  const analyzer =
-      Analyzer.createForDirectory(path.resolve(fixtureDir, 'polymer2/'));
+suite('Polymer2ElementScanner', async () => {
+  const {analyzer} =
+      await createForDirectory(path.resolve(fixtureDir, 'polymer2/'));
   const underliner = new CodeUnderliner(analyzer);
 
   async function getElements(filename: string):
@@ -563,11 +562,7 @@ namespaced name.`,
       'foo',
        ~~~`
           ],
-          observers: [
-            'let let let parseError',
-            'foo',
-            'foo(bar)'
-          ],
+          observers: ['let let let parseError', 'foo', 'foo(bar)'],
           observerProperties: [['foo'], ['foo', 'bar']],
         }]);
   });
@@ -648,10 +643,7 @@ namespaced name.`,
     const elementData = await Promise.all(elements.map(getTestProps));
     assert.deepEqual(elementData, [
       {
-        attributes: [
-          { name: 'prop1' },
-          { name: 'prop2' }
-        ],
+        attributes: [{name: 'prop1'}, {name: 'prop2'}],
         className: 'TestElement',
         description: '',
         methods: [],
@@ -659,21 +651,11 @@ namespaced name.`,
           ['_testObserver', 'prop1', 'prop2'],
           ['_testObserverTwo', 'prop1', 'prop2']
         ],
-        observers: [
-          '_testObserver(prop1, prop2)',
-          '_testObserverTwo(prop1, prop2)'
-        ],
+        observers:
+            ['_testObserver(prop1, prop2)', '_testObserverTwo(prop1, prop2)'],
         properties: [
-          {
-            description: '',
-            name: 'prop1',
-            type: 'string | null | undefined'
-          },
-          {
-            description: '',
-            name: 'prop2',
-            type: 'string | null | undefined'
-          }
+          {description: '', name: 'prop1', type: 'string | null | undefined'},
+          {description: '', name: 'prop2', type: 'string | null | undefined'}
         ],
         summary: '',
         superClass: 'Polymer.Element',

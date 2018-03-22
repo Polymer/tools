@@ -13,15 +13,19 @@ npm install polymer-analyzer
 
 ## Usage
 ```js
-const {Analyzer} = require('polymer-analyzer');
+const {Analyzer, FsUrlLoader, PackageUrlResolver} = require('polymer-analyzer');
 
-const analyzer = Analyzer.createForDirectory('./');
+const rootDir = process.cwd();
+const analyzer = new Analyzer({
+  urlLoader: new FsUrlLoader(rootDir),
+  urlResolver: new PackageUrlResolver({ packageDir: rootDir }),
+});
 
-// This path is relative to the package root
-analyzer.analyze(['./my-element.html']).then((analysis) => {
+// This path is relative to the root dir
+analyzer.analyze(['my-element.html']).then((analysis) => {
   // Print the name of every property on paper-button, and where it was
   // inherited from.
-  const [paperButton, ] = analysis.getFeatures(
+  const [paperButton] = analysis.getFeatures(
       {kind: 'element', id: 'paper-button', externalPackages: true});
   if (paperButton) {
     for (const [name, property] of paperButton.properties) {

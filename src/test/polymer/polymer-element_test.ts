@@ -16,14 +16,13 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
-import {Analyzer} from '../../core/analyzer';
 import {Severity, Warning} from '../../model/model';
 import {PolymerElement} from '../../polymer/polymer-element';
-import {fixtureDir} from '../test-utils';
+import {createForDirectory, fixtureDir} from '../test-utils';
 
-suite('PolymerElement', () => {
-  const analyzer =
-      Analyzer.createForDirectory(path.resolve(fixtureDir, 'polymer2/'));
+suite('PolymerElement', async () => {
+  const {analyzer} =
+      await createForDirectory(path.resolve(fixtureDir, 'polymer2/'));
 
   async function getElements(filename: string): Promise<Set<PolymerElement>> {
     const result = (await analyzer.analyze([filename])).getDocument(filename);

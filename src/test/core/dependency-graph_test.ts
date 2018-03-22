@@ -21,7 +21,7 @@ import {DependencyGraph} from '../../core/dependency-graph';
 
 import chaiAsPromised = require('chai-as-promised');
 import {ResolvedUrl} from '../../model/url';
-import {resolvedUrl, fixtureDir} from '../test-utils';
+import {resolvedUrl, fixtureDir, createForDirectory} from '../test-utils';
 use(chaiAsPromised);
 
 suite('DependencyGraph', () => {
@@ -67,8 +67,9 @@ suite('DependencyGraph', () => {
    */
   suite('as used in the Analyzer', () => {
     let analyzer: Analyzer;
-    setup(() => {
-      analyzer = Analyzer.createForDirectory(fixtureDir);
+    setup(async () => {
+      const created = await createForDirectory(fixtureDir);
+      analyzer = created.analyzer;
     });
 
     async function assertImportersOf(

@@ -21,7 +21,7 @@ import {Analysis} from '../../model/analysis';
 import {FileRelativeUrl, ResolvedUrl, ScannedImport, ScannedInlineDocument} from '../../model/model';
 import {Warning} from '../../model/warning';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
-import {fixtureDir, runScannerOnContents} from '../test-utils';
+import {createForDirectory, fixtureDir, runScannerOnContents} from '../test-utils';
 
 suite('HtmlScriptScanner', () => {
   test('finds external and inline scripts', async () => {
@@ -81,8 +81,8 @@ suite('HtmlScriptScanner', () => {
             !!w.message.match('does-not-exist-lol-dont-care.js')));
   });
 
-  suite('modules', () => {
-    const analyzer = Analyzer.createForDirectory(fixtureDir);
+  suite('modules', async () => {
+    const {analyzer} = await createForDirectory(fixtureDir);
     let analysis: Analysis;
 
     before(async () => {

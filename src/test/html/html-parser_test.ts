@@ -17,9 +17,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {HtmlParser} from '../../html/html-parser';
-import {Analyzer} from '../../index';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
-import {fixtureDir, resolvedUrl} from '../test-utils';
+import {createForDirectory, fixtureDir, resolvedUrl} from '../test-utils';
 
 suite('HtmlParser', () => {
   suite('parse()', () => {
@@ -51,8 +50,8 @@ suite('HtmlParser', () => {
     });
 
     test('can properly determine the base url of a document', async () => {
-      const analyzer =
-          Analyzer.createForDirectory(path.resolve(fixtureDir, '../'));
+      const {analyzer} =
+          await createForDirectory(path.resolve(fixtureDir, '../'));
       const resolvedPath =
           analyzer.resolveUrl(`static/base-href/doc-with-base.html`)!;
       const file = await analyzer.load(resolvedPath);

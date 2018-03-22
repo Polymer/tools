@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* [BREAKING] Removed Analyzer.createFromDirectory, the replacement will go into
+  polymer-project-config.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.17] - 2018-03-20

@@ -15,20 +15,18 @@
 
 import {assert} from 'chai';
 
-import {Analyzer} from '../../core/analyzer';
 import {ScannedBehavior} from '../../polymer/behavior';
 import {BehaviorScanner} from '../../polymer/behavior-scanner';
-import {fixtureDir, runScanner} from '../test-utils';
+import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
 suite('BehaviorScanner', () => {
   let behaviors: Map<string, ScannedBehavior>;
   let behaviorsList: ScannedBehavior[];
 
   suiteSetup(async () => {
-    const {features} = await runScanner(
-        Analyzer.createForDirectory(fixtureDir),
-        new BehaviorScanner(),
-        'js-behaviors.js');
+    const {analyzer} = await createForDirectory(fixtureDir);
+    const {features} =
+        await runScanner(analyzer, new BehaviorScanner(), 'js-behaviors.js');
     behaviors = new Map();
     behaviorsList =
         <ScannedBehavior[]>features.filter((e) => e instanceof ScannedBehavior);
