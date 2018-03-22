@@ -26,6 +26,7 @@ const tslint = require('gulp-tslint');
 const typescript = require('gulp-typescript');
 const uglify = require('uglify-js');
 const babelCore = require('babel-core');
+const sourcemaps = require('gulp-sourcemaps');
 
 const tsProject = typescript.createProject(
     'tsconfig.json', {typescript: require('typescript')});
@@ -41,10 +42,15 @@ gulp.task('build', (done) => {
 });
 
 gulp.task('compile', () => {
-  let tsReporter = typescript.reporter.defaultReporter();
+  const srcs =
+    gulp.src('src/**/*.ts');
+  const tsResult =
+    srcs.pipe(sourcemaps.init())
+      .pipe(typescript(tsProject, [], typescript.reporter.fullReporter()));
+
   return mergeStream(
-             tsProject.src().pipe(tsProject(tsReporter)),
-             gulp.src(['src/**/*', '!src/**/*.ts']))
+             tsResult.js.pipe(sourcemaps.write('../lib')),
+             tsResult.dts)
       .pipe(gulp.dest('lib'));
 });
 
