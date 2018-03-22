@@ -5,12 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.1] - 2018-03-21
 * Upgraded to `polymer-analyzer@3.0.0-pre.17` and `polymer-bundler@4.0.0-pre.2`.
 * Converted from `PackageUrlResolver` to `FsUrlResolver` as more appropriate to application build context.
 * Ignore `not-loadable` warnings, as polymer-build should not load remote
   resources.
-<!-- Add new, unreleased changes here. -->
 
 ## [2.5.0] - 2018-03-21
 * Add `packageName` option to `jsTransform()` function. Option is required when
