@@ -124,92 +124,122 @@ suite('jsTransform', () => {
     });
   });
 
-  test('rewrites bare module specifiers to paths', () => {
+  suite('rewrites bare module specifiers', () => {
     const fixtureRoot =
         path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
-    const filePath = path.join(fixtureRoot, 'foo.js') as LocalFsPath;
 
-    const input = stripIndent(`
-      import { dep1 } from 'dep1';
-      import { dep2 } from 'dep2';
-      import { dep2A } from 'dep2/a';
-      import { dep3 } from 'dep3';
-      import { dep4 } from 'dep4';
+    test('node packages', () => {
+      const filePath = path.join(fixtureRoot, 'foo.js') as LocalFsPath;
 
-      import { p1 } from '/already/a/path.js';
-      import { p2 } from './already/a/path.js';
-      import { p3 } from '../already/a/path.js';
-      import { p4 } from '../already/a/path.js';
-      import { p5 } from 'http://example.com/already/a/path.js';
-    `);
+      const input = stripIndent(`
+        import { dep1 } from 'dep1';
+        import { dep2 } from 'dep2';
+        import { dep2A } from 'dep2/a';
+        import { dep3 } from 'dep3';
+        import { dep4 } from 'dep4';
+      `);
 
-    const expected = stripIndent(`
-      import { dep1 } from './node_modules/dep1/index.js';
-      import { dep2 } from './node_modules/dep2/dep2.js';
-      import { dep2A } from './node_modules/dep2/a.js';
-      import { dep3 } from './node_modules/dep3/dep3-module.js';
-      import { dep4 } from './node_modules/dep4/dep4-module.js';
+      const expected = stripIndent(`
+        import { dep1 } from './node_modules/dep1/index.js';
+        import { dep2 } from './node_modules/dep2/dep2.js';
+        import { dep2A } from './node_modules/dep2/a.js';
+        import { dep3 } from './node_modules/dep3/dep3-module.js';
+        import { dep4 } from './node_modules/dep4/dep4-module.js';
+      `);
 
-      import { p1 } from '/already/a/path.js';
-      import { p2 } from './already/a/path.js';
-      import { p3 } from '../already/a/path.js';
-      import { p4 } from '../already/a/path.js';
-      import { p5 } from 'http://example.com/already/a/path.js';
-    `);
-
-    const result = jsTransform(input, {moduleResolution: 'node', filePath});
-    assert.equal(result.trim(), expected.trim());
-  });
-
-  test('rewrites bare module specifiers to paths for dependencies', () => {
-    const fixtureRoot =
-        path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
-    const filePath = path.join(fixtureRoot, 'npm-module.js') as LocalFsPath;
-
-    const input = stripIndent(`
-      import { dep1 } from 'dep1';
-    `);
-
-    const expected = stripIndent(`
-      import { dep1 } from '../dep1/index.js';
-    `);
-
-    const result = jsTransform(input, {
-      moduleResolution: 'node',
-      filePath,
-      isComponentRequest: true,
-      packageName: 'some-package',
-      componentDir: path.join(fixtureRoot, 'node_modules'),
-      rootDir: fixtureRoot
+      const result = jsTransform(input, {moduleResolution: 'node', filePath});
+      assert.equal(result.trim(), expected.trim());
     });
-    assert.equal(result.trim(), expected.trim());
-  });
 
-  test(
-      'rewrites bare module specifiers to paths for dependencies from a scoped package',
-      () => {
-        const fixtureRoot =
-            path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
-        const filePath = path.join(fixtureRoot, 'npm-module.js') as LocalFsPath;
+    test('regular paths and urls', () => {
+      const filePath = path.join(fixtureRoot, 'foo.js') as LocalFsPath;
 
-        const input = stripIndent(`
-      import { dep1 } from 'dep1';
-    `);
+      const input = stripIndent(`
+        import { p1 } from '/already/a/path.js';
+        import { p2 } from './already/a/path.js';
+        import { p3 } from '../already/a/path.js';
+        import { p4 } from '../already/a/path.js';
+        import { p5 } from 'http://example.com/already/a/path.js';
+      `);
 
-        const expected = stripIndent(`
-      import { dep1 } from '../../dep1/index.js';
-    `);
+      const expected = stripIndent(`
+        import { p1 } from '/already/a/path.js';
+        import { p2 } from './already/a/path.js';
+        import { p3 } from '../already/a/path.js';
+        import { p4 } from '../already/a/path.js';
+        import { p5 } from 'http://example.com/already/a/path.js';
+      `);
 
-        const result = jsTransform(input, {
-          moduleResolution: 'node',
-          filePath,
-          isComponentRequest: true,
-          packageName: '@some-scope/some-package',
-          componentDir: path.join(fixtureRoot, 'node_modules'),
-          rootDir: fixtureRoot
-        });
-        assert.equal(result.trim(), expected.trim());
+      const result = jsTransform(input, {moduleResolution: 'node', filePath});
+      assert.equal(result.trim(), expected.trim());
+    });
+
+    test('paths that still need node resolution', () => {
+      const filePath = path.join(fixtureRoot, 'foo.js') as LocalFsPath;
+
+      const input =
+          // Resolves to a .js file.
+          `import { bar } from './bar';\n` +
+          // Resolves to a .json file (invalid for the web, but we still do it).
+          `import { baz } from './baz';\n` +
+          // Resolves to an actual extension-less file in preference to a .js
+          // file with the same basename.
+          `import { qux } from './qux';\n`;
+
+      const expected = stripIndent(`
+        import { bar } from './bar.js';
+        import { baz } from './baz.json';
+        import { qux } from './qux';
+      `);
+
+      const result = jsTransform(input, {moduleResolution: 'node', filePath});
+      assert.equal(result.trim(), expected.trim());
+    });
+
+    test('paths for dependencies', () => {
+      const filePath = path.join(fixtureRoot, 'npm-module.js') as LocalFsPath;
+
+      const input = stripIndent(`
+        import { dep1 } from 'dep1';
+      `);
+
+      const expected = stripIndent(`
+        import { dep1 } from '../dep1/index.js';
+      `);
+
+      const result = jsTransform(input, {
+        moduleResolution: 'node',
+        filePath,
+        isComponentRequest: true,
+        packageName: 'some-package',
+        componentDir: path.join(fixtureRoot, 'node_modules'),
+        rootDir: fixtureRoot
       });
+      assert.equal(result.trim(), expected.trim());
+    });
+
+    test('dependencies from a scoped package', () => {
+      const filePath = path.join(fixtureRoot, 'npm-module.js') as LocalFsPath;
+
+      const input = stripIndent(`
+        import { dep1 } from 'dep1';
+      `);
+
+      const expected = stripIndent(`
+        import { dep1 } from '../../dep1/index.js';
+      `);
+
+      const result = jsTransform(input, {
+        moduleResolution: 'node',
+        filePath,
+        isComponentRequest: true,
+        packageName: '@some-scope/some-package',
+        componentDir: path.join(fixtureRoot, 'node_modules'),
+        rootDir: fixtureRoot
+      });
+      assert.equal(result.trim(), expected.trim());
+    });
+  });
 
   test('transforms ES modules to AMD', () => {
     const input = stripIndent(`

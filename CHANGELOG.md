@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 * Add `htmlTransform` function, factored out of the Polyserve `compile-middleware` module.
 * Add ordered execution to the ES to AMD module transformation in `htmlTransform`.
+* Node module specifier rewriter will now resolve paths according to the node module resolution algorithm, not just bare specifiers (e.g. "./foo" resolves to "./foo.js").
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.1] - 2018-03-21
