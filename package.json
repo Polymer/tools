@@ -16,7 +16,7 @@
     "build:fixtures": "npm run build && node lib/tools/update-fixtures",
     "test:full": "npm run build && bash test/run-mocha.sh && npm run lint",
     "test:fast": "npm run build && bash test/run-mocha.sh unit",
-    "test:watch": "watchy -w src/ -w custom_typings/ -- npm run test:fast --loglevel=silent",
+    "test:watch": "tsc-then -- bash test/run-mocha.sh unit",
     "test": "npm run test:fast && npm run lint",
     "lint": "tslint -p ./",
     "format": "find bin src test | grep \"\\.js$\\|\\.ts$\" | xargs clang-format --style=file -i",
@@ -70,8 +70,8 @@
     "dir-compare": "^1.4.0",
     "js-yaml": "^3.11.0",
     "mocha": "^3.5.3",
+    "tsc-then": "^1.1.0",
     "tslint": "^5.5.0",
-    "typescript": "^2.6.2",
-    "watchy": "^0.7.0"
+    "typescript": "^2.6.2"
   }
 }

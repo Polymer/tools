@@ -14,14 +14,20 @@
 
 import {assert} from 'chai';
 import {lookupDependencyMapping, saveDependencyMapping} from '../../package-manifest';
+import {interceptOutput} from './util';
 
 
 suite('src/package-manifest', () => {
 
   suite('lookupDependencyMapping()', () => {
-    test('returns undefined when dependency map is not known', () => {
-      const result = lookupDependencyMapping('UNKNOWN_PACKAGE_NAME');
-      assert.isUndefined(result);
+    test('returns undefined when dependency map is not known', async () => {
+      const output = await interceptOutput(async () => {
+        const result = lookupDependencyMapping('UNKNOWN_PACKAGE_NAME');
+        assert.isUndefined(result);
+      });
+      assert.deepEqual(
+          output.trim(),
+          `WARN: bower->npm mapping for "UNKNOWN_PACKAGE_NAME" not found`);
     });
     test('returns dependency mapping info when dependency map is known', () => {
       const result = lookupDependencyMapping('polymer');
@@ -33,21 +39,26 @@ suite('src/package-manifest', () => {
   });
 
   suite('saveDependencyMapping()', () => {
-    test(
-        'saves a dependency mapping for later lookup via lookupDependencyMapping()',
-        () => {
-          const bowerName = 'CUSTOM_BOWER_PACKAGE_NAME';
-          const customMappingInfo = {
-            npm: 'CUSTOM_NPM_PACKAGE_NAME',
-            semver: '^1.2.3'
-          };
-          let result = lookupDependencyMapping(bowerName);
-          assert.isUndefined(result);
-          saveDependencyMapping(
-              bowerName, customMappingInfo.npm, customMappingInfo.semver);
-          result = lookupDependencyMapping(bowerName);
-          assert.deepEqual(result, customMappingInfo);
-        });
+    const testName = `saves a dependency mapping for later lookup ` +
+        `via lookupDependencyMapping()`;
+    test(testName, async () => {
+      const output = await interceptOutput(async () => {
+        const bowerName = 'CUSTOM_BOWER_PACKAGE_NAME';
+        const customMappingInfo = {
+          npm: 'CUSTOM_NPM_PACKAGE_NAME',
+          semver: '^1.2.3'
+        };
+        let result = lookupDependencyMapping(bowerName);
+        assert.isUndefined(result);
+        saveDependencyMapping(
+            bowerName, customMappingInfo.npm, customMappingInfo.semver);
+        result = lookupDependencyMapping(bowerName);
+        assert.deepEqual(result, customMappingInfo);
+      });
+      assert.deepEqual(
+          output.trim(),
+          `WARN: bower->npm mapping for "CUSTOM_BOWER_PACKAGE_NAME" not found`);
+    });
   });
 
 });
