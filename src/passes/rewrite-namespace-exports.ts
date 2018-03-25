@@ -139,6 +139,10 @@ class RewriteNamespaceExportsPass {
     const fullyQualifiedName = memberPath.join('.');
     this.namespaceNames.add(fullyQualifiedName);
 
+    // Note: in other place in this file where we decide between let and const
+    // exports, we check if the "this." name is mutable as well, but in this
+    // case it's very unlikely that a name assigned imperatively, like NS.foo =
+    // is otherwise accessed via "this."
     path.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
         this.mutableNames.has(fullyQualifiedName) ? 'let' : 'const',
         [jsc.variableDeclarator(jsc.identifier(nameExportedAs), value)])));
@@ -300,13 +304,15 @@ function getNamespaceExports(
     }
     const name = key.name;
     const fullName = `${namespaceName}.${name}`;
+    // The expression for an internal `this.` reference to a namespace member
+    const thisName = `this.${name}`;
+    const isMutable = mutableNames.has(fullName) || mutableNames.has(thisName);
     if (value.type === 'ObjectExpression' || value.type === 'ArrayExpression' ||
         value.type === 'Literal') {
       exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
-            mutableNames.has(fullName) ? 'let' : 'const',
-            [jsc.variableDeclarator(key, value)]))
+            isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'FunctionExpression') {
       const func = value;
@@ -319,11 +325,12 @@ function getNamespaceExports(
             func.generator))
       });
     } else if (value.type === 'ArrowFunctionExpression') {
+      const isMutable =
+          mutableNames.has(fullName) || mutableNames.has(thisName);
       exportRecords.push({
         name,
         node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
-            mutableNames.has(fullName) ? 'let' : 'const',
-            [jsc.variableDeclarator(key, value)]))
+            isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]))
       });
     } else if (value.type === 'Identifier') {
       exportRecords.push({
@@ -392,7 +399,12 @@ function getMutableNames(program: estree.Program): Set<string> {
     visitAssignmentExpression(path: NodePath<estree.AssignmentExpression>) {
       const memberName = getMemberName(path.node.left);
       if (memberName !== undefined) {
-        if (assignedOnce.has(memberName)) {
+        // Treating a this.* reference as mutable assumes that it's declared
+        // as a namespace object property elsewhere and this is always a
+        // mutation. Because we don't know the namespace were currently in,
+        // there's a danger of a false positive here. This really should be
+        // integrated with getNamespaceExports / getNamespaceDeclaration.
+        if (assignedOnce.has(memberName) || memberName.startsWith('this.')) {
           mutable.add(memberName);
         } else {
           assignedOnce.add(memberName);

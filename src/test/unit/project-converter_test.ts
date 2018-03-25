@@ -125,7 +125,7 @@ suite('AnalysisConverter', () => {
 
     function assertSources(
         results: Map<string, string|undefined>,
-        expected: {[path: string]: string|undefined}) {
+        expected: {[path: string]: string | undefined}) {
       for (const [expectedPath, expectedContents] of Object.entries(expected)) {
         assert.isTrue(
             results.has(expectedPath),
@@ -824,6 +824,67 @@ export function increment() {
       });
     });
 
+    test('exports a mutable reference if assigned to', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               */
+              Polymer.Namespace = {
+                immutableLiteral: 42,
+                mutableLiteral: 0,
+                increment() {
+                  this.mutableLiteral = 5;
+                },
+              };
+            })();
+          </script>`,
+      });
+      assertSources(await convert(), {
+        'test.js': `
+export const immutableLiteral = 42;
+export let mutableLiteral = 0;
+
+export function increment() {
+  mutableLiteral = 5;
+}
+`
+      });
+    });
+
+    test('exports a mutable function if assigned to', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               */
+              Polymer.Namespace = {
+                immutableFunction: () => 42,
+                mutableFunction: () => 0,
+                increment() {
+                  this.mutableFunction = () => 5;
+                },
+              };
+            })();
+          </script>`,
+      });
+      assertSources(await convert(), {
+        'test.js': `
+export const immutableFunction = () => 42;
+export let mutableFunction = () => 0;
+
+export function increment() {
+  mutableFunction = () => 5;
+}
+`
+      });
+    });
 
     test('exports a namespace function and its properties', async () => {
       setSources({
@@ -855,6 +916,35 @@ export const dom = function() {
 
 export const subFn = function() {
   return 'Polymer.dom.subFn result';
+};
+`
+      });
+    });
+
+    test('exports mutable properties set imperatively', async () => {
+      setSources({
+        'test.html': `
+          <script>
+            (function() {
+              'use strict';
+              /**
+               * @namespace
+               * @memberof Polymer
+               */
+              Polymer.dom = {};
+              /**
+               * @memberof Polymer.dom
+               */
+              Polymer.dom.subFn = function() {
+                Polymer.dom.subFn = () => 42;
+              };
+            })();
+          </script>`,
+      });
+      assertSources(await convert(), {
+        'test.js': `
+export let subFn = function() {
+  subFn = () => 42;
 };
 `
       });
@@ -2018,7 +2108,6 @@ new foo().foo();
         `
       });
 
-      // Note(rictic): we don't yet get that `baz` can't be `const` here.
       assertSources(await convert(), {
         'settings.js': `
 export let foo = 'default';
@@ -2027,7 +2116,7 @@ export const setFoo = function(newFoo) {
   foo = newFoo;
 };
 
-export const baz = 100;
+export let baz = 100;
 
 export function setBaz(newBaz) {
   baz = newBaz;
