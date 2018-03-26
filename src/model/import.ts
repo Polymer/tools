@@ -76,17 +76,20 @@ export class ScannedImport implements Resolvable {
 
     const importedDocumentOrWarning =
         document._analysisContext.getDocument(resolvedUrl);
+    let importedDocument: Document|undefined;
     if (!(importedDocumentOrWarning instanceof Document)) {
       this.addCouldNotLoadWarning(document, importedDocumentOrWarning);
-      return undefined;
+      importedDocument = undefined;
+    } else {
+      importedDocument = importedDocumentOrWarning;
     }
     return this.constructImport(
-        resolvedUrl, this.url, importedDocumentOrWarning, document);
+        resolvedUrl, this.url, importedDocument, document);
   }
 
   protected constructImport(
       resolvedUrl: ResolvedUrl, relativeUrl: FileRelativeUrl,
-      importedDocument: Document, _containingDocument: Document) {
+      importedDocument: Document|undefined, _containingDocument: Document) {
     return new Import(
         resolvedUrl,
         relativeUrl,
@@ -155,7 +158,7 @@ export class Import implements Feature {
   readonly type: 'html-import'|'html-script'|'html-style'|string;
   readonly url: ResolvedUrl;
   readonly originalUrl: FileRelativeUrl;
-  readonly document: Document;
+  readonly document: Document|undefined;
   readonly identifiers = new Set();
   readonly kinds = new Set(['import']);
   readonly sourceRange: SourceRange|undefined;
@@ -166,7 +169,7 @@ export class Import implements Feature {
 
   constructor(
       url: ResolvedUrl, originalUrl: FileRelativeUrl, type: string,
-      document: Document, sourceRange: SourceRange|undefined,
+      document: Document|undefined, sourceRange: SourceRange|undefined,
       urlSourceRange: SourceRange|undefined, ast: any, warnings: Warning[],
       lazy: boolean) {
     this.url = url;

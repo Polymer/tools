@@ -83,7 +83,7 @@ export class Analysis implements Queryable {
       for (const imprt of doc.getFeatures({kind: 'import', imported: true})) {
         // When there's cycles we can keep any element of the cycle, so why not
         // this one.
-        if (imprt.document !== doc) {
+        if (imprt.document !== undefined && imprt.document !== doc) {
           potentialRoots.delete(imprt.document);
         }
       }

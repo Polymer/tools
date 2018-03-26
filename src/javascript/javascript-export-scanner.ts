@@ -74,7 +74,7 @@ export class Export implements Resolvable, Feature {
     if (babel.isExportAllDeclaration(this.astNode)) {
       const [import_] =
           document.getFeatures({kind: 'import', statement: this.statementAst});
-      if (import_ === undefined) {
+      if (import_ === undefined || import_.document === undefined) {
         // Import did not resolve.
         return undefined;
       }

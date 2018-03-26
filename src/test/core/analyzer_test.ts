@@ -317,7 +317,7 @@ suite('Analyzer', () => {
 
       // The inline document can find the container's imported
       // features
-      const subBehavior = getOnly(scriptDocument.getFeatures(
+      const subBehavior = getOnly(scriptDocument!.getFeatures(
           {kind: 'behavior', id: 'TestBehavior', imported: true}))!;
       assert.equal(subBehavior.className, 'TestBehavior');
     });

@@ -392,10 +392,10 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
       if (feature.kinds.has('import') && query.imported) {
         const imprt = feature as Import;
         const isPackageInternal =
-            imprt.document && !Analysis.isExternal(imprt.document.url);
+            imprt.document && !Analysis.isExternal(imprt.url);
         const externalityOk = query.externalPackages || isPackageInternal;
         const lazinessOk = !query.noLazyImports || !imprt.lazy;
-        if (externalityOk && lazinessOk) {
+        if (imprt.document !== undefined && externalityOk && lazinessOk) {
           imprt.document._listFeatures(result, visited, query);
         }
       }

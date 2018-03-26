@@ -163,7 +163,7 @@ function resolveThroughImport<K extends keyof FeatureKindMap>(
         path.node.type}`);
   }
   const [import_] = document.getFeatures({kind: 'import', statement});
-  if (import_ === undefined) {
+  if (import_ === undefined || import_.document === undefined) {
     // Import failed, maybe it could not be loaded.
     return {successful: false, error: undefined};
   }

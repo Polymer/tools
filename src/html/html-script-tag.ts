@@ -45,8 +45,13 @@ export class ScannedScriptTagImport extends ScannedImport {
 
     const scannedDocument =
         document._analysisContext._getScannedDocument(resolvedUrl);
-    if (scannedDocument) {
-      const importedDocument =
+    let importedDocument: Document|undefined;
+    if (scannedDocument === undefined) {
+      // not found or syntax error
+      this.addCouldNotLoadWarning(document);
+      importedDocument = undefined;
+    } else {
+      importedDocument =
           new Document(scannedDocument, document._analysisContext);
 
       // Scripts regularly make use of global variables or functions (e.g.
@@ -60,21 +65,17 @@ export class ScannedScriptTagImport extends ScannedImport {
       const backReference = new DocumentBackreference(document);
       importedDocument._addFeature(backReference);
       importedDocument.resolve();
-
-      return new ScriptTagImport(
-          resolvedUrl,
-          this.url,
-          this.type,
-          importedDocument,
-          this.sourceRange,
-          this.urlSourceRange,
-          this.astNode,
-          this.warnings,
-          false);
-    } else {
-      // not found or syntax error
-      this.addCouldNotLoadWarning(document);
-      return undefined;
     }
+
+    return new ScriptTagImport(
+        resolvedUrl,
+        this.url,
+        this.type,
+        importedDocument,
+        this.sourceRange,
+        this.urlSourceRange,
+        this.astNode,
+        this.warnings,
+        false);
   }
 }

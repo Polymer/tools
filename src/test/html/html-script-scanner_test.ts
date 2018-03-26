@@ -97,11 +97,9 @@ suite('HtmlScriptScanner', () => {
       }
       const htmlScripts = [...result.value.getFeatures({kind: 'html-script'})];
       assert.equal(htmlScripts.length, 1);
-      const js = htmlScripts[0].document.parsedDocument as JavaScriptDocument;
+      const js = htmlScripts[0].document!.parsedDocument as JavaScriptDocument;
       assert.equal(js.url, analyzer.resolveUrl('javascript/module.js')!);
       assert.equal(js.parsedAsSourceType, 'module');
-      assert.equal(
-          js.contents.trim(), `import * as submodule from './submodule.js';`);
     });
 
     test('finds inline module scripts', () => {
@@ -133,10 +131,16 @@ suite('HtmlScriptScanner', () => {
       }
       const jsImports = [...result.value.getFeatures(
           {kind: 'js-import', imported: true, excludeBackreferences: true})];
-      assert.equal(jsImports.length, 4);
+      assert.deepEqual(jsImports.map((imp) => imp.originalUrl), [
+        './javascript/module-with-export.js',
+        './javascript/other-module-with-export.js',
+        './submodule.js',
+        './submodule.js',
+        './does-not-exist.js',
+      ]);
 
       // import statement in 1st inline module script in 'js-modules.html'
-      const js0 = jsImports[0].document.parsedDocument as JavaScriptDocument;
+      const js0 = jsImports[0].document!.parsedDocument as JavaScriptDocument;
       assert.equal(
           js0.url, analyzer.resolveUrl('javascript/module-with-export.js'));
       assert.equal(js0.parsedAsSourceType, 'module');
@@ -144,7 +148,7 @@ suite('HtmlScriptScanner', () => {
           js0.contents.trim(), `export const someValue = 'value goes here';`);
 
       // import statement in 2nd inline module script in 'js-modules.html'
-      const js1 = jsImports[1].document.parsedDocument as JavaScriptDocument;
+      const js1 = jsImports[1].document!.parsedDocument as JavaScriptDocument;
       assert.equal(
           js1.url,
           analyzer.resolveUrl('javascript/other-module-with-export.js'));
@@ -155,13 +159,13 @@ suite('HtmlScriptScanner', () => {
               `export const otherValue = subThing;`);
 
       // import statement in imported 'javascript/other-module-with-export.js'
-      const js2 = jsImports[2].document.parsedDocument as JavaScriptDocument;
+      const js2 = jsImports[2].document!.parsedDocument as JavaScriptDocument;
       assert.equal(js2.url, analyzer.resolveUrl('javascript/submodule.js'));
       assert.equal(js2.parsedAsSourceType, 'module');
       assert.equal(js2.contents.trim(), `export const subThing = 'sub-thing';`);
 
       // import statement in external module script 'javascript/module.js'
-      const js3 = jsImports[3].document.parsedDocument as JavaScriptDocument;
+      const js3 = jsImports[3].document!.parsedDocument as JavaScriptDocument;
       assert.equal(js3.url, analyzer.resolveUrl('javascript/submodule.js'));
       assert.equal(js3.parsedAsSourceType, 'module');
       assert.equal(js3.contents.trim(), `export const subThing = 'sub-thing';`);
@@ -210,7 +214,7 @@ suite('HtmlScriptScanner', () => {
 
       // import statement in inline module script in
       // 'imports-js-module-with-base.html'
-      const js0 = jsImports[0].document.parsedDocument as JavaScriptDocument;
+      const js0 = jsImports[0].document!.parsedDocument as JavaScriptDocument;
       assert.equal(
           js0.url, analyzer.resolveUrl('javascript/module-with-export.js'));
       assert.equal(js0.parsedAsSourceType, 'module');

@@ -65,7 +65,7 @@ export class ScannedJavascriptImport extends ScannedImport {
 
   protected constructImport(
       resolvedUrl: ResolvedUrl, relativeUrl: FileRelativeUrl,
-      importedDocument: Document, _containingDocument: Document) {
+      importedDocument: Document|undefined, _containingDocument: Document) {
     return new JavascriptImport(
         resolvedUrl,
         relativeUrl,
@@ -96,7 +96,7 @@ export class JavascriptImport extends Import implements DeclaredWithStatement {
 
   constructor(
       url: ResolvedUrl, originalUrl: FileRelativeUrl, type: string,
-      document: Document, sourceRange: SourceRange|undefined,
+      document: Document|undefined, sourceRange: SourceRange|undefined,
       urlSourceRange: SourceRange|undefined,
       ast: babel.ImportDeclaration|babel.CallExpression|
       babel.ExportAllDeclaration|babel.ExportNamedDeclaration,
