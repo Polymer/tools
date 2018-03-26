@@ -33,7 +33,7 @@ suite('src/package-manifest', () => {
       const result = lookupDependencyMapping('polymer');
       assert.deepEqual(result, {
         npm: '@polymer/polymer',
-        semver: '^3.0.0-pre.10',
+        semver: '3.0.0-pre.12',
       });
     });
   });
