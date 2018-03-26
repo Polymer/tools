@@ -1,6 +1,6 @@
 # Polymer 3.0 Status Page
 
-*Last run: 2018-02-06*
+-*Last run: See [Status Page Changelog](https://github.com/Polymer/polymer-modulizer/commits/master/docs/polymer-3-element-status.md)*
 
 This table contains the status of every Polymer 3.0 element being run through automated testing.
 
@@ -16,33 +16,33 @@ This table contains the status of every Polymer 3.0 element being run through au
 
 | repo | `npm install`\* | `wct --npm` | reason? |
 |------|---------------|------------|---------|
-| app-layout | ✅ | ❌ | 3 failed tests |
-| app-localize-behavior | ✅ | ✅ | |
-| app-media | ✅ | ❌ | 12 failed tests bower -> npm issues |
+| app-layout | ✅ | ✅ | |
+| app-localize-behavior | ✅ | ❌ | Cannot find module 'intl-messageformat' |
+| app-media | ✅ | ⚠️ | (Tooling Error) 'return' outside of function |
 | app-route | ✅ | ✅ | |
-| app-storage | ✅ | ❌ | 2 failed tests |
+| app-storage | ✅ | ❌ | Cannot read property \'ownerDocument\' of null |
 | font-roboto | ✅ | ⚠️ | *No test suites were found matching your configuration* |
 | font-roboto-local | ✅ | ⚠️ | *No test suites were found matching your configuration* |
 | gold-cc-cvc-input | ✅ | ✅ | |
-| gold-cc-expiration-input | ✅ | ✅ | |
+| gold-cc-expiration-input | ✅ | ❌ | Blocked a frame with origin "http://localhost:8081" from accessing a cross-origin frame. |
 | gold-cc-input | ✅ | ✅ | |
 | gold-phone-input | ✅ | ✅ | |
 | gold-zip-input | ✅ | ✅ | |
 | iron-a11y-announcer | ✅ | ✅ | |
-| iron-a11y-keys | ✅ | ✅ | |
+| iron-a11y-keys | ✅ | ❌ | wct-browser-legacy not installed |
 | iron-a11y-keys-behavior | ✅ | ✅ | |
 | iron-ajax | ✅ | ✅ | |
 | iron-autogrow-textarea | ✅ | ✅ | |
 | iron-behaviors | ✅ | ✅ | |
 | iron-checked-element-behavior | ✅ | ✅ | |
 | iron-collapse | ✅ | ✅ | |
-| iron-component-page | ✅ | ✅ | |
+| iron-component-page | ✅ | ❌ | Tests failed: Timed out |
 | iron-demo-helpers | ✅ | ✅ | |
-| iron-doc-viewer | ✅ | ✅ | |
-| iron-dropdown | ✅ | ❌ | Error: expected 10 to equal 0 (5 tests) |
+| iron-doc-viewer | ✅ | ❌ | 3 failed tests |
+| iron-dropdown | ✅ | ❌ | _boundScrollHandler is not defined |
 | iron-fit-behavior | ✅ | ❌ | 4 failed tests |
 | iron-flex-layout | ✅ | ✅ | |
-| iron-form | ✅ | ✅ | |
+| iron-form | ✅ | ❌ | Blocked a frame with origin "http://localhost:8081" from accessing a cross-origin frame. |
 | iron-form-element-behavior | ✅ | ✅ | |
 | iron-icon | ✅ | ✅ | |
 | iron-icons | ✅ | ✅ | |
@@ -52,13 +52,13 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-input | ✅ | ✅ | |
 | iron-jsonp-library | ✅ | ✅ | |
 | iron-label | ✅ | ✅ | |
-| iron-list | ✅ | ❌ | Error: buildDataSet is not defined |
+| iron-list | ✅ | ❌ | 14 failed tests |
 | iron-localstorage | ✅ | ✅ | |
-| iron-location | ✅ | ❌ | Error: Timeout of 10000ms exceeded.  |
+| iron-location | ✅ | ❌ | Timeout of 10000ms exceeded |
 | iron-media-query | ✅ | ✅ | |
 | iron-menu-behavior | ✅ | ✅ | |
 | iron-meta | ✅ | ✅ | |
-| iron-overlay-behavior | ✅ | ❌ | 1 failed test (_boundScrollHandler is not defined) |
+| iron-overlay-behavior | ✅ | ❌ | styleZ is not defined |
 | iron-pages | ✅ | ✅ | |
 | iron-range-behavior | ✅ | ✅ | |
 | iron-resizable-behavior | ✅ | ❌ | 2 failed tests |
@@ -69,7 +69,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-validatable-behavior | ✅ | ✅ | |
 | iron-validator-behavior | ✅ | ✅ | |
 | marked-element | ✅ | ✅ | |
-| neon-animation | ✅ | ❌ | 4 failed tests |
+| neon-animation | ✅ | ❌ | KeyframeEffect is not defined |
 | paper-badge | ✅ | ✅ | |
 | paper-behaviors | ✅ | ✅ | |
 | paper-button | ✅ | ✅ | |
@@ -79,7 +79,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | paper-dialog-behavior | ✅ | ✅ | |
 | paper-dialog-scrollable | ✅ | ✅ | |
 | paper-drawer-panel | ✅ | ✅ | |
-| paper-dropdown-menu | ✅ | ✅ | |
+| paper-dropdown-menu | ✅ | ❌ | _boundScrollHandler is not defined |
 | paper-fab | ✅ | ✅ | |
 | paper-header-panel | ✅ | ✅ | |
 | paper-icon-button | ✅ | ✅ | |
@@ -87,7 +87,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | paper-item | ✅ | ✅ | |
 | paper-listbox | ✅ | ✅ | |
 | paper-material | ✅ | ✅ | |
-| paper-menu-button | ✅ | ✅ | |
+| paper-menu-button | ✅ | ❌ | _boundScrollHandler is not defined |
 | paper-progress | ✅ | ✅ | |
 | paper-radio-button | ✅ | ✅ | |
 | paper-radio-group | ✅ | ✅ | |
@@ -96,16 +96,16 @@ This table contains the status of every Polymer 3.0 element being run through au
 | paper-slider | ✅ | ✅ | |
 | paper-spinner | ✅ | ✅ | |
 | paper-styles | ✅ | ⚠️ | *No test suites were found matching your configuration* |
-| paper-swatch-picker | ✅ | ❌ | Error: Cannot read property 'call' of undefined |
+| paper-swatch-picker | ✅ | ❌ | _boundScrollHandler is not defined |
 | paper-tabs | ✅ | ✅ | |
 | paper-toast | ✅ | ✅ | |
 | paper-toggle-button | ✅ | ✅ | |
 | paper-toolbar | ✅ | ✅ | |
 | paper-tooltip | ✅ | ✅ | |
-| platinum-sw | ✅ | ❌ | 12 failed tests |
-| polymer | ✅ | ❌ | Error: chai is not defined |
+| platinum-sw | ✅ | ❌ | Cannot read property \'ownerDocument\' of null |
+| polymer | ✅ | ❌ | module is not defined |
 | prism-element | ✅ | ✅ | |
-| promise-polyfill | ✅ | ⚠️ | *No test suites were found matching your configuration* |
-| test-fixture | ✅ | ❌ | 2 failed tests |
+| promise-polyfill | ✅ | ❌ | wct-browser-legacy not installed.  |
+| test-fixture | ✅ | ❌ | Cannot read property \'import\' of null |
 
 *\*Note: `npm install` is currently being used for testing instead of the planned `yarn install --flat` due to a yarn bug in multi-repo conversion & testing. See https://github.com/Polymer/polymer-modulizer/issues/254 for more info.*
