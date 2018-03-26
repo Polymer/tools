@@ -121,9 +121,12 @@ class RewriteNamespaceExportsPass {
         correctedNamespaceName = 'Polymer';
         name = 'Polymer';
       }
-      nodePath.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
-          this.mutableNames.has(correctedNamespaceName) ? 'let' : 'const',
-          [jsc.variableDeclarator(jsc.identifier(name), exportedExpression)])));
+      replacePreservingComments(
+          nodePath,
+          jsc.exportNamedDeclaration(jsc.variableDeclaration(
+              this.mutableNames.has(correctedNamespaceName) ? 'let' : 'const',
+              [jsc.variableDeclarator(
+                  jsc.identifier(name), exportedExpression)])));
       this.exportMigrationRecords.push(
           {oldNamespacedName: correctedNamespaceName, es6ExportName: name});
     }
@@ -143,9 +146,11 @@ class RewriteNamespaceExportsPass {
     // exports, we check if the "this." name is mutable as well, but in this
     // case it's very unlikely that a name assigned imperatively, like NS.foo =
     // is otherwise accessed via "this."
-    path.replace(jsc.exportNamedDeclaration(jsc.variableDeclaration(
-        this.mutableNames.has(fullyQualifiedName) ? 'let' : 'const',
-        [jsc.variableDeclarator(jsc.identifier(nameExportedAs), value)])));
+    replacePreservingComments(
+        path,
+        jsc.exportNamedDeclaration(jsc.variableDeclaration(
+            this.mutableNames.has(fullyQualifiedName) ? 'let' : 'const',
+            [jsc.variableDeclarator(jsc.identifier(nameExportedAs), value)])));
     this.exportMigrationRecords.push(
         {oldNamespacedName: fullyQualifiedName, es6ExportName: nameExportedAs});
   }
@@ -228,9 +233,11 @@ class RewriteNamespaceExportsPass {
       // move the export to the declaration
       const exportedName =
           fullyQualifiedNamePath[fullyQualifiedNamePath.length - 1];
-      assignment.replace(jsc.exportNamedDeclaration(
-          null,  // declaration
-          [jsc.exportSpecifier(identifier, jsc.identifier(exportedName))]));
+      replacePreservingComments(
+          assignment,
+          jsc.exportNamedDeclaration(
+              null,  // declaration
+              [jsc.exportSpecifier(identifier, jsc.identifier(exportedName))]));
       this.exportMigrationRecords.push(
           {es6ExportName: exportedName, oldNamespacedName: fullyQualifiedName});
     }
@@ -424,4 +431,29 @@ function getMutableNames(program: estree.Program): Set<string> {
   });
 
   return mutable;
+}
+
+function replacePreservingComments(
+    nodePath: NodePath, replacement: estree.Node) {
+  const comments = getComments(nodePath);
+  nodePath.replace(replacement);
+  for (const comment of comments) {
+    // Filter out namespace and memberof comments, which no longer make sense.
+    const lines = comment.value.split('\n');
+    comment.value =
+        lines.filter((l) => !/@(namespace|memberof)/.test(l)).join('\n');
+  }
+  (nodePath.node as any).comments = comments;
+}
+
+function getComments(nodePath: NodePath) {
+  return getCommentsFromNode(nodePath.node);
+}
+function getCommentsFromNode(node: estree.Node&
+                             {comments?: estree.Comment[]}): estree.Comment[] {
+  const results = [];
+  if (node.comments) {
+    results.push(...node.comments);
+  }
+  return results;
 }

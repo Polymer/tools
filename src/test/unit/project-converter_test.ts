@@ -910,10 +910,14 @@ export function increment() {
       });
       assertSources(await convert(), {
         'test.js': `
+/**
+               */
 export const dom = function() {
   return 'Polymer.dom result';
 };
 
+/**
+               */
 export const subFn = function() {
   return 'Polymer.dom.subFn result';
 };
@@ -943,6 +947,8 @@ export const subFn = function() {
       });
       assertSources(await convert(), {
         'test.js': `
+/**
+               */
 export let subFn = function() {
   subFn = () => 42;
 };
@@ -982,14 +988,20 @@ export let subFn = function() {
       });
       assertSources(await convert(), {
         'test.js': `
+/**
+               */
 export const dom = function() {
   return 'Polymer.dom result';
 };
 
+/**
+               */
 export const subFn = function() {
   return 'Polymer.dom.subFn result';
 };
 
+/**
+               */
 export const subFnDelegate = function() {
   return 'Polymer.dom.subFnDelegate delegates: ' + dom() + subFn();
 };
@@ -2951,6 +2963,52 @@ console.log('second script');
 /* Second comment */
 /* Final trailing comment */
 ;
+`,
+      });
+    });
+
+    testName = 'copy over behavior comments properly';
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            /**
+             * This is a long and important comment.
+             * It has much info.
+             * @memberof Polymer This line should be removed
+             * @polymerBehavior
+             */
+            Polymer.MyBehavior = {};
+
+            /**
+             * This comment is also important, but its
+             * whitespace is handled better, because it doesn't
+             * have any lines that need filtering out.
+             * @polymer
+             * @mixinFunction
+             */
+            Polymer.MyMixinFunction = function() {};
+          </script>
+        `
+      });
+
+      assertSources(await convert(), {
+        'test.js': `
+/**
+             * This is a long and important comment.
+             * It has much info.
+             * @polymerBehavior
+             */
+export const MyBehavior = {};
+
+/**
+ * This comment is also important, but its
+ * whitespace is handled better, because it doesn't
+ * have any lines that need filtering out.
+ * @polymer
+ * @mixinFunction
+ */
+export const MyMixinFunction = function() {};
 `,
       });
     });
