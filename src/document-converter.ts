@@ -22,14 +22,13 @@ import * as jsc from 'jscodeshift';
 import {EOL} from 'os';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
+import {Document, Import, ParsedHtmlDocument} from 'polymer-analyzer';
 import * as recast from 'recast';
 
-import {ConversionSettings} from './conversion-settings';
-import {attachCommentsToFirstStatement, canDomModuleBeInlined, collectIdentifierNames, containsWriteToGlobalSettingsObject, createDomNodeInsertStatements, filterClone, findAvailableIdentifier, getCommentsBetween, getMemberPath, getNodePathInProgram, getPathOfAssignmentTo, getSetterName, insertStatementsIntoProgramBody, serializeNode, serializeNodeToTemplateLiteral} from './document-util';
-import {ConversionResult, JsExport, NamespaceMemberToExport} from './js-module';
+import {DocumentProcessor} from './document-processor';
+import {collectIdentifierNames, containsWriteToGlobalSettingsObject, createDomNodeInsertStatements, findAvailableIdentifier, getMemberPath, getPathOfAssignmentTo, getSetterName, serializeNode} from './document-util';
+import {ConversionResult, JsExport} from './js-module';
 import {addA11ySuiteIfUsed} from './passes/add-a11y-suite-if-used';
-import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeToplevelUseStrict} from './passes/remove-toplevel-use-strict';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
@@ -39,10 +38,8 @@ import {rewriteNamespacesThisReferences} from './passes/rewrite-namespace-this-r
 import {rewriteReferencesToLocalExports} from './passes/rewrite-references-to-local-exports';
 import {rewriteReferencesToNamespaceMembers} from './passes/rewrite-references-to-namespace-members';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
-import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
-import {UrlHandler} from './urls/url-handler';
-import {isOriginalDocumentUrlFormat} from './urls/util';
-import {getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, getModuleId, replaceHtmlExtensionIfFound} from './urls/util';
+import {ConvertedDocumentUrl} from './urls/types';
+import {getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, getModuleId} from './urls/util';
 
 /**
  * Keep a map of dangerous references to check for. Output the related warning
@@ -55,16 +52,6 @@ const dangerousReferences = new Map<string, string>([
   ],
 ]);
 
-/**
- * Keep a set of elements to ignore when Recreating HTML contents by adding
- * code to the top of a program.
- */
-const generatedElementBlacklist = new Set<string|undefined>([
-  'base',
-  'link',
-  'meta',
-  'script',
-]);
 
 const legacyJavascriptTypes: ReadonlySet<string|null> = new Set([
   // lol
@@ -128,42 +115,6 @@ type ImportReference = {
 interface Edit {
   offsets: [number, number];
   replacementText: string;
-}
-
-export type ScanResult =
-    JsModuleScanResult|DeleteFileScanResult|HtmlDocumentScanResult;
-/**
- * Contains information about how an existing file should be converted to a new
- * JS Module. Includes a mapping of its new exports.
- */
-export interface JsModuleScanResult {
-  type: 'js-module';
-  originalUrl: OriginalDocumentUrl;
-  convertedUrl: ConvertedDocumentUrl;
-  convertedFilePath: ConvertedDocumentFilePath;
-  exportMigrationRecords: NamespaceMemberToExport[];
-}
-
-/**
- * Contains information that an existing file should be deleted during
- * conversion.
- */
-export interface DeleteFileScanResult {
-  type: 'delete-file';
-  originalUrl: OriginalDocumentUrl;
-  convertedUrl: undefined;
-  convertedFilePath: undefined;
-}
-
-/**
- * Contains information that an existing file should be converted as a top-level
- * HTML file (and not as a new JS module).
- */
-export interface HtmlDocumentScanResult {
-  type: 'html-document';
-  originalUrl: OriginalDocumentUrl;
-  convertedUrl: ConvertedDocumentUrl;
-  convertedFilePath: ConvertedDocumentFilePath;
 }
 
 /**
@@ -247,23 +198,7 @@ function getImportDeclarations(
  * to JS Modules (using JavaScript import/export statements) or the more simple
  * HTML -> HTML conversion.
  */
-export class DocumentConverter {
-  private readonly originalUrl: OriginalDocumentUrl;
-  private readonly convertedUrl: ConvertedDocumentUrl;
-  private readonly urlHandler: UrlHandler;
-  private readonly conversionSettings: ConversionSettings;
-  private readonly document: Document;
-
-  constructor(
-      document: Document, urlHandler: UrlHandler,
-      conversionSettings: ConversionSettings) {
-    this.conversionSettings = conversionSettings;
-    this.urlHandler = urlHandler;
-    this.document = document;
-    this.originalUrl = urlHandler.getDocumentUrl(document);
-    this.convertedUrl = this.convertDocumentUrl(this.originalUrl);
-  }
-
+export class DocumentConverter extends DocumentProcessor {
   /**
    * Returns ALL HTML Imports from a document. Note that this may return imports
    * to documents that are meant to be ignored/excluded during conversion. It
@@ -287,107 +222,13 @@ export class DocumentConverter {
         });
   }
 
-  private isInternalNonModuleImport(scriptImport: Import): boolean {
-    const oldScriptUrl = this.urlHandler.getDocumentUrl(scriptImport.document);
-    const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
-    const isModuleImport =
-        dom5.getAttribute(scriptImport.astNode, 'type') === 'module';
-    const isInternalImport =
-        this.urlHandler.isImportInternal(this.convertedUrl, newScriptUrl);
-    return isInternalImport && !isModuleImport;
-  }
-
-  /**
-   * Creates a single program from all the JavaScript in the current document.
-   * The standard program result can be used for either scanning or conversion.
-   */
-  private prepareJsModule() {
-    const combinedToplevelStatements = [];
-    const convertedHtmlScripts = new Set<Import>();
-    const claimedDomModules = new Set<parse5.ASTNode>();
-    let prevScriptNode: parse5.ASTNode|undefined = undefined;
-    for (const script of this.document.getFeatures()) {
-      let scriptDocument: Document;
-      if (script.kinds.has('html-script') &&
-          this.isInternalNonModuleImport(script as Import)) {
-        scriptDocument = (script as Import).document;
-        convertedHtmlScripts.add(script as Import);
-      } else if (script.kinds.has('js-document')) {
-        scriptDocument = script as Document;
-      } else {
-        continue;
-      }
-      const scriptProgram =
-          recast.parse(scriptDocument.parsedDocument.contents).program;
-      rewriteToplevelThis(scriptProgram);
-      removeToplevelUseStrict(scriptProgram);
-      // We need to inline templates on a per-script basis, otherwise we run
-      // into trouble matching up analyzer AST nodes with our own.
-      const localClaimedDomModules =
-          this.inlineTemplates(scriptProgram, scriptDocument);
-      for (const claimedDomModule of localClaimedDomModules) {
-        claimedDomModules.add(claimedDomModule);
-      }
-      if (this.conversionSettings.addImportPath) {
-        this.addImportPathsToElements(scriptProgram, scriptDocument);
-      }
-      const comments: string[] = getCommentsBetween(
-          this.document.parsedDocument.ast, prevScriptNode, script.astNode);
-      const statements =
-          attachCommentsToFirstStatement(comments, scriptProgram.body);
-      combinedToplevelStatements.push(...statements);
-      prevScriptNode = script.astNode;
-    }
-
-    const trailingComments = getCommentsBetween(
-        this.document.parsedDocument.ast, prevScriptNode, undefined);
-    const maybeCommentStatement =
-        attachCommentsToFirstStatement(trailingComments, []);
-    combinedToplevelStatements.push(...maybeCommentStatement);
-    const program = jsc.program(combinedToplevelStatements);
-    removeUnnecessaryEventListeners(program);
-    removeWrappingIIFEs(program);
-
-    this.insertCodeToGenerateHtmlElements(program, claimedDomModules);
-    removeNamespaceInitializers(program, this.conversionSettings.namespaces);
-
-    return {program, convertedHtmlScripts};
-  }
-
-  /**
-   * Scan a document's new interface as a JS Module.
-   */
-  scanJsModule(): DeleteFileScanResult|JsModuleScanResult {
-    if (this._isWrapperHTMLDocument) {
-      return {
-        type: 'delete-file',
-        originalUrl: this.originalUrl,
-        convertedUrl: undefined,
-        convertedFilePath: undefined,
-      };
-    }
-
-    const {program} = this.prepareJsModule();
-    const {exportMigrationRecords} = rewriteNamespacesAsExports(
-        program, this.document, this.conversionSettings.namespaces);
-
-    return {
-      type: 'js-module',
-      originalUrl: this.originalUrl,
-      convertedUrl: this.convertedUrl,
-      convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
-      exportMigrationRecords,
-    };
-  }
-
   /**
    * Convert a document to a JS Module.
    */
   convertJsModule(namespacedExports: Map<string, JsExport>):
       ConversionResult[] {
-    const {program, convertedHtmlScripts} = this.prepareJsModule();
     const importedReferences =
-        this.collectNamespacedReferences(program, namespacedExports);
+        this.collectNamespacedReferences(this.program, namespacedExports);
     const results: ConversionResult[] = [];
 
     // Add imports for every non-module <script> tag to just import the file
@@ -397,7 +238,7 @@ export class DocumentConverter {
       const oldScriptUrl =
           this.urlHandler.getDocumentUrl(scriptImport.document);
       const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
-      if (convertedHtmlScripts.has(scriptImport)) {
+      if (this.convertedHtmlScripts.has(scriptImport)) {
         // NOTE: This deleted script file path *may* === this document's final
         // converted file path. Because results are written in order, the
         // final result (this document) has the final say, and any previous
@@ -414,20 +255,20 @@ export class DocumentConverter {
       }
     }
 
-    this.addJsImports(program, importedReferences);
+    this.addJsImports(this.program, importedReferences);
     const {localNamespaceNames, namespaceNames, exportMigrationRecords} =
         rewriteNamespacesAsExports(
-            program, this.document, this.conversionSettings.namespaces);
+            this.program, this.document, this.conversionSettings.namespaces);
     const allNamespaceNames =
         new Set([...localNamespaceNames, ...namespaceNames]);
-    rewriteNamespacesThisReferences(program, namespaceNames);
-    rewriteExcludedReferences(program, this.conversionSettings);
-    rewriteReferencesToLocalExports(program, exportMigrationRecords);
-    rewriteReferencesToNamespaceMembers(program, allNamespaceNames);
-    this.warnOnDangerousReferences(program);
+    rewriteNamespacesThisReferences(this.program, namespaceNames);
+    rewriteExcludedReferences(this.program, this.conversionSettings);
+    rewriteReferencesToLocalExports(this.program, exportMigrationRecords);
+    rewriteReferencesToNamespaceMembers(this.program, allNamespaceNames);
+    this.warnOnDangerousReferences(this.program);
 
-    const outputProgram =
-        recast.print(program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
+    const outputProgram = recast.print(
+        this.program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
 
     results.push({
       originalUrl: this.originalUrl,
@@ -437,20 +278,6 @@ export class DocumentConverter {
       output: outputProgram.code + EOL
     });
     return results;
-  }
-
-  /**
-   * Scan a document as a top-level HTML document. Top-level HTML documents
-   * have no exports to scan, so this returns a simple object containing
-   * relevant url mapping information.
-   */
-  scanTopLevelHtmlDocument(): HtmlDocumentScanResult {
-    return {
-      type: 'html-document',
-      convertedUrl: this.convertedUrl,
-      originalUrl: this.originalUrl,
-      convertedFilePath: getHtmlDocumentConvertedFilePath(this.originalUrl),
-    };
   }
 
   /**
@@ -645,29 +472,6 @@ export class DocumentConverter {
   }
 
   /**
-   * Determines if a document is just a wrapper around a script tag pointing
-   * to an external script of the same name as this file.
-   */
-  private get _isWrapperHTMLDocument() {
-    const allFeatures = Array.from(this.document.getFeatures())
-                            .filter(
-                                (f) =>
-                                    !(f.kinds.has('html-document') &&
-                                      (f as Document).isInline === false));
-    if (allFeatures.length === 1) {
-      const f = allFeatures[0];
-      if (f.kinds.has('html-script')) {
-        const sciprtImport = f as Import;
-        const oldScriptUrl =
-            this.urlHandler.getDocumentUrl(sciprtImport.document);
-        const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
-        return newScriptUrl === this.convertedUrl;
-      }
-    }
-    return false;
-  }
-
-  /**
    * Rewrite an inline script that will exist inlined inside an HTML document.
    * Should not be called on top-level JS Modules.
    */
@@ -793,179 +597,6 @@ export class DocumentConverter {
   }
 
   /**
-   * Recreate the HTML contents from the original HTML document by adding
-   * code to the top of program that constructs equivalent DOM and insert
-   * it into `window.document`.
-   */
-  private insertCodeToGenerateHtmlElements(
-      program: Program, claimedDomModules: Set<parse5.ASTNode>) {
-    const ast = this.document.parsedDocument.ast as parse5.ASTNode;
-    if (ast.childNodes === undefined) {
-      return;
-    }
-    const htmlElement = ast.childNodes!.find((n) => n.tagName === 'html');
-    const head = htmlElement!.childNodes!.find((n) => n.tagName === 'head')!;
-    const body = htmlElement!.childNodes!.find((n) => n.tagName === 'body')!;
-    const elements = [
-      ...head.childNodes!.filter(
-          (n: parse5.ASTNode) => n.tagName !== undefined),
-      ...body.childNodes!.filter((n: parse5.ASTNode) => n.tagName !== undefined)
-    ];
-
-    const genericElements = filterClone(elements, (e) => {
-      return !(
-          generatedElementBlacklist.has(e.tagName) || claimedDomModules.has(e));
-    });
-    if (genericElements.length === 0) {
-      return;
-    }
-    const statements = createDomNodeInsertStatements(genericElements);
-    insertStatementsIntoProgramBody(statements, program);
-  }
-
-  /**
-   * Find Polymer element templates in the original HTML. Insert these
-   * templates as strings as part of the javascript element declaration.
-   */
-  private inlineTemplates(program: Program, scriptDocument: Document) {
-    const elements = scriptDocument.getFeatures({'kind': 'polymer-element'});
-    const claimedDomModules = new Set<parse5.ASTNode>();
-
-    for (const element of elements) {
-      // This is an analyzer wart. There's no way to avoid getting features
-      // from the containing document when querying an inline document. Filed
-      // as https://github.com/Polymer/polymer-analyzer/issues/712
-      if (element.sourceRange === undefined ||
-          !isPositionInsideRange(
-              element.sourceRange.start, scriptDocument.sourceRange)) {
-        continue;
-      }
-      const domModule = element.domModule;
-      if (domModule === undefined) {
-        continue;
-      }
-      if (!canDomModuleBeInlined(domModule)) {
-        continue;
-      }
-      claimedDomModules.add(domModule);
-      const template = dom5.query(domModule, (e) => e.tagName === 'template');
-      if (template === null) {
-        continue;
-      }
-
-      // It's ok to tag templates with the expression `Polymer.html` without
-      // adding an import because `Polymer.html` is re-exported by both
-      // polymer.html and polymer-element.html and, crucially, template
-      // inlining happens before rewriting references.
-      const templateLiteral = jsc.taggedTemplateExpression(
-          jsc.memberExpression(
-              jsc.identifier('Polymer'), jsc.identifier('html')),
-          serializeNodeToTemplateLiteral(
-              parse5.treeAdapters.default.getTemplateContent(template)));
-      const nodePath = getNodePathInProgram(program, element.astNode);
-
-      if (nodePath === undefined) {
-        console.warn(
-            new Warning({
-              code: 'not-found',
-              message: `Can't find recast node for element ${element.tagName}`,
-              parsedDocument: this.document.parsedDocument,
-              severity: Severity.WARNING,
-              sourceRange: element.sourceRange!
-            }).toString());
-        continue;
-      }
-
-      const node = nodePath.node;
-      if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
-        // A Polymer 2.0 class-based element
-        node.body.body.splice(
-            0,
-            0,
-            jsc.methodDefinition(
-                'get',
-                jsc.identifier('template'),
-                jsc.functionExpression(
-                    null, [], jsc.blockStatement([jsc.returnStatement(
-                                  templateLiteral)])),
-                true));
-      } else if (node.type === 'CallExpression') {
-        // A Polymer hybrid/legacy factory function element
-        const arg = node.arguments[0];
-        if (arg && arg.type === 'ObjectExpression') {
-          arg.properties.unshift(jsc.property(
-              'init', jsc.identifier('_template'), templateLiteral));
-        }
-      } else {
-        console.error(`Internal Error, Class or CallExpression expected, got ${
-            node.type}`);
-      }
-    }
-    return claimedDomModules;
-  }
-
-  /**
-   * Adds a static importPath property to Polymer elements.
-   */
-  private addImportPathsToElements(program: Program, scriptDocument: Document) {
-    const elements = scriptDocument.getFeatures({'kind': 'polymer-element'});
-
-    for (const element of elements) {
-      // This is an analyzer wart. There's no way to avoid getting features
-      // from the containing document when querying an inline document. Filed
-      // as https://github.com/Polymer/polymer-analyzer/issues/712
-      if (element.sourceRange === undefined ||
-          !isPositionInsideRange(
-              element.sourceRange.start, scriptDocument.sourceRange)) {
-        continue;
-      }
-
-      const nodePath = getNodePathInProgram(program, element.astNode);
-
-      if (nodePath === undefined) {
-        console.warn(
-            new Warning({
-              code: 'not-found',
-              message: `Can't find recast node for element ${element.tagName}`,
-              parsedDocument: this.document.parsedDocument,
-              severity: Severity.WARNING,
-              sourceRange: element.sourceRange!
-            }).toString());
-        continue;
-      }
-
-      const importMetaUrl = jsc.memberExpression(
-          jsc.memberExpression(
-              jsc.identifier('import'), jsc.identifier('meta')),
-          jsc.identifier('url'));
-
-      const node = nodePath.node;
-      if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
-        // A Polymer 2.0 class-based element
-        const getter = jsc.methodDefinition(
-            'get',
-            jsc.identifier('importPath'),
-            jsc.functionExpression(
-                null,
-                [],
-                jsc.blockStatement([jsc.returnStatement(importMetaUrl)])),
-            true);
-        node.body.body.splice(0, 0, getter);
-      } else if (node.type === 'CallExpression') {
-        // A Polymer hybrid/legacy factory function element
-        const arg = node.arguments[0];
-        if (arg && arg.type === 'ObjectExpression') {
-          arg.properties.unshift(jsc.property(
-              'init', jsc.identifier('importPath'), importMetaUrl));
-        }
-      } else {
-        console.error(`Internal Error, Class or CallExpression expected, got ${
-            node.type}`);
-      }
-    }
-  }
-
-  /**
    * Rewrite namespaced references to the imported name. e.g. changes
    * Polymer.Element -> $Element
    *
@@ -1071,53 +702,6 @@ export class DocumentConverter {
         this.traverse(path);
       }
     });
-  }
-
-  /**
-   * Converts an HTML Document's path from old world to new. Use new NPM naming
-   * as needed in the path, and change any .html extension to .js.
-   */
-  private convertDocumentUrl(htmlUrl: OriginalDocumentUrl):
-      ConvertedDocumentUrl {
-    // TODO(fks): This can be removed later if type-checking htmlUrl is enough
-    if (!isOriginalDocumentUrlFormat(htmlUrl)) {
-      throw new Error(
-          `convertDocumentUrl() expects an OriginalDocumentUrl string` +
-          `from the analyzer, but got "${htmlUrl}"`);
-    }
-    // Use the layout-specific UrlHandler to convert the URL.
-    let jsUrl: string = this.urlHandler.convertUrl(htmlUrl);
-    // Temporary workaround for imports of some shadycss files that wrapped
-    // ES6 modules.
-    if (jsUrl.endsWith('shadycss/apply-shim.html')) {
-      jsUrl = jsUrl.replace(
-          'shadycss/apply-shim.html', 'shadycss/entrypoints/apply-shim.js');
-    }
-    if (jsUrl.endsWith('shadycss/custom-style-interface.html')) {
-      jsUrl = jsUrl.replace(
-          'shadycss/custom-style-interface.html',
-          'shadycss/entrypoints/custom-style-interface.js');
-    }
-    // Convert any ".html" URLs to point to their new ".js" module equivilent
-    jsUrl = replaceHtmlExtensionIfFound(jsUrl);
-    return jsUrl as ConvertedDocumentUrl;
-  }
-
-  /**
-   * Converts the URL for a script that is already being loaded in a
-   * pre-conversion HTML document via the <script> tag. This is similar to
-   * convertDocumentUrl(), but can skip some of the more complex .html -> .js
-   * conversion/rewriting.
-   */
-  private convertScriptUrl(oldUrl: OriginalDocumentUrl): ConvertedDocumentUrl {
-    // TODO(fks): This can be removed later if type-checking htmlUrl is enough
-    if (!isOriginalDocumentUrlFormat(oldUrl)) {
-      throw new Error(
-          `convertDocumentUrl() expects an OriginalDocumentUrl string` +
-          `from the analyzer, but got "${oldUrl}"`);
-    }
-    // Use the layout-specific UrlHandler to convert the URL.
-    return this.urlHandler.convertUrl(oldUrl);
   }
 
   /**
