@@ -138,7 +138,7 @@ export async function testWorkspace(
   const restoreResults = await restoreRepos(allRepos);
   restoreResults.failures.forEach(logRepoError);
 
-  logStep(5, 4, '🔧', `Tests Complete!`);
+  logStep(4, 4, '🔧', `Tests Complete!`);
   return [...runResults.successes.keys()];
 }
 
