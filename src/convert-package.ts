@@ -65,19 +65,8 @@ async function setupOutDir(outDir: string, clean = false) {
  * current package's bower.json maifest to the "includes" set.
  */
 function getConversionSettings(
-    analyzer: Analyzer,
-    analysis: Analysis,
-    options: PackageConversionSettings,
-    bowerJson: any) {
-  const conversionSettings =
-      createDefaultConversionSettings(analyzer, analysis, options);
-  let bowerMainFiles = (bowerJson.main) || [];
-  if (!Array.isArray(bowerMainFiles)) {
-    bowerMainFiles = [bowerMainFiles];
-  }
-  for (const filename of bowerMainFiles) {
-    conversionSettings.includes.add(filename);
-  }
+    analysis: Analysis, options: PackageConversionSettings) {
+  const conversionSettings = createDefaultConversionSettings(analysis, options);
   return conversionSettings;
 }
 
@@ -123,8 +112,7 @@ export default async function convert(options: PackageConversionSettings) {
       npmPackageName,
       options.packageType,
       options.inDir);
-  const conversionSettings =
-      getConversionSettings(analyzer, analysis, options, bowerJson);
+  const conversionSettings = getConversionSettings(analysis, options);
   const converter =
       new ProjectConverter(analysis, urlHandler, conversionSettings);
 

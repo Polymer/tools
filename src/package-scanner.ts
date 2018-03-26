@@ -45,6 +45,7 @@ export class PackageScanner {
   private readonly analysis: Analysis;
   private readonly urlHandler: UrlHandler;
   private readonly conversionSettings: ConversionSettings;
+  private readonly topLevelEntrypoints: Set<OriginalDocumentUrl> = new Set();
 
   /**
    * A set of all external dependencies (by name) actually detected as JS
@@ -66,11 +67,13 @@ export class PackageScanner {
 
   constructor(
       packageName: string, analysis: Analysis, urlHandler: UrlHandler,
-      conversionSettings: ConversionSettings) {
+      conversionSettings: ConversionSettings,
+      topLevelEntrypoints: Set<OriginalDocumentUrl>) {
     this.packageName = packageName;
     this.analysis = analysis;
     this.urlHandler = urlHandler;
     this.conversionSettings = conversionSettings;
+    this.topLevelEntrypoints = topLevelEntrypoints;
   }
 
   /**
@@ -114,8 +117,21 @@ export class PackageScanner {
    * Scan each document in a package manually.
    */
   scanPackageManually() {
+    // Scan top-level entrypoints first, to make sure their dependencies are
+    // properly converted to JS modules as well.
     for (const document of this.getPackageHtmlDocuments()) {
-      this.scanDocument(document);
+      if (this.topLevelEntrypoints.has(
+              this.urlHandler.getDocumentUrl(document))) {
+        this.scanDocument(document, 'js-module');
+      }
+    }
+    // Scan all other documents, to be converted as top-level HTML files.
+    for (const document of this.getPackageHtmlDocuments()) {
+      // If the document was scanned above, don't scan it again. (`scanDocument`
+      // also checks this.)
+      if (this.shouldScanDocument(document)) {
+        this.scanDocument(document, 'html-document');
+      }
     }
   }
 
@@ -197,7 +213,8 @@ export class PackageScanner {
    * format (JS Module or HTML Document) is determined by whether the file is
    * included in conversionSettings.includes.
    */
-  private scanDocument(document: Document, forceJs = false) {
+  private scanDocument(
+      document: Document, scanAs: 'js-module'|'html-document') {
     console.assert(
         document.kinds.has('html-document'),
         `scanDocument() must be called with an HTML document, but got ${
@@ -206,14 +223,12 @@ export class PackageScanner {
       return;
     }
 
-    const documentUrl = this.urlHandler.getDocumentUrl(document);
     const documentConverter = new DocumentConverter(
         document, this.urlHandler, this.conversionSettings);
     let scanResult: JsModuleScanResult|HtmlDocumentScanResult|
         DeleteFileScanResult;
     try {
-      scanResult =
-          (forceJs || this.conversionSettings.includes.has(documentUrl)) ?
+      scanResult = scanAs === 'js-module' ?
           documentConverter.scanJsModule() :
           documentConverter.scanTopLevelHtmlDocument();
     } catch (e) {
@@ -259,7 +274,7 @@ export class PackageScanner {
           this.urlHandler.getOriginalPackageNameForUrl(importDocumentUrl);
 
       if (importPackageName === packageName) {
-        this.scanDocument(htmlImport.document, true);
+        this.scanDocument(htmlImport.document, 'js-module');
       } else {
         this.externalDependencies.add(importPackageName);
       }

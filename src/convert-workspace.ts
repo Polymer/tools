@@ -108,8 +108,7 @@ export default async function convert(options: WorkspaceConversionSettings):
     Promise<ConversionResultsMap> {
   const analyzer = configureAnalyzer(options);
   const analysis = await analyzer.analyzePackage();
-  const conversionSettings =
-      createDefaultConversionSettings(analyzer, analysis, options);
+  const conversionSettings = createDefaultConversionSettings(analysis, options);
   const urlHandler = new WorkspaceUrlHandler(analyzer, options.workspaceDir);
   const converter =
       new ProjectConverter(analysis, urlHandler, conversionSettings);
