@@ -56,19 +56,19 @@ export function transformResponse(transformer: ResponseTransformer):
 
     const _end = res.end;
     res.end = function(
-        chunk?: Buffer|string,
+        cbOrChunk?: Function|Buffer|string,
         cbOrEncoding?: Function|string,
         cbOrFd?: Function|string): boolean {
-      if (ended)
+      if (ended) {
         return false;
+      }
       ended = true;
 
       if (shouldTransform()) {
-        if (chunk) {
-          const buffer = (typeof chunk === 'string') ?
-              new Buffer(chunk, cbOrEncoding as string) :
-              chunk;
-          chunks.push(buffer);
+        if (Buffer.isBuffer(cbOrChunk)) {
+          chunks.push(cbOrChunk);
+        } else if (typeof cbOrChunk === 'string') {
+          chunks.push(new Buffer(cbOrChunk, cbOrEncoding as string));
         }
         const body = Buffer.concat(chunks).toString('utf8');
         let newBody = body;
@@ -82,9 +82,10 @@ export function transformResponse(transformer: ResponseTransformer):
         // Assumes single-byte code points!
         // res.setHeader('Content-Length', `${newBody.length}`);
         res.removeHeader('Content-Length');
+        // TODO(aomarks) Shouldn't we call the callbacks?
         return _end.call(this, newBody);
       } else {
-        return _end.call(this, chunk, cbOrEncoding, cbOrFd);
+        return _end.call(this, cbOrChunk, cbOrEncoding, cbOrFd);
       }
     };
 
