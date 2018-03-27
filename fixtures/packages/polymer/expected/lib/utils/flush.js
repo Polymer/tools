@@ -2,6 +2,12 @@ import './boot.js';
 
 let debouncerQueue = [];
 
+/**
+ * Adds a `Polymer.Debouncer` to a list of globally flushable tasks.
+ *
+ * @param {!Polymer.Debouncer} debouncer Debouncer to enqueue
+ * @return {void}
+ */
 export const enqueueDebouncer = function(debouncer) {
   debouncerQueue.push(debouncer);
 };
@@ -20,6 +26,13 @@ function flushDebouncers() {
   return didFlush;
 }
 
+/**
+ * Forces several classes of asynchronously queued tasks to flush:
+ * - Debouncers added via `enqueueDebouncer`
+ * - ShadyDOM distribution
+ *
+ * @return {void}
+ */
 export const flush = function() {
   let shadyDOM, debouncers;
   do {

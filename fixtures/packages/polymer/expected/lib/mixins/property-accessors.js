@@ -54,6 +54,34 @@ function saveAccessorValue(model, property) {
   }
 }
 
+/**
+ * Element class mixin that provides basic meta-programming for creating one
+ * or more property accessors (getter/setter pair) that enqueue an async
+ * (batched) `_propertiesChanged` callback.
+ *
+ * For basic usage of this mixin:
+ * 
+ * -   Declare attributes to observe via the standard `static get observedAttributes()`. Use
+ *     `dash-case` attribute names to represent `camelCase` property names. 
+ * -   Implement the `_propertiesChanged` callback on the class.
+ * -   Call `MyClass.createPropertiesForAttributes()` **once** on the class to generate 
+ *     property accessors for each observed attribute. This must be called before the first 
+ *     instance is created, for example, by calling it before calling `customElements.define`.
+ *     It can also be called lazily from the element's `constructor`, as long as it's guarded so
+ *     that the call is only made once, when the first instance is created.
+ * -   Call `this._enableProperties()` in the element's `connectedCallback` to enable 
+ *     the accessors.
+ *
+ * Any `observedAttributes` will automatically be
+ * deserialized via `attributeChangedCallback` and set to the associated
+ * property using `dash-case`-to-`camelCase` convention.
+ *
+ * @mixinFunction
+ * @polymer
+ * @appliesMixin Polymer.PropertiesChanged
+ * @summary Element class mixin for reacting to property changes from
+ *   generated property accessors.
+ */
 export const PropertyAccessors = dedupingMixin(superClass => {
 
   /**

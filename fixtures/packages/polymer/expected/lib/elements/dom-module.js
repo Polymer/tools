@@ -127,4 +127,5 @@ DomModule.prototype['modules'] = modules;
 
 customElements.define('dom-module', DomModule);
 
+// export
 export { DomModule };

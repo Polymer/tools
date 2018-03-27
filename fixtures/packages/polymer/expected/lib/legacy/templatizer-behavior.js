@@ -14,6 +14,66 @@ let TemplateInstanceBase = TemplateInstanceBase$0; // eslint-disable-line
  */
 let TemplatizerUser; // eslint-disable-line
 
+/**
+ * The `Polymer.Templatizer` behavior adds methods to generate instances of
+ * templates that are each managed by an anonymous `Polymer.PropertyEffects`
+ * instance where data-bindings in the stamped template content are bound to
+ * accessors on itself.
+ *
+ * This behavior is provided in Polymer 2.x as a hybrid-element convenience
+ * only.  For non-hybrid usage, the `Polymer.Templatize` library
+ * should be used instead.
+ *
+ * Example:
+ *
+ *     // Get a template from somewhere, e.g. light DOM
+ *     let template = this.querySelector('template');
+ *     // Prepare the template
+ *     this.templatize(template);
+ *     // Instance the template with an initial data model
+ *     let instance = this.stamp({myProp: 'initial'});
+ *     // Insert the instance's DOM somewhere, e.g. light DOM
+ *     Polymer.dom(this).appendChild(instance.root);
+ *     // Changing a property on the instance will propagate to bindings
+ *     // in the template
+ *     instance.myProp = 'new value';
+ *
+ * Users of `Templatizer` may need to implement the following abstract
+ * API's to determine how properties and paths from the host should be
+ * forwarded into to instances:
+ *
+ *     _forwardHostPropV2: function(prop, value)
+ *
+ * Likewise, users may implement these additional abstract API's to determine
+ * how instance-specific properties that change on the instance should be
+ * forwarded out to the host, if necessary.
+ *
+ *     _notifyInstancePropV2: function(inst, prop, value)
+ *
+ * In order to determine which properties are instance-specific and require
+ * custom notification via `_notifyInstanceProp`, define an `_instanceProps`
+ * object containing keys for each instance prop, for example:
+ *
+ *     _instanceProps: {
+ *       item: true,
+ *       index: true
+ *     }
+ *
+ * Any properties used in the template that are not defined in _instanceProp
+ * will be forwarded out to the Templatize `owner` automatically.
+ *
+ * Users may also implement the following abstract function to show or
+ * hide any DOM generated using `stamp`:
+ *
+ *     _showHideChildren: function(shouldHide)
+ *
+ * Note that some callbacks are suffixed with `V2` in the Polymer 2.x behavior
+ * as the implementations will need to differ from the callbacks required
+ * by the 1.x Templatizer API due to changes in the `TemplateInstance` API
+ * between versions 1.x and 2.x.
+ *
+ * @polymerBehavior
+ */
 export const Templatizer = {
 
   /**

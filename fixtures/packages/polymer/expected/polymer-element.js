@@ -18,5 +18,13 @@ import { html as html$0 } from './lib/utils/html-tag.js';
  *   attribute deserialization, and property change observation
  */
 const Element = ElementMixin(HTMLElement);
+
+/**
+ * @constructor
+ * @implements {Polymer_ElementMixin}
+ * @extends {HTMLElement}
+ */
 export { Element };
+
+// NOTE: this is here for modulizer to export `html` for the module version of this file
 export { html$0 as html };

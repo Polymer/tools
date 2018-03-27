@@ -927,6 +927,13 @@ register({
   }
 });
 
+/* eslint-enable valid-jsdoc */
+
+/** @deprecated */
 export const findOriginalTarget = _findOriginalTarget;
+
+/** @deprecated */
 export const add = addListener;
+
+/** @deprecated */
 export const remove = removeListener;

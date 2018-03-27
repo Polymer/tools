@@ -93,4 +93,20 @@ export function set(root, path, value) {
   return parts.join('.');
 }
 
+/**
+ * Returns true if the given string is a structured data path (has dots).
+ *
+ * This function is deprecated.  Use `Polymer.Path.isPath` instead.
+ *
+ * Example:
+ *
+ * ```
+ * Polymer.Path.isDeep('foo.bar.baz') // true
+ * Polymer.Path.isDeep('foo')         // false
+ * ```
+ *
+ * @deprecated
+ * @param {string} path Path string
+ * @return {boolean} True if the string contained one or more dots
+ */
 export const isDeep = isPath;

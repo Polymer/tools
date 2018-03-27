@@ -20,6 +20,13 @@ let rootPath = undefined ||
 
 export { rootPath };
 
+/**
+ * Sets the global rootPath property used by `Polymer.ElementMixin` and
+ * available via `Polymer.rootPath`.
+ *
+ * @param {string} path The new root path
+ * @return {void}
+ */
 export const setRootPath = function(path) {
   rootPath = path;
 };
@@ -43,8 +50,15 @@ export const setRootPath = function(path) {
  */
 let sanitizeDOMValue = undefined;
 
+// This is needed for tooling
 export { sanitizeDOMValue };
 
+/**
+ * Sets the global sanitizeDOMValue available via `Polymer.sanitizeDOMValue`.
+ *
+ * @param {(function(*,string,string,Node):*)|undefined} newSanitizeDOMValue the global sanitizeDOMValue callback
+ * @return {void}
+ */
 export const setSanitizeDOMValue = function(newSanitizeDOMValue) {
   sanitizeDOMValue = newSanitizeDOMValue;
 };
@@ -61,6 +75,12 @@ let passiveTouchGestures = false;
 
 export { passiveTouchGestures };
 
+/**
+ * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
+ *
+ * @param {boolean} usePassive enable or disable passive touch gestures globally
+ * @return {void}
+ */
 export const setPassiveTouchGestures = function(usePassive) {
   passiveTouchGestures = usePassive;
 };

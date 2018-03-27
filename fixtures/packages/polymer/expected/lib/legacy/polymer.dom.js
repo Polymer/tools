@@ -337,6 +337,20 @@ DomApi.prototype.querySelector;
  */
 DomApi.prototype.querySelectorAll;
 
+/**
+ * Legacy DOM and Event manipulation API wrapper factory used to abstract
+ * differences between native Shadow DOM and "Shady DOM" when polyfilling on
+ * older browsers.
+ *
+ * Note that in Polymer 2.x use of `Polymer.dom` is no longer required and
+ * in the majority of cases simply facades directly to the standard native
+ * API.
+ *
+ * @summary Legacy DOM and Event manipulation API wrapper factory used to
+ * abstract differences between native Shadow DOM and "Shady DOM."
+ * @param {(Node|Event)=} obj Node or event to operate on
+ * @return {!DomApi|!EventApi} Wrapper providing either node API or event API
+ */
 export const dom = function(obj) {
   obj = obj || document;
   if (!obj.__domApi) {
@@ -352,5 +366,22 @@ export const dom = function(obj) {
 };
 
 export { matchesSelector };
+
+/**
+ * Forces several classes of asynchronously queued tasks to flush:
+ * - Debouncers added via `Polymer.enqueueDebouncer`
+ * - ShadyDOM distribution
+ *
+ * This method facades to `Polymer.flush`.
+ *
+ */
 export { flush$0 as flush };
+
+/**
+ * Adds a `Polymer.Debouncer` to a list of globally flushable tasks.
+ *
+ * This method facades to `Polymer.enqueueDebouncer`.
+ *
+ * @param {Polymer.Debouncer} debouncer Debouncer to enqueue
+ */
 export { enqueueDebouncer as addDebouncer };

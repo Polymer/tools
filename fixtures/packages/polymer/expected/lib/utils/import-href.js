@@ -10,6 +10,23 @@ function whenImportsReady(cb) {
   }
 }
 
+/**
+ * Convenience method for importing an HTML document imperatively.
+ *
+ * This method creates a new `<link rel="import">` element with
+ * the provided URL and appends it to the document to start loading.
+ * In the `onload` callback, the `import` property of the `link`
+ * element will contain the imported document contents.
+ *
+ * @param {string} href URL to document to load.
+ * @param {?function(!Event):void=} onload Callback to notify when an import successfully
+ *   loaded.
+ * @param {?function(!ErrorEvent):void=} onerror Callback to notify when an import
+ *   unsuccessfully loaded.
+ * @param {boolean=} optAsync True if the import should be loaded `async`.
+ *   Defaults to `false`.
+ * @return {!HTMLLinkElement} The link element for the URL to be loaded.
+ */
 export const importHref = function(href, onload, onerror, optAsync) {
   let link = /** @type {HTMLLinkElement} */
     (document.head.querySelector('link[href="' + href + '"][import-href]'));

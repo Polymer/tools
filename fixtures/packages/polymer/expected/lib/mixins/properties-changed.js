@@ -5,6 +5,24 @@ import { microTask } from '../utils/async.js';
 /** @const {!AsyncInterface} */
 const microtask = microTask;
 
+/**
+ * Element class mixin that provides basic meta-programming for creating one
+ * or more property accessors (getter/setter pair) that enqueue an async
+ * (batched) `_propertiesChanged` callback.
+ *
+ * For basic usage of this mixin, call `MyClass.createProperties(props)`
+ * once at class definition time to create property accessors for properties
+ * named in props, implement `_propertiesChanged` to react as desired to
+ * property changes, and implement `static get observedAttributes()` and
+ * include lowercase versions of any property names that should be set from
+ * attributes. Last, call `this._enableProperties()` in the element's
+ * `connectedCallback` to enable the accessors.
+ *
+ * @mixinFunction
+ * @polymer
+ * @summary Element class mixin for reacting to property changes from
+ *   generated property accessors.
+ */
 export const PropertiesChanged = dedupingMixin(superClass => {
 
   /**

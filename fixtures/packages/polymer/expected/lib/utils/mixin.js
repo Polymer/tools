@@ -13,6 +13,17 @@ MixinFunction.prototype.__mixinApplications;
 /** @type {(Object | undefined)} */
 MixinFunction.prototype.__mixinSet;
 
+/* eslint-disable valid-jsdoc */
+/**
+ * Wraps an ES6 class expression mixin such that the mixin is only applied
+ * if it has not already been applied its base argument. Also memoizes mixin
+ * applications.
+ *
+ * @template T
+ * @param {T} mixin ES6 class expression mixin to wrap
+ * @return {T}
+ * @suppress {invalidCasts}
+ */
 export const dedupingMixin = function(mixin) {
   let mixinApplications = /** @type {!MixinFunction} */(mixin).__mixinApplications;
   if (!mixinApplications) {
@@ -43,3 +54,4 @@ export const dedupingMixin = function(mixin) {
 
   return /** @type {T} */ (dedupingMixin);
 };
+/* eslint-enable valid-jsdoc */

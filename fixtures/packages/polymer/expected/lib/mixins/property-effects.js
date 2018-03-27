@@ -1059,6 +1059,41 @@ function upper(name) {
   return name[0].toUpperCase() + name.substring(1);
 }
 
+/**
+ * Element class mixin that provides meta-programming for Polymer's template
+ * binding and data observation (collectively, "property effects") system.
+ *
+ * This mixin uses provides the following key static methods for adding
+ * property effects to an element class:
+ * - `addPropertyEffect`
+ * - `createPropertyObserver`
+ * - `createMethodObserver`
+ * - `createNotifyingProperty`
+ * - `createReadOnlyProperty`
+ * - `createReflectedProperty`
+ * - `createComputedProperty`
+ * - `bindTemplate`
+ *
+ * Each method creates one or more property accessors, along with metadata
+ * used by this mixin's implementation of `_propertiesChanged` to perform
+ * the property effects.
+ *
+ * Underscored versions of the above methods also exist on the element
+ * prototype for adding property effects on instances at runtime.
+ *
+ * Note that this mixin overrides several `PropertyAccessors` methods, in
+ * many cases to maintain guarantees provided by the Polymer 1.x features;
+ * notably it changes property accessors to be synchronous by default
+ * whereas the default when using `PropertyAccessors` standalone is to be
+ * async by default.
+ *
+ * @mixinFunction
+ * @polymer
+ * @appliesMixin Polymer.TemplateStamp
+ * @appliesMixin Polymer.PropertyAccessors
+ * @summary Element class mixin that provides meta-programming for Polymer's
+ * template binding and data observation system.
+ */
 export const PropertyEffects = dedupingMixin(superClass => {
 
   /**

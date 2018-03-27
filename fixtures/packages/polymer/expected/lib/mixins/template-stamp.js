@@ -82,6 +82,19 @@ function createNodeEventHandler(context, eventName, methodName) {
   return handler;
 }
 
+/**
+ * Element mixin that provides basic template parsing and stamping, including
+ * the following template-related features for stamped templates:
+ *
+ * - Declarative event listeners (`on-eventname="listener"`)
+ * - Map of node id's to stamped node instances (`this.$.id`)
+ * - Nested template content caching/removal and re-installation (performance
+ *   optimization)
+ *
+ * @mixinFunction
+ * @polymer
+ * @summary Element class mixin that provides basic template parsing and stamping
+ */
 export const TemplateStamp = dedupingMixin(superClass => {
 
   /**

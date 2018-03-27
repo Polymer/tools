@@ -3,6 +3,30 @@ import { dedupingMixin } from '../utils/mixin.js';
 
 const DISABLED_ATTR = 'disable-upgrade';
 
+/**
+ * Element class mixin that allows the element to boot up in a non-enabled
+ * state when the `disable-upgrade` attribute is present. This mixin is
+ * designed to be used with element classes like Polymer.Element that perform
+ * initial startup work when they are first connected. When the
+ * `disable-upgrade` attribute is removed, if the element is connected, it
+ * boots up and "enables" as it otherwise would; if it is not connected, the
+ * element boots up when it is next connected.
+ *
+ * Using `disable-upgrade` with Polymer.Element prevents any data propagation
+ * to the element, any element DOM from stamping, or any work done in
+ * connected/disconnctedCallback from occuring, but it does not prevent work
+ * done in the element constructor.
+ *
+ * Note, this mixin must be applied on top of any element class that
+ * itself implements a `connectedCallback` so that it can control the work
+ * done in `connectedCallback`. For example,
+ *
+ *     MyClass = Polymer.DisableUpgradeMixin(class extends BaseClass {...});
+ *
+ * @mixinFunction
+ * @polymer
+ * @appliesMixin Polymer.ElementMixin
+ */
 export const DisableUpgradeMixin = dedupingMixin((base) => {
 
   /**

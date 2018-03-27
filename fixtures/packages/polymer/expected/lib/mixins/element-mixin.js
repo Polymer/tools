@@ -7,6 +7,75 @@ import { DomModule } from '../elements/dom-module.js';
 import { PropertyEffects } from './property-effects.js';
 import { PropertiesMixin } from './properties-mixin.js';
 
+/**
+ * Element class mixin that provides the core API for Polymer's meta-programming
+ * features including template stamping, data-binding, attribute deserialization,
+ * and property change observation.
+ *
+ * Subclassers may provide the following static getters to return metadata
+ * used to configure Polymer's features for the class:
+ *
+ * - `static get is()`: When the template is provided via a `dom-module`,
+ *   users should return the `dom-module` id from a static `is` getter.  If
+ *   no template is needed or the template is provided directly via the
+ *   `template` getter, there is no need to define `is` for the element.
+ *
+ * - `static get template()`: Users may provide the template directly (as
+ *   opposed to via `dom-module`) by implementing a static `template` getter.
+ *   The getter may return an `HTMLTemplateElement` or a string, which will
+ *   automatically be parsed into a template.
+ *
+ * - `static get properties()`: Should return an object describing
+ *   property-related metadata used by Polymer features (key: property name
+ *   value: object containing property metadata). Valid keys in per-property
+ *   metadata include:
+ *   - `type` (String|Number|Object|Array|...): Used by
+ *     `attributeChangedCallback` to determine how string-based attributes
+ *     are deserialized to JavaScript property values.
+ *   - `notify` (boolean): Causes a change in the property to fire a
+ *     non-bubbling event called `<property>-changed`. Elements that have
+ *     enabled two-way binding to the property use this event to observe changes.
+ *   - `readOnly` (boolean): Creates a getter for the property, but no setter.
+ *     To set a read-only property, use the private setter method
+ *     `_setProperty(property, value)`.
+ *   - `observer` (string): Observer method name that will be called when
+ *     the property changes. The arguments of the method are
+ *     `(value, previousValue)`.
+ *   - `computed` (string): String describing method and dependent properties
+ *     for computing the value of this property (e.g. `'computeFoo(bar, zot)'`).
+ *     Computed properties are read-only by default and can only be changed
+ *     via the return value of the computing method.
+ *
+ * - `static get observers()`: Array of strings describing multi-property
+ *   observer methods and their dependent properties (e.g.
+ *   `'observeABC(a, b, c)'`).
+ *
+ * The base class provides default implementations for the following standard
+ * custom element lifecycle callbacks; users may override these, but should
+ * call the super method to ensure
+ * - `constructor`: Run when the element is created or upgraded
+ * - `connectedCallback`: Run each time the element is connected to the
+ *   document
+ * - `disconnectedCallback`: Run each time the element is disconnected from
+ *   the document
+ * - `attributeChangedCallback`: Run each time an attribute in
+ *   `observedAttributes` is set or removed (note: this element's default
+ *   `observedAttributes` implementation will automatically return an array
+ *   of dash-cased attributes based on `properties`)
+ *
+ * @mixinFunction
+ * @polymer
+ * @appliesMixin Polymer.PropertyEffects
+ * @appliesMixin Polymer.PropertiesMixin
+ * @property rootPath {string} Set to the value of `Polymer.rootPath`,
+ *   which defaults to the main document path
+ * @property importPath {string} Set to the value of the class's static
+ *   `importPath` property, which defaults to the path of this element's
+ *   `dom-module` (when `is` is used), but can be overridden for other
+ *   import strategies.
+ * @summary Element class mixin that provides the core API for Polymer's
+ * meta-programming features.
+ */
 export const ElementMixin = dedupingMixin(base => {
 
   /**
@@ -594,6 +663,23 @@ export function dumpRegistrations() {
   registrations.forEach(_regLog);
 }
 
+/**
+ * When using the ShadyCSS scoping and custom property shim, causes all
+ * shimmed `styles` (via `custom-style`) in the document (and its subtree)
+ * to be updated based on current custom property values.
+ *
+ * The optional parameter overrides inline custom property styles with an
+ * object of properties where the keys are CSS properties, and the values
+ * are strings.
+ *
+ * Example: `Polymer.updateStyles({'--color': 'blue'})`
+ *
+ * These properties are retained unless a value of `null` is set.
+ *
+ * @param {Object=} props Bag of custom property key/values to
+ *   apply to the document.
+ * @return {void}
+ */
 export const updateStyles = function(props) {
   if (window.ShadyCSS) {
     window.ShadyCSS.styleDocument(props);

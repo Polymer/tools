@@ -327,6 +327,7 @@ let ArraySelectorMixin = dedupingMixin(superClass => {
 
 });
 
+// export mixin
 export { ArraySelectorMixin };
 
 /**

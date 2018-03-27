@@ -20,6 +20,23 @@ function normalizeProperties(props) {
   return output;
 }
 
+/**
+ * Mixin that provides a minimal starting point to using the PropertiesChanged
+ * mixin by providing a mechanism to declare properties in a static
+ * getter (e.g. static get properties() { return { foo: String } }). Changes
+ * are reported via the `_propertiesChanged` method.
+ *
+ * This mixin provides no specific support for rendering. Users are expected
+ * to create a ShadowRoot and put content into it and update it in whatever
+ * way makes sense. This can be done in reaction to properties changing by
+ * implementing `_propertiesChanged`.
+ *
+ * @mixinFunction
+ * @polymer
+ * @appliesMixin Polymer.PropertiesChanged
+ * @summary Mixin that provides a minimal starting point for using
+ * the PropertiesChanged mixin by providing a declarative `properties` object.
+ */
 export const PropertiesMixin = dedupingMixin(superClass => {
 
  /**

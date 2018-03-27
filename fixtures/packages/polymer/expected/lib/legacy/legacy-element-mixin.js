@@ -14,6 +14,20 @@ import { get as get$0 } from '../utils/path.js';
 
 let styleInterface = window.ShadyCSS;
 
+/**
+ * Element class mixin that provides Polymer's "legacy" API intended to be
+ * backward-compatible to the greatest extent possible with the API
+ * found on the Polymer 1.x `Polymer.Base` prototype applied to all elements
+ * defined using the `Polymer({...})` function.
+ *
+ * @mixinFunction
+ * @polymer
+ * @appliesMixin Polymer.ElementMixin
+ * @appliesMixin Polymer.GestureEventListeners
+ * @property isAttached {boolean} Set to `true` in this element's
+ *   `connectedCallback` and `false` in `disconnectedCallback`
+ * @summary Element class mixin that provides Polymer's "legacy" API
+ */
 export const LegacyElementMixin = dedupingMixin((base) => {
 
   /**
