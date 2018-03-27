@@ -121,12 +121,12 @@ class RewriteNamespaceExportsPass {
         correctedNamespaceName = 'Polymer';
         name = 'Polymer';
       }
-      replacePreservingComments(
-          nodePath,
-          jsc.exportNamedDeclaration(jsc.variableDeclaration(
-              this.mutableNames.has(correctedNamespaceName) ? 'let' : 'const',
-              [jsc.variableDeclarator(
-                  jsc.identifier(name), exportedExpression)])));
+      const variableKind =
+          this.mutableNames.has(correctedNamespaceName) ? 'let' : 'const';
+      const newExportNode = jsc.exportNamedDeclaration(jsc.variableDeclaration(
+          variableKind,
+          [jsc.variableDeclarator(jsc.identifier(name), exportedExpression)]));
+      replacePreservingComments(nodePath, newExportNode);
       this.exportMigrationRecords.push(
           {oldNamespacedName: correctedNamespaceName, es6ExportName: name});
     }
