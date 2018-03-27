@@ -47,6 +47,10 @@ const generatedElementBlacklist = new Set<string|undefined>([
  */
 export abstract class DocumentProcessor {
   protected readonly originalUrl: OriginalDocumentUrl;
+  /**
+   * N.B. that this converted url always points to .js, even if this document
+   * will be converted to an HTML file.
+   */
   protected readonly convertedUrl: ConvertedDocumentUrl;
   protected readonly urlHandler: UrlHandler;
   protected readonly conversionSettings: ConversionSettings;
@@ -79,6 +83,9 @@ export abstract class DocumentProcessor {
   /**
    * Creates a single program from all the JavaScript in the current document.
    * The standard program result can be used for either scanning or conversion.
+   *
+   * TODO: this does a lot of mutation of the program. Could we only do that
+   *   when we're converting, and not when we're scanning?
    */
   private prepareJsModule() {
     const combinedToplevelStatements = [];
