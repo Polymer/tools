@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* The `--include` flag has been removed. Entrypoints for packages are now read
+  from the `main` field of packages' `bower.json`.
 * Add `deleteFiles` option and `--delete-files` flag to delete all
   files/directories matching some glob patterns after conversion.
 * If a package already has a `package.json`, it will be merged with the newly

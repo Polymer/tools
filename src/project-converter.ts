@@ -59,9 +59,7 @@ export class ProjectConverter {
   }
 
   /**
-   * Convert a package and any of its dependencies. The output format (JS
-   * Module or HTML Document) is determined by whether the file is included in
-   * conversionSettings.includes.
+   * Convert a package and any of its dependencies.
    */
   async convertPackage(packageName: string) {
     // First, scan the package (and any of its dependencies)

@@ -116,7 +116,10 @@ export class PackageScanner {
   }
 
   /**
-   * Scan each document in a package manually.
+   * Scan each document in a package manually. The scan document format (JS
+   * Module or HTML Document) is determined by whether the file is included in
+   * the entry for this package in `conversionSettings.packageEntrypoints` which
+   * is assigned to `this.topLevelEntrypoints`.
    */
   scanPackageManually() {
     // Scan top-level entrypoints first, to make sure their dependencies are
@@ -211,9 +214,7 @@ export class PackageScanner {
   }
 
   /**
-   * Scan a document and any of its dependency packages. The scan document
-   * format (JS Module or HTML Document) is determined by whether the file is
-   * included in conversionSettings.includes.
+   * Scan a document and any of its dependency packages.
    */
   private scanDocument(
       document: Document, scanAs: 'js-module'|'html-document') {

@@ -78,16 +78,6 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     defaultValue: []
   },
   {
-    name: 'include',
-    type: String,
-    multiple: true,
-    description:
-        'Root file(s) to include in the conversion. Automatically includes' +
-        ' files listed in the bower.json main field, and any file that ' +
-        'is HTML imported.',
-    defaultValue: []
-  },
-  {
     name: 'delete-files',
     type: String,
     multiple: true,
@@ -198,7 +188,6 @@ export interface CliOptions {
   'in'?: string;
   namespace?: string[];
   exclude: string[];
-  include: string[];
   'delete-files': string[];
   'dependency-mapping': string[];
   'npm-name'?: string;

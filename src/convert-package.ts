@@ -14,7 +14,7 @@
 
 import * as fse from 'fs-extra';
 import * as path from 'path';
-import {Analysis, Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
+import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
 
 import {BowerConfig} from './bower-config';
 import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
@@ -61,16 +61,6 @@ async function setupOutDir(outDir: string, clean = false) {
 }
 
 /**
- * Create the default conversion settings, adding any "main" files from the
- * current package's bower.json maifest to the "includes" set.
- */
-function getConversionSettings(
-    analysis: Analysis, options: PackageConversionSettings) {
-  const conversionSettings = createDefaultConversionSettings(analysis, options);
-  return conversionSettings;
-}
-
-/**
  * Configure a basic analyzer instance for the package under conversion.
  */
 function configureAnalyzer(options: PackageConversionSettings) {
@@ -112,7 +102,7 @@ export default async function convert(options: PackageConversionSettings) {
       npmPackageName,
       options.packageType,
       options.inDir);
-  const conversionSettings = getConversionSettings(analysis, options);
+  const conversionSettings = createDefaultConversionSettings(analysis, options);
   const converter =
       new ProjectConverter(analysis, urlHandler, conversionSettings);
 
