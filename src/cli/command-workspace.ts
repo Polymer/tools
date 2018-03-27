@@ -172,6 +172,7 @@ export default async function run(options: CliOptions) {
           reposToConvert,
           flat: options.flat,
           private: options.private,
+          importStyle: options['import-style'],
         });
         break;
       case PostConversionStep.TestInstallOnly:
@@ -181,6 +182,7 @@ export default async function run(options: CliOptions) {
           reposToConvert,
           flat: options.flat,
           private: options.private,
+          importStyle: options['import-style'],
         });
         break;
       case PostConversionStep.Push:

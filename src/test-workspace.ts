@@ -14,9 +14,11 @@
 
 import chalk from 'chalk';
 import * as fse from 'fs-extra';
+import * as inquirer from 'inquirer';
 import * as path from 'path';
 import {run, WorkspaceRepo} from 'polymer-workspaces';
 
+import {NpmImportStyle} from './conversion-settings';
 import {ConversionResultsMap, GIT_STAGING_BRANCH_NAME, WorkspaceConversionSettings} from './convert-workspace';
 import {YarnConfig} from './npm-config';
 import {generatePackageJson, localDependenciesBranch, writeJson} from './package-manifest';
@@ -27,7 +29,9 @@ import {exec, logRepoError, logStep, readJsonIfExists} from './util';
  * Configuration options required for workspace testing. Same as conversion
  * settings.
  */
-interface WorkspaceTestSettings extends WorkspaceConversionSettings {}
+interface WorkspaceTestSettings extends WorkspaceConversionSettings {
+  importStyle: NpmImportStyle;
+}
 
 /**
  * Setup the workspace repos for testing. Be sure to call restoreRepos() after
@@ -58,9 +62,9 @@ async function installNpmDependencies(repo: WorkspaceRepo) {
 /**
  * Run `wct --npm` in a repo.
  */
-async function testRepo(repo: WorkspaceRepo) {
+async function testRepo(repo: WorkspaceRepo, wctFlags: string[]) {
   const repoDirName = path.basename(repo.dir);
-  const results = await exec(repo.dir, 'wct', ['--npm', '-l', 'chrome']);
+  const results = await exec(repo.dir, 'wct', wctFlags);
   if (results.stdout.length > 0) {
     console.log(chalk.dim(`${repoDirName}: ${results.stdout}`));
   }
@@ -115,7 +119,19 @@ async function writeTestingPackageJson(
 
 export async function testWorkspace(
     localConversionMap: Map<string, string>, options: WorkspaceTestSettings) {
+  const {wctFlagsRaw} = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'wctFlagsRaw',
+      message: 'wct flags:',
+      default: (options.importStyle === 'path') ?
+          '--npm' :
+          '--npm --module-resolution=node',
+    },
+  ]);
+
   const allRepos = options.reposToConvert;
+  const wctFlags: string[] = wctFlagsRaw.split(/\s+/);
 
   logStep(1, 4, '🔧', `Preparing Repos...`);
   const setupRepoResults =
@@ -127,7 +143,7 @@ export async function testWorkspace(
       await run([...setupRepoResults.successes.keys()], async (repo) => {
         try {
           await installNpmDependencies(repo);
-          return await testRepo(repo);
+          return await testRepo(repo, wctFlags);
         } catch (err) {
           logRepoError(err, repo);
           throw err;
