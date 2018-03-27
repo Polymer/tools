@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   import (e.g. because the imported file does not exist, or it does not parse,
   etc). We still emit a warning in such cases.
 * Recognize behaviors declared in export statements.
+* Apply node module resolution to path imports as well as "named" imports.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.17] - 2018-03-20

@@ -41,7 +41,8 @@ suite('DomModuleScanner', () => {
         features.map((f: ScannedDomModule) => f.localIds.map((l) => l.name)),
         [['foo', 'bar']]);
     assert.deepEqual(
-        features.map((f: ScannedDomModule) => f.localIds.map((l) => l.nodeName)),
+        features.map(
+            (f: ScannedDomModule) => f.localIds.map((l) => l.nodeName)),
         [['div', 'span']]);
   });
 

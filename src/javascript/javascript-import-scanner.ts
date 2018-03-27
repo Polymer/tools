@@ -13,8 +13,7 @@
  */
 
 import * as babel from 'babel-types';
-import {dirname, relative} from 'path';
-import {URL} from 'whatwg-url';
+import {parseURL, URL} from 'whatwg-url';
 
 import {Document, FileRelativeUrl, Import, ResolvedUrl, ScannedImport, Severity, Warning} from '../model/model';
 
@@ -22,9 +21,9 @@ import {Visitor} from './estree-visitor';
 import * as esutil from './esutil';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
+import {resolve} from './resolve-specifier-node';
 
 import isWindows = require('is-windows');
-import resolve = require('resolve');
 import {SourceRange} from '../model/model';
 import {DeclaredWithStatement} from '../model/document';
 
@@ -218,25 +217,8 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
   private _resolveSpecifier(
       specifier: string, document: JavaScriptDocument, node: babel.Node,
       warnings: Warning[]): FileRelativeUrl|undefined {
-    if (isPathSpecifier(specifier)) {
+    if (parseURL(specifier) !== null) {
       return specifier as FileRelativeUrl;
-    }
-    try {
-      new URL(specifier);
-      return specifier as FileRelativeUrl;
-    } catch (e) {
-      // not a parsable URL, try to resolve
-    }
-    if (this.moduleResolution !== 'node') {
-      warnings.push(new Warning({
-        message: 'Cannot resolve module specifier with no module resolution ' +
-            'algorithm set',
-        sourceRange: document.sourceRangeForNode(node)!,
-        severity: Severity.WARNING,
-        code: 'cant-resolve-module-specifier',
-        parsedDocument: document,
-      }));
-      return undefined;
     }
     const documentURL = new URL(document.baseUrl);
     if (documentURL.protocol !== 'file:') {
@@ -254,32 +236,30 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
     if (isWindows() && documentPath.startsWith('/')) {
       documentPath = documentPath.substring(1);
     }
-    let resolvedSpecifier;
-    try {
-      resolvedSpecifier = resolve.sync(specifier, {basedir: documentPath});
-    } catch (e) {
-      warnings.push(new Warning({
-        message: 'Cannot resolve module specifier',
-        sourceRange: document.sourceRangeForNode(node)!,
-        severity: Severity.WARNING,
-        code: 'cant-resolve-module-specifier',
-        parsedDocument: document,
-      }));
-      return undefined;
+
+    if (this.moduleResolution === 'node') {
+      try {
+        // TODO (justinfagnani): we need to pass packageName and componentDir,
+        // or maybe the UrlResolver, to get correct relative URLs for
+        // named imports from the root package to its dependencies
+        return resolve(specifier, documentPath);
+      } catch (e) {
+        // If the specifier was a name, we'll emit a warning below.
+      }
     }
 
-    let relativeSpecifierUrl =
-        relative(dirname(documentPath), resolvedSpecifier) as FileRelativeUrl;
-
-    if (isWindows()) {
-      // normalize path separators to URL format
-      relativeSpecifierUrl =
-          relativeSpecifierUrl.replace(/\\/g, '/') as FileRelativeUrl;
+    if (isPathSpecifier(specifier)) {
+      return specifier as FileRelativeUrl;
     }
 
-    if (!isPathSpecifier(relativeSpecifierUrl)) {
-      relativeSpecifierUrl = './' + relativeSpecifierUrl as FileRelativeUrl;
-    }
-    return relativeSpecifierUrl;
+    warnings.push(new Warning({
+      message: 'Cannot resolve module specifier with no module resolution ' +
+          'algorithm set',
+      sourceRange: document.sourceRangeForNode(node)!,
+      severity: Severity.WARNING,
+      code: 'cant-resolve-module-specifier',
+      parsedDocument: document,
+    }));
+    return undefined;
   }
 }

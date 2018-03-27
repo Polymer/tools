@@ -72,6 +72,12 @@ suite('JavaScriptImportScanner', async () => {
         lazy: false,
         specifier: 'test-package'
       },
+      {
+        type: 'js-import',
+        url: './node_modules/test-package/index.js',
+        lazy: false,
+        specifier: 'test-package'
+      },
     ]);
   });
 
