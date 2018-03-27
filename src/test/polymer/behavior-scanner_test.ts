@@ -130,4 +130,29 @@ suite('BehaviorScanner', () => {
           {name: 'getterSetter', type: undefined, readOnly: false}
         ]);
   });
+
+  const testName = 'Supports behaviors that are just arrays of other behaviors';
+  test(testName, async () => {
+    const {analyzer} = await createForDirectory(fixtureDir);
+    const analysis = await analyzer.analyze(['uses-behaviors.js']);
+    const elements = [...analysis.getFeatures({kind: 'polymer-element'})];
+    assert.deepEqual(elements.map((e) => e.tagName), [
+      'uses-basic-behavior',
+      'uses-array-behavior',
+      'uses-default-behavior'
+    ]);
+
+    // Get the toplevel behaviors.
+    assert.deepEqual(
+        elements.map((e) => e.behaviorAssignments.map((ba) => ba.identifier)), [
+          ['BasicBehavior1'],
+          ['ArrayOfBehaviors'],
+          ['BasicBehavior1', 'DefaultBehavior']
+        ]);
+
+    // Show that ArrayOfBehaviors has been correctly expanded too.
+    assert.deepEqual(
+        elements.map((e) => [...e.methods.keys()]),
+        [['method1'], ['method1', 'method2'], ['method1', 'method3']]);
+  });
 });

@@ -290,13 +290,24 @@ class BehaviorVisitor implements Visitor {
  * gets the expression representing a behavior from a node.
  */
 function behaviorExpression(node: babel.Node): babel.Node|null|undefined {
+  if (babel.isVariableDeclarator(node)) {
+    return node.init;
+  }
+  if (babel.isAssignmentExpression(node)) {
+    return node.right;
+  }
+  if (babel.isExportDefaultDeclaration(node) ||
+      babel.isExportNamedDeclaration(node)) {
+    return behaviorExpression(node.declaration);
+  }
   if (babel.isExpressionStatement(node)) {
-    // need to cast to `any` here because ExpressionStatement is super
-    // super general. this code is suspicious.
-    return (node as any).expression.right;
+    return behaviorExpression(node.expression);
   }
   if (babel.isVariableDeclaration(node)) {
-    return node.declarations.length > 0 ? node.declarations[0].init : undefined;
+    return behaviorExpression(node.declarations[0]);
+  }
+  if (babel.isObjectExpression(node) || babel.isArrayExpression(node)) {
+    return node;
   }
 }
 
