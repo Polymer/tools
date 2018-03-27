@@ -910,14 +910,10 @@ export function increment() {
       });
       assertSources(await convert(), {
         'test.js': `
-/**
-               */
 export const dom = function() {
   return 'Polymer.dom result';
 };
 
-/**
-               */
 export const subFn = function() {
   return 'Polymer.dom.subFn result';
 };
@@ -947,8 +943,6 @@ export const subFn = function() {
       });
       assertSources(await convert(), {
         'test.js': `
-/**
-               */
 export let subFn = function() {
   subFn = () => 42;
 };
@@ -988,20 +982,14 @@ export let subFn = function() {
       });
       assertSources(await convert(), {
         'test.js': `
-/**
-               */
 export const dom = function() {
   return 'Polymer.dom result';
 };
 
-/**
-               */
 export const subFn = function() {
   return 'Polymer.dom.subFn result';
 };
 
-/**
-               */
 export const subFnDelegate = function() {
   return 'Polymer.dom.subFnDelegate delegates: ' + dom() + subFn();
 };
@@ -2995,10 +2983,10 @@ console.log('second script');
       assertSources(await convert(), {
         'test.js': `
 /**
-             * This is a long and important comment.
-             * It has much info.
-             * @polymerBehavior
-             */
+ * This is a long and important comment.
+ * It has much info.
+ * @polymerBehavior
+ */
 export const MyBehavior = {};
 
 /**

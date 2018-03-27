@@ -433,17 +433,38 @@ function getMutableNames(program: estree.Program): Set<string> {
   return mutable;
 }
 
+const jsdocToRemove = /@(namespace|memberof)/;
 function replacePreservingComments(
     nodePath: NodePath, replacement: estree.Node) {
   const comments = getComments(nodePath);
   nodePath.replace(replacement);
+  const commentsToRemove = new Set<estree.Comment>();
   for (const comment of comments) {
+    if (!jsdocToRemove.test(comment.value)) {
+      continue;
+    }
     // Filter out namespace and memberof comments, which no longer make sense.
     const lines = comment.value.split('\n');
     comment.value =
-        lines.filter((l) => !/@(namespace|memberof)/.test(l)).join('\n');
+        lines.filter((l) => !jsdocToRemove.test(l))
+            .map((line, index) => {
+              if (index === 0) {
+                return line;
+              }
+              // Make a reasonable guess to how to indent the lines
+              // of a jsdoc comment, since now that we're modifying
+              // the comment value, recast won't help us anymore.
+              return line.replace(/^\s+\*/, ' *').replace(/^\s+$/, ' ');
+            })
+            .join('\n');
+    // If a comment now only has whitespace and * charactes, we should filter it
+    // out entirely.
+    if (!/[^\s\*]/.test(comment.value)) {
+      commentsToRemove.add(comment);
+    }
   }
-  (nodePath.node as any).comments = comments;
+  (nodePath.node as any).comments =
+      comments.filter((c) => !commentsToRemove.has(c));
 }
 
 function getComments(nodePath: NodePath) {
