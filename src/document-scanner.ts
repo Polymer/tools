@@ -14,12 +14,48 @@
 
 import {Document, Import} from 'polymer-analyzer';
 
-import {ConversionSettings} from './conversion-settings';
-import {DeleteFileScanResult, DocumentProcessor, HtmlDocumentScanResult, JsModuleScanResult} from './document-processor';
+import {DocumentProcessor} from './document-processor';
+import {NamespaceMemberToExport} from './js-module';
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
-import {} from './urls/types';
-import {UrlHandler} from './urls/url-handler';
+import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
 import {getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath} from './urls/util';
+
+export type ScanResult =
+    JsModuleScanResult|DeleteFileScanResult|HtmlDocumentScanResult;
+/**
+ * Contains information about how an existing file should be converted to a new
+ * JS Module. Includes a mapping of its new exports.
+ */
+export interface JsModuleScanResult {
+  type: 'js-module';
+  originalUrl: OriginalDocumentUrl;
+  convertedUrl: ConvertedDocumentUrl;
+  convertedFilePath: ConvertedDocumentFilePath;
+  exportMigrationRecords: NamespaceMemberToExport[];
+}
+
+/**
+ * Contains information that an existing file should be deleted during
+ * conversion.
+ */
+export interface DeleteFileScanResult {
+  type: 'delete-file';
+  originalUrl: OriginalDocumentUrl;
+  convertedUrl: undefined;
+  convertedFilePath: undefined;
+}
+
+/**
+ * Contains information that an existing file should be converted as a top-level
+ * HTML file (and not as a new JS module).
+ */
+export interface HtmlDocumentScanResult {
+  type: 'html-document';
+  originalUrl: OriginalDocumentUrl;
+  convertedUrl: ConvertedDocumentUrl;
+  convertedFilePath: ConvertedDocumentFilePath;
+}
+
 
 /**
  * Processes a document to determine a ScanResult for it.

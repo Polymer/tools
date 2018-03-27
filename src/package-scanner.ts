@@ -18,7 +18,7 @@ import {Analysis, Document} from 'polymer-analyzer';
 import {filesJsonObjectToMap, PackageScanResultJson, serializePackageScanResult} from './conversion-manifest';
 import {ConversionSettings} from './conversion-settings';
 import {DocumentConverter} from './document-converter';
-import {ScanResult} from './document-processor';
+import {ScanResult} from './document-scanner';
 import {DocumentScanner} from './document-scanner';
 import {JsExport} from './js-module';
 import {lookupDependencyMapping} from './package-manifest';

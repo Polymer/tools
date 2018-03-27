@@ -125,7 +125,7 @@ suite('AnalysisConverter', () => {
 
     function assertSources(
         results: Map<string, string|undefined>,
-        expected: {[path: string]: string | undefined}) {
+        expected: {[path: string]: string|undefined}) {
       for (const [expectedPath, expectedContents] of Object.entries(expected)) {
         assert.isTrue(
             results.has(expectedPath),
@@ -1925,8 +1925,10 @@ console.log(foo.document.currentScript.ownerDocument);
               ['some-package', ['test.html' as OriginalDocumentUrl]],
               [
                 'shadycss',
-                ['custom-style-interface.html' as OriginalDocumentUrl],
-                ['apply-shim.html' as OriginalDocumentUrl],
+                [
+                  'custom-style-interface.html' as OriginalDocumentUrl,
+                  'apply-shim.html' as OriginalDocumentUrl
+                ],
               ],
             ]),
           }),
@@ -1979,8 +1981,10 @@ console.log(ShadyCSS.flush());
               ['some-package', ['test.html' as OriginalDocumentUrl]],
               [
                 'shadycss',
-                ['custom-style-interface.html' as OriginalDocumentUrl],
-                ['apply-shim.html' as OriginalDocumentUrl],
+                [
+                  'custom-style-interface.html' as OriginalDocumentUrl,
+                  'apply-shim.html' as OriginalDocumentUrl
+                ],
               ],
             ]),
           }),

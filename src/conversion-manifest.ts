@@ -13,7 +13,7 @@
  */
 
 
-import {JsModuleScanResult, ScanResult} from './document-converter';
+import {JsModuleScanResult, ScanResult} from './document-scanner';
 import {JsExport} from './js-module';
 import {PackageScanExports, PackageScanFiles} from './package-scanner';
 import {OriginalDocumentUrl} from './urls/types';

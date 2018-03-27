@@ -18,7 +18,7 @@ import {Analysis} from 'polymer-analyzer';
 
 import {BowerConfig} from './bower-config';
 import {ConversionSettings} from './conversion-settings';
-import {ScanResult} from './document-converter';
+import {ScanResult} from './document-scanner';
 import {JsExport} from './js-module';
 import {PackageScanner} from './package-scanner';
 import {OriginalDocumentUrl} from './urls/types';

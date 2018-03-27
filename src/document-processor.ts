@@ -21,13 +21,12 @@ import * as recast from 'recast';
 
 import {ConversionSettings} from './conversion-settings';
 import {attachCommentsToFirstStatement, canDomModuleBeInlined, createDomNodeInsertStatements, filterClone, getCommentsBetween, getNodePathInProgram, insertStatementsIntoProgramBody, serializeNodeToTemplateLiteral} from './document-util';
-import {NamespaceMemberToExport} from './js-module';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeToplevelUseStrict} from './passes/remove-toplevel-use-strict';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
-import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
+import {ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
 import {isOriginalDocumentUrlFormat} from './urls/util';
 import {replaceHtmlExtensionIfFound} from './urls/util';
@@ -43,49 +42,8 @@ const generatedElementBlacklist = new Set<string|undefined>([
   'script',
 ]);
 
-
-
-export type ScanResult =
-    JsModuleScanResult|DeleteFileScanResult|HtmlDocumentScanResult;
 /**
- * Contains information about how an existing file should be converted to a new
- * JS Module. Includes a mapping of its new exports.
- */
-export interface JsModuleScanResult {
-  type: 'js-module';
-  originalUrl: OriginalDocumentUrl;
-  convertedUrl: ConvertedDocumentUrl;
-  convertedFilePath: ConvertedDocumentFilePath;
-  exportMigrationRecords: NamespaceMemberToExport[];
-}
-
-/**
- * Contains information that an existing file should be deleted during
- * conversion.
- */
-export interface DeleteFileScanResult {
-  type: 'delete-file';
-  originalUrl: OriginalDocumentUrl;
-  convertedUrl: undefined;
-  convertedFilePath: undefined;
-}
-
-/**
- * Contains information that an existing file should be converted as a top-level
- * HTML file (and not as a new JS module).
- */
-export interface HtmlDocumentScanResult {
-  type: 'html-document';
-  originalUrl: OriginalDocumentUrl;
-  convertedUrl: ConvertedDocumentUrl;
-  convertedFilePath: ConvertedDocumentFilePath;
-}
-
-
-/**
- * Converts a Document from Bower to NPM. This supports converting HTML files
- * to JS Modules (using JavaScript import/export statements) or the more simple
- * HTML -> HTML conversion.
+ * An abstract superclass for our document scanner and document converters.
  */
 export abstract class DocumentProcessor {
   protected readonly originalUrl: OriginalDocumentUrl;
