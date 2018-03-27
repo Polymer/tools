@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [0.25.3](https://github.com/PolymerLabs/polyserve/tree/0.25.3) (2018-03-26)
+
+* Node module specifier rewriter will now resolve paths according to the node
+  module resolution algorithm, not just bare specifiers (e.g. "./foo" resolves
+  to "./foo.js").
+
 ## [0.25.2](https://github.com/PolymerLabs/polyserve/tree/0.25.1) (2018-03-21)
 
 * Another fix for import specifier rewriting when given a relative componentDir.

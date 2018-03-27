@@ -17,7 +17,7 @@ import * as escapeHtml from 'escape-html';
 import * as express from 'express';
 import * as fs from 'mz/fs';
 import * as path from 'path';
-import {urlFromPath} from 'polymer-build/lib/path-transformers';
+import {LocalFsPath, urlFromPath} from 'polymer-build/lib/path-transformers';
 import * as send from 'send';
 // TODO: Switch to node-http2 when compatible with express
 // https://github.com/molnarg/node-http2/issues/100
@@ -101,8 +101,10 @@ export interface ServerOptions {
   /** Proxy to redirect for all matching `path` to `target` */
   proxy?: {path: string, target: string};
 
-  /** An optional list of routes & route handlers to attach to the polyserve
-   * app, to be handled before all others */
+  /**
+   * An optional list of routes & route handlers to attach to the polyserve
+   * app, to be handled before all others
+   */
   additionalRoutes?: Map<string, express.RequestHandler>;
 }
 
@@ -162,7 +164,7 @@ async function _startServer(
   }
 }
 
-export type ServerInfo = MainlineServer | VariantServer | ControlServer;
+export type ServerInfo = MainlineServer|VariantServer|ControlServer;
 
 export interface PolyserveServer {
   kind: 'control'|'mainline'|'variant';
@@ -204,7 +206,7 @@ export interface MultipleServersInfo {
   servers: PolyserveServer[];
 }
 
-export type StartServerResult = MainlineServer | MultipleServersInfo;
+export type StartServerResult = MainlineServer|MultipleServersInfo;
 
 /**
  * Starts one or more web servers, based on the given options and
@@ -405,8 +407,9 @@ export function getApp(options: ServerOptions): express.Express {
 
   // `send` expects files to be specified relative to the given root and as a
   // URL rather than a file system path.
-  const entrypoint =
-      options.entrypoint ? urlFromPath(root, options.entrypoint) : 'index.html';
+  const entrypoint = options.entrypoint ?
+      urlFromPath(root as LocalFsPath, options.entrypoint as LocalFsPath) :
+      'index.html';
 
   app.get('/*', (req, res) => {
     pushResources(options, req, res);

@@ -22,6 +22,7 @@ import * as LRU from 'lru-cache';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import {jsTransform} from 'polymer-build';
+import {LocalFsPath} from 'polymer-build/lib/path-transformers';
 
 import {transformResponse} from './transform-middleware';
 
@@ -164,7 +165,7 @@ export function babelCompile(
           transformEsModulesToAmd:
               options.transformModules && hasImportOrExport(body),
           moduleResolution,
-          filePath,
+          filePath: filePath as LocalFsPath,
           isComponentRequest,
           packageName,
           componentDir,
@@ -243,7 +244,7 @@ function compileHtml(
           compileToEs5: options.transformES2015,
           transformEsModulesToAmd: transformingModule,
           moduleResolution,
-          filePath,
+          filePath: filePath as any,
           isComponentRequest,
           packageName,
           componentDir,
