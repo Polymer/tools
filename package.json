@@ -96,7 +96,6 @@
     "tsc-then": "^1.1.0",
     "tslint": "^5.2.0",
     "typescript": "^2.3.2",
-    "uglify-js": "^2.8.26",
     "vinyl-fs-fake": "^1.1.0"
   }
 }

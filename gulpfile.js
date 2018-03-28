@@ -24,9 +24,11 @@ const runSeq = require('run-sequence');
 const stream = require('stream');
 const tslint = require('gulp-tslint');
 const typescript = require('gulp-typescript');
-const uglify = require('uglify-js');
 const babelCore = require('babel-core');
 const sourcemaps = require('gulp-sourcemaps');
+
+const babelPresetMinify =
+    require('babel-preset-minify')({}, {simplifyComparisons: false});
 
 const tsProject = typescript.createProject(
     'tsconfig.json', {typescript: require('typescript')});
@@ -42,15 +44,12 @@ gulp.task('build', (done) => {
 });
 
 gulp.task('compile', () => {
-  const srcs =
-    gulp.src('src/**/*.ts');
+  const srcs = gulp.src('src/**/*.ts');
   const tsResult =
-    srcs.pipe(sourcemaps.init())
-      .pipe(typescript(tsProject, [], typescript.reporter.fullReporter()));
+      srcs.pipe(sourcemaps.init())
+          .pipe(typescript(tsProject, [], typescript.reporter.fullReporter()));
 
-  return mergeStream(
-             tsResult.js.pipe(sourcemaps.write('../lib')),
-             tsResult.dts)
+  return mergeStream(tsResult.js.pipe(sourcemaps.write('../lib')), tsResult.dts)
       .pipe(gulp.dest('lib'));
 });
 
@@ -69,26 +68,34 @@ gulp.task('tslint', function() {
 
 gulp.task('depcheck', function() {
   return depcheck(__dirname, {
-    ignoreMatches: [
-      // "@types/*" dependencies are type declarations that are
-      // automatically loaded by TypeScript during build. depcheck can't
-      // detect this so we ignore them here.
+           ignoreMatches: [
+             // "@types/*" dependencies are type declarations that are
+             // automatically loaded by TypeScript during build. depcheck can't
+             // detect this so we ignore them here.
 
-      '@types/*',
-      // Also it can't yet parse files that use async iteration.
-      // TODO(rictic): remove these
-      'mz', 'multipipe', 'polymer-bundler', 'parse5', 'dom5',
-      'babel-traverse', 'stream', 'html-minifier',
-  ]}).then((result) => {
-    let invalidFiles = Object.keys(result.invalidFiles) || [];
-    let invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
-    if (invalidJsFiles.length > 0) {
-      throw new Error(`Invalid files: ${invalidJsFiles}`);
-    }
-    if (result.dependencies.length) {
-      throw new Error(`Unused dependencies: ${result.dependencies}`);
-    }
-  });
+             '@types/*',
+             // Also it can't yet parse files that use async iteration.
+             // TODO(rictic): remove these
+             'mz',
+             'multipipe',
+             'polymer-bundler',
+             'parse5',
+             'dom5',
+             'babel-traverse',
+             'stream',
+             'html-minifier',
+           ]
+         })
+      .then((result) => {
+        let invalidFiles = Object.keys(result.invalidFiles) || [];
+        let invalidJsFiles = invalidFiles.filter((f) => f.endsWith('.js'));
+        if (invalidJsFiles.length > 0) {
+          throw new Error(`Invalid files: ${invalidJsFiles}`);
+        }
+        if (result.dependencies.length) {
+          throw new Error(`Unused dependencies: ${result.dependencies}`);
+        }
+      });
 });
 
 /*
@@ -140,18 +147,18 @@ const babelHelperWhitelist = [
 
 gulp.task('gen-babel-helpers', () => {
   const helpersCode = babelCore.buildExternalHelpers(babelHelperWhitelist);
-  const {code: minified} = uglify.minify(helpersCode, {fromString: true});
+  const minified =
+      babelCore.transform(helpersCode, {presets: [babelPresetMinify]}).code;
   fs.mkdirpSync('./lib/');
-  fs.writeFileSync(
-      './lib/babel-helpers.min.js', minified, {encoding: 'utf-8'});
+  fs.writeFileSync('./lib/babel-helpers.min.js', minified, {encoding: 'utf-8'});
 });
 
 gulp.task('minify-requirejs', () => {
   const requireJsPath =
       path.join(path.dirname(require.resolve('requirejs')), '..', 'require.js');
   const requireJsCode = fs.readFileSync(requireJsPath, 'utf-8');
-  const {code: minified} = uglify.minify(requireJsCode, {fromString: true});
+  const minified =
+      babelCore.transform(requireJsCode, {presets: [babelPresetMinify]}).code;
   fs.mkdirpSync('./lib/');
-  fs.writeFileSync(
-      './lib/requirejs.min.js', minified, {encoding: 'utf-8'});
+  fs.writeFileSync('./lib/requirejs.min.js', minified, {encoding: 'utf-8'});
 });
