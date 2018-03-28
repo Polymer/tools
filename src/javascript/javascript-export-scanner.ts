@@ -54,8 +54,9 @@ export class Export implements Resolvable, Feature {
     this.statementAst = statementAst;
     let exportedIdentifiers;
     if (exportingAllFrom !== undefined) {
-      exportedIdentifiers =
-          flatMap(exportingAllFrom, (export_) => export_.identifiers);
+      exportedIdentifiers = flatMap(
+          exportingAllFrom,
+          (export_) => [...export_.identifiers].filter((i) => i !== 'default'));
     } else {
       exportedIdentifiers = esutil.getBindingNamesFromDeclaration(astNode);
     }

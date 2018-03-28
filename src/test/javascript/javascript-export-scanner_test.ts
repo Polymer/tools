@@ -51,7 +51,6 @@ suite('JavaScriptExportScanner', async () => {
     // export statement.
     assert.deepEqual([...features].map((f) => [...f.identifiers]), [[
                        'namedConstIdentifier',
-                       'default',
                        'ClassName',
                        'functionName',
                        'identifierAssignedFunction',
