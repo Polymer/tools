@@ -5,14 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.11.0] - 2018-03-27
 * JSON serialization will now include `npm`, `componentDir`, and `moduleResolution` fields.
 * Add a method to initialize an Analyzer based on a config, as well as
   a static function ProjectConfig to initialize an Analyzer from a project
   directory.
   Because polymer-analyzer 3.0.0 is in prerelease, project-config depends on it
   as a peer dependency, so that the dependant can choose the specific pre-release version of analyzer to use.
-<!-- Add new, unreleased changes here. -->
+
 
 ## [3.10.0] - 2018-03-12
 * Added new option: `moduleResolution`. Determines algorithm used for resolving module specifiers. Can be 'none' or 'node'.
