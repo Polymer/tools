@@ -36,7 +36,6 @@ export default class DefinitionFinder extends Handler {
       private featureFinder: FeatureFinder, private analyzer: LsAnalyzer,
       settings: Settings) {
     super();
-
     this.connection.onDefinition(async(textPosition) => {
       return this.handleErrors(this.getDefinition(textPosition), null);
     });

@@ -13,9 +13,9 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer} from 'polymer-analyzer';
+import {ProjectConfig} from 'polymer-project-config';
 import {DidChangeConfigurationNotification, DidOpenTextDocumentNotification, DidOpenTextDocumentParams} from 'vscode-languageserver';
-import URI from 'vscode-uri/lib';
+import URI from 'vscode-uri';
 
 import Settings from '../language-server/settings';
 
@@ -25,9 +25,9 @@ suite('Settings', () => {
   async function createSettings(debugging?: boolean) {
     const {serverConnection, clientConnection, synchronizer, baseDir} =
         createFileSynchronizer(undefined, debugging);
-    const settings = new Settings(
-        serverConnection, synchronizer,
-        await Analyzer.createForDirectory(baseDir));
+    const {analyzer} =
+        await ProjectConfig.initializeAnalyzerFromDirectory(baseDir);
+    const settings = new Settings(serverConnection, synchronizer, analyzer);
     return {settings, serverConnection, clientConnection, baseDir};
   }
 

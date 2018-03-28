@@ -15,7 +15,7 @@
 import {assert, use} from 'chai';
 import {writeFileSync} from 'fs';
 import * as path from 'path';
-import {Diagnostic} from 'vscode-languageserver-types/lib/main';
+import {Diagnostic} from 'vscode-languageserver-protocol/lib/main';
 import {DiagnosticSeverity, FileChangeType} from 'vscode-languageserver/lib/main';
 
 import {assertDoesNotSettle, createTestEnvironment} from './util';
@@ -161,7 +161,7 @@ suite('DiagnosticGenerator', function() {
     assert.deepEqual(await client.getNextDiagnostics(basePath), []);
     assert.containSubset(
         await client.getNextDiagnostics(childPath),
-        [{message: 'Unable to resolve superclass BaseElement'}]);
+        [{message: 'Could not resolve reference to class'}]);
 
     await client.changeFile(basePath, `
         class BaseElement extends HTMLElement {}
@@ -185,7 +185,7 @@ suite('DiagnosticGenerator', function() {
 
     assert.deepEqual(
         (await client.getNextDiagnostics('index.html')).map(d => d.code),
-        ['could-not-load', 'unknown-superclass']);
+        ['could-not-load', 'could-not-resolve-reference']);
 
     await client.openFile(
         'polymer.json',
@@ -193,7 +193,7 @@ suite('DiagnosticGenerator', function() {
 
     assert.deepEqual(
         (await client.getNextDiagnostics('index.html')).map(d => d.code),
-        ['unknown-superclass']);
+        ['could-not-resolve-reference']);
 
     await client.cleanup();
   });
@@ -213,7 +213,7 @@ suite('DiagnosticGenerator', function() {
 
     assert.deepEqual(
         (await client.getNextDiagnostics('index.html')).map(d => d.code),
-        ['could-not-load', 'unknown-superclass']);
+        ['could-not-load', 'could-not-resolve-reference']);
 
     await client.openFile(
         'polymer.json',

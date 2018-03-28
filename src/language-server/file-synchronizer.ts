@@ -13,7 +13,7 @@
  */
 
 import {InMemoryOverlayUrlLoader, ResolvedUrl, UrlLoader} from 'polymer-analyzer';
-import {FSUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
+import {FsUrlLoader} from 'polymer-analyzer/lib/url-loader/fs-url-loader';
 import {FileChangeType, FileEvent, IConnection, TextDocuments} from 'vscode-languageserver';
 
 import AnalyzerLSPConverter from './converter';
@@ -37,7 +37,7 @@ export default class FileSynchronizer extends AutoDisposable {
       connection: IConnection, documents: TextDocuments, baseDir: string,
       converter: AnalyzerLSPConverter, logger: Logger) {
     super();
-    const fileLoader = new FSUrlLoader(baseDir);
+    const fileLoader = new FsUrlLoader(baseDir);
     const inMemoryOverlayLoader = new InMemoryOverlayUrlLoader(fileLoader);
     this.inMemoryDocuments = inMemoryOverlayLoader.urlContentsMap;
     this.urlLoader = inMemoryOverlayLoader;

@@ -15,8 +15,7 @@ import {assert} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 import {DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, FileChangeType} from 'vscode-languageserver';
-import URI from 'vscode-uri/lib';
-
+import URI from 'vscode-uri';
 
 import {createFileSynchronizer} from './util';
 

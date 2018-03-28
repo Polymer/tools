@@ -163,7 +163,8 @@ export default class FeatureFinder {
         const cssDocuments = document.getFeatures({kind: 'css-document'});
         const styleElement = node.textNode.parentNode;
         for (const cssDocument of cssDocuments) {
-          if (cssDocument.astNode === styleElement) {
+          if (cssDocument.astNode &&
+              cssDocument.astNode.node === styleElement) {
             return this.getAstAtPosition(cssDocument, position);
           }
         }

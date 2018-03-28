@@ -20,7 +20,7 @@ import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-u
 import {Duplex} from 'stream';
 import {ClientCapabilities, CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeConfigurationNotification, DidChangeConfigurationParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
 import {DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
-import URI from 'vscode-uri/lib';
+import URI from 'vscode-uri';
 
 import AnalyzerLSPConverter from '../language-server/converter';
 import FileSynchronizer from '../language-server/file-synchronizer';
@@ -149,14 +149,29 @@ export const defaultClientCapabilities: ClientCapabilities = {
     completion: {
       completionItem: {
         snippetSupport: true,
-        documentationFormat: ['markdown', 'plaintext']
-      }
+        documentationFormat: ['markdown', 'plaintext'],
+        commitCharactersSupport: false,
+      },
+      contextSupport: false,
+
     },
-    synchronization: {didSave: true, willSave: true, willSaveWaitUntil: true}
+    synchronization: {didSave: true, willSave: true, willSaveWaitUntil: true},
+    implementation: {dynamicRegistration: false},
+    typeDefinition: {},
+    colorProvider: {}
   },
   workspace: {
     applyEdit: true,
     workspaceEdit: {documentChanges: true},
+    configuration: false,
+    didChangeConfiguration: {
+
+    },
+    didChangeWatchedFiles: {},
+    executeCommand: {},
+    symbol: {},
+    workspaceFolders: false
+
   }
 };
 
@@ -202,7 +217,10 @@ export class TestClient {
       // process.exit after a timeout if the given process id
       // does not exist!! It handles `null` just fine though.
       processId: null as any as number,
-      initializationOptions: {}, capabilities
+      initializationOptions: {},
+      // It looks like the typechecker is messing up here?
+      capabilities,
+      workspaceFolders: null,
     };
     return this.connection.sendRequest(InitializeRequest.type, init);
   }
