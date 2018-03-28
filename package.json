@@ -76,7 +76,6 @@
     "@types/sinon": "^1.16.33",
     "chai": "^4.1.2",
     "clang-format": "^1.0.52",
-    "del": "^2.2.1",
     "depcheck": "^0.6.3",
     "fs-extra": "^5.0.0",
     "gulp": "^3.9.1",

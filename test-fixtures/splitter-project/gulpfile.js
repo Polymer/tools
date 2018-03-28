@@ -1,7 +1,7 @@
-const del = require('del');
 const gulp = require('gulp');
 const logging = require('plylog');
 const mergeStream = require('merge-stream');
+const fs = require('fs-extra');
 
 logging.setVerbose();
 
@@ -30,7 +30,7 @@ let project = new PolymerProject({
 
 // Clean build directory
 gulp.task('clean', () => {
-  return del('build');
+  return fs.emptyDir('build');
 });
 
 gulp.task('test1', ['clean'], (cb) => {
