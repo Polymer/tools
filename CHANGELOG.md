@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## 2.2.0 - 2018-03-27
+
+- Many improvements to core analysis, especially around ES6 modules.
+- Many new lint passes.
+
 ## 2.1.0 - 2017-12-21
 
 - Autocomplete slot names inside `slot=""` attributes based on the declared
