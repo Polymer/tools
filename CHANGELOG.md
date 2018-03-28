@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.11.1] - 2018-03-27
+* `ProjectConfig.initializeAnalyzerFromDirectory` should use the given
+  directory as a root dir, even if there is no `polymer.json` file there.
+
 ## [3.11.0] - 2018-03-27
 * JSON serialization will now include `npm`, `componentDir`, and `moduleResolution` fields.
 * Add a method to initialize an Analyzer based on a config, as well as

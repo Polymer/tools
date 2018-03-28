@@ -297,7 +297,7 @@ export class ProjectConfig {
   static async initializeAnalyzerFromDirectory(dirname: string) {
     const config =
         this.loadConfigFromFile(path.join(dirname, 'polymer.json')) ||
-        new ProjectConfig({});
+        new ProjectConfig({root: dirname});
     return config.initializeAnalyzer();
   }
 
