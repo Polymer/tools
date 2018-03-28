@@ -14,7 +14,6 @@
 
 import * as cssSlam from 'css-slam';
 import * as gulpif from 'gulp-if';
-import {minify as htmlMinify, Options as HTMLMinifierOptions} from 'html-minifier';
 import * as logging from 'plylog';
 import {ModuleResolutionStrategy} from 'polymer-project-config';
 import {Transform} from 'stream';
@@ -23,7 +22,7 @@ import * as vinyl from 'vinyl';
 import matcher = require('matcher');
 
 import {jsTransform} from './js-transform';
-import {LocalFsPath} from './path-transformers';
+import {htmlTransform} from './html-transform';
 
 // TODO(fks) 09-22-2016: Latest npm type declaration resolves to a non-module
 // entity. Upgrade to proper JS import once compatible .d.ts file is released,
@@ -44,6 +43,7 @@ export interface OptimizeOptions {
     minify?: boolean|{exclude?: string[]},
   };
   js?: JsOptimizeOptions;
+  entrypointPath?: string;
 }
 
 export interface JsOptimizeOptions {
@@ -52,7 +52,6 @@ export interface JsOptimizeOptions {
   moduleResolution?: ModuleResolutionStrategy;
   transformEsModulesToAmd?: boolean;
 }
-
 
 /**
  * GenericOptimizeTransform is a generic optimization stream. It can be extended
@@ -100,7 +99,7 @@ export class GenericOptimizeTransform extends Transform {
 }
 
 /**
- * Transform JavaScript using Babel.
+ * Transform JavaScript.
  */
 export class JsTransform extends GenericOptimizeTransform {
   constructor(options: JsOptimizeOptions) {
@@ -109,15 +108,51 @@ export class JsTransform extends GenericOptimizeTransform {
     const shouldMinifyFile =
         options.minify ? notExcluded(options.minify) : () => false;
 
-    const transformer = (content: string, file: File) => jsTransform(content, {
-      compileToEs5: shouldCompileFile(file),
-      minify: shouldMinifyFile(file),
-      moduleResolution: options.moduleResolution,
-      filePath: file.path as LocalFsPath,
-      transformEsModulesToAmd: options.transformEsModulesToAmd,
-    });
+    const transformer = (content: string, file: File) => {
+      return jsTransform(content, {
+        compileToEs5: shouldCompileFile(file),
+        minify: shouldMinifyFile(file),
+        moduleResolution: options.moduleResolution,
+        filePath: file.path,
+        transformEsModulesToAmd: options.transformEsModulesToAmd,
+        moduleScriptIdx: file.moduleScriptIdx,
+      });
+    };
 
-    super('babel-compile', transformer);
+    super('js-transform', transformer);
+  }
+}
+
+/**
+ * Transform HTML.
+ */
+export class HtmlTransform extends GenericOptimizeTransform {
+  constructor(options: OptimizeOptions) {
+    const anyJsCompiledToEs5 = options.js && !!options.js.compile;
+
+    const shouldMinifyFile = options.html && options.html.minify ?
+        notExcluded(options.html.minify) :
+        () => false;
+
+    const transformer = (content: string, file: File) => {
+      const transformEsModulesToAmd =
+          options.js && options.js.transformEsModulesToAmd;
+      const isEntryPoint =
+          !!options.entrypointPath && file.path === options.entrypointPath;
+
+      return htmlTransform(content, {
+        js: {
+          transformEsModulesToAmd,
+          // Note we don't do any other JS transforms here (like compilation),
+          // because we're assuming that HtmlSplitter has run and any inline
+          // scripts will be compiled in their own stream.
+        },
+        minifyHtml: shouldMinifyFile(file),
+        injectBabelHelpers: isEntryPoint && anyJsCompiledToEs5,
+        injectAmdLoader: isEntryPoint && transformEsModulesToAmd,
+      });
+    };
+    super('html-transform', transformer);
   }
 }
 
@@ -155,16 +190,6 @@ export class InlineCSSOptimizeTransform extends GenericOptimizeTransform {
 }
 
 /**
- * HTMLOptimizeTransform minifies HTML files that pass through it
- * (via html-minifier).
- */
-export class HTMLOptimizeTransform extends GenericOptimizeTransform {
-  constructor(options: HTMLMinifierOptions) {
-    super('html-minify', (source: string) => htmlMinify(source, options));
-  }
-}
-
-/**
  * Returns an array of optimization streams to use in your build, based on the
  * OptimizeOptions given.
  */
@@ -173,20 +198,9 @@ export function getOptimizeStreams(options?: OptimizeOptions):
   options = options || {};
   const streams = [];
 
-  // compile and/or minify ES6 JavaScript using babel
-  if (options.js &&
-      (options.js.compile || options.js.minify ||
-       options.js.moduleResolution === 'node')) {
-    streams.push(gulpif(matchesExt('.js'), new JsTransform(options.js)));
-  }
+  streams.push(gulpif(matchesExt('.js'), new JsTransform(options.js || {})));
+  streams.push(gulpif(matchesExt('.html'), new HtmlTransform(options)));
 
-  // minify code (minify should always be the last transform)
-  if (options.html && options.html.minify) {
-    streams.push(gulpif(
-        matchesExtAndNotExcluded('.html', options.html.minify),
-        new HTMLOptimizeTransform(
-            {collapseWhitespace: true, removeComments: true})));
-  }
   if (options.css && options.css.minify) {
     streams.push(gulpif(
         matchesExtAndNotExcluded('.css', options.css.minify),

@@ -18,6 +18,7 @@ import * as Vinyl from 'vinyl';
 import {getOptimizeStreams} from '../optimize-streams';
 import {HtmlSplitter} from '../html-splitter';
 import {pipeStreams} from '../streams';
+import {assertMapEqualIgnoringWhitespace} from './util';
 
 suite('optimize-streams', () => {
   async function getOnlyFile(stream: NodeJS.ReadableStream): Promise<string> {
@@ -143,6 +144,49 @@ suite('optimize-streams', () => {
     });
   });
 
+  suite('transforms ES modules to AMD with HTML splitter', async () => {
+    test('inline and external', async () => {
+      const files = [
+        {
+          path: 'index.html',
+          contents: `
+            <html><head></head><body>
+              <script type="module">import { depA } from './depA.js';</script>
+              <script type="module" src="./depB.js"></script>
+              <script type="module">import { depC } from './depC.js';</script>
+            </body></html>
+          `,
+          expected: `
+            <html><head></head><body>
+              <script>define('polymer-build-generated-module-0', ['./depA.js'], function (_depA) {'use strict';});</script>
+              <script>define('polymer-build-generated-module-1', ['polymer-build-generated-module-0', './depB.js']);</script>
+              <script>define('polymer-build-generated-module-2', ['polymer-build-generated-module-1', './depC.js'], function (_depC) {'use strict';});</script>
+              <script>require(['polymer-build-generated-module-2']);</script>
+            </body></html>
+          `,
+        },
+      ];
+
+      const opts = {
+        js: {
+          transformEsModulesToAmd: true,
+        },
+      };
+
+      const expected = new Map<string, string>(
+          files.map((file): [string, string] => [file.path, file.expected]));
+
+      const htmlSplitter = new HtmlSplitter();
+      const result = await getFileMap(pipeStreams([
+        vfs.src(files),
+        htmlSplitter.split(),
+        getOptimizeStreams(opts),
+        htmlSplitter.rejoin()
+      ]));
+      assertMapEqualIgnoringWhitespace(result, expected);
+    });
+  });
+
   test('minify js', async () => {
     const sourceStream = vfs.src([
       {
@@ -211,7 +255,7 @@ suite('optimize-streams', () => {
   });
 
   test('minify html', async () => {
-    const expected = `<!doctype html><style>foo {
+    const expected = `<!DOCTYPE html><style>foo {
             background: blue;
           }</style><script>document.registerElement(\'x-foo\', XFoo);</script><x-foo>bar</x-foo>`;
     const sourceStream = vfs.src(

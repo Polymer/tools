@@ -85,6 +85,16 @@ export class HtmlSplitter {
   }
 }
 
+const htmlSplitterAttribute = 'html-splitter';
+
+/**
+ * Returns whether the given script tag was an inline script that was split out
+ * into a fake file by HtmlSplitter.
+ */
+export function scriptWasSplitByHtmlSplitter(script: dom5.Node): boolean {
+  return dom5.hasAttribute(script, htmlSplitterAttribute);
+}
+
 /**
  * Represents a file that is split into multiple files.
  */
@@ -127,9 +137,6 @@ export class SplitFile {
  * Splits HTML files, extracting scripts and styles into separate File objects.
  */
 class HtmlSplitTransform extends AsyncTransformStream<File, File> {
-  static isInlineScript =
-      pred.AND(pred.hasTagName('script'), pred.NOT(pred.hasAttr('src')));
-
   _state: HtmlSplitter;
 
   constructor(splitter: HtmlSplitter) {
@@ -148,32 +155,50 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
       const contents = await getFileContents(file);
       const doc = parse5.parse(contents, {locationInfo: true});
       dom5.removeFakeRootElements(doc);
-      const scriptTags = dom5.queryAll(doc, HtmlSplitTransform.isInlineScript);
+      const scriptTags = dom5.queryAll(doc, pred.hasTagName('script'));
+      let moduleScriptIdx = 0;
       for (let i = 0; i < scriptTags.length; i++) {
         const scriptTag = scriptTags[i];
         const source = dom5.getTextContent(scriptTag);
-        const typeAtribute =
+        const typeAttribute =
             dom5.getAttribute(scriptTag, 'type') || 'application/javascript';
-        const extension = extensionsForType[typeAtribute];
+        const extension = extensionsForType[typeAttribute];
         // If we don't recognize the script type attribute, don't split
         // out.
         if (!extension) {
           continue;
         }
 
-        const childFilename =
-            `${osPath.basename(filePath)}_script_${i}.${extension}`;
-        const childPath = osPath.join(osPath.dirname(filePath), childFilename);
-        scriptTag.childNodes = [];
-        dom5.setAttribute(scriptTag, 'src', childFilename);
-        const scriptFile = new File({
-          cwd: file.cwd,
-          base: file.base,
-          path: childPath,
-          contents: new Buffer(source),
-        });
-        this._state.addSplitPath(filePath, childPath);
-        this.push(scriptFile);
+        const isModule = typeAttribute === 'module';
+        const isInline = !dom5.hasAttribute(scriptTag, 'src');
+
+        if (isInline) {
+          const childFilename =
+              `${osPath.basename(filePath)}_script_${i}.${extension}`;
+          const childPath =
+              osPath.join(osPath.dirname(filePath), childFilename);
+          scriptTag.childNodes = [];
+          dom5.setAttribute(scriptTag, 'src', childFilename);
+          dom5.setAttribute(scriptTag, htmlSplitterAttribute, '');
+          const scriptFile = new File({
+            cwd: file.cwd,
+            base: file.base,
+            path: childPath,
+            contents: new Buffer(source),
+          });
+          this._state.addSplitPath(filePath, childPath);
+          if (isModule) {
+            scriptFile.moduleScriptIdx = moduleScriptIdx;
+          }
+          this.push(scriptFile);
+        }
+
+        if (isModule) {
+          // Note it is important to increment this counter even for external
+          // scripts, because the AMD Module dependency chain we generate
+          // applies across both inline and externals cripts.
+          moduleScriptIdx++;
+        }
       }
 
       const splitContents = parse5.serialize(doc);
@@ -235,7 +260,7 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
   async _rejoin(splitFile: SplitFile) {
     const file = splitFile.vinylFile;
     if (file == null) {
-      throw new Error(`Internal error: no vinylFIle found for splitfile: ${
+      throw new Error(`Internal error: no vinylFile found for splitfile: ${
           splitFile.path}`);
     }
     const filePath = osPath.normalize(file.path);
@@ -253,6 +278,7 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
       if (scriptSource != null) {
         dom5.setTextContent(scriptTag, scriptSource);
         dom5.removeAttribute(scriptTag, 'src');
+        dom5.removeAttribute(scriptTag, htmlSplitterAttribute);
       }
     }
 

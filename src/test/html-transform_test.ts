@@ -13,17 +13,56 @@
  */
 
 import {assert} from 'chai';
+import * as dom5 from 'dom5';
+import * as parse5 from 'parse5';
 import * as path from 'path';
 
 import {htmlTransform} from '../html-transform';
 
-const collapseWhitespace = (s: string) =>
-    s.replace(/^\s+/gm, '').replace(/\s+$/gm, '').replace(/\n/gm, '');
+import {assertEqualIgnoringWhitespace} from './util';
 
-const assertEqualIgnoringWhitespace = (actual: string, expected: string) =>
-    assert.equal(collapseWhitespace(actual), collapseWhitespace(expected));
+/**
+ * Replaces the Babel helpers, Require.js AMD loader, and WCT hack inline
+ * scripts into just some comments, to make test comparison simpler.
+ */
+function replaceGiantScripts(html: string): string {
+  const document = parse5.parse(html);
+  for (const script of dom5.queryAll(
+           document, dom5.predicates.hasTagName('script'))) {
+    const js = dom5.getTextContent(script);
+    if (js.includes('var requirejs,require')) {
+      dom5.setTextContent(script, '// amd loader');
+    } else if (js.includes('babelHelpers={}')) {
+      dom5.setTextContent(script, '// babel helpers');
+    } else if (js.includes('window._wctCallback =')) {
+      dom5.setTextContent(script, '// wct hack 1/2');
+    } else if (js.includes('window._wctCallback()')) {
+      dom5.setTextContent(script, '// wct hack 2/2');
+    }
+  }
+  return parse5.serialize(document);
+}
 
 suite('htmlTransform', () => {
+  test('minifies html', () => {
+    const input = `
+      <html>
+        <body>
+          <!-- pointless comment -->
+          <p>Hello World!</p>
+        </body>
+      </html>`;
+
+    const expected = `<html><body><p>Hello World!</p></body></html>`
+
+    assert.equal(htmlTransform(input, {minifyHtml: true}), expected);
+  });
+
+  test('does not add unnecessary tags', () => {
+    const input = `<p>Just me</p>`
+    assert.equal(htmlTransform(input, {}), input);
+  })
+
   test('compiles inline JavaScript to ES5', () => {
     const input = `
       <html><head></head><body>
@@ -52,6 +91,22 @@ suite('htmlTransform', () => {
 
     assertEqualIgnoringWhitespace(
         htmlTransform(input, {js: {minify: true}}), expected);
+  });
+
+  test('injects babel helpers', () => {
+    const input = `
+      <html><head></head><body>
+        <script>const foo = 3;</script>
+      </body></html>`;
+
+    const expected = `
+      <html><head></head><body>
+        <script>// babel helpers</script>
+        <script>const foo = 3;</script>
+      </body></html>`;
+
+    const result = htmlTransform(input, {injectBabelHelpers: true});
+    assertEqualIgnoringWhitespace(replaceGiantScripts(result), expected);
   });
 
   test('rewrites bare module specifiers to paths', () => {
@@ -87,10 +142,8 @@ suite('htmlTransform', () => {
 
       const expected = `
         <html><head></head><body>
-          <script>
-            define('polymer-build-generated-module-0', ['depA.js']);
-            require(['polymer-build-generated-module-0']);
-          </script>
+          <script>define('polymer-build-generated-module-0', ['depA.js']);</script>
+          <script>require(['polymer-build-generated-module-0']);</script>
         </body></html>`;
 
       assertEqualIgnoringWhitespace(
@@ -118,8 +171,9 @@ suite('htmlTransform', () => {
               'use strict';
               console.log(_depA.depA);
             });
-            require(['polymer-build-generated-module-0']);
           </script>
+          
+          <script>require(['polymer-build-generated-module-0']);</script>
         </body></html>`;
 
       assertEqualIgnoringWhitespace(
@@ -141,12 +195,39 @@ suite('htmlTransform', () => {
         <script>define('polymer-build-generated-module-0', ['./depA.js'], function (_depA) {'use strict';});</script>
         <script>define('polymer-build-generated-module-1', ['polymer-build-generated-module-0', './depB.js']);</script>
         <script>define('polymer-build-generated-module-2', ['polymer-build-generated-module-1', './depC.js'], function (_depC) {'use strict';});</script>
-        <script>define('polymer-build-generated-module-3', ['polymer-build-generated-module-2', './depD.js']);
-                require(['polymer-build-generated-module-3']);</script>
+        <script>define('polymer-build-generated-module-3', ['polymer-build-generated-module-2', './depD.js']);</script>
+        <script>require(['polymer-build-generated-module-3']);</script>
       </body></html>`;
 
       assertEqualIgnoringWhitespace(
           htmlTransform(input, {js: {transformEsModulesToAmd: true}}),
+          expected);
+    });
+
+    test('resolves names and does AMD transform', () => {
+      const fixtureRoot =
+          path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
+      const filePath = path.join(fixtureRoot, 'foo.html');
+
+      const input = `
+        <html><head></head><body>
+          <script type="module">import { dep1 } from 'dep1';</script>
+        </body></html>`;
+
+      const expected = `
+      <html><head></head><body>
+        <script>define('polymer-build-generated-module-0', ['./node_modules/dep1/index.js'], function (_index) {'use strict';});</script>
+        <script>require(['polymer-build-generated-module-0']);</script>
+      </body></html>`;
+
+      assertEqualIgnoringWhitespace(
+          htmlTransform(input, {
+            js: {
+              transformEsModulesToAmd: true,
+              moduleResolution: 'node',
+              filePath,
+            }
+          }),
           expected);
     });
 
@@ -188,7 +269,7 @@ suite('htmlTransform', () => {
           htmlTransform(input, {js: {transformEsModulesToAmd: true}}), input);
     });
 
-    test('adds require.js script to entry point before first module', () => {
+    test('adds AMD loader to entry point before first module', () => {
       const input = `
         <html><head></head><body>
           <script>console.log('non-module');</script>
@@ -199,24 +280,21 @@ suite('htmlTransform', () => {
       const expected = `
         <html><head></head><body>
           <script>console.log('non-module');</script>
-
-          <script src="/node_modules/require.js"></script>
-
-          <script>
-            define('polymer-build-generated-module-0', ['depA.js']);
-            require(['polymer-build-generated-module-0']);
-          </script>
+ 
+          <script>// amd loader</script>
+ 
+          <script>define('polymer-build-generated-module-0', ['depA.js']);</script>
+ 
+          <script>require(['polymer-build-generated-module-0']);</script>
         </body></html>`;
 
-      assertEqualIgnoringWhitespace(
-          htmlTransform(input, {
-            isEntryPoint: true,
-            requireJsUrl: '/node_modules/require.js',
-            js: {
-              transformEsModulesToAmd: true,
-            }
-          }),
-          expected);
+      const result = htmlTransform(input, {
+        injectAmdLoader: true,
+        js: {
+          transformEsModulesToAmd: true,
+        },
+      });
+      assertEqualIgnoringWhitespace(replaceGiantScripts(result), expected);
     });
 
     test('adds hack for Web Component Tester', () => {
@@ -229,62 +307,26 @@ suite('htmlTransform', () => {
 
       const expected = `
         <html><head></head><body>
-          <script>
-            // Injected by polymer-build to defer WCT until all AMD modules are loaded.
-            (function() {
-              window.WCT = window.WCT || {};
-              var originalWaitFor = window.WCT.waitFor;
-              window.WCT.waitFor = function(cb) {
-                window._wctCallback = function() {
-                  if (originalWaitFor) {
-                    originalWaitFor(cb);
-                  } else {
-                    cb();
-                  }
-                };
-              };
-            }());
-          </script>
+          <script>// wct hack 1/2</script>
 
           <script src="web-component-tester/browser.js"></script>
 
-          <script src="/node_modules/require.js"></script>
+          <script>// amd loader</script>
 
-          <script>
-            // Injected by polymer-build to defer WCT until all AMD modules are loaded.
-            (function() {
-              var originalRequire = window.require;
-              var moduleCount = 0;
-              window.require = function(deps, factory) {
-                moduleCount++;
-                originalRequire(deps, function() {
-                  if (factory) {
-                    factory.apply(undefined, arguments);
-                  }
-                  moduleCount--;
-                  if (moduleCount === 0) {
-                    window._wctCallback();
-                  }
-                });
-              };
-            })();
-          </script>
+          <script>// wct hack 2/2</script>
 
-          <script>
-            define('polymer-build-generated-module-0', ['depA.js']);
-            require(['polymer-build-generated-module-0']);
-          </script>
+          <script>define('polymer-build-generated-module-0', ['depA.js']);</script>
+
+          <script>require(['polymer-build-generated-module-0']);</script>
         </body></html>`;
 
-      assertEqualIgnoringWhitespace(
-          htmlTransform(input, {
-            isEntryPoint: true,
-            requireJsUrl: '/node_modules/require.js',
-            js: {
-              transformEsModulesToAmd: true,
-            }
-          }),
-          expected);
+      const result = htmlTransform(input, {
+        injectAmdLoader: true,
+        js: {
+          transformEsModulesToAmd: true,
+        },
+      });
+      assertEqualIgnoringWhitespace(replaceGiantScripts(result), expected);
     });
   });
 });

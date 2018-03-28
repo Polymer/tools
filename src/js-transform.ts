@@ -17,7 +17,6 @@ import {ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
 
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
-import {LocalFsPath} from './path-transformers';
 
 // TODO(aomarks) Switch to babel-preset-env. But how do we get just syntax
 // plugins without turning on transformation, for the case where we are
@@ -84,7 +83,7 @@ export interface JsTransformOptions {
   moduleResolution?: ModuleResolutionStrategy;
 
   // The path of the file being transformed, used for module resolution.
-  filePath?: LocalFsPath;
+  filePath?: string;
 
   // The package name of the file being transformed, required when
   // `isComponentRequest` is true.
@@ -104,6 +103,13 @@ export interface JsTransformOptions {
 
   // Whether to replace ES modules with AMD modules.
   transformEsModulesToAmd?: boolean;
+
+  // If transformEsModulesToAmd is true, setting this option will update the
+  // generated AMD module to be 1) defined with an auto-generated name (instead
+  // of with no name), and 2) if > 0, to depend on the previously auto-generated
+  // module. This can be used to generate a dependency chain between module
+  // scripts.
+  moduleScriptIdx?: number;
 }
 
 /**
@@ -152,8 +158,30 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   if (doBabel) {
     js = babelCore.transform(js, {presets, plugins}).code!;
   }
+
+  if (options.transformEsModulesToAmd &&
+      options.moduleScriptIdx !== undefined) {
+    const generatedModule = generateModuleName(options.moduleScriptIdx);
+    const previousGeneratedModule = options.moduleScriptIdx === 0 ?
+        undefined :
+        generateModuleName(options.moduleScriptIdx - 1);
+    const depStr = previousGeneratedModule === undefined ?
+        '' :
+        `'${previousGeneratedModule}', `;
+    // The AMD Babel plugin will produce a `define` call with no name argument,
+    // since it assumes its name corresponds to its file name. This is an inline
+    // script, though, and we need a handle to it for chaining, so insert a name
+    // argument.
+    js = js.replace('define([', `define('${generatedModule}', [${depStr}`);
+  }
+
   js = replaceTemplateObjectNames(js);
+
   return js;
+}
+
+export function generateModuleName(idx: number): string {
+  return `polymer-build-generated-module-${idx}`;
 }
 
 /**
