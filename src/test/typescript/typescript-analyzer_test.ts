@@ -16,6 +16,7 @@ import {assert} from 'chai';
 import * as ts from 'typescript';
 
 import {AnalysisContext} from '../../core/analysis-context';
+import {neverCancels} from '../../core/cancel-token';
 import {PackageRelativeUrl} from '../../index';
 import {ResolvedUrl} from '../../model/url';
 import {TypeScriptAnalyzer} from '../../typescript/typescript-analyzer';
@@ -37,7 +38,7 @@ async function getTypeScriptAnalyzer(files: Map<PackageRelativeUrl, string>) {
   });
   // This puts documents into the scanned document cache
   await Promise.all(Object.keys(files).map(
-      (url) => analysisContext.scan(url as ResolvedUrl)));
+      (url) => analysisContext.scan(url as ResolvedUrl, neverCancels)));
   return new TypeScriptAnalyzer(analysisContext);
 }
 

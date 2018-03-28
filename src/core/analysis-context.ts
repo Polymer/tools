@@ -47,6 +47,7 @@ import {UrlLoader} from '../url-loader/url-loader';
 import {UrlResolver} from '../url-loader/url-resolver';
 
 import {AnalysisCache} from './analysis-cache';
+import {MinimalCancelToken} from './cancel-token';
 import {LanguageAnalyzer} from './language-analyzer';
 
 export const analyzerVersion: string = require('../../package.json').version;
@@ -154,7 +155,8 @@ export class AnalysisContext {
   /**
    * Implements Analyzer#analyze, see its docs.
    */
-  async analyze(urls: PackageRelativeUrl[]): Promise<AnalysisContext> {
+  async analyze(urls: PackageRelativeUrl[], cancelToken: MinimalCancelToken):
+      Promise<AnalysisContext> {
     const resolvedUrls = this.resolveUserInputUrls(urls);
 
     // 1. Await current analysis if there is one, so we can check to see if has
@@ -172,20 +174,21 @@ export class AnalysisContext {
     // 3. Some URLs are new, so fork, but don't invalidate anything
     const newCache = this._cache.invalidate([]);
     const newContext = this._fork(newCache);
-    return newContext._analyze(resolvedUrls);
+    return newContext._analyze(resolvedUrls, cancelToken);
   }
 
   /**
    * Internal analysis method called when we know we need to fork.
    */
-  private async _analyze(resolvedUrls: ResolvedUrl[]):
-      Promise<AnalysisContext> {
+  private async _analyze(
+      resolvedUrls: ResolvedUrl[],
+      cancelToken: MinimalCancelToken): Promise<AnalysisContext> {
     const analysisComplete = (async () => {
       // 1. Load and scan all root documents
       const scannedDocumentsOrWarnings =
           await Promise.all(resolvedUrls.map(async (url) => {
             try {
-              const scannedResult = await this.scan(url);
+              const scannedResult = await this.scan(url, cancelToken);
               this._cache.failedDocuments.delete(url);
               return scannedResult;
             } catch (e) {
@@ -306,11 +309,13 @@ export class AnalysisContext {
    * _preScan, since about the only useful things it can find are
    * imports, exports and other syntactic structures.
    */
-  private async _scanLocal(resolvedUrl: ResolvedUrl): Promise<ScannedDocument> {
+  private async _scanLocal(
+      resolvedUrl: ResolvedUrl,
+      cancelToken: MinimalCancelToken): Promise<ScannedDocument> {
     return this._cache.scannedDocumentPromises.getOrCompute(
         resolvedUrl, async () => {
           try {
-            const parsedDoc = await this._parse(resolvedUrl);
+            const parsedDoc = await this._parse(resolvedUrl, cancelToken);
             const scannedDocument = await this._scanDocument(parsedDoc);
 
             const imports =
@@ -329,16 +334,18 @@ export class AnalysisContext {
             this._cache.dependencyGraph.rejectDocument(resolvedUrl, e);
             throw e;
           }
-        });
+        }, cancelToken);
   }
 
   /**
    * Scan a toplevel document and all of its transitive dependencies.
    */
-  async scan(resolvedUrl: ResolvedUrl): Promise<ScannedDocument> {
+  async scan(resolvedUrl: ResolvedUrl, cancelToken: MinimalCancelToken):
+      Promise<ScannedDocument> {
     return this._cache.dependenciesScannedPromises.getOrCompute(
         resolvedUrl, async () => {
-          const scannedDocument = await this._scanLocal(resolvedUrl);
+          const scannedDocument =
+              await this._scanLocal(resolvedUrl, cancelToken);
           const imports =
               scannedDocument.getNestedFeatures().filter(
                   (e) => e instanceof ScannedImport) as ScannedImport[];
@@ -358,7 +365,7 @@ export class AnalysisContext {
             // Request a scan of `importUrl` but do not wait for the results to
             // avoid deadlock in the case of cycles. Later we use the
             // DependencyGraph to wait for all transitive dependencies to load.
-            this.scan(importUrl).catch((error) => {
+            this.scan(importUrl, cancelToken).catch((error) => {
               if (error == null || error.message == null) {
                 scannedImport.error = new Error(`Internal error.`);
               } else {
@@ -368,7 +375,7 @@ export class AnalysisContext {
           }
           await this._cache.dependencyGraph.whenReady(resolvedUrl);
           return scannedDocument;
-        });
+        }, cancelToken);
   }
 
   /**
@@ -487,13 +494,15 @@ export class AnalysisContext {
   /**
    * Caching + loading wrapper around _parseContents.
    */
-  private async _parse(resolvedUrl: ResolvedUrl): Promise<ParsedDocument> {
+  private async _parse(
+      resolvedUrl: ResolvedUrl,
+      cancelToken: MinimalCancelToken): Promise<ParsedDocument> {
     return this._cache.parsedDocumentPromises.getOrCompute(
         resolvedUrl, async () => {
           const content = await this.load(resolvedUrl);
           const extension = path.extname(resolvedUrl).substring(1);
           return this._parseContents(extension, content, resolvedUrl);
-        });
+        }, cancelToken);
   }
 
   /**

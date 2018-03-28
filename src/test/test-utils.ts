@@ -18,6 +18,7 @@ import * as path from 'path';
 import URI from 'vscode-uri';
 
 import {Analyzer} from '../core/analyzer';
+import {neverCancels} from '../core/cancel-token';
 import {FileRelativeUrl, PackageRelativeUrl, ParsedDocument, ResolvedUrl, ScannedFeature, UrlResolver} from '../index';
 import {makeParseLoader, SourceRange, Warning} from '../model/model';
 import {scan} from '../scanning/scan';
@@ -127,7 +128,7 @@ export async function runScanner(
     url: string): Promise<{features: ScannedFeature[], warnings: Warning[]}> {
   const context = await analyzer['_analysisComplete'];
   const resolvedUrl = analyzer.resolveUrl(url)!;
-  const parsedDocument = await context['_parse'](resolvedUrl);
+  const parsedDocument = await context['_parse'](resolvedUrl, neverCancels);
   return scan(parsedDocument, [scanner]);
 }
 
