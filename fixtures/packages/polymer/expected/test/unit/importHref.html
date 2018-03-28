@@ -20,17 +20,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <script type="module">
 import { importHref as importHref$0 } from '../../lib/utils/import-href.js';
-import { Element } from '../../polymer-element.js';
-import { Base } from '../../polymer.js';
+import { PolymerElement } from '../../polymer-element.js';
+import { Base } from '../../polymer-legacy.js';
 
 suite('importHref', function() {
 
   let parsedEl = document.querySelector('x-test');
 
   test('importing polymer via Polymer.importHref', function(done) {
-    assert.notOk(Element);
+    assert.notOk(PolymerElement);
     importHref$0('../../polymer.html', function() {
-      assert.ok(Element);
+      assert.ok(PolymerElement);
       done();
     });
   });

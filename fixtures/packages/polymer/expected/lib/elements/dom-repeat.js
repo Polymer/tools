@@ -1,4 +1,4 @@
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { TemplateInstanceBase as TemplateInstanceBase$0, templatize, modelForElement as modelForElement$0 } from '../utils/templatize.js';
 import { Debouncer } from '../utils/debounce.js';
 import { enqueueDebouncer, flush } from '../utils/flush.js';
@@ -13,7 +13,7 @@ let TemplateInstanceBase = TemplateInstanceBase$0; // eslint-disable-line
  * @implements {Polymer_OptionalMutableData}
  * @extends {Polymer.Element}
  */
-const domRepeatBase = OptionalMutableData(Element);
+const domRepeatBase = OptionalMutableData(PolymerElement);
 
 /**
  * The `<dom-repeat>` element will automatically stamp and binds one instance

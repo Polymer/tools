@@ -18,7 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <title>css-parse</title>
 
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 
 </head>
 <body>
@@ -99,7 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     .bar {}
   </style>
 <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 
 function sanitizeCss(text) {
   return text.replace(/[\s]+/g, ' ').trim();

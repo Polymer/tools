@@ -13,12 +13,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="utf-8">
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 </head>
 <body>
   <dom-module id="x-logging">
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 Polymer({
   is: 'x-logging',
@@ -35,7 +35,7 @@ Polymer({
 </script>
   </dom-module>
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { LegacyElementMixin } from '../../lib/legacy/legacy-element-mixin.js';
 class XMixin extends LegacyElementMixin(HTMLElement) {
   static get is() { return 'x-mixin'; }
@@ -54,7 +54,7 @@ class XMixin extends LegacyElementMixin(HTMLElement) {
 customElements.define(XMixin.is, XMixin);
 </script>
   <script type="module">
-import { Base } from '../../polymer.js';
+import { Base } from '../../polymer-legacy.js';
 suite('Logging', () => {
   let fnEl, classEl;
   suiteSetup(() => {

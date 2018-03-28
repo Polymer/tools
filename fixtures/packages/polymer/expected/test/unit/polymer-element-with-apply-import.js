@@ -1,4 +1,4 @@
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import '../../../../@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '../../lib/elements/custom-style.js';
 import { html } from '../../lib/utils/html-tag.js';
@@ -11,7 +11,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-class ApplyElement extends Element {
+class ApplyElement extends PolymerElement {
   static get importPath() {
     return import.meta.url;
   }
@@ -30,7 +30,7 @@ class ApplyElement extends Element {
   static get is() {return 'apply-element';}
 }
 customElements.define('apply-element', ApplyElement);
-class XOuter extends Element {
+class XOuter extends PolymerElement {
   static get importPath() {
     return import.meta.url;
   }

@@ -1,4 +1,4 @@
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { dedupingMixin } from '../utils/mixin.js';
 import { calculateSplices } from '../utils/array-splice.js';
 import { ElementMixin } from '../mixins/element-mixin.js';
@@ -335,7 +335,7 @@ export { ArraySelectorMixin };
  * @extends {Polymer.Element}
  * @implements {Polymer_ArraySelectorMixin}
  */
-let baseArraySelector = ArraySelectorMixin(Element);
+let baseArraySelector = ArraySelectorMixin(PolymerElement);
 
 /**
  * Element implementing the `Polymer.ArraySelector` mixin, which records

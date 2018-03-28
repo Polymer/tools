@@ -33,12 +33,19 @@ export function replaceHtmlExtensionIfFound(url: string): string {
 }
 
 /**
+ * Rewrite a url to replace a `.js` file extension with `.html`, if found.
+ */
+export function replaceJsExtensionIfFound(url: string): string {
+  return url.replace(/\.js$/, '.html');
+}
+
+/**
  * Create a ConvertedDocumentFilePath for the OriginalDocumentUrl of a document
  * being converted to a JS module.
  */
-export function getJsModuleConvertedFilePath(originalUrl: OriginalDocumentUrl):
-    ConvertedDocumentFilePath {
-  return replaceHtmlExtensionIfFound(originalUrl) as ConvertedDocumentFilePath;
+export function getJsModuleConvertedFilePath(
+    convertedUrl: ConvertedDocumentFilePath): ConvertedDocumentFilePath {
+  return convertedUrl as string as ConvertedDocumentFilePath;
 }
 
 /**
@@ -47,7 +54,27 @@ export function getJsModuleConvertedFilePath(originalUrl: OriginalDocumentUrl):
  * since HTML documents should keep their current html file extension).
  */
 export function getHtmlDocumentConvertedFilePath(
-    originalUrl: OriginalDocumentUrl): ConvertedDocumentFilePath {
+    convertedUrl: ConvertedDocumentFilePath): ConvertedDocumentFilePath {
+  return replaceJsExtensionIfFound(convertedUrl) as ConvertedDocumentFilePath;
+}
+
+/**
+ * Converts the OriginalDocumentUrl of a file which was a script prior to
+ * conversion to its corresponding ConvertedDocumentFilePath.
+ *
+ * This function's output is affected by any renaming that might have been
+ * applied to a file, as opposed to `getJsModuleConvertedFilePath` and
+ * `getHtmlDocumentConvertedFilePath`, which consume ConvertedDocumentFilePaths
+ * which have already had renaming applied (but which haven't had their
+ * extension changed, if needed).
+ *
+ * TODO(bicknellr): This implementation by casting is only safe because
+ * 'polymer.html' is the only file we are renaming currently and this function
+ * is only called by `DocumentConverter#convertJsModule` with URLs of files
+ * which were already scripts.
+ */
+export function getScriptConvertedFilePath(originalUrl: OriginalDocumentUrl):
+    ConvertedDocumentFilePath {
   return originalUrl as string as ConvertedDocumentFilePath;
 }
 

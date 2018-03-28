@@ -14,7 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="utf-8">
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 </head>
 
 <body>
@@ -41,9 +41,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <dom-repeat><template></template></dom-repeat>
 
   <script type="module">
-import '../../polymer.js';
-import { Element } from '../../polymer-element.js';
-class XFoo extends Element {
+import '../../polymer-legacy.js';
+import { PolymerElement } from '../../polymer-element.js';
+class XFoo extends PolymerElement {
   connectedCallback() {
     this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
     super.connectedCallback();
@@ -54,7 +54,7 @@ customElements.define('x-foo', XFoo);
 </script>
 
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 suite('styling-only-template', function () {
 
   function assertComputed(element, value, pseudo) {

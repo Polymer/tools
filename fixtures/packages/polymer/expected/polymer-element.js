@@ -24,7 +24,7 @@ const Element = ElementMixin(HTMLElement);
  * @implements {Polymer_ElementMixin}
  * @extends {HTMLElement}
  */
-export { Element };
+export { Element as PolymerElement };
 
 // NOTE: this is here for modulizer to export `html` for the module version of this file
 export { html$0 as html };

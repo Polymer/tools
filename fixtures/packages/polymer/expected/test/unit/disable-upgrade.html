@@ -12,7 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <head>
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
   <script type="module" src="../../lib/mixins/disable-upgrade-mixin.js"></script>
 </head>
 <body>
@@ -32,10 +32,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
 
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { DisableUpgradeMixin } from '../../lib/mixins/disable-upgrade-mixin.js';
-import { Element } from '../../polymer-element.js';
-const Disabled = DisableUpgradeMixin(class extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+const Disabled = DisableUpgradeMixin(class extends PolymerElement {
   static get is() { return 'x-disabled'; }
   static get properties() {
     return {
@@ -74,7 +74,7 @@ customElements.define(Disabled.is, Disabled);
       </template>
 
       <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { DisableUpgradeMixin } from '../../lib/mixins/disable-upgrade-mixin.js';
 import { Class as Class$0 } from '../../lib/legacy/class.js';
 import { Polymer as Polymer$0 } from '../../lib/legacy/polymer-fn.js';
@@ -129,10 +129,10 @@ Polymer$0({
     </template>
 
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import '../../lib/mixins/disable-upgrade-mixin.js';
-import { Element } from '../../polymer-element.js';
-class MyElement extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class MyElement extends PolymerElement {
   static get is() { return 'my-element'; }
   static get properties() {
     return {
@@ -161,7 +161,7 @@ customElements.define(MyElement.is, MyElement);
     </template>
 
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import '../../lib/mixins/disable-upgrade-mixin.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 Polymer({
@@ -180,7 +180,7 @@ Polymer({
   </dom-module>
 
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import '../../lib/mixins/disable-upgrade-mixin.js';
 suite('disable-upgrade', function() {
   let el;

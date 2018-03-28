@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="utf-8">
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 </head>
 <body>
   <custom-style>
@@ -32,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </custom-style>
 
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 'use strict';
 class UnknownHost extends HTMLElement {
   constructor() {
@@ -55,7 +55,7 @@ customElements.define('unknown-host', UnknownHost);
       x-foo
     </template>
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 Polymer({
   is: 'x-foo'
@@ -73,7 +73,7 @@ Polymer({
       <unknown-host id="unknown"></unknown-host>
     </template>
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 Polymer({
   is: 'x-nest',
@@ -86,7 +86,7 @@ Polymer({
   </dom-module>
 
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 suite('scoped-styling-unknown-host', function() {
 
   function assertComputed(element, value, pseudo) {

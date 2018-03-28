@@ -231,8 +231,15 @@ class RewriteNamespaceExportsPass {
       // Not a namespace, fallback to a named export
       // We could probably do better for referenced declarations, ie
       // move the export to the declaration
-      const exportedName =
+      let exportedName =
           fullyQualifiedNamePath[fullyQualifiedNamePath.length - 1];
+
+      // Special Polymer workaround: Rename `Polymer.Element` to have the
+      // es6ExportName `PolymerElement`.
+      if (fullyQualifiedName === 'Polymer.Element') {
+        exportedName = 'PolymerElement';
+      }
+
       replacePreservingComments(
           assignment,
           jsc.exportNamedDeclaration(

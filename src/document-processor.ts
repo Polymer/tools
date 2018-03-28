@@ -26,7 +26,7 @@ import {removeToplevelUseStrict} from './passes/remove-toplevel-use-strict';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
 import {removeWrappingIIFEs} from './passes/remove-wrapping-iife';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
-import {ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
+import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
 import {UrlHandler} from './urls/url-handler';
 import {isOriginalDocumentUrlFormat} from './urls/util';
 import {replaceHtmlExtensionIfFound} from './urls/util';
@@ -46,12 +46,14 @@ const generatedElementBlacklist = new Set<string|undefined>([
  * An abstract superclass for our document scanner and document converters.
  */
 export abstract class DocumentProcessor {
+  protected readonly originalPackageName: string;
   protected readonly originalUrl: OriginalDocumentUrl;
   /**
    * N.B. that this converted url always points to .js, even if this document
    * will be converted to an HTML file.
    */
   protected readonly convertedUrl: ConvertedDocumentUrl;
+  protected readonly convertedFilePath: ConvertedDocumentFilePath;
   protected readonly urlHandler: UrlHandler;
   protected readonly conversionSettings: ConversionSettings;
   protected readonly document: Document;
@@ -59,13 +61,24 @@ export abstract class DocumentProcessor {
   protected readonly convertedHtmlScripts: ReadonlySet<Import>;
 
   constructor(
-      document: Document, urlHandler: UrlHandler,
+      document: Document, originalPackageName: string, urlHandler: UrlHandler,
       conversionSettings: ConversionSettings) {
+    // The `originalPackageName` given by `PackageConverter` is sometimes
+    // incorrect because it is always the name of the root package being
+    // converted, even if this `DocumentConverter` is converting a file in a
+    // dependency of the root package. Instead, it should be the name of the
+    // package containing this document.
+    this.originalPackageName = originalPackageName;
     this.conversionSettings = conversionSettings;
     this.urlHandler = urlHandler;
     this.document = document;
     this.originalUrl = urlHandler.getDocumentUrl(document);
     this.convertedUrl = this.convertDocumentUrl(this.originalUrl);
+    const relativeConvertedUrl =
+        this.urlHandler.convertedUrlToPackageRelative(this.convertedUrl);
+    this.convertedFilePath =
+        this.urlHandler.packageRelativeConvertedUrlToConvertedDocumentFilePath(
+            originalPackageName, relativeConvertedUrl);
     ({program: this.program, convertedHtmlScripts: this.convertedHtmlScripts} =
          this.prepareJsModule());
   }
@@ -340,6 +353,18 @@ export abstract class DocumentProcessor {
           'shadycss/custom-style-interface.html',
           'shadycss/entrypoints/custom-style-interface.js');
     }
+
+    // This is a special case for renaming 'polymer.html' in Polymer to
+    // 'polymer-legacy.html'.
+    if (this.originalPackageName === 'polymer' && jsUrl === './polymer.html') {
+      // We're converting 'polymer.html' itself:
+      jsUrl = './polymer-legacy.html';
+    } else if (jsUrl.endsWith('polymer/polymer.html')) {
+      // We're converting something that references 'polymer.html':
+      jsUrl = jsUrl.replace(
+          /polymer\/polymer\.html$/, 'polymer/polymer-legacy.html');
+    }
+
     // Convert any ".html" URLs to point to their new ".js" module equivilent
     jsUrl = replaceHtmlExtensionIfFound(jsUrl);
     return jsUrl as ConvertedDocumentUrl;

@@ -50,9 +50,9 @@ polymer-modulizer tries to strike a balance between supporting the general seman
 Converts to:
 
 ```javascript
-import { Element } from '../../@polymer/polymer/polymer-element.js';
+import { PolymerElement } from '../../@polymer/polymer/polymer-element.js';
 
-export const MyElement = class extends Element {
+export const MyElement = class extends PolymerElement {
   static get template() {
     return `
     <h2>Hello Modules!</h2>

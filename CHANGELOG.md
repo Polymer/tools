@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* In Polymer, 'polymer.html' is renamed during conversion to 'polymer-legacy.js'
+  instead of 'polymer.js' and `Polymer.Element` (from 'polymer-element.html')
+  is now exported as `PolymerElement` instead of `Element`.
 * The `--include` flag has been removed. Entrypoints for packages are now read
   from the `main` field of packages' `bower.json`.
 * Add `deleteFiles` option and `--delete-files` flag to delete all

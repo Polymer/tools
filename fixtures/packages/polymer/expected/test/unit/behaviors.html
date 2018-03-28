@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="utf-8">
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 <body>
 
   <dom-module id="behavior-registered">
@@ -23,7 +23,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </dom-module>
 
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 window.BehaviorA = {
   properties: {
@@ -310,7 +310,7 @@ Polymer({
     </template>
   </test-fixture>
 <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 
 suite('single behavior element', function() {

@@ -254,7 +254,12 @@ export class PackageUrlHandler implements UrlHandler {
   }
 
   packageRelativeConvertedUrlToConvertedDocumentFilePath(
-      _originalPackageName: string, url: string): ConvertedDocumentFilePath {
-    return url as ConvertedDocumentFilePath;
+      originalPackageName: string, url: string): ConvertedDocumentFilePath {
+    if (originalPackageName === this.bowerPackageName) {
+      return url as ConvertedDocumentFilePath;
+    } else {
+      return `bower_components/${originalPackageName}/${url}` as
+          ConvertedDocumentFilePath;
+    }
   }
 }

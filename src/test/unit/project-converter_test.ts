@@ -539,6 +539,226 @@ export const Polymer = function(info) {
       });
     });
 
+    suite('renaming', async () => {
+      const suiteName = 'in a package "polymer", renames "/polymer.html" to ' +
+          '"/polymer-legacy.js"';
+      suite(suiteName, async () => {
+        test('with "./" prefix', async () => {
+          setSources({
+            'test.html': `
+          <link rel="import" href="./polymer.html">
+          <script>
+            console.log(window.Polymer());
+            console.log(Polymer());
+            console.log(Polymer.foo);
+            console.log(Polymer['bar']);
+          </script>
+        `,
+            'polymer.html': `
+          <script>
+            window.Polymer = function() {};
+            Polymer.foo = 42;
+            Polymer.bar = 43;
+          </script>
+        `,
+          });
+          const options = {
+            bowerPackageName: 'polymer',
+            npmPackageName: '@polymer/polymer',
+            packageEntrypoints: new Map([
+              [
+                'polymer',
+                [
+                  'test.html' as OriginalDocumentUrl,
+                  'polymer.html' as OriginalDocumentUrl,
+                ]
+              ],
+            ]),
+          };
+          assertSources(await convert(options), {
+            'test.js': `
+import { Polymer, foo } from './polymer-legacy.js';
+console.log(Polymer());
+console.log(Polymer());
+console.log(foo);
+console.log(Polymer['bar']);
+`,
+            'polymer-legacy.js': `
+export const Polymer = function() {};
+export const foo = 42;
+export const bar = 43;
+`,
+          });
+        });
+
+        test('without "./" prefix', async () => {
+          setSources({
+            'test.html': `
+          <link rel="import" href="polymer.html">
+          <script>
+            console.log(window.Polymer());
+            console.log(Polymer());
+            console.log(Polymer.foo);
+            console.log(Polymer['bar']);
+          </script>
+        `,
+            'polymer.html': `
+          <script>
+            window.Polymer = function() {};
+            Polymer.foo = 42;
+            Polymer.bar = 43;
+          </script>
+        `,
+          });
+          const options = {
+            bowerPackageName: 'polymer',
+            npmPackageName: '@polymer/polymer',
+            packageEntrypoints: new Map([
+              [
+                'polymer',
+                [
+                  'test.html' as OriginalDocumentUrl,
+                  'polymer.html' as OriginalDocumentUrl,
+                ]
+              ],
+            ]),
+          };
+          assertSources(await convert(options), {
+            'test.js': `
+import { Polymer, foo } from './polymer-legacy.js';
+console.log(Polymer());
+console.log(Polymer());
+console.log(foo);
+console.log(Polymer['bar']);
+`,
+            'polymer-legacy.js': `
+export const Polymer = function() {};
+export const foo = 42;
+export const bar = 43;
+`,
+          });
+        });
+
+        const testName =
+            'files named "polymer.html" at the root of the package are renamed';
+        test(testName, async () => {
+          setSources({
+            'test.html': `
+          <link rel="import" href="some-folder/file-1.html">
+          <link rel="import" href="some-folder/file-2.html">
+        `,
+            // The import in this file has the "./" prefix.
+            'some-folder/file-1.html': `
+          <link rel="import" href="./polymer.html">
+          <script>
+            console.log(window.Polymer());
+            console.log(Polymer());
+            console.log(Polymer.foo);
+            console.log(Polymer['bar']);
+          </script>
+        `,
+            // The import in this file does not have the "./" prefix.
+            'some-folder/file-2.html': `
+          <link rel="import" href="polymer.html">
+          <script>
+            console.log(window.Polymer());
+            console.log(Polymer());
+            console.log(Polymer.foo);
+            console.log(Polymer['bar']);
+          </script>
+        `,
+            'some-folder/polymer.html': `
+          <script>
+            window.Polymer = function() {};
+            Polymer.foo = 42;
+            Polymer.bar = 43;
+          </script>
+        `,
+          });
+          const options = {
+            bowerPackageName: 'polymer',
+            npmPackageName: '@polymer/polymer',
+            packageEntrypoints: new Map([
+              [
+                'polymer',
+                [
+                  'test.html' as OriginalDocumentUrl,
+                  'some-folder/file-1.html' as OriginalDocumentUrl,
+                  'some-folder/file-2.html' as OriginalDocumentUrl,
+                ]
+              ],
+            ]),
+          };
+          assertSources(await convert(options), {
+            'test.js': `
+import './some-folder/file-1.js';
+import './some-folder/file-2.js';
+`,
+            'some-folder/file-1.js': `
+import { Polymer, foo } from './polymer.js';
+console.log(Polymer());
+console.log(Polymer());
+console.log(foo);
+console.log(Polymer['bar']);
+`,
+            'some-folder/file-2.js': `
+import { Polymer, foo } from './polymer.js';
+console.log(Polymer());
+console.log(Polymer());
+console.log(foo);
+console.log(Polymer['bar']);
+`,
+            'some-folder/polymer.js': `
+export const Polymer = function() {};
+export const foo = 42;
+export const bar = 43;
+`,
+          });
+        });
+      });
+
+      const testName =
+          'renames "Polymer.Element" property to "PolymerElement" export';
+      test(testName, async () => {
+        setSources({
+          'test.html': `
+              <link rel="import" href="./polymer-element.html">
+              <script>
+                console.log(Polymer.Element);
+              </script>
+            `,
+          'polymer-element.html': `
+              <script>
+              const Element = (() => {})();
+              Polymer.Element = Element;
+            </script>
+            `,
+        });
+        const options = {
+          bowerPackageName: 'polymer',
+          npmPackageName: '@polymer/polymer',
+          packageEntrypoints: new Map([
+            [
+              'polymer',
+              [
+                'test.html' as OriginalDocumentUrl,
+                'polymer-element.html' as OriginalDocumentUrl,
+              ]
+            ],
+          ]),
+        };
+        assertSources(await convert(options), {
+          'test.js': `
+import { PolymerElement } from './polymer-element.js';
+console.log(PolymerElement);
+`,
+          'polymer-element.js': `
+const Element = (() => {})();
+export { Element as PolymerElement };
+`,
+        });
+      });
+    });
 
     test('unwraps top-level IIFE', async () => {
       setSources({

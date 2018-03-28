@@ -67,7 +67,7 @@ export class ProjectConverter {
     // Then, convert each document in the given package
     for (const document of await this.scanner.getPackageHtmlDocuments(
              packageName)) {
-      this.convertDocument(document);
+      this.convertDocument(document, packageName);
     }
   }
 
@@ -83,7 +83,7 @@ export class ProjectConverter {
    * Convert a document. The output format (JS Module or HTML Document) is
    * dictated by the results of the scanner.
    */
-  private convertDocument(document: Document) {
+  private convertDocument(document: Document, packageName: string) {
     console.assert(
         document.kinds.has('html-document'),
         `convertDocument() must be called with an HTML document, but got ${
@@ -97,7 +97,7 @@ export class ProjectConverter {
     }
 
     const documentConverter = new DocumentConverter(
-        document, this.urlHandler, this.conversionSettings);
+        document, packageName, this.urlHandler, this.conversionSettings);
     if (scanResult.type === 'js-module') {
       documentConverter.convertJsModule(scanResults.exports)
           .forEach((newModule) => {

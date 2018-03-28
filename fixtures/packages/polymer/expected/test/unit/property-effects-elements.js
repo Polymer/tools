@@ -1,6 +1,6 @@
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { MutableDataBehavior } from '../../lib/legacy/mutable-data-behavior.js';
 import { MutableData } from '../../lib/mixins/mutable-data.js';
 /**
@@ -963,7 +963,7 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
-class XImmutableB extends Element {
+class XImmutableB extends PolymerElement {
   static get importPath() {
     return import.meta.url;
   }
@@ -1010,7 +1010,7 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
-class XMutableB extends MutableData(Element) {
+class XMutableB extends MutableData(PolymerElement) {
   static get importPath() {
     return import.meta.url;
   }

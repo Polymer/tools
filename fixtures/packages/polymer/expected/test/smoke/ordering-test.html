@@ -13,14 +13,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 </head>
 <body>
 
 <script type="module">
-import '../../polymer.js';
-import { Element } from '../../polymer-element.js';
-class XA extends Element {
+import '../../polymer-legacy.js';
+import { PolymerElement } from '../../polymer-element.js';
+class XA extends PolymerElement {
   static get template() {
     return `<x-b prop="[[prop]]"></x-b>`;
   }
@@ -60,7 +60,7 @@ class XA extends Element {
 }
 customElements.define('x-a', XA);
 
-class XB extends Element {
+class XB extends PolymerElement {
   static get template() {
     return `<x-c prop="[[prop]]"></x-c>`;
   }
@@ -100,7 +100,7 @@ class XB extends Element {
 }
 customElements.define('x-b', XB);
 
-class XC extends Element {
+class XC extends PolymerElement {
   static get template() {
     return `<div></div>`;
   }

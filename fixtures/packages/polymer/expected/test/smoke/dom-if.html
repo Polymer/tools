@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 </head>
 <body>
 
@@ -35,9 +35,9 @@
    
     <!-- Uncomment for class syntax -->
     <script type="module">
-import '../../polymer.js';
-import { Element } from '../../polymer-element.js';
-class MyElement extends Element {
+import '../../polymer-legacy.js';
+import { PolymerElement } from '../../polymer-element.js';
+class MyElement extends PolymerElement {
   static get is() { return 'my-element'; }
   static get properties() {
     return {

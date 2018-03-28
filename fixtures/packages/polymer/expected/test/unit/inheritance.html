@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="utf-8">
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 <body>
 
   <dom-module id="base-el">
@@ -38,9 +38,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
 
     <script type="module">
-import '../../polymer.js';
-import { Element } from '../../polymer-element.js';
-class BaseEl extends Element {
+import '../../polymer-legacy.js';
+import { PolymerElement } from '../../polymer-element.js';
+class BaseEl extends PolymerElement {
   static get is() { return 'base-el'; }
   static get properties() {
     return { foo: { type: String, value: 5 } };
@@ -57,7 +57,7 @@ window.BaseEl = BaseEl;
 
   <dom-module id="child-el">
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 class ChildEl extends window.BaseEl {
   static get is() { return 'child-el'; }
   static get properties() {
@@ -71,7 +71,7 @@ window.ChildEl = ChildEl;
 
   <dom-module id="grand-child-el">
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 class GrandChildEl extends window.ChildEl {
   static get is() { return 'grand-child-el'; }
   static get properties() {
@@ -86,7 +86,7 @@ window.GrandChildEl = GrandChildEl;
   <dom-module id="child-el-with-template">
     <template>should ignore this template</template>
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 class ChildElWithTemplate extends window.GrandChildEl {
   static get properties() {
     return { bar: { type: String, value: 3 } };
@@ -132,7 +132,7 @@ window.ChildElWithTemplate = ChildElWithTemplate;
   </test-fixture>
 
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 suite('ChildElement extends BaseElement', function() {
   test('child has base properties', function() {
     var f = fixture('basic');

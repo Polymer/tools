@@ -226,8 +226,8 @@ export class PackageScanner {
       return;
     }
 
-    const documentScanner =
-        new DocumentScanner(document, this.urlHandler, this.conversionSettings);
+    const documentScanner = new DocumentScanner(
+        document, this.packageName, this.urlHandler, this.conversionSettings);
     let scanResult: ScanResult;
     try {
       scanResult = scanAs === 'js-module' ?

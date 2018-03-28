@@ -1,4 +1,4 @@
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { templatize } from '../utils/templatize.js';
 import { Debouncer } from '../utils/debounce.js';
 import { enqueueDebouncer, flush } from '../utils/flush.js';
@@ -27,7 +27,7 @@ import { root as root$0 } from '../utils/path.js';
  * @summary Custom element that conditionally stamps and hides or removes
  *   template content based on a boolean flag.
  */
-class DomIf extends Element {
+class DomIf extends PolymerElement {
   static get importPath() {
     return import.meta.url;
   }

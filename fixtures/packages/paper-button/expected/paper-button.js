@@ -1,4 +1,4 @@
-import '../../@polymer/polymer/polymer.js';
+import '../../@polymer/polymer/polymer-legacy.js';
 import '../../@polymer/iron-flex-layout/iron-flex-layout.js';
 import { PaperButtonBehavior, PaperButtonBehaviorImpl } from '../../@polymer/paper-behaviors/paper-button-behavior.js';
 import '../../@polymer/paper-styles/element-styles/paper-material-styles.js';

@@ -1,4 +1,4 @@
-import { Base } from '../../@polymer/polymer/polymer.js';
+import { Base } from '../../@polymer/polymer/polymer-legacy.js';
 import '../../@polymer/iron-meta/iron-meta.js';
 import '../../@polymer/iron-flex-layout/iron-flex-layout.js';
 import { Polymer } from '../../@polymer/polymer/lib/legacy/polymer-fn.js';

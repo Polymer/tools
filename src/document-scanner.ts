@@ -18,7 +18,7 @@ import {DocumentProcessor} from './document-processor';
 import {NamespaceMemberToExport} from './js-module';
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
-import {getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath} from './urls/util';
+import {getHtmlDocumentConvertedFilePath} from './urls/util';
 
 export type ScanResult =
     JsModuleScanResult|DeleteFileScanResult|HtmlDocumentScanResult;
@@ -81,7 +81,7 @@ export class DocumentScanner extends DocumentProcessor {
       type: 'js-module',
       originalUrl: this.originalUrl,
       convertedUrl: this.convertedUrl,
-      convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
+      convertedFilePath: this.convertedFilePath,
       exportMigrationRecords,
     };
   }
@@ -96,7 +96,8 @@ export class DocumentScanner extends DocumentProcessor {
       type: 'html-document',
       convertedUrl: this.convertedUrl,
       originalUrl: this.originalUrl,
-      convertedFilePath: getHtmlDocumentConvertedFilePath(this.originalUrl),
+      convertedFilePath:
+          getHtmlDocumentConvertedFilePath(this.convertedFilePath),
     };
   }
 

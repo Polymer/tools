@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 </head>
 <body>
 
@@ -22,9 +22,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script type="module">
-import '../../polymer.js';
-import { Element } from '../../polymer-element.js';
-class XHost extends Element {
+import '../../polymer-legacy.js';
+import { PolymerElement } from '../../polymer-element.js';
+class XHost extends PolymerElement {
   static get config() {
     return {
       properties: {
@@ -54,7 +54,7 @@ customElements.define('x-host', XHost);
 <x-host id="host"></x-host>
 
 <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 var obj = {foo: true};
 host.obj = obj;
 host.obj = obj;

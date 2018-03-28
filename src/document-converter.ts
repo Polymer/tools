@@ -39,7 +39,7 @@ import {rewriteReferencesToLocalExports} from './passes/rewrite-references-to-lo
 import {rewriteReferencesToNamespaceMembers} from './passes/rewrite-references-to-namespace-members';
 import {rewriteToplevelThis} from './passes/rewrite-toplevel-this';
 import {ConvertedDocumentUrl} from './urls/types';
-import {getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, getModuleId} from './urls/util';
+import {getHtmlDocumentConvertedFilePath, getJsModuleConvertedFilePath, getModuleId, getScriptConvertedFilePath} from './urls/util';
 
 /**
  * Keep a map of dangerous references to check for. Output the related warning
@@ -246,7 +246,7 @@ export class DocumentConverter extends DocumentProcessor {
         results.push({
           originalUrl: oldScriptUrl,
           convertedUrl: newScriptUrl,
-          convertedFilePath: getJsModuleConvertedFilePath(oldScriptUrl),
+          convertedFilePath: getScriptConvertedFilePath(oldScriptUrl),
           deleteOriginal: true,
           output: undefined,
         });
@@ -273,7 +273,7 @@ export class DocumentConverter extends DocumentProcessor {
     results.push({
       originalUrl: this.originalUrl,
       convertedUrl: this.convertedUrl,
-      convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
+      convertedFilePath: getJsModuleConvertedFilePath(this.convertedFilePath),
       deleteOriginal: true,
       output: outputProgram.code + EOL
     });
@@ -452,7 +452,8 @@ export class DocumentConverter extends DocumentProcessor {
     return {
       originalUrl: this.originalUrl,
       convertedUrl: this.convertedUrl,
-      convertedFilePath: getHtmlDocumentConvertedFilePath(this.originalUrl),
+      convertedFilePath:
+          getHtmlDocumentConvertedFilePath(this.convertedFilePath),
       output: contents
     };
   }
@@ -465,7 +466,7 @@ export class DocumentConverter extends DocumentProcessor {
     return {
       originalUrl: this.originalUrl,
       convertedUrl: this.convertedUrl,
-      convertedFilePath: getJsModuleConvertedFilePath(this.originalUrl),
+      convertedFilePath: getJsModuleConvertedFilePath(this.convertedFilePath),
       deleteOriginal: true,
       output: undefined,
     };

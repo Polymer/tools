@@ -1,7 +1,7 @@
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { GestureEventListeners } from '../../lib/mixins/gesture-event-listeners.js';
 /**
 @license
@@ -195,7 +195,7 @@ Polymer({
   is: 'x-imperative',
   behaviors: [EventCaptureBehavior]
 });
-class XNativeLabel extends Element {
+class XNativeLabel extends PolymerElement {
   static get importPath() {
     return import.meta.url;
   }
@@ -212,7 +212,7 @@ class XNativeLabel extends Element {
   }
 }
 customElements.define(XNativeLabel.is, XNativeLabel);
-class XNativeLabelNested extends Element {
+class XNativeLabelNested extends PolymerElement {
   static get importPath() {
     return import.meta.url;
   }
@@ -230,7 +230,7 @@ class XNativeLabelNested extends Element {
   }
 }
 customElements.define(XNativeLabelNested.is, XNativeLabelNested);
-class XDisabled extends GestureEventListeners(Element) {
+class XDisabled extends GestureEventListeners(PolymerElement) {
   static get importPath() {
     return import.meta.url;
   }

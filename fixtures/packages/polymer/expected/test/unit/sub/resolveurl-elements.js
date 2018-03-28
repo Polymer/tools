@@ -1,5 +1,5 @@
 import { html } from '../../../lib/utils/html-tag.js';
-import { Element } from '../../../polymer-element.js';
+import { PolymerElement } from '../../../polymer-element.js';
 const $_documentContainer = document.createElement('div');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = `<dom-module id="p-r-ap" assetpath="../../assets/"></dom-module>`;
@@ -13,7 +13,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-class PR extends Element {
+class PR extends PolymerElement {
   static get importPath() {
     return import.meta.url;
   }
@@ -47,7 +47,7 @@ class PR extends Element {
   static get is() { return 'p-r'; }
 }
 customElements.define(PR.is, PR);
-class PRAp extends Element {
+class PRAp extends PolymerElement {
   static get importPath() {
     return import.meta.url;
   }

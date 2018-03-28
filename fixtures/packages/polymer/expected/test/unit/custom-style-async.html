@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="utf-8">
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 
 </head>
 <body>
@@ -32,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </dom-module>
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 Polymer({
   is: 'x-host'
@@ -42,7 +42,7 @@ Polymer({
   <x-host id="host"></x-host>
 
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { afterNextRender } from '../../lib/utils/render-status.js';
 /* global host */
 

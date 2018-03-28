@@ -1,12 +1,12 @@
 <!doctype html>
 <html>
 <head>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
   <script type="module" src="../../lib/mixins/disable-upgrade-mixin.js"></script>
 </head>
 <body>
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { DisableUpgradeMixin } from '../../lib/mixins/disable-upgrade-mixin.js';
 const ogDefine = window.customElements.ogDefine = window.customElements.define;
 window.customElements.defineWithDisabled = function(name, constructor) {
@@ -32,10 +32,10 @@ window.customElements.define = window.customElements.defineWithDisabled;
     </template>
 
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import '../../lib/mixins/disable-upgrade-mixin.js';
-import { Element } from '../../polymer-element.js';
-class Disabled extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class Disabled extends PolymerElement {
   static get is() { return 'x-disabled'; }
   static get properties() {
     return {
@@ -76,12 +76,12 @@ customElements.define(Disabled.is, Disabled);
     </template>
 
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import '../../lib/mixins/disable-upgrade-mixin.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 
 
-class MyElement extends Element {
+class MyElement extends PolymerElement {
   static get is() { return 'my-element'; }
   static get properties() {
     return {

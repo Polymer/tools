@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="utf-8">
   <script src="../../../../@webcomponents/webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../../wct-browser-legacy/browser.js"></script>
-  <script type="module" src="../../polymer.js"></script>
+  <script type="module" src="../../polymer-legacy.js"></script>
 
 </head>
 <body>
@@ -35,7 +35,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       cache-element
     </template>
     <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 Polymer({
   is: 'cache-element'
@@ -47,7 +47,7 @@ Polymer({
   <cache-element id="cache2"></cache-element>
 
   <script type="module">
-import '../../polymer.js';
+import '../../polymer-legacy.js';
 
 suite('custom-style scope cache', function() {
 
