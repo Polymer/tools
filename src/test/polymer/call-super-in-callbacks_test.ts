@@ -15,6 +15,7 @@
 import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer} from 'polymer-analyzer';
+import {ProjectConfig} from 'polymer-project-config';
 
 import {Linter} from '../../linter';
 import {registry} from '../../registry';
@@ -27,8 +28,9 @@ suite('call-super-in-callbacks', () => {
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
 
-  setup(() => {
-    analyzer = Analyzer.createForDirectory(fixtures_dir);
+  setup(async() => {
+    ({analyzer} =
+         await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
     warningPrinter = new WarningPrettyPrinter();
     linter =
         new Linter(registry.getRules(['call-super-in-callbacks']), analyzer);

@@ -15,6 +15,7 @@
 import {assert} from 'chai';
 import * as path from 'path';
 import {Analyzer, Document, Severity, Warning} from 'polymer-analyzer';
+import {ProjectConfig} from 'polymer-project-config';
 
 import {Linter} from '../linter';
 import {Rule} from '../rule';
@@ -47,8 +48,9 @@ suite('Linter', () => {
     let analyzer: Analyzer;
     let warningPrinter: WarningPrettyPrinter;
 
-    setup(() => {
-      analyzer = Analyzer.createForDirectory(fixtures_dir);
+    setup(async() => {
+      ({analyzer} =
+           await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
       warningPrinter = new WarningPrettyPrinter();
     });
 
@@ -84,7 +86,8 @@ suite('Linter', () => {
         'when linting a package, do not surface warnings from external files';
     test(testName, async() => {
       const dir = path.join(fixtures_dir, 'package-external');
-      const analyzer = Analyzer.createForDirectory(dir);
+      const {analyzer} =
+          await ProjectConfig.initializeAnalyzerFromDirectory(dir);
       const linter = new Linter([new AlwaysWarnsRule()], analyzer);
       const {warnings} = await linter.lintPackage();
       // One warning from the analyzer, one from the AlwaysWarns, both in

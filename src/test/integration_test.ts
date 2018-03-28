@@ -14,7 +14,8 @@
 
 import {assert} from 'chai';
 import * as path from 'path';
-import {Analyzer, Warning, WarningPrinter} from 'polymer-analyzer';
+import {Warning, WarningPrinter} from 'polymer-analyzer';
+import {ProjectConfig} from 'polymer-project-config';
 
 import {Linter} from '../linter';
 import {registry} from '../registry';
@@ -32,7 +33,8 @@ if (process.env['INTEGRATION_TEST']) {
     this.timeout(60 * 1000);
 
     test(`polymer team's elements lint clean`, async() => {
-      const analyzer = Analyzer.createForDirectory(fixtures_dir);
+      const {analyzer} =
+          await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir);
       const linter =
           new Linter(registry.getRules(['polymer-2-hybrid']), analyzer);
       const warnings = filterWarnings((await linter.lintPackage()).warnings);
