@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.18] - 2018-03-27
 * [BREAKING] Removed Analyzer.createFromDirectory, the replacement will go into
   polymer-project-config.
 * [BREAKING] Import features will now be produced when a document has a broken
@@ -13,7 +16,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   etc). We still emit a warning in such cases.
 * Recognize behaviors declared in export statements.
 * Apply node module resolution to path imports as well as "named" imports.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.17] - 2018-03-20
 * [BREAKING] `FSUrlLoader` is now `FsUrlLoader`.
