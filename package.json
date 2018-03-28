@@ -94,7 +94,6 @@
     "minimatch": "^3.0.4",
     "parse5": "^4.0.0",
     "path-is-inside": "^1.0.2",
-    "polymer-project-config": "^3.6.0",
     "resolve": "^1.5.0",
     "shady-css-parser": "^0.1.0",
     "stable": "^0.1.6",

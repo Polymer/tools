@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* [breaking] Removed WarningFilter.fromConfig. ProjectConfig#initializeAnalyzer
+  now does this from the other side (and cyclic deps are not a great idea).
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.18] - 2018-03-27

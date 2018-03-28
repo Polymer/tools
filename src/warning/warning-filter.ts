@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ProjectConfig} from 'polymer-project-config';
-
 import {Severity, Warning} from '../model/model';
 
 import minimatch = require('minimatch');
@@ -52,18 +50,6 @@ export class WarningFilter {
           (options.filesToIgnore ||
            []).map((glob) => new minimatch.Minimatch(glob, {}));
     }
-  }
-
-  static fromProjectConfig(config: ProjectConfig) {
-    const lintConfig: Partial<typeof config.lint> = config.lint || {};
-    const minimumSeverity = Severity.INFO;
-    const warningCodesToIgnore = new Set(lintConfig.warningsToIgnore);
-
-    return new WarningFilter({
-      warningCodesToIgnore,
-      minimumSeverity,
-      filesToIgnore: lintConfig.filesToIgnore
-    });
   }
 
   shouldIgnore(warning: Warning) {

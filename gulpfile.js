@@ -46,8 +46,7 @@ task('depcheck', function () {
     depcheck_lib(
       __dirname,
       {
-        ignoreDirs: [], ignoreMatches: [
-          '@types/*', 'polymer-project-config']
+        ignoreDirs: [], ignoreMatches: ['@types/*']
       },
       resolve);
   })
