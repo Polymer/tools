@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Upgraded to `polymer-bundler@4.0.0-pre.3` which brings ES6 module bundling to the build pipeline!  Upgraded to `polymer-analyzer@3.0.0-pre.18`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.2] - 2018-03-26

@@ -218,7 +218,7 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
                  (path) => this.analyzer.resolveUrl(urlFromPath(
                      this.config.root as LocalFsPath, path as LocalFsPath))!),
              this.analyzer))
-            .entrypointToDeps.keys());
+            .keys());
 
     // If an app-shell exists, use that as our main push URL because it has a
     // reliable URL. Otherwise, support the single entrypoint URL.
