@@ -18,6 +18,7 @@ import * as path from 'path';
 import * as logging from 'plylog';
 import {applyBuildPreset, isValidPreset, ProjectBuildOptions} from './builds';
 import minimatchAll = require('minimatch-all');
+import {FsUrlLoader, PackageUrlResolver, WarningFilter, Analyzer, Severity} from 'polymer-analyzer';
 
 export {ProjectBuildOptions, applyBuildPreset} from './builds';
 
@@ -28,7 +29,7 @@ const logger = logging.getLogger('polymer-project-config');
  */
 export const defaultSourceGlobs = ['src/**/*'];
 
-export type ModuleResolutionStrategy = 'none'|'node';
+export type ModuleResolutionStrategy = 'none' | 'node';
 const moduleResolutionStrategies =
     new Set<ModuleResolutionStrategy>(['none', 'node']);
 
@@ -289,6 +290,18 @@ export class ProjectConfig {
   }
 
   /**
+   * Given a project directory, return an Analyzer (and related objects) with
+   * configuration inferred from polymer.json (and possibly other config files
+   * that we find and interpret).
+   */
+  static async initializeAnalyzerFromDirectory(dirname: string) {
+    const config =
+        this.loadConfigFromFile(path.join(dirname, 'polymer.json')) ||
+        new ProjectConfig({});
+    return config.initializeAnalyzer();
+  }
+
+  /**
    * constructor - given a ProjectOptions object, create the correct project
    * configuration for those options. This involves setting the correct
    * defaults, validating options, warning on deprecated options, and
@@ -411,6 +424,29 @@ export class ProjectConfig {
     if (options.componentDir) {
       this.componentDir = options.componentDir;
     }
+  }
+
+  /**
+   * Get an analyzer (and other related objects) with configuration determined
+   * by this ProjectConfig.
+   */
+  async initializeAnalyzer() {
+    const urlLoader = new FsUrlLoader(this.root);
+    const urlResolver = new PackageUrlResolver(
+        {packageDir: this.root, componentDir: this.componentDir});
+
+    const analyzer = new Analyzer({
+      urlLoader,
+      urlResolver,
+      moduleResolution: convertModuleResolution(this.moduleResolution)
+    });
+    const lintConfig: Partial<LintOptions> = this.lint || {};
+    const warningFilter = new WarningFilter({
+      minimumSeverity: Severity.WARNING,
+      warningCodesToIgnore: new Set(lintConfig.warningsToIgnore || []),
+      filesToIgnore: lintConfig.filesToIgnore || []
+    });
+    return {urlLoader, urlResolver, analyzer, warningFilter};
   }
 
   isFragment(filepath: string): boolean {
@@ -547,3 +583,21 @@ const getSchema: () => jsonschema.Schema = (() => {
     return schema;
   }
 })();
+
+
+/**
+ * Module resolution in ProjectConfig is different than the same-named parameter
+ * in the analyzer. So we need to convert between the two.
+ */
+function convertModuleResolution(moduleResolution: 'node'|'none'): 'node'|
+    undefined {
+  switch (moduleResolution) {
+    case 'node':
+      return 'node';
+    case 'none':
+      return undefined;
+    default:
+      const never: never = moduleResolution;
+      throw new Error(`Unknown module resolution parameter: ${never}`);
+  }
+}
