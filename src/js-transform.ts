@@ -110,6 +110,11 @@ export interface JsTransformOptions {
   // module. This can be used to generate a dependency chain between module
   // scripts.
   moduleScriptIdx?: number;
+
+  // If true, parsing of invalid JavaScript will not throw an exception.
+  // Instead, a console error will be logged, and the original JavaScript will
+  // be returned with no changes. Use with caution!
+  softSyntaxError?: boolean;
 }
 
 /**
@@ -156,7 +161,19 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   }
 
   if (doBabel) {
-    js = babelCore.transform(js, {presets, plugins}).code!;
+    try {
+      js = babelCore.transform(js, {presets, plugins}).code!;
+    } catch (e) {
+      if (options.softSyntaxError && e.constructor.name === 'SyntaxError') {
+        console.error(
+            'ERROR [polymer-build]: failed to parse JavaScript' +
+                (options.filePath ? ` (${options.filePath}):` : ':'),
+            e);
+        return js;
+      } else {
+        throw e;
+      }
+    }
   }
 
   if (options.transformEsModulesToAmd &&

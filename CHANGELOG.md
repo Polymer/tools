@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* AMD loader will now only be injected into an HTML document if it contains at least one `type=module` script.
+* Added `softSyntaxError` option to `jsTransform`. If set, Babel parse errors will no longer throw. Instead, a console error will be logged, and the original JS returned.
+* Expose `htmlTransform` from main package index.
+
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.4] - 2018-03-28

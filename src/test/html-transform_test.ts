@@ -137,7 +137,7 @@ suite('htmlTransform', () => {
     test('external script', () => {
       const input = `
         <html><head></head><body>
-          <script type="module" src="depA.js"><script>
+          <script type="module" src="depA.js"></script>
         </body></html>`;
 
       const expected = `
@@ -274,7 +274,7 @@ suite('htmlTransform', () => {
         <html><head></head><body>
           <script>console.log('non-module');</script>
 
-          <script type="module" src="depA.js"><script>
+          <script type="module" src="depA.js"></script>
         </body></html>`;
 
       const expected = `
@@ -295,6 +295,22 @@ suite('htmlTransform', () => {
         },
       });
       assertEqualIgnoringWhitespace(replaceGiantScripts(result), expected);
+    });
+
+    test('does not add AMD loader when no modules', () => {
+      const input = `
+        <html><head></head><body>
+          <script>console.log('non-module');</script>
+          <script src="depA.js"></script>
+        </body></html>`;
+
+      const result = htmlTransform(input, {
+        injectAmdLoader: true,
+        js: {
+          transformEsModulesToAmd: true,
+        },
+      });
+      assertEqualIgnoringWhitespace(result, input);
     });
 
     test('adds hack for Web Component Tester', () => {
