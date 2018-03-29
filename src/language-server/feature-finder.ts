@@ -182,8 +182,8 @@ export default class FeatureFinder {
   async getAstLocationAtPositionAndPath(
       url: string, position: SourcePosition,
       analysis?: Analysis): Promise<AstLocation|undefined> {
-    analysis =
-        analysis || await this.analyzer.analyze([url], 'get AST location');
+    analysis = analysis ||
+        await this.analyzer.analyze([url], {reason: 'get AST location'});
     const result = analysis.getDocument(url);
     if (!result.successful) {
       return;

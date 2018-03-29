@@ -81,8 +81,9 @@ export default class AutoCompleter extends Handler {
   private async autoComplete(textPosition: TextDocumentPositionParams):
       Promise<CompletionList> {
     const url = textPosition.textDocument.uri;
-    const result =
-        (await this.analyzer.analyze([url], 'autocomplete')).getDocument(url);
+    const result = (await this.analyzer.analyze([url], {
+                     reason: 'autocomplete'
+                   })).getDocument(url);
     if (!result.successful) {
       return {isIncomplete: true, items: []};
     }

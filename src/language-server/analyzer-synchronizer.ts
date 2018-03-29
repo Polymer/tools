@@ -17,6 +17,8 @@ import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
 import {FileChangeType, FileEvent, TextDocuments} from 'vscode-languageserver';
 
+import {AnalyzeOptions} from '../../../analyzer/lib/core/analyzer';
+
 import AnalyzerLSPConverter from './converter';
 import FileSynchronizer from './file-synchronizer';
 import {Logger} from './logger';
@@ -114,6 +116,8 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
   }
 }
 
+export interface LsAnalyzeOptions extends AnalyzeOptions { reason?: string; }
+
 /**
  * An extension of the analyzer that's aware of the LSP versions of
  * in-memory files at the time an analysis is generated.
@@ -127,11 +131,11 @@ export class LsAnalyzer extends Analyzer {
     super(options);
   }
 
-  analyze(files: string[], reason?: string): Promise<Analysis> {
-    const prefix = reason ? `${reason}: ` : '';
+  analyze(files: string[], options: LsAnalyzeOptions = {}): Promise<Analysis> {
+    const prefix = options.reason ? `${options.reason}: ` : '';
     this.logger.log(`${prefix}Analyzing files: ${files.join(', ')}`);
     const start = (new Date().getTime());
-    const result = this.annotateWithVersionMap(super.analyze(files));
+    const result = this.annotateWithVersionMap(super.analyze(files, options));
     result.then(() => {
       const end = (new Date().getTime());
       const elapsed = ((end - start) / 1000).toFixed(2);
@@ -141,11 +145,11 @@ export class LsAnalyzer extends Analyzer {
     return result;
   }
 
-  analyzePackage(reason?: string): Promise<Analysis> {
-    const prefix = reason ? `${reason}: ` : '';
+  analyzePackage(options: LsAnalyzeOptions = {}): Promise<Analysis> {
+    const prefix = options.reason ? `${options.reason}: ` : '';
     this.logger.log(`${prefix}Analyzing package...`);
     const start = (new Date().getTime());
-    const result = this.annotateWithVersionMap(super.analyzePackage());
+    const result = this.annotateWithVersionMap(super.analyzePackage(options));
     result.then(() => {
       const end = (new Date().getTime());
       const elapsed = ((end - start) / 1000).toFixed(2);
