@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.26.0](https://github.com/PolymerLabs/polyserve/tree/0.26.0) (2018-03-28)
 
 * ES > AMD module transformation
   * AMD loader will now be injected as a minified inline script, instead of as
