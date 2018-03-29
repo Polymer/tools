@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {CancelToken} from 'cancel-token';
 import {Attribute, Document, Element, isPositionInsideRange, Method, ParsedCssDocument, ParsedHtmlDocument, Property, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {Analysis} from 'polymer-analyzer/lib/model/analysis';
@@ -45,10 +46,10 @@ export default class FeatureFinder {
    * is going on there, like an Element for an HTML tag.
    */
   async getFeatureAt(
-      url: string, position: SourcePosition,
+      url: string, position: SourcePosition, cancelToken: CancelToken,
       analysis?: Analysis): Promise<FoundFeature|undefined> {
-    const location =
-        await this.getAstLocationAtPositionAndPath(url, position, analysis);
+    const location = await this.getAstLocationAtPositionAndPath(
+        url, position, cancelToken, analysis);
     if (!location) {
       return;
     }
@@ -180,10 +181,11 @@ export default class FeatureFinder {
   }
 
   async getAstLocationAtPositionAndPath(
-      url: string, position: SourcePosition,
+      url: string, position: SourcePosition, cancelToken: CancelToken,
       analysis?: Analysis): Promise<AstLocation|undefined> {
     analysis = analysis ||
-        await this.analyzer.analyze([url], {reason: 'get AST location'});
+        await this.analyzer.analyze(
+            [url], {reason: 'get AST location', cancelToken});
     const result = analysis.getDocument(url);
     if (!result.successful) {
       return;

@@ -12,8 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {isCancel} from 'cancel-token';
 import {WarningCarryingException} from 'polymer-analyzer';
 import {Disposable, IConnection} from 'vscode-languageserver';
+
+import {Logger} from './logger';
 
 export class EventStream<T> {
   static create<T>() {
@@ -69,6 +72,7 @@ export class AutoDisposable implements Disposable {
  */
 export abstract class Handler extends AutoDisposable {
   protected abstract connection: IConnection;
+  protected abstract logger: Logger;
 
   /**
    * If the given promise rejects, unobtrusively log the error and return the
@@ -80,6 +84,10 @@ export abstract class Handler extends AutoDisposable {
     try {
       return await promise;
     } catch (err) {
+      if (isCancel(err)) {
+        this.logger.log('Request successfully cancelled.');
+        return fallbackValue;
+      }
       // Ignore WarningCarryingExceptions, they're expected, and made visible
       //   to the user in a useful way. All other exceptions should be logged
       //   if possible.

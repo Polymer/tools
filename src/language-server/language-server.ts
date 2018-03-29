@@ -40,6 +40,7 @@ export default class LanguageServer extends Handler {
   protected readonly connection: IConnection;
   readonly fileSynchronizer: FileSynchronizer;
   private readonly syncKind: TextDocumentSyncKind;
+  protected readonly logger: Logger;
 
   /** Get an initialized and ready language server. */
   static async initializeWithConnection(
@@ -103,6 +104,7 @@ export default class LanguageServer extends Handler {
     this.connection = connection;
 
     const logger = new Logger({connection, logToFileFlag: logToFile});
+    this.logger = logger;
     this.disposables.push(logger);
 
     const workspacePath = workspaceUri.fsPath;
@@ -133,11 +135,11 @@ export default class LanguageServer extends Handler {
 
     const diagnosticGenerator = new DiagnosticGenerator(
         analyzerSynchronizer.analyzer, converter, connection, settings,
-        analyzerSynchronizer, documents);
+        analyzerSynchronizer, documents, logger);
     this.disposables.push(diagnosticGenerator);
 
     const commandExecutor =
-        new CommandExecutor(this.connection, diagnosticGenerator);
+        new CommandExecutor(this.connection, diagnosticGenerator, logger);
     this.disposables.push(commandExecutor);
 
     const featureFinder = new FeatureFinder(analyzerSynchronizer.analyzer);
@@ -147,12 +149,12 @@ export default class LanguageServer extends Handler {
 
     const autoCompleter = new AutoCompleter(
         this.connection, converter, featureFinder,
-        analyzerSynchronizer.analyzer, clientCapabilities);
+        analyzerSynchronizer.analyzer, clientCapabilities, logger);
     this.disposables.push(autoCompleter);
 
     const definitionFinder = new DefinitionFinder(
         this.connection, converter, featureFinder,
-        analyzerSynchronizer.analyzer, settings);
+        analyzerSynchronizer.analyzer, settings, logger);
     this.disposables.push(definitionFinder);
   }
 

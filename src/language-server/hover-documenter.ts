@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {CancelToken} from 'cancel-token';
 import {Property, ScannedProperty, SourcePosition} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
@@ -28,24 +29,27 @@ import {Handler} from './util';
  */
 export default class HoverDocumenter extends Handler {
   constructor(
-      protected connection: IConnection,
-      private converter: AnalyzerLSPConverter,
-      private featureFinder: FeatureFinder, private readonly logger: Logger) {
+      protected readonly connection: IConnection,
+      private readonly converter: AnalyzerLSPConverter,
+      private readonly featureFinder: FeatureFinder,
+      protected readonly logger: Logger) {
     super();
 
-    this.connection.onHover(async(textPosition) => {
+    this.connection.onHover(async(textPosition, cancellation) => {
+      const cancelToken = this.converter.convertCancelToken(cancellation);
       logger.log(`Hover request: ${textPosition.position.line}:${textPosition
                      .position.character} in ${textPosition.textDocument}`);
       return await this.handleErrors(
-          this.getDocsForHover(textPosition), undefined);
+          this.getDocsForHover(textPosition, cancelToken), undefined);
     });
   }
 
-  private async getDocsForHover(textPosition: TextDocumentPositionParams):
-      Promise<Hover|undefined> {
+  private async getDocsForHover(
+      textPosition: TextDocumentPositionParams,
+      cancelToken: CancelToken): Promise<Hover|undefined> {
     const documentation = await this.getDocumentationAndRangeAtPosition(
         textPosition.textDocument.uri,
-        this.converter.convertPosition(textPosition.position));
+        this.converter.convertPosition(textPosition.position), cancelToken);
     if (!documentation) {
       return;
     }
@@ -57,9 +61,9 @@ export default class HoverDocumenter extends Handler {
   }
 
   private async getDocumentationAndRangeAtPosition(
-      url: string, position: SourcePosition) {
-    const location =
-        await this.featureFinder.getAstLocationAtPositionAndPath(url, position);
+      url: string, position: SourcePosition, cancelToken: CancelToken) {
+    const location = await this.featureFinder.getAstLocationAtPositionAndPath(
+        url, position, cancelToken);
     if (!location) {
       this.logger.log(`No location`);
       return;
