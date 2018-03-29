@@ -114,7 +114,10 @@ task('json-schema', function () {
   const inPath = 'src/analysis-format/analysis-format.ts';
   const outPath = 'lib/analysis.schema.json';
   const command = path.normalize(`node_modules/.bin/typescript-json-schema`);
-  const child = child_process.spawn(command, [`--required`, `${inPath}`, `Analysis`], { shell: true, cwd: process.cwd(), hideWindows: true });
+  const child = child_process.spawn(
+      command,
+      [`--required`, `--ignoreErrors`, `${inPath}`, `Analysis`],
+      { shell: true, cwd: process.cwd(), hideWindows: true });
   let buffer = '';
   child.stdout.setEncoding('utf8');
   child.stdout.on('data', (chunk) => {
