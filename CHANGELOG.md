@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+
+* ES > AMD module transformation
+  * AMD loader will now be injected as a minified inline script, instead of as
+    an external script.
+  * AMD modules will now execute in document script order.
+* Babel helpers will now be injected as a single minified inline script into
+  the HTML document, instead of into every JS script.
+* Phantom `<html>`, `<body>`, and `<head>` elements will no longer be
+  introduced into HTML.
 
 ## [0.25.3](https://github.com/PolymerLabs/polyserve/tree/0.25.3) (2018-03-26)
 

@@ -45,7 +45,6 @@ function readTestFile(p: string) {
 }
 
 suite('compile-middleware', () => {
-
   let app: Express.Application;
 
   suite('babelCompileCache', () => {
@@ -134,7 +133,6 @@ suite('compile-middleware', () => {
     });
 
     suite('with compile option set to \'auto\'', () => {
-
       setup(() => {
         app = getApp({
           root: root,
@@ -250,11 +248,9 @@ suite('compile-middleware', () => {
       assert.equal(response.status, 200);
       assert.include(response.text, 'requirejs');
     });
-
   });
 
   suite('module specifier rewriting', () => {
-
     const userAgent = chrome61UA;
 
     async function assertGolden(requestPath: string, goldenPath: string) {
@@ -265,7 +261,6 @@ suite('compile-middleware', () => {
     }
 
     suite('from an unscoped, root package', () => {
-
       setup(() => {
         app = getApp({
           root: path.join(root, 'npm-package'),
@@ -296,11 +291,9 @@ suite('compile-middleware', () => {
       test('bare specifiers in app HTML requests', async () => {
         await assertGolden('/index.html', 'golden/npm-package/index.html');
       });
-
     });
 
     suite('from a scoped, root package', () => {
-
       setup(() => {
         app = getApp({
           root: path.join(root, 'npm-package'),
@@ -332,12 +325,10 @@ suite('compile-middleware', () => {
         await assertGolden(
             '/index.html', 'golden/scoped-npm-package/index.html');
       });
-
     });
 
 
     suite('between component packages', () => {
-
       setup(() => {
         app = getApp({
           root: path.join(root, 'npm-package'),
@@ -381,8 +372,5 @@ suite('compile-middleware', () => {
             'golden/npm-package/node_modules/@polymer/test-component/index.html');
       });
     });
-
-
   });
-
 });
