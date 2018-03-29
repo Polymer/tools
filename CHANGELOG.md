@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.0.0-pre.5] - 2018-03-28
+* AMD loader will now only be injected into an HTML document if it contains at least one `type=module` script.
+* Added `softSyntaxError` option to `jsTransform`. If set, Babel parse errors will no longer throw. Instead, a console error will be logged, and the original JS returned.
+* Expose `htmlTransform` from main package index.
+
 ## [3.0.0-pre.4] - 2018-03-28
 * ES to AMD module transformation is now supported by `getOptimizeStreams` and `htmlTransform`. Additionally:
   * Will now inject an inline minified RequireJS AMD loader, and the Babel helpers.

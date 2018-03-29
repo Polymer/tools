@@ -133,7 +133,8 @@ export function htmlTransform(
         finalModuleScript.parentNode!, finalModuleScript, fragment);
   }
 
-  if (options.injectAmdLoader) {
+  if (options.injectAmdLoader && shouldTransformEsModuleToAmd &&
+      firstModuleScript !== undefined) {
     const fragment = parse5.parseFragment('<script></script>\n');
     dom5.setTextContent(fragment.childNodes![0], getMinifiedRequireJs());
     const requireJsScript = fragment.childNodes![0];
@@ -142,15 +143,8 @@ export function htmlTransform(
     // there is one) because there may be some UMD dependencies that we want to
     // continue to load in global mode instead of AMD mode (which is detected by
     // the presence of the `require` global).
-    if (firstModuleScript !== undefined) {
-      dom5.insertBefore(
-          firstModuleScript.parentNode!, firstModuleScript, fragment);
-    } else {
-      // TODO(aomarks) If there were no modules, where do we put the AMD loader?
-      const headOrDocument =
-          dom5.query(document, dom5.predicates.hasTagName('head')) || document;
-      dom5.append(headOrDocument, fragment);
-    }
+    dom5.insertBefore(
+        firstModuleScript.parentNode!, firstModuleScript, fragment);
 
     if (wctScript !== undefined) {
       addWctTimingHack(wctScript, requireJsScript);

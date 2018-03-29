@@ -43,6 +43,22 @@ suite('jsTransform', () => {
     assert.equal(jsTransform('const foo = 3;\n', {}), 'const foo = 3;\n');
   });
 
+  suite('parse errors', () => {
+    const invalidJs = ';var{';
+
+    test('throw when softSyntaxError is false', () => {
+      assert.throws(
+          () => jsTransform(
+              invalidJs, {compileToEs5: true, softSyntaxError: false}));
+    });
+
+    test('do not throw when softSyntaxError is true', () => {
+      assert.equal(
+          jsTransform(invalidJs, {compileToEs5: true, softSyntaxError: true}),
+          invalidJs);
+    });
+  });
+
   suite('exponentiation', () => {
     const js = 'const foo = 2**2;';
 
