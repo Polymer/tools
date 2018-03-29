@@ -13,7 +13,7 @@
  */
 
 import {assert} from 'chai';
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 
@@ -53,15 +53,15 @@ suite('htmlTransform', () => {
         </body>
       </html>`;
 
-    const expected = `<html><body><p>Hello World!</p></body></html>`
+    const expected = `<html><body><p>Hello World!</p></body></html>`;
 
     assert.equal(htmlTransform(input, {minifyHtml: true}), expected);
   });
 
   test('does not add unnecessary tags', () => {
-    const input = `<p>Just me</p>`
+    const input = `<p>Just me</p>`;
     assert.equal(htmlTransform(input, {}), input);
-  })
+  });
 
   test('compiles inline JavaScript to ES5', () => {
     const input = `
@@ -172,7 +172,7 @@ suite('htmlTransform', () => {
               console.log(_depA.depA);
             });
           </script>
-          
+
           <script>require(['polymer-build-generated-module-0']);</script>
         </body></html>`;
 
@@ -280,11 +280,11 @@ suite('htmlTransform', () => {
       const expected = `
         <html><head></head><body>
           <script>console.log('non-module');</script>
- 
+
           <script>// amd loader</script>
- 
+
           <script>define('polymer-build-generated-module-0', ['depA.js']);</script>
- 
+
           <script>require(['polymer-build-generated-module-0']);</script>
         </body></html>`;
 

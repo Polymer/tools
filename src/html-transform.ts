@@ -12,14 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as fs from 'fs';
 import * as htmlMinifier from 'html-minifier';
 import * as parse5 from 'parse5';
 import * as pathlib from 'path';
 
-import {scriptWasSplitByHtmlSplitter} from './html-splitter'
-import {generateModuleName, jsTransform, JsTransformOptions} from './js-transform'
+import {scriptWasSplitByHtmlSplitter} from './html-splitter';
+import {generateModuleName, jsTransform, JsTransformOptions} from './js-transform';
 
 const p = dom5.predicates;
 
@@ -79,9 +79,9 @@ export function htmlTransform(
     locationInfo: true,  // Required for removeFakeNodes.
   });
   removeFakeNodes(document);
-  const allScripts = dom5.queryAll(document, isJsScript);
+  const allScripts = [...dom5.queryAll(document, isJsScript)];
 
-  let shouldTransformEsModuleToAmd = options.js &&
+  const shouldTransformEsModuleToAmd = options.js &&
       options.js.transformEsModulesToAmd &&
       // Assume that if this document has a nomodule script, the author is
       // already handling browsers that don't support modules, and we don't
@@ -156,7 +156,7 @@ export function htmlTransform(
     dom5.setTextContent(fragment.childNodes![0], getMinifiedBabelHelpers());
 
     const firstJsScriptOrHtmlImport =
-        dom5.nodeWalk(document, isJsScriptOrHtmlImport);
+        dom5.query(document, isJsScriptOrHtmlImport);
     if (firstJsScriptOrHtmlImport) {
       dom5.insertBefore(
           firstJsScriptOrHtmlImport.parentNode!,

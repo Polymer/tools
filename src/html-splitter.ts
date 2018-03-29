@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import * as osPath from 'path';
 import {Transform} from 'stream';
@@ -155,7 +155,7 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
       const contents = await getFileContents(file);
       const doc = parse5.parse(contents, {locationInfo: true});
       dom5.removeFakeRootElements(doc);
-      const scriptTags = dom5.queryAll(doc, pred.hasTagName('script'));
+      const scriptTags = [...dom5.queryAll(doc, pred.hasTagName('script'))];
       let moduleScriptIdx = 0;
       for (let i = 0; i < scriptTags.length; i++) {
         const scriptTag = scriptTags[i];
@@ -269,8 +269,7 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
     dom5.removeFakeRootElements(doc);
     const scriptTags = dom5.queryAll(doc, HtmlRejoinTransform.isExternalScript);
 
-    for (let i = 0; i < scriptTags.length; i++) {
-      const scriptTag = scriptTags[i];
+    for (const scriptTag of scriptTags) {
       const srcAttribute = dom5.getAttribute(scriptTag, 'src')!;
       const scriptPath =
           osPath.join(osPath.dirname(splitFile.path), srcAttribute);

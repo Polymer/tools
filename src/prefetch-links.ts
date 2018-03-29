@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 import {Analyzer, PackageRelativeUrl, ResolvedUrl, UrlResolver} from 'polymer-analyzer';
@@ -70,23 +70,23 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
       }
 
       const document = result.value;
-      const allDependencyUrls = [
-        ...document.getFeatures({
-          kind: 'import',
-          externalPackages: true,
-          imported: true,
-          noLazyImports: true
-        })
-      ].filter((d) => !d.lazy).map((d) => d.document.url);
+      const allDependencyUrls =
+          [...document.getFeatures({
+            kind: 'import',
+            externalPackages: true,
+            imported: true,
+            noLazyImports: true
+          })].filter((d) => d.document !== undefined && !d.lazy)
+              .map((d) => d.document!.url);
 
-      const directDependencyUrls = [
-        ...document.getFeatures({
-          kind: 'import',
-          externalPackages: true,
-          imported: false,
-          noLazyImports: true
-        })
-      ].filter((d) => !d.lazy).map((d) => d.document.url);
+      const directDependencyUrls =
+          [...document.getFeatures({
+            kind: 'import',
+            externalPackages: true,
+            imported: false,
+            noLazyImports: true
+          })].filter((d) => d.document !== undefined && !d.lazy)
+              .map((d) => d.document!.url);
 
       const onlyTransitiveDependencyUrls = allDependencyUrls.filter(
           (d) => directDependencyUrls.indexOf(d) === -1);
@@ -111,7 +111,7 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
       const filePath = pathFromUrl(
           this._config.root as LocalFsPath,
           this._analyzer.urlResolver.relative(documentUrl));
-      yield new File({contents: new Buffer(html, 'utf-8'), path: filePath})
+      yield new File({contents: new Buffer(html, 'utf-8'), path: filePath});
     }
   }
 }

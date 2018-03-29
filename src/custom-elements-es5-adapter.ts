@@ -1,5 +1,5 @@
-import * as dom5 from 'dom5';
-import {predicates as p} from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
+import {predicates as p} from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 import * as url from 'url';
 
@@ -64,7 +64,7 @@ export function addCustomElementsEs5Adapter(html: string): string {
     return html;
   }
   const parsed = parse5.parse(html, {locationInfo: true});
-  const script = dom5.nodeWalk(parsed, webcomponentsLoaderMatcher);
+  const script = dom5.query(parsed, webcomponentsLoaderMatcher);
   if (!script) {
     return html;
   }

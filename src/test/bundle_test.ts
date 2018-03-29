@@ -20,7 +20,7 @@ import {Bundle} from 'polymer-bundler';
 import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
 
 import File = require('vinyl');
-import * as dom5 from 'dom5';
+import * as dom5 from 'dom5/lib/index-next';
 import {ASTNode, parse as parse5} from 'parse5';
 import * as path from 'path';
 import {Stream} from 'stream';
