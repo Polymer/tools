@@ -15,9 +15,7 @@ const path = require('path');
 const {applyBuildPreset, isValidPreset} = require('../lib/builds');
 
 suite('builds', () => {
-
   suite('isValidPreset()', () => {
-
     test('returns true for valid presets', () => {
       assert.equal(isValidPreset('es5-bundled'), true);
       assert.equal(isValidPreset('es6-bundled'), true);
@@ -35,11 +33,9 @@ suite('builds', () => {
       assert.equal(isValidPreset(0), false);
       assert.equal(isValidPreset(1), false);
     });
-
   });
 
   suite('applyBuildPreset()', () => {
-
     test('applies es5-bundled preset', () => {
       const givenBuildConfig = {preset: 'es5-bundled'};
       const expectedBuildConfig = {
@@ -130,7 +126,5 @@ suite('builds', () => {
       };
       assert.deepEqual(applyBuildPreset(givenBuildConfig), givenBuildConfig);
     });
-
   });
-
 });

@@ -134,7 +134,10 @@ export interface ProjectBuildOptions {
     compile?: boolean|{
       /** JavaScript files listed here will not be compiled. */
       exclude?: string[],
-    }
+    },
+
+    /** Transform ES modules to AMD modules, for older browsers. */
+    transformEsModulesToAmd?: boolean,
   };
 
   /**

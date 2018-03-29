@@ -686,7 +686,10 @@ suite('Project Config', () => {
             bundle: true,
             html: {minify: true},
             css: {minify: true},
-            js: {minify: true, compile: false},
+            js: {
+              minify: true,
+              compile: false,
+            },
             browserCapabilities: ['es2015']
           },
           {
@@ -718,7 +721,8 @@ suite('Project Config', () => {
                   'js/breaks-when-compiled.js',
                   'js/no-compilation-necessary.js'
                 ]
-              }
+              },
+              transformEsModulesToAmd: true,
             }
           },
         ],

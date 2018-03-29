@@ -29,7 +29,8 @@
         },
         "minify": {
           "exclude": ["js/unminifiable.js", "js/already-minified.js"]
-        }
+        },
+        "transformEsModulesToAmd": true
       },
       "html": {
         "minify": {

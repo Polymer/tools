@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.12.0] - 2018-03-28
+* Added new `build` option: `js.transformEsModulesToAmd`.
+
 ## [3.11.1] - 2018-03-27
 * `ProjectConfig.initializeAnalyzerFromDirectory` should use the given
   directory as a root dir, even if there is no `polymer.json` file there.
