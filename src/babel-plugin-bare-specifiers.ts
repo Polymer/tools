@@ -12,11 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath} from 'babel-traverse';
+import {NodePath} from '@babel/traverse';
 import {ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration} from 'babel-types';
 import {resolve} from 'polymer-analyzer/lib/javascript/resolve-specifier-node';
-
-const exportExtensions = require('babel-plugin-syntax-export-extensions');
 
 const isPathSpecifier = (s: string) => /^\.{0,2}\//.test(s);
 
@@ -33,7 +31,6 @@ export const resolveBareSpecifiers = (
     componentDir?: string,
     rootDir?: string,
     ) => ({
-  inherits: exportExtensions,
   visitor: {
     'ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration'(
         path: NodePath<HasSpecifier>) {

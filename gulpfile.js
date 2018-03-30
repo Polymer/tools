@@ -24,7 +24,7 @@ const runSeq = require('run-sequence');
 const stream = require('stream');
 const tslint = require('gulp-tslint');
 const typescript = require('gulp-typescript');
-const babelCore = require('babel-core');
+const babelCore = require('@babel/core');
 const sourcemaps = require('gulp-sourcemaps');
 
 const babelPresetMinify =
@@ -44,8 +44,8 @@ gulp.task('build', (done) => {
 });
 
 gulp.task('compile', () => {
-  const srcs = gulp.src(['src/**/*.ts', 'custom_typings/**/*.ts']);
-  const tsResult = srcs.pipe(sourcemaps.init())
+  const tsResult = gulp.src(['src/**/*.ts', 'custom_typings/**/*.ts'])
+                       .pipe(sourcemaps.init())
                        .pipe(tsProject(typescript.reporter.fullReporter()));
 
   return mergeStream(tsResult.js.pipe(sourcemaps.write('../lib')), tsResult.dts)
@@ -80,7 +80,7 @@ gulp.task('depcheck', function() {
              'polymer-bundler',
              'parse5',
              'dom5',
-             'babel-traverse',
+             '@babel/traverse',
              'stream',
              'html-minifier',
            ]

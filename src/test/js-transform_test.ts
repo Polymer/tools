@@ -98,7 +98,7 @@ suite('jsTransform', () => {
 
     test('compiles to ES5', () => {
       assert.include(
-          jsTransform(js, {compileToEs5: true}), 'babelHelpers.extends');
+          jsTransform(js, {compileToEs5: true}), 'babelHelpers.objectSpread');
     });
   });
 
@@ -127,7 +127,8 @@ suite('jsTransform', () => {
 
     test('compiles to ES5', () => {
       assert.include(
-          jsTransform(js, {compileToEs5: true}), 'babelHelpers.asyncGenerator');
+          jsTransform(js, {compileToEs5: true}),
+          'babelHelpers.wrapAsyncGenerator');
     });
   });
 
@@ -156,11 +157,11 @@ suite('jsTransform', () => {
       `);
 
       const expected = stripIndent(`
-        import { dep1 } from './node_modules/dep1/index.js';
-        import { dep2 } from './node_modules/dep2/dep2.js';
-        import { dep2A } from './node_modules/dep2/a.js';
-        import { dep3 } from './node_modules/dep3/dep3-module.js';
-        import { dep4 } from './node_modules/dep4/dep4-module.js';
+        import { dep1 } from "./node_modules/dep1/index.js";
+        import { dep2 } from "./node_modules/dep2/dep2.js";
+        import { dep2A } from "./node_modules/dep2/a.js";
+        import { dep3 } from "./node_modules/dep3/dep3-module.js";
+        import { dep4 } from "./node_modules/dep4/dep4-module.js";
       `);
 
       const result = jsTransform(input, {moduleResolution: 'node', filePath});
@@ -203,8 +204,8 @@ suite('jsTransform', () => {
           `import { qux } from './qux';\n`;
 
       const expected = stripIndent(`
-        import { bar } from './bar.js';
-        import { baz } from './baz.json';
+        import { bar } from "./bar.js";
+        import { baz } from "./baz.json";
         import { qux } from './qux';
       `);
 
@@ -220,7 +221,7 @@ suite('jsTransform', () => {
       `);
 
       const expected = stripIndent(`
-        import { dep1 } from '../dep1/index.js';
+        import { dep1 } from "../dep1/index.js";
       `);
 
       const result = jsTransform(input, {
@@ -242,7 +243,7 @@ suite('jsTransform', () => {
       `);
 
       const expected = stripIndent(`
-        import { dep1 } from '../../dep1/index.js';
+        import { dep1 } from "../../dep1/index.js";
       `);
 
       const result = jsTransform(input, {
@@ -264,14 +265,15 @@ suite('jsTransform', () => {
     `);
 
     const expected = stripIndent(`
-      define(['exports', 'dep1'], function (exports, _dep) {
-          'use strict';
+      define(["exports", "dep1"], function (_exports, _dep) {
+        "use strict";
 
-          Object.defineProperty(exports, "__esModule", {
-              value: true
-          });
-          exports.foo = undefined;
-          const foo = exports.foo = 'foo';
+        Object.defineProperty(_exports, "__esModule", {
+          value: true
+        });
+        _exports.foo = void 0;
+        const foo = 'foo';
+        _exports.foo = foo;
       });
     `);
 

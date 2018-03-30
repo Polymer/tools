@@ -124,7 +124,7 @@ suite('htmlTransform', () => {
     const expected = `
       <html><head></head><body>
         <script type="module">
-          import { dep1 } from './node_modules/dep1/index.js';
+          import { dep1 } from "./node_modules/dep1/index.js";
         </script>
       </body></html>`;
 
@@ -167,8 +167,8 @@ suite('htmlTransform', () => {
       const expected = `
         <html><head></head><body>
           <script>
-            define('polymer-build-generated-module-0', ['./depA.js'], function (_depA) {
-              'use strict';
+            define('polymer-build-generated-module-0', ["./depA.js"], function (_depA) {
+              "use strict";
               console.log(_depA.depA);
             });
           </script>
@@ -192,9 +192,9 @@ suite('htmlTransform', () => {
 
       const expected = `
       <html><head></head><body>
-        <script>define('polymer-build-generated-module-0', ['./depA.js'], function (_depA) {'use strict';});</script>
+        <script>define('polymer-build-generated-module-0', ["./depA.js"], function (_depA) {"use strict";});</script>
         <script>define('polymer-build-generated-module-1', ['polymer-build-generated-module-0', './depB.js']);</script>
-        <script>define('polymer-build-generated-module-2', ['polymer-build-generated-module-1', './depC.js'], function (_depC) {'use strict';});</script>
+        <script>define('polymer-build-generated-module-2', ['polymer-build-generated-module-1', "./depC.js"], function (_depC) {"use strict";});</script>
         <script>define('polymer-build-generated-module-3', ['polymer-build-generated-module-2', './depD.js']);</script>
         <script>require(['polymer-build-generated-module-3']);</script>
       </body></html>`;
@@ -216,7 +216,7 @@ suite('htmlTransform', () => {
 
       const expected = `
       <html><head></head><body>
-        <script>define('polymer-build-generated-module-0', ['./node_modules/dep1/index.js'], function (_index) {'use strict';});</script>
+        <script>define('polymer-build-generated-module-0', ["./node_modules/dep1/index.js"], function (_index) {"use strict";});</script>
         <script>require(['polymer-build-generated-module-0']);</script>
       </body></html>`;
 

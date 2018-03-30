@@ -42,7 +42,7 @@ suite('optimize-streams', () => {
   }
 
   test('compile js', async () => {
-    const expected = `var apple = 'apple';var banana = 'banana';`;
+    const expected = `var apple = 'apple';\nvar banana = 'banana';`;
     const sourceStream = vfs.src([
       {
         path: 'foo.js',
@@ -94,9 +94,9 @@ suite('optimize-streams', () => {
       import { dep2A } from 'dep2/a';
       `);
       const expected = stripIndent(`
-      import { dep1 } from './node_modules/dep1/index.js';
-      import { dep2 } from './node_modules/dep2/dep2.js';
-      import { dep2A } from './node_modules/dep2/a.js';
+      import { dep1 } from "./node_modules/dep1/index.js";
+      import { dep2 } from "./node_modules/dep2/dep2.js";
+      import { dep2A } from "./node_modules/dep2/a.js";
       `);
 
       const result = await getOnlyFile(pipeStreams([
@@ -123,10 +123,9 @@ suite('optimize-streams', () => {
       // Note we do some quite ugly re-formatting of HTML!
       const expected = stripIndent(`
       <html><head>
-          <script type="module">
-      import { dep1 } from './node_modules/dep1/index.js';
-      import { dep2 } from './node_modules/dep2/dep2.js';
-      import { dep2A } from './node_modules/dep2/a.js';</script>
+          <script type="module">import { dep1 } from "./node_modules/dep1/index.js";
+      import { dep2 } from "./node_modules/dep2/dep2.js";
+      import { dep2A } from "./node_modules/dep2/a.js";</script>
         </head>
         <body>
 
@@ -158,9 +157,9 @@ suite('optimize-streams', () => {
           `,
           expected: `
             <html><head></head><body>
-              <script>define('polymer-build-generated-module-0', ['./depA.js'], function (_depA) {'use strict';});</script>
+              <script>define('polymer-build-generated-module-0', ["./depA.js"], function (_depA) {"use strict";});</script>
               <script>define('polymer-build-generated-module-1', ['polymer-build-generated-module-0', './depB.js']);</script>
-              <script>define('polymer-build-generated-module-2', ['polymer-build-generated-module-1', './depC.js'], function (_depC) {'use strict';});</script>
+              <script>define('polymer-build-generated-module-2', ['polymer-build-generated-module-1', "./depC.js"], function (_depC) {"use strict";});</script>
               <script>require(['polymer-build-generated-module-2']);</script>
             </body></html>
           `,
@@ -209,7 +208,7 @@ suite('optimize-streams', () => {
     ]);
     const op =
         pipeStreams([sourceStream, getOptimizeStreams({js: {minify: true}})]);
-    assert.equal(await getOnlyFile(op), '[1,2,3].map((a)=>a+1);');
+    assert.equal(await getOnlyFile(op), '[1,2,3].map(a=>a+1);');
   });
 
   test('js exclude permutations', async () => {

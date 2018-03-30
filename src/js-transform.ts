@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babelCore from 'babel-core';
+import * as babelCore from '@babel/core';
 import {ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
 
@@ -24,7 +24,7 @@ import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 
 // Syntax and transform plugins for ES2015.
 const babelPresetEs2015NoModules =
-    require('babel-preset-es2015').buildPreset({}, {modules: false});
+    [require('@babel/preset-es2015'), {modules: false}];
 
 // The ES2016 and ES2017 presets do not inherit the plugins of previous years,
 // and there is no ES2018 preset yet. Since the additions in ES2016 and ES2017
@@ -32,35 +32,31 @@ const babelPresetEs2015NoModules =
 // just enumerate the transform plugins here instead of merging the 3 presets.
 const babelTransformPlugins = [
   // Don't emit helpers inline.
-  require('babel-plugin-external-helpers'),
+  require('@babel/plugin-external-helpers'),
   // ES2016
-  require('babel-plugin-transform-exponentiation-operator'),
+  require('@babel/plugin-transform-exponentiation-operator'),
   // ES2017
-  require('babel-plugin-transform-async-to-generator'),
+  require('@babel/plugin-transform-async-to-generator'),
   // ES2018 (partial)
-  require('babel-plugin-transform-object-rest-spread'),
-  require('babel-plugin-transform-async-generator-functions'),
+  require('@babel/plugin-proposal-object-rest-spread'),
+  require('@babel/plugin-proposal-async-generator-functions'),
 ];
 
-const babelTransformModulesAmd =
-    require('babel-plugin-transform-es2015-modules-amd');
+const babelTransformModulesAmd = require('@babel/plugin-transform-modules-amd');
 
 // We enumerate syntax plugins that would automatically be loaded by our
 // transform plugins because we need to support the configuration where we
 // minify but don't compile, and don't want Babel to error when it encounters
 // syntax that we support when compiling.
 const babelSyntaxPlugins = [
-  // ES2015 and below syntax plugins are included by default.
-  // ES2016
-  require('babel-plugin-syntax-exponentiation-operator'),
-  // ES2017
-  require('babel-plugin-syntax-async-functions'),
+  // ES2017 and below syntax plugins are included by default.
   // ES2018 (partial)
-  require('babel-plugin-syntax-object-rest-spread'),
-  require('babel-plugin-syntax-async-generators'),
+  require('@babel/plugin-syntax-object-rest-spread'),
+  require('@babel/plugin-syntax-async-generators'),
   // Future
-  require('babel-plugin-syntax-export-extensions'),
-  require('babel-plugin-syntax-dynamic-import'),
+  // require('@babel/plugin-syntax-export-extensions'),
+  require('@babel/plugin-syntax-dynamic-import'),
+  require('@babel/plugin-syntax-import-meta'),
 ];
 
 const babelPresetMinify =
