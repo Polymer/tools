@@ -44,10 +44,9 @@ gulp.task('build', (done) => {
 });
 
 gulp.task('compile', () => {
-  const srcs = gulp.src('src/**/*.ts');
-  const tsResult =
-      srcs.pipe(sourcemaps.init())
-          .pipe(typescript(tsProject, [], typescript.reporter.fullReporter()));
+  const srcs = gulp.src(['src/**/*.ts', 'custom_typings/**/*.ts']);
+  const tsResult = srcs.pipe(sourcemaps.init())
+                       .pipe(tsProject(typescript.reporter.fullReporter()));
 
   return mergeStream(tsResult.js.pipe(sourcemaps.write('../lib')), tsResult.dts)
       .pipe(gulp.dest('lib'));
