@@ -5,13 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.19] - 2018-03-30
 * [breaking] Removed WarningFilter.fromConfig. ProjectConfig#initializeAnalyzer
   now does this from the other side (and cyclic deps are not a great idea).
 * Add the ability to cancel an analysis by passing in a CancelToken, which can
   signal that the request has been cancelled. This can be useful in saving work
   if you know that the result of the analysis won't be used.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.18] - 2018-03-27
 * [BREAKING] Removed Analyzer.createFromDirectory, the replacement will go into
