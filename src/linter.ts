@@ -14,12 +14,18 @@
 
 import './collections';
 
+import {CancelToken} from 'cancel-token';
 import {Analysis, Analyzer, Document, ParsedDocument, ResolvedUrl, Severity, Warning, WarningCarryingException} from 'polymer-analyzer';
+
+import {AnalyzeOptions} from 'polymer-analyzer/lib/core/analyzer';
+import {MinimalCancelToken} from 'polymer-analyzer/lib/core/cancel-token';
 
 import {Rule} from './rule';
 
 export {registry} from './registry';
 export {Rule, RuleCollection} from './rule';
+
+const {token: neverCancels} = CancelToken.source();
 
 /**
  * The Linter is a simple class which groups together a set of Rules and applies
@@ -39,24 +45,30 @@ export class Linter {
    * Given an array of filenames, lint the files and return an array of all
    * warnings produced evaluating the linter rules.
    */
-  public async lint(files: string[]): Promise<LintResult> {
-    const {documents, warnings, analysis} = await this._analyzeAll(files);
+  public async lint(files: string[], options: AnalyzeOptions = {}):
+      Promise<LintResult> {
+    const {documents, warnings, analysis} =
+        await this._analyzeAll(files, options);
     for (const document of documents) {
       warnings.push(...document.getWarnings());
     }
     return makeLintResult(
-        warnings.concat(...await this._lintDocuments(documents)), analysis);
+        warnings.concat(
+            ...await this._lintDocuments(documents, options.cancelToken)),
+        analysis);
   }
 
-  public async lintPackage(): Promise<LintResult> {
-    const analysis = await this._analyzer.analyzePackage();
+  public async lintPackage(options: AnalyzeOptions = {}): Promise<LintResult> {
+    const analysis = await this._analyzer.analyzePackage(options);
     const warnings = analysis.getWarnings();
-    warnings.push(
-        ...await this._lintDocuments(analysis.getFeatures({kind: 'document'})));
+    warnings.push(...await this._lintDocuments(
+        analysis.getFeatures({kind: 'document'}), options.cancelToken));
     return makeLintResult(warnings, analysis);
   }
 
-  private async _lintDocuments(documents: Iterable<Document>) {
+  private async _lintDocuments(
+      documents: Iterable<Document>,
+      cancelToken: MinimalCancelToken = neverCancels) {
     const warnings: Warning[] = [];
     for (const document of documents) {
       if (document.isInline) {
@@ -65,6 +77,7 @@ export class Linter {
         continue;
       }
       for (const rule of this._rules) {
+        cancelToken.throwIfRequested();
         try {
           warnings.push(...await rule.cachedCheck(document));
         } catch (e) {
@@ -80,8 +93,8 @@ export class Linter {
     return warnings;
   }
 
-  private async _analyzeAll(files: string[]) {
-    const analysis = await this._analyzer.analyze(files);
+  private async _analyzeAll(files: string[], options?: AnalyzeOptions) {
+    const analysis = await this._analyzer.analyze(files, options);
     const documents = [];
     const warnings = [];
 
