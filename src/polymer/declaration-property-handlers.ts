@@ -12,10 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath} from 'babel-traverse';
-import * as babel from 'babel-types';
+import {NodePath} from '@babel/traverse';
+import * as babel from '@babel/types';
 
 import * as astValue from '../javascript/ast-value';
+import {getSimpleObjectProperties} from '../javascript/esutil';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import {Result} from '../model/analysis';
 import {ScannedReference, Severity, Warning} from '../model/model';
@@ -114,10 +115,7 @@ export function declarationPropertyHandlers(
         return;
       }
 
-      for (const p of node.properties) {
-        if (babel.isSpreadProperty(p)) {
-          continue;
-        }
+      for (const p of getSimpleObjectProperties(node)) {
         const evtName =
             babel.isLiteral(p.key) && astValue.expressionToValue(p.key) ||
             babel.isIdentifier(p.key) && p.key.name;

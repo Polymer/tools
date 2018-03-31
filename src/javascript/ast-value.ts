@@ -12,9 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 
 import {LiteralObj, LiteralValue} from '../model/model';
+
+import {getPropertyName, getSimpleObjectProperties} from './esutil';
 import * as jsdoc from './jsdoc';
 
 /**
@@ -145,11 +147,11 @@ function arrayExpressionToValue(arry: babel.ArrayExpression): LiteralValue {
  */
 function objectExpressionToValue(obj: babel.ObjectExpression): LiteralValue {
   const evaluatedObjectExpression: LiteralObj = {};
-  for (const prop of obj.properties) {
-    if (babel.isSpreadProperty(prop) || !babel.isLiteral(prop.key)) {
+  for (const prop of getSimpleObjectProperties(obj)) {
+    const evaluatedKey = getPropertyName(prop);
+    if (evaluatedKey === undefined) {
       return;
     }
-    const evaluatedKey = '' + literalToValue(prop.key);
     const evaluatedValue = expressionToValue(prop.value);
     if (evaluatedValue === undefined) {
       return;

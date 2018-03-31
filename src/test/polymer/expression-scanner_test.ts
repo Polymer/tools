@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 import {assert} from 'chai';
 
 import {HtmlParser} from '../../html/html-parser';

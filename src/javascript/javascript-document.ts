@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import generate from 'babel-generator';
-import * as babel from 'babel-types';
-import {Node} from 'babel-types';
+import generate from '@babel/generator';
+import * as babel from '@babel/types';
+import {Node} from '@babel/types';
 import indent = require('indent');
 
 import {SourceRange} from '../model/model';
@@ -22,7 +22,7 @@ import {Options as ParsedDocumentOptions, ParsedDocument, StringifyOptions} from
 
 import {traverse, VisitorOption} from './estraverse-shim';
 import {Visitor, VisitResult} from './estree-visitor';
-import {NodePath} from 'babel-traverse';
+import {NodePath} from '@babel/traverse';
 
 export {Visitor} from './estree-visitor';
 

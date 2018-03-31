@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
@@ -140,10 +140,7 @@ class PolymerCoreFeatureVisitor implements Visitor {
    */
   private _scanObjectProperties(
       obj: babel.ObjectExpression, feature: ScannedPolymerCoreFeature) {
-    for (const prop of obj.properties) {
-      if (babel.isSpreadProperty(prop)) {
-        continue;
-      }
+    for (const prop of esutil.getSimpleObjectProperties(obj)) {
       const sourceRange = this.document.sourceRangeForNode(prop);
       if (!sourceRange) {
         continue;

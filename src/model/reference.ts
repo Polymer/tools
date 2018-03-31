@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath} from 'babel-traverse';
-import * as babel from 'babel-types';
+import {NodePath} from '@babel/traverse';
+import * as babel from '@babel/types';
 import * as util from 'util';
 
 import * as esutil from '../javascript/esutil';

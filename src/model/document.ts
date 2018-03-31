@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 
 import {AnalysisContext} from '../core/analysis-context';
 import {ParsedCssDocument} from '../css/css-document';

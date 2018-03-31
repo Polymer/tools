@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 import * as doctrine from 'doctrine';
 
 import {Warning} from '../model/model';
@@ -20,7 +20,7 @@ import {comparePosition} from '../model/source-range';
 
 import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
 import {Visitor} from './estree-visitor';
-import {getAttachedComment, getOrInferPrivacy, getPropertyName, getReturnFromAnnotation, inferReturnFromBody} from './esutil';
+import {getAttachedComment, getOrInferPrivacy, getPropertyName, getReturnFromAnnotation, getSimpleObjectProperties, inferReturnFromBody} from './esutil';
 import {ScannedFunction} from './function';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
@@ -93,10 +93,7 @@ class FunctionVisitor implements Visitor {
    * Scan functions defined inside of object literals.
    */
   enterObjectExpression(node: babel.ObjectExpression, _parent: babel.Node) {
-    for (const prop of node.properties) {
-      if (babel.isSpreadProperty(prop)) {
-        continue;
-      }
+    for (const prop of getSimpleObjectProperties(node)) {
       const propValue = prop.value;
       const name = getPropertyName(prop);
       if (babel.isFunction(propValue)) {

@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import generate from 'babel-generator';
-import babelTraverse from 'babel-traverse';
-import {NodePath} from 'babel-traverse';
-import * as babel from 'babel-types';
+import generate from '@babel/generator';
+import babelTraverse from '@babel/traverse';
+import {NodePath} from '@babel/traverse';
+import * as babel from '@babel/types';
 import * as doctrine from 'doctrine';
 import * as util from 'util';
 
@@ -71,17 +71,13 @@ export function matchesCallExpression(
 }
 
 export type PropertyOrMethod = babel.ObjectProperty|babel.ObjectMethod|
-                               babel.ClassMethod|babel.SpreadProperty|
-                               babel.AssignmentProperty;
+                               babel.ClassMethod|babel.AssignmentProperty;
 
 /**
  * Given a property or method, return its name, or undefined if that name can't
  * be determined.
  */
 export function getPropertyName(prop: PropertyOrMethod): string|undefined {
-  if (babel.isSpreadProperty(prop)) {
-    return undefined;
-  }
   const key = prop.key;
   // {foo: bar} // note that `foo` is not quoted, so it's an identifier
   if (!prop.computed && babel.isIdentifier(key)) {
@@ -94,6 +90,18 @@ export function getPropertyName(prop: PropertyOrMethod): string|undefined {
     return '' + keyValue;
   }
   return undefined;
+}
+
+/**
+ * Yields properties and methods, filters out spread expressions or anything
+ * else.
+ */
+export function* getSimpleObjectProperties(node: babel.ObjectExpression) {
+  for (const property of node.properties) {
+    if (babel.isObjectProperty(property) || babel.isObjectMethod(property)) {
+      yield property;
+    }
+  }
 }
 
 export const CLOSURE_CONSTRUCTOR_MAP = new Map(
@@ -233,10 +241,8 @@ function getLeadingComments(node: babel.Node): string[]|undefined {
 
 export function getPropertyValue(
     node: babel.ObjectExpression, name: string): babel.Node|undefined {
-  const properties = node.properties;
-  for (const property of properties) {
-    if (!babel.isSpreadProperty(property) &&
-        getPropertyName(property) === name) {
+  for (const property of getSimpleObjectProperties(node)) {
+    if (getPropertyName(property) === name) {
       return property.value;
     }
   }
@@ -598,16 +604,14 @@ export function extractPropertiesFromClassOrObjectBody(
   }
 
   for (const member of body) {
-    if (babel.isSpreadProperty(member)) {
+    if (!babel.isMethod(member) && !babel.isObjectProperty(member)) {
       continue;
     }
 
-    if ((babel.isMethod(member) || babel.isObjectProperty(member)) &&
-        member.computed) {
+    const name = getPropertyName(member);
+    if (name === undefined) {
       continue;
     }
-
-    const name = astValue.getIdentifierName(member.key)!;
 
     if (babel.isMethod(member) || babel.isFunction(member.value)) {
       if (babel.isMethod(member) &&

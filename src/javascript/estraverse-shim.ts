@@ -21,9 +21,9 @@
  * methods are converted to `babel-traverse` etc.
  */
 
-import babelTraverse from 'babel-traverse';
-import {NodePath} from 'babel-traverse';
-import * as babel from 'babel-types';
+import babelTraverse from '@babel/traverse';
+import {NodePath} from '@babel/traverse';
+import * as babel from '@babel/types';
 import {Visitor, VisitorCallback} from './estree-visitor';
 
 /**

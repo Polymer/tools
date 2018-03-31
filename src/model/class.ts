@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 
 import {ElementMixin} from '..';
 import * as jsdocLib from '../javascript/jsdoc';

@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import generate from 'babel-generator';
-import {NodePath} from 'babel-traverse';
-import * as babel from 'babel-types';
+import generate from '@babel/generator';
+import {NodePath} from '@babel/traverse';
+import * as babel from '@babel/types';
 import * as doctrine from 'doctrine';
 
 import {Result} from '../model/analysis';

@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
 import {Class, Document, ElementMixin, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';

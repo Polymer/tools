@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath} from 'babel-traverse';
+import {NodePath} from '@babel/traverse';
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -86,10 +86,7 @@ class BehaviorVisitor implements Visitor {
       return;
     }
 
-    for (const prop of node.properties) {
-      if (babel.isSpreadProperty(prop)) {
-        continue;
-      }
+    for (const prop of esutil.getSimpleObjectProperties(node)) {
       const name = esutil.getPropertyName(prop);
       if (!name) {
         this.currentBehavior.warnings.push(new Warning({

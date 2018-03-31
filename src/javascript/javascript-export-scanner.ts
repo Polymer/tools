@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath} from 'babel-traverse';
-import * as babel from 'babel-types';
+import {NodePath} from '@babel/traverse';
+import * as babel from '@babel/types';
 
 import {Document, Feature, SourceRange, Warning} from '../model/model';
 import {Resolvable} from '../model/resolvable';

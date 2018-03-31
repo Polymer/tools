@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Node} from 'babel-types';
+import {Node} from '@babel/types';
 
 import {Scanner} from '../scanning/scanner';
 

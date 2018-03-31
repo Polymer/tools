@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath} from 'babel-traverse';
-import * as babel from 'babel-types';
+import {NodePath} from '@babel/traverse';
+import * as babel from '@babel/types';
 import * as doctrine from 'doctrine';
 import {Annotation, Tag} from 'doctrine';
 

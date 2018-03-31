@@ -14,7 +14,7 @@
 
 /// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 import {assert, use} from 'chai';
 import * as clone from 'clone';
 import * as path from 'path';
@@ -687,7 +687,7 @@ suite('Analyzer', () => {
       const contents = stripIndent(`
         <div>
           <script>
-            console.log('foo');
+            console.log("foo");
           </script>
           <style>
             body {
@@ -699,7 +699,7 @@ suite('Analyzer', () => {
       const modifiedContents = stripIndent(`
         <div>
           <script>
-            console.log('bar');
+            console.log("bar");
           </script>
           <style>
             body {

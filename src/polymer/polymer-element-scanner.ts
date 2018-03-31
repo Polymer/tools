@@ -12,8 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {NodePath} from 'babel-traverse';
-import * as babel from 'babel-types';
+import {NodePath} from '@babel/traverse';
+import * as babel from '@babel/types';
 
 import {getIdentifierName} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -98,10 +98,7 @@ class ElementVisitor implements Visitor {
   private handleObjectExpression(
       node: babel.ObjectExpression, propertyHandlers: PropertyHandlers,
       element: ScannedPolymerElement) {
-    for (const prop of node.properties) {
-      if (babel.isSpreadProperty(prop)) {
-        continue;
-      }
+    for (const prop of esutil.getSimpleObjectProperties(node)) {
       const name = esutil.getPropertyName(prop);
       if (!name) {
         element.warnings.push(new Warning({

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 import * as dom5 from 'dom5/lib/index-next';
 import * as parse5 from 'parse5';
 

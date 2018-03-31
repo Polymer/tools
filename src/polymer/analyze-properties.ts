@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 import * as doctrine from 'doctrine';
 
 import * as astValue from '../javascript/ast-value';
@@ -41,10 +41,7 @@ export function analyzeProperties(
     return analyzedProps;
   }
 
-  for (const property of node.properties) {
-    if (babel.isSpreadProperty(property)) {
-      continue;
-    }
+  for (const property of esutil.getSimpleObjectProperties(node)) {
     const prop = toScannedPolymerProperty(
         property, document.sourceRangeForNode(property)!, document);
     if (prop === undefined) {
@@ -87,10 +84,7 @@ export function analyzeProperties(
        *   }
        * }
        */
-      for (const propertyArg of value.properties) {
-        if (babel.isSpreadProperty(propertyArg)) {
-          continue;
-        }
+      for (const propertyArg of esutil.getSimpleObjectProperties(value)) {
         const propertyKey = esutil.getPropertyName(propertyArg);
 
         switch (propertyKey) {

@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from 'babel-types';
+import * as babel from '@babel/types';
 import * as babylon from 'babylon';
 import {parse} from 'babylon';
 import {assert} from 'chai';
 
-import {getEventComments, getPropertyName} from '../../javascript/esutil';
+import {getEventComments, getPropertyName, getSimpleObjectProperties} from '../../javascript/esutil';
 
 
 suite('getEventComments', () => {
@@ -83,7 +83,8 @@ suite('objectKeyToString', function() {
       throw new Error('');
     }
     assert.deepEqual(
-        expr.properties.map((prop) => getPropertyName(prop)),
+        [...getSimpleObjectProperties(expr)].map(
+            (prop) => getPropertyName(prop)),
         ['foo', 'bar', '10', '30', 'hi there', undefined]);
   });
 });
