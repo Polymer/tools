@@ -46,8 +46,8 @@ declare namespace Polymer {
      * The form that the element is registered to.
      */
     _parentForm: object|null|undefined;
-    attached: any;
-    detached: any;
+    attached(): void;
+    detached(): void;
   }
 
   const IronFormElementBehavior: object;

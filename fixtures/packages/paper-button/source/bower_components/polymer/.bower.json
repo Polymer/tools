@@ -25,18 +25,19 @@
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0",
-    "test-fixture": "PolymerElements/test-fixture#3.0.0-rc.1"
+    "test-fixture": "PolymerElements/test-fixture#3.0.0-rc.1",
+    "iron-component-page": "PolymerElements/iron-component-page#^3.0.1"
   },
   "private": true,
   "resolutions": {
     "test-fixture": "3.0.0-rc.1"
   },
   "homepage": "https://github.com/Polymer/polymer",
-  "_release": "0657de02ae",
+  "_release": "b9dcf51558",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "0657de02ae8807b41ec909a742b4826378361430"
+    "commit": "b9dcf51558b5298e1f5bbb7697d624f0f4b48684"
   },
   "_source": "https://github.com/Polymer/polymer.git",
   "_target": "master",

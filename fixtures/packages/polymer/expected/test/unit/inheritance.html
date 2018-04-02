@@ -110,6 +110,25 @@ window.ChildElWithTemplate = ChildElWithTemplate;
 </script>
   </dom-module>
 
+  <dom-module id="parent-element-template-overriding">
+    <script type="module">
+import '../../polymer-legacy.js';
+import { html } from '../../lib/utils/html-tag.js';
+import { PolymerElement } from '../../polymer-element.js';
+class ParentElementWithTemplate extends PolymerElement {
+  static get template() {
+    return html`This template should not exist`;
+  }
+}
+class ChildWithNoTemplate extends ParentElementWithTemplate {
+  static get template() {
+    return null;
+  }
+}
+customElements.define('child-with-no-template', ChildWithNoTemplate);
+</script>
+  </dom-module>
+
   <test-fixture id="basic">
     <template>
       <base-el></base-el>
@@ -233,6 +252,23 @@ suite('ChildElement extends BaseElement and the template', function() {
     assert.equal(child.handleCustomEvent.callCount, 0);
     child.$.input.dispatchEvent(new CustomEvent('custom'));
     assert.equal(child.handleCustomEvent.callCount, 1);
+  });
+});
+
+suite('child overriding a template', function() {
+  let el;
+
+  setup(function() {
+    el = document.createElement('child-with-no-template');
+    document.body.appendChild(el);
+  });
+
+  teardown(function() {
+    document.body.removeChild(el);
+  });
+
+  test('returning null nullifies the parent template', function() {
+    assert.equal(el.shadowRoot, null);
   });
 });
 </script>

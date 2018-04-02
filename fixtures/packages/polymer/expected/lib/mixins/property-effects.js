@@ -27,6 +27,9 @@ const TYPES = {
   READ_ONLY: '__readOnly'
 };
 
+/** @const {string} */
+const capitalAttributeRegex = /[A-Z]/;
+
 /**
  * @typedef {{
  * name: (string | undefined),
@@ -2518,7 +2521,12 @@ export const PropertyEffects = dedupingMixin(superClass => {
         // Attribute or property
         let origName = name;
         let kind = 'property';
-        if (name[name.length-1] == '$') {
+        // The only way we see a capital letter here is if the attr has
+        // a capital letter in it per spec. In this case, to make sure
+        // this binding works, we go ahead and make the binding to the attribute.
+        if (capitalAttributeRegex.test(name)) {
+          kind = 'attribute';
+        } else if (name[name.length-1] == '$') {
           name = name.slice(0, -1);
           kind = 'attribute';
         }

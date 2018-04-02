@@ -1,6 +1,6 @@
 {
   "name": "paper-ripple",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "license": "http://polymer.github.io/LICENSE.txt",
   "description": "Adds a material design ripple to any container",
   "private": true,
@@ -55,11 +55,11 @@
     "webcomponentsjs": "^1.0.0"
   },
   "homepage": "https://github.com/PolymerElements/paper-ripple",
-  "_release": "2.0.1",
+  "_release": "2.1.0",
   "_resolution": {
     "type": "version",
-    "tag": "v2.0.1",
-    "commit": "d0884e8508263e680fd9ee6c11b52c74a416f27f"
+    "tag": "v2.1.0",
+    "commit": "259c24a0c8d09fc8e3e13b877905d77f7ea47995"
   },
   "_source": "https://github.com/PolymerElements/paper-ripple.git",
   "_target": "1 - 2",

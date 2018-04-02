@@ -90,21 +90,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
   </custom-style>
 
-  <dom-bind>
-    <template is="dom-bind" id="scope">
-      <dom-repeat>
-        <template is="dom-repeat" id="iconsetRepeat">
-          <h2>{{item.name}}</h2>
-          <dom-repeat class="set">
-            <template is="dom-repeat" items="{{getIconNames(item)}}">
-              <span class="container">
-                <iron-icon icon="{{item}}"></iron-icon>
-                <div>{{item}}</div>
-              </span>
-            </template>
-          </dom-repeat>
-        </template>
-      </dom-repeat>
+  <dom-bind id="scope">
+    <template is="dom-bind">
+      <template is="dom-repeat" id="iconsetRepeat">
+        <h2>{{item.name}}</h2>
+        <div class="set">
+          <template is="dom-repeat" items="{{getIconNames(item)}}">
+            <span class="container">
+              <iron-icon icon="{{item}}"></iron-icon>
+              <div>{{item}}</div>
+            </span>
+          </template>
+        </div>
+      </template>
     </template>
   </dom-bind>
 

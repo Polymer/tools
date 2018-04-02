@@ -107,7 +107,7 @@ function createDiffConflictOutput(diffResult: any): string {
 
 suite('Fixtures', () => {
   suite('Packages', function() {
-    this.timeout(60000);
+    this.timeout(120 * 1000);
 
     for (const fixtureBasename of fs.readdirSync(packageFixturesDir)) {
       const fixtureDir = path.join(packageFixturesDir, fixtureBasename);

@@ -30,6 +30,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </template>
   </test-fixture>
 
+  <test-fixture id="InitiallyWithoutTabIndex">
+    <template>
+      <test-control></test-control>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="InitiallyWithTabIndex">
+    <template>
+      <test-control tabindex="0"></test-control>
+    </template>
+  </test-fixture>
+
   <script>
     suite('disabled-state', function() {
       var disableTarget;
@@ -73,6 +85,42 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         test('adds `aria-disabled` to the target', function() {
           expect(disableTarget.getAttribute('aria-disabled')).to.be.eql('true');
+        });
+      });
+
+      suite('`tabindex` attribute handling', function() {
+        suite('without `tabindex`', function() {
+          setup(function() {
+            disableTarget = fixture('InitiallyWithoutTabIndex');
+          });
+
+          test('adds `tabindex = -1` when disabled', function() {
+            disableTarget.disabled = true;
+            expect(disableTarget.getAttribute('tabindex')).to.be.eql('-1');
+          });
+
+          test('removed `tabindex` when re-enabled', function() {
+            disableTarget.disabled = true;
+            disableTarget.disabled = false;
+            expect(disableTarget.getAttribute('tabindex')).to.be.eql(null);
+          });
+        });
+
+        suite('with `tabindex`', function() {
+          setup(function() {
+            disableTarget = fixture('InitiallyWithTabIndex');
+          });
+
+          test('adds `tabindex = -1` when disabled', function() {
+            disableTarget.disabled = true;
+            expect(disableTarget.getAttribute('tabindex')).to.be.eql('-1');
+          });
+
+          test('restores `tabindex = 0` when re-enabled', function() {
+            disableTarget.disabled = true;
+            disableTarget.disabled = false;
+            expect(disableTarget.getAttribute('tabindex')).to.be.eql('0');
+          });
         });
       });
     });

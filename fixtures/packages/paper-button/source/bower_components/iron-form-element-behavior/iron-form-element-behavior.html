@@ -71,14 +71,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     },
 
-    attached: Polymer.Element ? null : function() {
-      // Note: the iron-form that this element belongs to will set this
-      // element's _parentForm property when handling this event.
-      this.fire('iron-form-element-register');
+    attached() {
+      if (!Polymer.Element) {
+        // Note: the iron-form that this element belongs to will set this
+        // element's _parentForm property when handling this event.
+        this.fire('iron-form-element-register');
+      }
     },
 
-    detached: Polymer.Element ? null : function() {
-      if (this._parentForm) {
+    detached() {
+      if (!Polymer.Element && this._parentForm) {
         this._parentForm.fire('iron-form-element-unregister', {target: this});
       }
     }

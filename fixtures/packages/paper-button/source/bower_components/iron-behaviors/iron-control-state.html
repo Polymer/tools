@@ -42,8 +42,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         reflectToAttribute: true
       },
 
+      /**
+       * Value of the `tabindex` attribute before `disabled` was activated.
+       * `null` means the attribute was not present.
+       * @type {?string|undefined}
+       */
       _oldTabIndex: {
-        type: Number
+        type: String
       },
 
       _boundFocusBlurHandler: {
@@ -103,12 +108,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
       this.style.pointerEvents = disabled ? 'none' : '';
       if (disabled) {
-        this._oldTabIndex = this.tabIndex;
+        // Read the `tabindex` attribute instead of the `tabIndex` property.
+        // The property returns `-1` if there is no `tabindex` attribute.
+        // This distinction is important when restoring the value because
+        // leaving `-1` hides shadow root children from the tab order.
+        this._oldTabIndex = this.getAttribute('tabindex');
         this._setFocused(false);
         this.tabIndex = -1;
         this.blur();
       } else if (this._oldTabIndex !== undefined) {
-        this.tabIndex = this._oldTabIndex;
+        if (this._oldTabIndex === null) {
+          this.removeAttribute('tabindex');
+        } else {
+          this.setAttribute('tabindex', this._oldTabIndex);
+        }
       }
     },
 

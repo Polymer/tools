@@ -13,6 +13,22 @@
   },
   "homepage": "https://github.com/PolymerElements/paper-button",
   "name": "@polymer/paper-button",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@polymer/gen-typescript-declarations": "^1.2.0",
+    "bower": "^1.8.0",
+    "@polymer/iron-component-page": "3.0.0-pre.12",
+    "@polymer/iron-demo-helpers": "3.0.0-pre.12",
+    "@polymer/iron-icon": "3.0.0-pre.12",
+    "@polymer/iron-icons": "3.0.0-pre.12",
+    "@polymer/iron-test-helpers": "3.0.0-pre.12",
+    "@polymer/test-fixture": "3.0.0-pre.12",
+    "wct-browser-legacy": "0.0.1-pre.11",
+    "@webcomponents/webcomponentsjs": "^1.0.0"
+  },
+  "scripts": {
+    "update-types": "bower install && gen-typescript-declarations --deleteExisting --outDir ."
+  },
   "version": "3.0.0",
   "resolutions": {
     "inherits": "2.0.3",
@@ -22,21 +38,10 @@
   },
   "main": "paper-button.js",
   "author": "The Polymer Authors",
-  "license": "BSD-3-Clause",
   "dependencies": {
     "@polymer/polymer": "3.0.0-pre.12",
     "@polymer/iron-flex-layout": "3.0.0-pre.12",
     "@polymer/paper-behaviors": "3.0.0-pre.12",
     "@polymer/paper-styles": "3.0.0-pre.12"
-  },
-  "devDependencies": {
-    "@polymer/iron-component-page": "3.0.0-pre.12",
-    "@polymer/iron-demo-helpers": "3.0.0-pre.12",
-    "@polymer/iron-icon": "3.0.0-pre.12",
-    "@polymer/iron-icons": "3.0.0-pre.12",
-    "@polymer/iron-test-helpers": "3.0.0-pre.12",
-    "@polymer/test-fixture": "3.0.0-pre.12",
-    "wct-browser-legacy": "0.0.1-pre.11",
-    "@webcomponents/webcomponentsjs": "^1.0.0"
   }
 }

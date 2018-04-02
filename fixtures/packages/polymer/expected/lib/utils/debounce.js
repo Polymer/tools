@@ -100,4 +100,5 @@ class Debouncer {
   }
 }
 
+/** @const */
 export { Debouncer };

@@ -72,7 +72,9 @@ export function stylesFromTemplate(template, baseURI) {
       // other dom-modules that contain styling
       let include = e.getAttribute(INCLUDE_ATTR);
       if (include) {
-        styles.push(...stylesFromModules(include));
+        styles.push(...stylesFromModules(include).filter(function(item, index, self) {
+          return self.indexOf(item) === index;
+        }));
       }
       if (baseURI) {
         e.textContent = resolveCss(e.textContent, baseURI);

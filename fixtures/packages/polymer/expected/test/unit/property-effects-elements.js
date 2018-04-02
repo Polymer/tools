@@ -1,3 +1,4 @@
+import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
 import { PolymerElement } from '../../polymer-element.js';
@@ -1042,3 +1043,25 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
+class SVGElement extends PolymerElement {
+  static get importPath() {
+    return import.meta.url;
+  }
+
+  static get template() {
+    return html`
+    <svg id="svg" viewBox="[[value]]"></svg>
+`;
+  }
+
+  static get is() { return 'svg-element'; }
+  static get properties() {
+    return {
+      value: {
+        type: String,
+        value: '0 0 50 50'
+      }
+    };
+  }
+}
+customElements.define(SVGElement.is, SVGElement);

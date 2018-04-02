@@ -2,7 +2,7 @@
 [![Build status](https://travis-ci.org/PolymerElements/paper-button.svg?branch=master)](https://travis-ci.org/PolymerElements/paper-button)
 [![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://beta.webcomponents.org/element/PolymerElements/paper-button)
 
-##&lt;paper-button&gt;
+## &lt;paper-button&gt;
 
 Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)
 

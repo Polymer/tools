@@ -1,10 +1,12 @@
 language: node_js
 sudo: required
 before_script:
-  - npm install -g bower polymer-cli@next
+  - npm install -g polymer-cli
   - polymer install --variants
-  - sudo mv /usr/bin/google-chrome /usr/bin/google-chrome-old
-  - sudo mv /usr/bin/google-chrome-beta /usr/bin/google-chrome
+  - >-
+    npm run update-types && git diff --exit-code || (echo -e
+    '\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run
+    update-types".' && false)
 env:
   global:
     - secure: >-
@@ -18,7 +20,7 @@ addons:
     sources:
       - google-chrome
     packages:
-      - google-chrome-beta
+      - google-chrome-stable
   sauce_connect: true
 script:
   - xvfb-run polymer test

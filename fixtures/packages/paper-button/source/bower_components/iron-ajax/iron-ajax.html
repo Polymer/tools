@@ -53,6 +53,11 @@ element.
      * Fired when a request is sent.
      *
      * @event request
+     */
+
+    /**
+     * Fired when a request is sent.
+     *
      * @event iron-ajax-request
      */
 
@@ -60,6 +65,11 @@ element.
      * Fired when a response is received.
      *
      * @event response
+     */
+
+    /**
+     * Fired when a response is received.
+     *
      * @event iron-ajax-response
      */
 
@@ -67,6 +77,11 @@ element.
      * Fired when an error is received.
      *
      * @event error
+     */
+
+    /**
+     * Fired when an error is received.
+     *
      * @event iron-ajax-error
      */
 
@@ -228,6 +243,8 @@ element.
 
       /**
        * The most recent request made by this iron-ajax element.
+       *
+       * @type {Object|undefined}
        */
       lastRequest: {
         type: Object,
@@ -237,6 +254,8 @@ element.
 
       /**
        * The `progress` property of this element's `lastRequest`.
+       *
+       * @type {Object|undefined}
        */
       lastProgress: {
         type: Object,

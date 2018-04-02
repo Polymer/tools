@@ -7,8 +7,13 @@ addons:
   chrome: stable
 before_script:
   - polymer lint
+  - >-
+    npm run update-types && git diff --exit-code || (echo -e
+    '\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run
+    update-types".' && false)
 install:
   - npm install -g polymer-cli
+  - npm install
   - polymer install --variants
 script:
   - polymer test

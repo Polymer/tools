@@ -367,7 +367,7 @@ iron-request can be used to perform XMLHttpRequests.
               try {
                 return JSON.parse(xhr.responseText);
               } catch (_) {
-                console.warn('Failed to parse JSON sent from ' + xhr.responseUrl);
+                console.warn('Failed to parse JSON sent from ' + xhr.responseURL);
                 return null;
               }
             }
@@ -389,7 +389,7 @@ iron-request can be used to perform XMLHttpRequests.
               try {
                 return JSON.parse(xhr.responseText.substring(prefixLen));
               } catch (_) {
-                console.warn('Failed to parse JSON sent from ' + xhr.responseUrl);
+                console.warn('Failed to parse JSON sent from ' + xhr.responseURL);
                 return null;
               }
             }

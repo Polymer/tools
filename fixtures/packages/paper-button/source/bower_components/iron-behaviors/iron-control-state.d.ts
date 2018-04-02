@@ -23,7 +23,12 @@ declare namespace Polymer {
      * If true, the user cannot interact with this element.
      */
     disabled: boolean|null|undefined;
-    _oldTabIndex: number|null|undefined;
+
+    /**
+     * Value of the `tabindex` attribute before `disabled` was activated.
+     * `null` means the attribute was not present.
+     */
+    _oldTabIndex: string|null|undefined;
     _boundFocusBlurHandler: Function|null|undefined;
     ready(): void;
     _focusBlurHandler(event: any): void;
