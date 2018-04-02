@@ -34,7 +34,7 @@ const baseParseOptions: babylon.BabylonOptions = {
   plugins: [
     'asyncGenerators',
     'dynamicImport',
-    // 'importMeta', // not yet in the @types file
+    'importMeta' as any,
     'objectRestSpread',
   ],
 };

@@ -58,6 +58,24 @@ suite('JavaScriptParser', () => {
       assert.equal(document.ast.program.body[0].type, 'ClassDeclaration');
     });
 
+    test('parses import.meta', () => {
+      const contents = `
+        import.meta
+      `;
+      const document = parser.parse(
+          contents,
+          resolvedUrl`/static/es6-support.js`,
+          new PackageUrlResolver());
+      assert.instanceOf(document, JavaScriptDocument);
+      assert.equal(document.url, '/static/es6-support.js');
+      assert.equal(document.ast.type, 'File');
+      assert.equal(document.parsedAsSourceType, 'module');
+      // First statement contains a MetaProperty
+      const expr = document.ast.program.body[0] as babel.ExpressionStatement;
+      assert.equal(expr.type, 'ExpressionStatement');
+      assert.equal(expr.expression.type, 'MetaProperty');
+    });
+
     test('parses async await', () => {
       const contents = `
         async function foo() {
