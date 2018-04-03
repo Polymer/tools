@@ -17,7 +17,6 @@ import * as path from 'path';
 import stripIndent = require('strip-indent');
 
 import {jsTransform} from '../js-transform';
-import {LocalFsPath} from '../path-transformers';
 
 suite('jsTransform', () => {
   test('compiles to ES5', () => {
@@ -303,6 +302,22 @@ suite('jsTransform', () => {
       transformImportMeta: true,
     });
     assert.equal(result.trim(), expected.trim());
+  });
+
+  test('transforms dynamic import()', () => {
+    const input = stripIndent(`
+      import { dep1 } from 'dep1';
+      export const foo = 'foo';
+      console.log(import('./bar.js'));
+    `);
+    const result = jsTransform(input, {transformEsModulesToAmd: true});
+
+    assert.include(
+        result,
+        `define(["exports", "require", "dep1"], function (_exports, _require, _dep) {`);
+    assert.include(
+        result,
+        `console.log(new Promise((res, rej) => _require(['./bar.js'], res, rej)));`);
   });
 
 });

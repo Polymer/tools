@@ -18,6 +18,7 @@ import {ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
 
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
+import {dynamicImportAmd} from './babel-plugin-dynamic-import-amd';
 import {rewriteImportMeta} from './babel-plugin-import-meta';
 
 import isWindows = require('is-windows');
@@ -46,7 +47,10 @@ const babelTransformPlugins = [
   require('@babel/plugin-proposal-async-generator-functions'),
 ];
 
-const babelTransformModulesAmd = require('@babel/plugin-transform-modules-amd');
+const babelTransformModulesAmd = [
+  dynamicImportAmd,
+  require('@babel/plugin-transform-modules-amd'),
+];
 
 // We enumerate syntax plugins that would automatically be loaded by our
 // transform plugins because we need to support the configuration where we
@@ -177,7 +181,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   }
   if (options.transformEsModulesToAmd) {
     doBabel = true;
-    plugins.push(babelTransformModulesAmd);
+    plugins.push(...babelTransformModulesAmd);
   }
 
   if (doBabel) {

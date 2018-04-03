@@ -16,7 +16,6 @@ import importMetaSyntax from '@babel/plugin-syntax-import-meta';
 import template from '@babel/template';
 import {NodePath} from '@babel/traverse';
 import {MetaProperty} from '@babel/types';
-import {relative} from 'path';
 
 const ast = template.ast;
 
