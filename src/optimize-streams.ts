@@ -215,7 +215,7 @@ export function getOptimizeStreams(options?: OptimizeOptions):
   return streams;
 }
 
-function matchesExt(extension: string) {
+export function matchesExt(extension: string) {
   return (fs: vinyl) => !!fs.path && fs.relative.endsWith(extension);
 }
 

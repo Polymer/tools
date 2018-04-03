@@ -136,6 +136,10 @@ export class BuildAnalyzer {
       // TODO(usergenic): Add option to polymer-build to propagate a protocol
       // and host option to the FsUrlResolver.
       urlResolver: new FsUrlResolver(config.root),
+
+      moduleResolution: config.moduleResolution === 'none' ?
+          undefined :
+          config.moduleResolution,
     });
 
     this.allFragmentsToAnalyze =

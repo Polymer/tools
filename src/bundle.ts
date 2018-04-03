@@ -13,7 +13,6 @@
  */
 
 import File = require('vinyl');
-import * as parse5 from 'parse5';
 import {ResolvedUrl} from 'polymer-analyzer';
 import {Bundler, Options, BundleManifest, generateShellMergeStrategy} from 'polymer-bundler';
 import {ProjectConfig} from 'polymer-project-config';
@@ -112,7 +111,7 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
         path: pathFromUrl(
             this.config.root as LocalFsPath,
             this._bundler.analyzer.urlResolver.relative(url)),
-        contents: new Buffer(parse5.serialize(document.ast)),
+        contents: new Buffer(document.content),
       }));
     }
   }
@@ -152,11 +151,17 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
    * Removes all of the inlined files in a bundle manifest from the filemap.
    */
   private _unmapBundledFiles(manifest: BundleManifest) {
-    for (const {inlinedHtmlImports,
-                inlinedScripts,
-                inlinedStyles} of manifest.bundles.values()) {
-      for (const url of
-               [...inlinedHtmlImports, ...inlinedScripts, ...inlinedStyles]) {
+    for (const {
+           inlinedHtmlImports,
+           inlinedScripts,
+           inlinedStyles,
+           bundledExports,
+         } of manifest.bundles.values()) {
+      for (const url
+               of [...inlinedHtmlImports,
+                   ...inlinedScripts,
+                   ...inlinedStyles,
+                   ...bundledExports.keys()]) {
         this.files.delete(url);
       }
     }
