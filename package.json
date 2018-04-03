@@ -1,6 +1,6 @@
 {
   "name": "polymer-build",
-  "version": "3.0.0-pre.5",
+  "version": "3.0.0-pre.6",
   "description": "A library of Gulp build tasks",
   "main": "lib/polymer-build.js",
   "typings": "lib/polymer-build.d.ts",
