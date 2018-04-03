@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Added support for parsing `import.meta` in JavaScript modules.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.20] - 2018-04-03
+* Added support for parsing `import.meta` in JavaScript modules.
 
 ## [3.0.0-pre.19] - 2018-03-30
 * [breaking] Removed WarningFilter.fromConfig. ProjectConfig#initializeAnalyzer
