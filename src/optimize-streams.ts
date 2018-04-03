@@ -44,13 +44,15 @@ export interface OptimizeOptions {
   };
   js?: JsOptimizeOptions;
   entrypointPath?: string;
+  rootDir?: string;
 }
 
 export interface JsOptimizeOptions {
   minify?: boolean|{exclude?: string[]};
   compile?: boolean|{exclude?: string[]};
   moduleResolution?: ModuleResolutionStrategy;
-  transformEsModulesToAmd?: boolean;
+  transformModulesToAmd?: boolean;
+  transformImportMeta?: boolean;
 }
 
 /**
@@ -102,19 +104,23 @@ export class GenericOptimizeTransform extends Transform {
  * Transform JavaScript.
  */
 export class JsTransform extends GenericOptimizeTransform {
-  constructor(options: JsOptimizeOptions) {
+  constructor(options: OptimizeOptions) {
+    const jsOptions = options.js || {};
+
     const shouldCompileFile =
-        options.compile ? notExcluded(options.compile) : () => false;
+        jsOptions.compile ? notExcluded(jsOptions.compile) : () => false;
     const shouldMinifyFile =
-        options.minify ? notExcluded(options.minify) : () => false;
+        jsOptions.minify ? notExcluded(jsOptions.minify) : () => false;
 
     const transformer = (content: string, file: File) => {
       return jsTransform(content, {
         compileToEs5: shouldCompileFile(file),
         minify: shouldMinifyFile(file),
-        moduleResolution: options.moduleResolution,
+        moduleResolution: jsOptions.moduleResolution,
         filePath: file.path,
-        transformEsModulesToAmd: options.transformEsModulesToAmd,
+        rootDir: options.rootDir,
+        transformModulesToAmd: jsOptions.transformModulesToAmd,
+        transformImportMeta: jsOptions.transformImportMeta,
         moduleScriptIdx: file.moduleScriptIdx,
       });
     };
@@ -135,21 +141,22 @@ export class HtmlTransform extends GenericOptimizeTransform {
         () => false;
 
     const transformer = (content: string, file: File) => {
-      const transformEsModulesToAmd =
-          options.js && options.js.transformEsModulesToAmd;
+      const transformModulesToAmd =
+          options.js && options.js.transformModulesToAmd;
       const isEntryPoint =
           !!options.entrypointPath && file.path === options.entrypointPath;
 
       return htmlTransform(content, {
         js: {
-          transformEsModulesToAmd,
+          transformModulesToAmd,
+          transformImportMeta: options.js && options.js.transformImportMeta,
           // Note we don't do any other JS transforms here (like compilation),
           // because we're assuming that HtmlSplitter has run and any inline
           // scripts will be compiled in their own stream.
         },
         minifyHtml: shouldMinifyFile(file),
         injectBabelHelpers: isEntryPoint && anyJsCompiledToEs5,
-        injectAmdLoader: isEntryPoint && transformEsModulesToAmd,
+        injectAmdLoader: isEntryPoint && transformModulesToAmd,
       });
     };
     super('html-transform', transformer);
@@ -198,7 +205,7 @@ export function getOptimizeStreams(options?: OptimizeOptions):
   options = options || {};
   const streams = [];
 
-  streams.push(gulpif(matchesExt('.js'), new JsTransform(options.js || {})));
+  streams.push(gulpif(matchesExt('.js'), new JsTransform(options)));
   streams.push(gulpif(matchesExt('.html'), new HtmlTransform(options)));
 
   if (options.css && options.css.minify) {

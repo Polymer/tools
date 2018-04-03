@@ -19,6 +19,10 @@ import stripIndent = require('strip-indent');
 import {jsTransform} from '../js-transform';
 
 suite('jsTransform', () => {
+  const rootDir =
+      path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
+  const filePath = path.join(rootDir, 'foo.js');
+
   test('compiles to ES5', () => {
     assert.equal(
         jsTransform('const foo = 3;', {compileToEs5: true}), 'var foo = 3;');
@@ -141,12 +145,7 @@ suite('jsTransform', () => {
   });
 
   suite('rewrites bare module specifiers', () => {
-    const fixtureRoot =
-        path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
-
     test('node packages', () => {
-      const filePath = path.join(fixtureRoot, 'foo.js');
-
       const input = stripIndent(`
         import { dep1 } from 'dep1';
         import { dep2 } from 'dep2';
@@ -168,8 +167,6 @@ suite('jsTransform', () => {
     });
 
     test('regular paths and urls', () => {
-      const filePath = path.join(fixtureRoot, 'foo.js');
-
       const input = stripIndent(`
         import { p1 } from '/already/a/path.js';
         import { p2 } from './already/a/path.js';
@@ -191,8 +188,6 @@ suite('jsTransform', () => {
     });
 
     test('paths that still need node resolution', () => {
-      const filePath = path.join(fixtureRoot, 'foo.js');
-
       const input =
           // Resolves to a .js file.
           `import { bar } from './bar';\n` +
@@ -213,8 +208,6 @@ suite('jsTransform', () => {
     });
 
     test('paths for dependencies', () => {
-      const filePath = path.join(fixtureRoot, 'npm-module.js');
-
       const input = stripIndent(`
         import { dep1 } from 'dep1';
       `);
@@ -228,15 +221,13 @@ suite('jsTransform', () => {
         filePath,
         isComponentRequest: true,
         packageName: 'some-package',
-        componentDir: path.join(fixtureRoot, 'node_modules'),
-        rootDir: fixtureRoot
+        componentDir: path.join(rootDir, 'node_modules'),
+        rootDir,
       });
       assert.equal(result.trim(), expected.trim());
     });
 
     test('dependencies from a scoped package', () => {
-      const filePath = path.join(fixtureRoot, 'npm-module.js');
-
       const input = stripIndent(`
         import { dep1 } from 'dep1';
       `);
@@ -250,8 +241,8 @@ suite('jsTransform', () => {
         filePath,
         isComponentRequest: true,
         packageName: '@some-scope/some-package',
-        componentDir: path.join(fixtureRoot, 'node_modules'),
-        rootDir: fixtureRoot
+        componentDir: path.join(rootDir, 'node_modules'),
+        rootDir,
       });
       assert.equal(result.trim(), expected.trim());
     });
@@ -276,13 +267,15 @@ suite('jsTransform', () => {
       });
     `);
 
-    const result = jsTransform(input, {transformEsModulesToAmd: true});
+    const result = jsTransform(input, {
+      transformModulesToAmd: true,
+      filePath,
+      rootDir,
+    });
     assert.equal(result.trim(), expected.trim());
   });
 
   test('transforms import.meta', () => {
-    const rootDir =
-        path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
     // Important: keep a path seperator here to test Windows:
     const filePath = path.join(rootDir, 'dir/npm-module.js');
 
@@ -310,7 +303,11 @@ suite('jsTransform', () => {
       export const foo = 'foo';
       console.log(import('./bar.js'));
     `);
-    const result = jsTransform(input, {transformEsModulesToAmd: true});
+    const result = jsTransform(input, {
+      transformModulesToAmd: true,
+      filePath,
+      rootDir,
+    });
 
     assert.include(
         result,
@@ -319,5 +316,4 @@ suite('jsTransform', () => {
         result,
         `console.log(new Promise((res, rej) => _require(['./bar.js'], res, rej)));`);
   });
-
 });

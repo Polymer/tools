@@ -110,10 +110,11 @@ export interface JsTransformOptions {
   // Whether to rewrite `import.meta` expressions to objects with inline URLs.
   transformImportMeta?: boolean;
 
-  // Whether to replace ES modules with AMD modules.
-  transformEsModulesToAmd?: boolean;
+  // Whether to replace ES modules with AMD modules. Implies
+  // `transformImportMeta`.
+  transformModulesToAmd?: boolean;
 
-  // If transformEsModulesToAmd is true, setting this option will update the
+  // If transformModulesToAmd is true, setting this option will update the
   // generated AMD module to be 1) defined with an auto-generated name (instead
   // of with no name), and 2) if > 0, to depend on the previously auto-generated
   // module. This can be used to generate a dependency chain between module
@@ -164,7 +165,9 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
         options.componentDir,
         options.rootDir));
   }
-  if (options.transformImportMeta) {
+  if (options.transformImportMeta === true ||
+      (options.transformImportMeta === undefined &&
+       options.transformModulesToAmd === true)) {
     if (!options.filePath) {
       throw new Error('Cannot perform importMeta transform without filePath.');
     }
@@ -179,7 +182,11 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     }
     plugins.push(rewriteImportMeta(relativeURL));
   }
-  if (options.transformEsModulesToAmd) {
+  if (options.transformModulesToAmd) {
+    if (options.transformImportMeta === false) {
+      throw new Error(
+          'Cannot use transformModulesToAmd without transformImportMeta.');
+    }
     doBabel = true;
     plugins.push(...babelTransformModulesAmd);
   }
@@ -200,8 +207,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     }
   }
 
-  if (options.transformEsModulesToAmd &&
-      options.moduleScriptIdx !== undefined) {
+  if (options.transformModulesToAmd && options.moduleScriptIdx !== undefined) {
     const generatedModule = generateModuleName(options.moduleScriptIdx);
     const previousGeneratedModule = options.moduleScriptIdx === 0 ?
         undefined :

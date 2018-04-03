@@ -21,6 +21,9 @@ import {pipeStreams} from '../streams';
 import {assertMapEqualIgnoringWhitespace} from './util';
 
 suite('optimize-streams', () => {
+  const fixtureRoot =
+      path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
+
   async function getOnlyFile(stream: NodeJS.ReadableStream): Promise<string> {
     const fileMap = await getFileMap(stream);
     if (fileMap.size !== 1) {
@@ -83,9 +86,6 @@ suite('optimize-streams', () => {
   });
 
   suite('rewrites bare module specifiers to paths', () => {
-    const fixtureRoot =
-        path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
-
     test('in js files', async () => {
       const filePath = path.join(fixtureRoot, 'foo.js');
       const contents = stripIndent(`
@@ -168,8 +168,9 @@ suite('optimize-streams', () => {
 
       const opts = {
         js: {
-          transformEsModulesToAmd: true,
+          transformModulesToAmd: true,
         },
+        rootDir: fixtureRoot,
       };
 
       const expected = new Map<string, string>(

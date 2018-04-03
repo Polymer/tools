@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* [breaking] Rename `jsTransform` and `getOptimizeStreams` option from `transformEsModuleToAmd` to `transformModuleToAmd`.
+* [breaking] The `transformModulesToAmd` option in `jsTransform` now automatically implies `transformImportMeta`, and throws if `transformImportMeta` is set to false.
+* [breaking] The `JsTransform` class now takes a full `OptimizeOptions` instead of just a `JsOptimizeOptions`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.6] - 2018-04-02

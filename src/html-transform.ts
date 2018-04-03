@@ -82,7 +82,7 @@ export function htmlTransform(
   const allScripts = [...dom5.queryAll(document, isJsScript)];
 
   const shouldTransformEsModuleToAmd = options.js &&
-      options.js.transformEsModulesToAmd &&
+      options.js.transformModulesToAmd &&
       // Assume that if this document has a nomodule script, the author is
       // already handling browsers that don't support modules, and we don't
       // need to transform them (even if the configuration was set).
@@ -111,7 +111,7 @@ export function htmlTransform(
       // don't have to check for that case here.
       const newJs = jsTransform(
           dom5.getTextContent(script),
-          {...options.js, transformEsModulesToAmd: false});
+          {...options.js, transformModulesToAmd: false});
       dom5.setTextContent(script, newJs);
 
     } else if (wctScript === undefined) {
@@ -216,7 +216,7 @@ function transformEsModuleToAmd(
     // Transform inline scripts with the AMD Babel plugin transformer.
     const newJs = jsTransform(dom5.getTextContent(script), {
       ...jsOptions,
-      transformEsModulesToAmd: true,
+      transformModulesToAmd: true,
       moduleScriptIdx: idx,
     });
     dom5.setTextContent(script, newJs);
