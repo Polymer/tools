@@ -147,6 +147,7 @@ export default async function run(options: CliOptions) {
     flat: options.flat,
     private: options.private,
     addImportPath: options['add-import-path'],
+    excludes: options.exclude,
   });
 
   logStep(3, 3, '🎉', `Conversion Complete!`);
