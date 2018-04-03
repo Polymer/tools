@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+* Add an `import.meta` transform to `jsTransform` with the `transformImportMeta` option.
 
 ## [3.0.0-pre.5] - 2018-03-28
 * AMD loader will now only be injected into an HTML document if it contains at least one `type=module` script.

@@ -13,10 +13,14 @@
  */
 
 import * as babelCore from '@babel/core';
+import {relative} from 'path';
 import {ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
 
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
+import {rewriteImportMeta} from './babel-plugin-import-meta';
+
+import isWindows = require('is-windows');
 
 // TODO(aomarks) Switch to babel-preset-env. But how do we get just syntax
 // plugins without turning on transformation, for the case where we are
@@ -79,6 +83,7 @@ export interface JsTransformOptions {
   moduleResolution?: ModuleResolutionStrategy;
 
   // The path of the file being transformed, used for module resolution.
+  // Must be an absolute filesystem path.
   filePath?: string;
 
   // The package name of the file being transformed, required when
@@ -95,7 +100,11 @@ export interface JsTransformOptions {
   componentDir?: string;
 
   // The root directory of the package containing the component directory.
+  // Must be an absolute filesystem path.
   rootDir?: string;
+
+  // Whether to rewrite `import.meta` expressions to objects with inline URLs.
+  transformImportMeta?: boolean;
 
   // Whether to replace ES modules with AMD modules.
   transformEsModulesToAmd?: boolean;
@@ -150,6 +159,21 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
         options.packageName,
         options.componentDir,
         options.rootDir));
+  }
+  if (options.transformImportMeta) {
+    if (!options.filePath) {
+      throw new Error('Cannot perform importMeta transform without filePath.');
+    }
+    if (!options.rootDir) {
+      throw new Error('Cannot perform importMeta transform without rootDir.');
+    }
+    doBabel = true;
+    let relativeURL = relative(options.rootDir, options.filePath);
+    if (isWindows()) {
+      // normalize path separators to URL format
+      relativeURL = relativeURL.replace(/\\/g, '/');
+    }
+    plugins.push(rewriteImportMeta(relativeURL));
   }
   if (options.transformEsModulesToAmd) {
     doBabel = true;
