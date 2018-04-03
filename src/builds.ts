@@ -107,7 +107,7 @@ export interface ProjectBuildOptions {
   /** Options for processing HTML. */
   html?: {
     /** Minify HTMl by removing comments and whitespace. */
-    minify?: boolean|{
+    minify?: boolean | {
       /** HTML files listed here will not be minified. */
       exclude?: string[],
     },
@@ -116,7 +116,7 @@ export interface ProjectBuildOptions {
   /** Options for processing CSS. */
   css?: {
     /** Minify inlined and external CSS. */
-    minify?: boolean|{
+    minify?: boolean | {
       /** CSS files listed here will not be minified. */
       exclude?: string[],
     },
@@ -125,7 +125,7 @@ export interface ProjectBuildOptions {
   /** Options for processing JavaScript. */
   js?: {
     /** Minify inlined and external JavaScript. */
-    minify?: boolean|{
+    minify?: boolean | {
       /** JavaScript files listed here will not be minified. */
       exclude?: string[],
     },
@@ -136,8 +136,11 @@ export interface ProjectBuildOptions {
       exclude?: string[],
     },
 
-    /** Transform ES modules to AMD modules, for older browsers. */
-    transformEsModulesToAmd?: boolean,
+    /** Transform ES modules to AMD modules. */
+    transformModulesToAmd?: boolean,
+
+    /** Rewrite `import.meta` expressions to objects with inline URLs. */
+    transformImportMeta?: boolean;
   };
 
   /**

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.13.0] - 2018-04-03
+* [breaking] Rename `build` option from `js.transformEsModulesToAmd` to `js.transformModulesToAmd`.
+* Add new `build` option: `js.transformImportMeta`.
+
 ## [3.12.0] - 2018-03-28
 * Added new `build` option: `js.transformEsModulesToAmd`.
 
