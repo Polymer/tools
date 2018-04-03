@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.6] - 2018-04-02
 * Add an `import.meta` transform to `jsTransform` with the `transformImportMeta` option.
 * Add a dynamic import() transform to AMD require()
 
