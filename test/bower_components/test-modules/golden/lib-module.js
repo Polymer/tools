@@ -1,8 +1,10 @@
-define(['exports'], function (exports) {
-  'use strict';
+define(["exports"], function (_exports) {
+  "use strict";
 
-  Object.defineProperty(exports, "__esModule", {
+  Object.defineProperty(_exports, "__esModule", {
     value: true
   });
-  const foo = exports.foo = 'foo';
+  _exports.foo = void 0;
+  const foo = 'foo';
+  _exports.foo = foo;
 });

@@ -140,7 +140,7 @@ export function babelCompile(
             isComponentRequest,
             componentDir,
             rootDir,
-            transformEsModulesToAmd: options.transformModules,
+            transformModulesToAmd: options.transformModules,
             softSyntaxError: true,
           },
           injectAmdLoader: options.transformModules,
@@ -149,7 +149,7 @@ export function babelCompile(
       } else if (javaScriptMimeTypes.includes(contentType)) {
         transformed = jsTransform(body, {
           compileToEs5: options.transformES2015,
-          transformEsModulesToAmd:
+          transformModulesToAmd:
               options.transformModules && hasImportOrExport(body),
           moduleResolution,
           filePath: filePath,

@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+## [0.27.0](https://github.com/PolymerLabs/polyserve/tree/0.26.0) (2018-04-03)
+* Upgrade polymer-build to 3.0.0-pre.7
 
 ## [0.26.0](https://github.com/PolymerLabs/polyserve/tree/0.26.0) (2018-03-28)
 

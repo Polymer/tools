@@ -21,6 +21,7 @@
     "sourceMap": true
   },
   "include": [
+    "node_modules/polymer-build/custom_typings/**/*.ts",
     "custom_typings/**/*.ts",
     "src/**/*.ts"
   ]
