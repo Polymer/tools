@@ -48,9 +48,10 @@ suite('pathFromUrl()', () => {
     assert.equal(path, pathJoin(RootPath, 'root', 'path'));
   });
 
-  test('will unencode the URI-encoded sequences, like spaces', () => {
-    const path = pathFromUrl(RootPath, '/spaced%20out' as PackageRelativeUrl);
-    assert.equal(path, pathJoin(RootPath, 'spaced out'));
+  test('will decode URI percent encoded characters', () => {
+    const path =
+        pathFromUrl(RootPath, '/%40foo/spaced%20out' as PackageRelativeUrl);
+    assert.equal(path, pathJoin(RootPath, '/@foo/spaced out'));
   });
 });
 

@@ -92,7 +92,7 @@ export function pathFromUrl(
     // something if this function doesn't disappear after
     // https://github.com/Polymer/polymer-build/issues/324 is addressed.
     url: PackageRelativeUrl): LocalFsPath {
-  return path.normalize(decodeURI(path.posix.join(
+  return path.normalize(decodeURIComponent(path.posix.join(
              posixifyPath(root), path.posix.join('/', url)))) as LocalFsPath;
 }
 
