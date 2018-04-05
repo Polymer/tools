@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.0.0-pre.21] - 2018-04-05
+* Clarify module resolution error message.
+
 ## [3.0.0-pre.20] - 2018-04-03
 * Added support for parsing `import.meta` in JavaScript modules.
 
