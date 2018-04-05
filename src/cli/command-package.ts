@@ -17,7 +17,6 @@ import * as path from 'path';
 import * as semver from 'semver';
 
 import {CliOptions} from '../cli';
-import {PackageType} from '../conversion-settings';
 import convertPackage from '../convert-package';
 import {saveDependencyMapping} from '../package-manifest';
 import {exec, logStep} from '../util';
