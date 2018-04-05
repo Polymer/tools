@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
-* Fix bug with node module resolution where specifiers in dynamic import() we're rewritten
+* Fix bug with node module resolution where specifiers in dynamic import() were rewritten.
+* Fix bug with dynamic import rewriting where imported require function could not be called.
 
 ## [3.0.0-pre.8] - 2018-04-04
 * Fix bug where not all percent-encoded characters in URIs would be decoded (in particular, `%40` -> `@` which is important for scoped NPM packages).

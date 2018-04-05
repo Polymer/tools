@@ -314,6 +314,6 @@ suite('jsTransform', () => {
         `define(["exports", "require", "dep1"], function (_exports, _require, _dep) {`);
     assert.include(
         result,
-        `console.log(new Promise((res, rej) => _require(['./bar.js'], res, rej)));`);
+        `console.log(new Promise((res, rej) => _require.default(['./bar.js'], res, rej)));`);
   });
 });

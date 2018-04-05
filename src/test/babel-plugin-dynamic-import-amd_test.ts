@@ -21,7 +21,6 @@ import {dynamicImportAmd} from '../babel-plugin-dynamic-import-amd';
 const babelTransformModulesAmd = require('@babel/plugin-transform-modules-amd');
 
 suite('babel-plugin-transform-modules-amd', () => {
-
   test('transforms import()', () => {
     const input = stripIndent(`
       const foo = import('./foo.js');
@@ -29,7 +28,7 @@ suite('babel-plugin-transform-modules-amd', () => {
 
     const expected = stripIndent(`
       import * as _require from 'require';
-      const foo = new Promise((res, rej) => _require(['./foo.js'], res, rej));
+      const foo = new Promise((res, rej) => _require.default(['./foo.js'], res, rej));
     `);
     const result =
         babelCore.transform(input, {plugins: [dynamicImportAmd]}).code;
@@ -49,10 +48,10 @@ suite('babel-plugin-transform-modules-amd', () => {
     const expected = stripIndent(`
       import * as _require3 from 'require';
       let _require = true;
-      const foo = new Promise((res, rej) => _require3(['./foo.js'], res, rej));
+      const foo = new Promise((res, rej) => _require3.default(['./foo.js'], res, rej));
       {
         let _require2 = true;
-        new Promise((res, rej) => _require3(['./bar.js'], res, rej));
+        new Promise((res, rej) => _require3.default(['./bar.js'], res, rej));
       }
     `);
     const result =
@@ -74,7 +73,6 @@ suite('babel-plugin-transform-modules-amd', () => {
         result, `define(["require", "./bar.js"], function (_require, _bar) {`);
     assert.include(
         result,
-        `const foo = new Promise((res, rej) => _require(['./foo.js'], res, rej));`);
+        `const foo = new Promise((res, rej) => _require.default(['./foo.js'], res, rej));`);
   });
-
 });
