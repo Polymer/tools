@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.9] - 2018-04-05
 * Fix bug with node module resolution where specifiers in dynamic import() were rewritten.
 * Fix bug with dynamic import rewriting where imported require function could not be called.
 
