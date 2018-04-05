@@ -181,8 +181,10 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   {
     name: 'package-type',
     type: String,
+    defaultValue: 'element',
     description:
-        `[element|application] The type of package that is to be modulized`,
+        `[element|application] The type of package that is to be modulized. ` +
+        `Defaults to "element"`,
   },
 ];
 
@@ -253,6 +255,13 @@ installation.
     throw new Error(
         `import-style "${importStyle}" not supported. ` +
         `Supported styles: "name", "path".`);
+  }
+
+  const packageType = options['package-type'];
+  if (packageType !== 'element' && packageType !== 'application') {
+    throw new Error(
+        `package-type "${packageType}" is not supported. ` +
+        `Supported types: "element", "application".`);
   }
 
   await runPackageCommand(options);

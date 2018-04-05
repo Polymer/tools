@@ -78,9 +78,6 @@ export default async function run(options: CliOptions) {
   let npmPackageName = options['npm-name'] ||
       inPackageJson && inPackageJson.name ||
       outPackageJson && outPackageJson.name;
-  let packageType = options['package-type'] ||
-      inPackageJson && inPackageJson.packageType ||
-      outPackageJson && outPackageJson.packageType;
   let npmPackageVersion = options['npm-version'] ||
       inPackageJson && inPackageJson.version ||
       outPackageJson && outPackageJson.version;
@@ -94,22 +91,6 @@ export default async function run(options: CliOptions) {
                        message: 'npm package name?',
                        default: inBowerJson && `@polymer/${inBowerJson.name}`,
                      }]))['npm-name'] as string;
-  }
-
-  if (typeof packageType !== 'string') {
-    packageType = (await inquirer.prompt([{
-                    type: 'list',
-                    name: 'package-type',
-                    message: 'is this an element or an application?',
-                    choices: ['element', 'application']
-                  }]))['package-type'] as PackageType;
-  } else {
-    if (packageType && packageType !== 'element' &&
-        packageType !== 'application') {
-      throw new Error(
-          `package-type "${packageType}" is not supported. ` +
-          `Supported types: "element", "application".`);
-    }
   }
 
   if (typeof npmPackageVersion !== 'string') {
@@ -137,7 +118,7 @@ export default async function run(options: CliOptions) {
     addImportPath: options['add-import-path'],
     flat: options.flat,
     private: options.private,
-    packageType: packageType
+    packageType: options['package-type']
   });
 
   logStep(2, 2, '🎉', `Conversion Complete!`);
