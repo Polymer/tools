@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import dyanamicImportSyntax from '@babel/plugin-syntax-dynamic-import';
 import {NodePath} from '@babel/traverse';
-import {ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration} from 'babel-types';
+import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration} from 'babel-types';
 import {resolve} from 'polymer-analyzer/lib/javascript/resolve-specifier-node';
 
 const isPathSpecifier = (s: string) => /^\.{0,2}\//.test(s);
@@ -31,7 +32,27 @@ export const resolveBareSpecifiers = (
     componentDir?: string,
     rootDir?: string,
     ) => ({
+  inherits: dyanamicImportSyntax,
+
   visitor: {
+    CallExpression(path: NodePath<CallExpression>) {
+      const node = path.node;
+      if (node.callee.type as string === 'Import') {
+        const specifierArg = node.arguments[0];
+        if (specifierArg.type !== 'StringLiteral') {
+          // Should never happen
+          return;
+        }
+        const specifier = specifierArg.value;
+        specifierArg.value = maybeResolve(
+            specifier,
+            filePath,
+            isComponentRequest,
+            packageName,
+            componentDir,
+            rootDir);
+      }
+    },
     'ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration'(
         path: NodePath<HasSpecifier>) {
       const node = path.node;
@@ -42,25 +63,42 @@ export const resolveBareSpecifiers = (
       }
 
       const specifier = node.source.value;
-
-      try {
-        let componentInfo;
-        if (isComponentRequest) {
-          componentInfo = {
-            packageName: packageName!,
-            componentDir: componentDir!,
-            rootDir: rootDir!,
-          };
-        }
-        node.source.value = resolve(specifier, filePath, componentInfo);
-      } catch (e) {
-        if (!isPathSpecifier(specifier)) {
-          // Don't warn if the specifier was already a path, even though we do
-          // resolve paths, because maybe the user is serving it some other way.
-          console.warn(`Could not resolve module specifier "${specifier}"`);
-        }
-        return;
-      }
+      node.source.value = maybeResolve(
+          specifier,
+          filePath,
+          isComponentRequest,
+          packageName,
+          componentDir,
+          rootDir);
     }
   }
 });
+
+const maybeResolve = (
+    specifier: string,
+    filePath: string,
+    isComponentRequest: boolean,
+    packageName?: string,
+    componentDir?: string,
+    rootDir?: string,
+    ) => {
+  try {
+    let componentInfo;
+    if (isComponentRequest) {
+      componentInfo = {
+        packageName: packageName!,
+        componentDir: componentDir!,
+        rootDir: rootDir!,
+      };
+    }
+    return resolve(specifier, filePath, componentInfo);
+  } catch (e) {
+    if (!isPathSpecifier(specifier)) {
+      // Don't warn if the specifier was already a path, even though we do
+      // resolve paths, because maybe the user is serving it some other
+      // way.
+      console.warn(`Could not resolve module specifier "${specifier}"`);
+    }
+    return specifier;
+  }
+}
