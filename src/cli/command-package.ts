@@ -51,7 +51,8 @@ export default async function run(options: CliOptions) {
 
   // TODO: each file is not always needed, refactor to optimize loading
   let inBowerJson:
-      {name: string, version: string, main: any, packageType: string}|undefined;
+      {name: string, version: string, main: any, packageType: PackageType}|
+      undefined;
   let inPackageJson: {name: string, version: string, packageType: PackageType}|
       undefined;
   let outPackageJson: {name: string, version: string, packageType: PackageType}|
