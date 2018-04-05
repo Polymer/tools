@@ -97,7 +97,9 @@ const maybeResolve = (
       // Don't warn if the specifier was already a path, even though we do
       // resolve paths, because maybe the user is serving it some other
       // way.
-      console.warn(`Could not resolve module specifier "${specifier}"`);
+      console.warn(
+          `Could not resolve module specifier "${specifier}" ` +
+          `in file "${filePath}".`);
     }
     return specifier;
   }
