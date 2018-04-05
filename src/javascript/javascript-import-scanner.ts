@@ -253,8 +253,8 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
     }
 
     warnings.push(new Warning({
-      message: 'Cannot resolve module specifier with no module resolution ' +
-          'algorithm set',
+      message: 'Cannot resolve module specifier with resolution algorithm: ' +
+          (this.moduleResolution || 'none'),
       sourceRange: document.sourceRangeForNode(node)!,
       severity: Severity.WARNING,
       code: 'cant-resolve-module-specifier',
