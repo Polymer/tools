@@ -17,6 +17,7 @@ import * as path from 'path';
 import * as semver from 'semver';
 
 import {CliOptions} from '../cli';
+import {PackageType} from '../conversion-settings';
 import convertPackage from '../convert-package';
 import {saveDependencyMapping} from '../package-manifest';
 import {exec, logStep} from '../util';
@@ -49,9 +50,12 @@ export default async function run(options: CliOptions) {
   }
 
   // TODO: each file is not always needed, refactor to optimize loading
-  let inBowerJson: {name: string, version: string, main: any}|undefined;
-  let inPackageJson: {name: string, version: string}|undefined;
-  let outPackageJson: {name: string, version: string}|undefined;
+  let inBowerJson:
+      {name: string, version: string, main: any, packageType: string}|undefined;
+  let inPackageJson: {name: string, version: string, packageType: PackageType}|
+      undefined;
+  let outPackageJson: {name: string, version: string, packageType: PackageType}|
+      undefined;
   try {
     outPackageJson = await fse.readJSON(path.join(outDir, 'package.json'));
   } catch (e) {
@@ -73,6 +77,9 @@ export default async function run(options: CliOptions) {
   let npmPackageName = options['npm-name'] ||
       inPackageJson && inPackageJson.name ||
       outPackageJson && outPackageJson.name;
+  let packageType = options['package-type'] ||
+      inPackageJson && inPackageJson.packageType ||
+      outPackageJson && outPackageJson.packageType;
   let npmPackageVersion = options['npm-version'] ||
       inPackageJson && inPackageJson.version ||
       outPackageJson && outPackageJson.version;
@@ -86,6 +93,22 @@ export default async function run(options: CliOptions) {
                        message: 'npm package name?',
                        default: inBowerJson && `@polymer/${inBowerJson.name}`,
                      }]))['npm-name'] as string;
+  }
+
+  if (typeof packageType !== 'string') {
+    packageType = (await inquirer.prompt([{
+                    type: 'list',
+                    name: 'package-type',
+                    message: 'is this an element or an application?',
+                    choices: ['element', 'application']
+                  }]))['package-type'] as PackageType;
+  } else {
+    if (packageType && packageType !== 'element' &&
+        packageType !== 'application') {
+      throw new Error(
+          `package-type "${packageType}" is not supported. ` +
+          `Supported types: "element", "application".`);
+    }
   }
 
   if (typeof npmPackageVersion !== 'string') {
@@ -113,6 +136,7 @@ export default async function run(options: CliOptions) {
     addImportPath: options['add-import-path'],
     flat: options.flat,
     private: options.private,
+    packageType: packageType
   });
 
   logStep(2, 2, '🎉', `Conversion Complete!`);

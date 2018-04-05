@@ -49,7 +49,7 @@ export class PackageUrlHandler implements UrlHandler {
 
   constructor(
       analyzer: Analyzer, bowerPackageName: string, npmPackageName: string,
-      packageType: PackageType = 'element', packageDir: string) {
+      packageType: PackageType, packageDir: string) {
     this.analyzer = analyzer;
     this.bowerPackageName = bowerPackageName;
     this.npmPackageName = npmPackageName;

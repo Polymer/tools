@@ -36,7 +36,7 @@ import {deleteGlobsSafe, mkdirp, readJsonIfExists, rimraf, writeFileResults} fro
 export interface PackageConversionSettings extends PartialConversionSettings {
   readonly packageName: string;
   readonly packageVersion: string;
-  readonly packageType?: PackageType;
+  readonly packageType: PackageType;
   readonly inDir: string;
   readonly outDir: string;
   readonly cleanOutDir?: boolean;

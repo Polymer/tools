@@ -13,7 +13,7 @@
  */
 
 import * as commandLineArgs from 'command-line-args';
-import {NpmImportStyle} from '../conversion-settings';
+import {NpmImportStyle, PackageType} from '../conversion-settings';
 
 import runPackageCommand from './command-package';
 import runWorkspaceCommand from './command-workspace';
@@ -178,6 +178,12 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     description:
         `Whether to set private:true in the newly generated package.json.`,
   },
+  {
+    name: 'package-type',
+    type: String,
+    description:
+        `[element|application] The type of package that is to be modulized`,
+  },
 ];
 
 export interface CliOptions {
@@ -204,6 +210,7 @@ export interface CliOptions {
   'add-import-path': boolean;
   flat: boolean;
   'private': boolean;
+  'package-type': PackageType;
 }
 
 export async function run() {

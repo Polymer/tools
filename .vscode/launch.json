@@ -17,7 +17,9 @@
         "3.0.0",
         "--out",
         "${workspaceFolder}/debug-output",
-        "--force"
+        "--force",
+        "--package-type",
+        "element"
       ]
     }
   ]

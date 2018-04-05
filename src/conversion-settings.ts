@@ -20,6 +20,7 @@ import {Analysis} from 'polymer-analyzer';
 import {OriginalDocumentUrl} from './urls/types';
 
 export type NpmImportStyle = 'name'|'path';
+export type PackageType = 'element'|'application';
 
 /**
  * These are the settings used to configure the conversion. It contains
