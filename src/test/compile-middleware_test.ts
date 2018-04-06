@@ -20,6 +20,7 @@ import * as supertest from 'supertest';
 
 import {babelCompileCache, getCompileCacheKey, isPolyfill} from '../compile-middleware';
 import {getApp} from '../start_server';
+import {interceptOutput} from './util';
 
 chai.use(chaiAsPromised);
 const assert = chai.assert;
@@ -117,19 +118,22 @@ suite('compile-middleware', () => {
     });
 
     test('script tags with invalid javascript are unchanged', async () => {
-      const filePath =
-          path.join(root, 'bower_components/compile-test/script-tags.html');
-      const requestPath = '/components/compile-test/script-tags.html';
-      const uncompiled = fs.readFileSync(filePath).toString();
-      const cacheKey = getCompileCacheKey(requestPath, uncompiled, options);
-      assert.isFalse(
-          babelCompileCache.has(cacheKey), 'Unexpected entry in cache');
+      const output = await interceptOutput(async () => {
+        const filePath =
+            path.join(root, 'bower_components/compile-test/script-tags.html');
+        const requestPath = '/components/compile-test/script-tags.html';
+        const uncompiled = fs.readFileSync(filePath).toString();
+        const cacheKey = getCompileCacheKey(requestPath, uncompiled, options);
+        assert.isFalse(
+            babelCompileCache.has(cacheKey), 'Unexpected entry in cache');
 
-      const response = await supertest(app).get(requestPath);
-      assert(babelCompileCache.has(cacheKey), 'Missing cache entry');
-      assert.include(response.text, `<script>\nthis is not valid\n</script>`);
-      // The valid script tag should still be compiled.
-      assert.notInclude(response.text, `<script>\nclass A {}\n</script>`);
+        const response = await supertest(app).get(requestPath);
+        assert(babelCompileCache.has(cacheKey), 'Missing cache entry');
+        assert.include(response.text, `<script>\nthis is not valid\n</script>`);
+        // The valid script tag should still be compiled.
+        assert.notInclude(response.text, `<script>\nclass A {}\n</script>`);
+      });
+      assert.include(output, 'failed to parse JavaScript');
     });
 
     suite('with compile option set to \'auto\'', () => {
