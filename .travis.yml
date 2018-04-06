@@ -1,0 +1,27 @@
+sudo: required
+dist: trusty
+addons:
+  firefox: 'latest'
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+
+env:
+  - TEST_SCRIPT=test
+  - TEST_SCRIPT=test:integration
+
+language: node_js
+node_js:
+  - "6"
+  - "node"
+install:
+- npm install
+- npm run bootstrap
+script:
+- npm run test
+- npm run test:integration
+
+script:
+  - xvfb-run npm run $TEST_SCRIPT
