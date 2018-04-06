@@ -546,17 +546,19 @@ export class ProjectConfig {
       lintObj = {...this.lint};
       delete lintObj.ignoreWarnings;
     }
+    const isWindows = process.platform === "win32";
+    const normalizePath = isWindows ? (path: string) => path.replace(/\\/g, '/') : (path: string) => path;
     const obj = {
       entrypoint: globRelative(this.root, this.entrypoint),
       shell: this.shell ? globRelative(this.root, this.shell) : undefined,
       fragments: this.fragments.map((absolutePath) => {
-        return globRelative(this.root, absolutePath);
+        return normalizePath(globRelative(this.root, absolutePath));
       }),
       sources: this.sources.map((absolutePath) => {
-        return globRelative(this.root, absolutePath);
+        return normalizePath(globRelative(this.root, absolutePath));
       }),
       extraDependencies: this.extraDependencies.map((absolutePath) => {
-        return globRelative(this.root, absolutePath);
+        return normalizePath(globRelative(this.root, absolutePath));
       }),
       builds: this.builds,
       autoBasePath: this.autoBasePath,
