@@ -1,24 +1,30 @@
 {
-  "version": "0.1.0",
-  "command": "npm",
-  "isShellCommand": true,
-  "showOutput": "always",
-  "suppressTaskName": true,
+  "version": "2.0.0",
   "tasks": [
     {
-      "taskName": "test",
-      "args": [
-        "run",
-        "test:watch"
-      ],
-      "isTestCommand": true,
+      "type": "npm",
+      "script": "test:watch",
+      "isBackground": true,
+      "presentation": {
+        "echo": false,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "promptOnClose": false,
       "problemMatcher": {
         "fileLocation": [
           "relative",
           "${workspaceRoot}/src"
         ],
-        "watchedTaskBeginsRegExp": "\\[npm\\] INFO Spawning\\.\\.\\.",
-        "watchedTaskEndsRegExp": "\\[npm\\] (ERROR Exited with code \\d+|SUCCESS Exited cleanly|INFO Killed with SIGTERM)",
+        "background": {
+          "beginsPattern": "tsc-then: Running",
+          "endsPattern": "tsc-then: command finished"
+        },
         "pattern": [
           {
             "regexp": "^  (\\d+)\\) ((\\w+).*)",
@@ -27,9 +33,10 @@
             "line": 1,
             "column": 1
           }
-        ]
-      },
-      "isWatching": true
+        ],
+        "applyTo": "allDocuments",
+        "severity": "error"
+      }
     }
   ]
 }

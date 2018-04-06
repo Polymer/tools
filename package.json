@@ -10,10 +10,10 @@
   },
   "scripts": {
     "start": "./bin/polyserve",
-    "clean": "mkdir -p lib && rm -r lib",
+    "clean": "rimraf lib",
     "build": "npm run clean && tsc",
     "test": "npm run build && mocha && tslint \"src/**/*.ts\"",
-    "test:watch": "watchy -w src/ -- npm test",
+    "test:watch": "tsc-then -- mocha -c",
     "prepublish": "npm run build",
     "format": "find src test -iname '*.ts' | xargs clang-format --style=file -i"
   },
@@ -72,13 +72,14 @@
     "clang-format": "1.0.52",
     "intercept-stdout": "^0.1.2",
     "mocha": "^3.1.0",
+    "rimraf": "^2.6.2",
     "sinon": "^1.17.5",
     "source-map-support": "^0.4.6",
     "supertest": "^2.0.1",
     "tmp": "0.0.28",
+    "tsc-then": "^1.1.0",
     "tslint": "^4.0.2",
-    "typescript": "^2.1.4",
-    "watchy": "^0.6.6"
+    "typescript": "^2.8.1"
   },
   "typings": "./lib/polyserve.d.ts"
 }
