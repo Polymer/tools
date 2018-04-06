@@ -5,8 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
 
+## [3.0.0-pre.5] - 2018-04-05
 - Accept AnalysisOptions as an argument to `Linter#lint` and
   `Linter#lintPackage`.
 
