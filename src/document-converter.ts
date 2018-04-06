@@ -22,11 +22,12 @@ import * as jsc from 'jscodeshift';
 import {EOL} from 'os';
 import * as parse5 from 'parse5';
 import * as path from 'path';
-import {Document, Import, ParsedHtmlDocument} from 'polymer-analyzer';
+import {Document, Import, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
 import {DocumentProcessor} from './document-processor';
 import {collectIdentifierNames, containsWriteToGlobalSettingsObject, createDomNodeInsertStatements, findAvailableIdentifier, getMemberPath, getPathOfAssignmentTo, getSetterName, serializeNode} from './document-util';
+import {ImportWithDocument, isImportWithDocument} from './import-with-document';
 import {ConversionResult, JsExport} from './js-module';
 import {addA11ySuiteIfUsed} from './passes/add-a11y-suite-if-used';
 import {removeToplevelUseStrict} from './passes/remove-toplevel-use-strict';
@@ -214,12 +215,29 @@ export class DocumentConverter extends DocumentProcessor {
    *
    * Note: Imports that are not found are not returned by the analyzer.
    */
-  private getHtmlImports() {
-    return DocumentConverter.getAllHtmlImports(this.document)
-        .filter((f: Import) => {
-          const documentUrl = this.urlHandler.getDocumentUrl(f.document);
-          return !this.conversionSettings.excludes.has(documentUrl);
-        });
+  private getHtmlImports(): Array<ImportWithDocument> {
+    const filteredImports = [];
+    for (const import_ of DocumentConverter.getAllHtmlImports(this.document)) {
+      if (!isImportWithDocument(import_)) {
+        console.warn(
+            new Warning({
+              code: 'import-ignored',
+              message: `Import could not be loaded and will be ignored.`,
+              parsedDocument: this.document.parsedDocument,
+              severity: Severity.WARNING,
+              sourceRange: import_.sourceRange!,
+            }).toString());
+        continue;
+      }
+
+      const documentUrl = this.urlHandler.getDocumentUrl(import_.document);
+      if (this.conversionSettings.excludes.has(documentUrl)) {
+        continue;
+      }
+
+      filteredImports.push(import_);
+    }
+    return filteredImports;
   }
 
   /**
@@ -235,6 +253,18 @@ export class DocumentConverter extends DocumentProcessor {
     // itself.
     for (const scriptImport of this.document.getFeatures(
              {kind: 'html-script'})) {
+      if (!isImportWithDocument(scriptImport)) {
+        console.warn(
+            new Warning({
+              code: 'import-ignored',
+              message: `Import could not be loaded and will be ignored.`,
+              parsedDocument: this.document.parsedDocument,
+              severity: Severity.WARNING,
+              sourceRange: scriptImport.sourceRange!,
+            }).toString());
+        continue;
+      }
+
       const oldScriptUrl =
           this.urlHandler.getDocumentUrl(scriptImport.document);
       const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
@@ -392,6 +422,18 @@ export class DocumentConverter extends DocumentProcessor {
 
     for (const scriptImport of this.document.getFeatures(
              {kind: 'html-script'})) {
+      if (!isImportWithDocument(scriptImport)) {
+        console.warn(
+            new Warning({
+              code: 'import-ignored',
+              message: `Import could not be loaded and will be ignored.`,
+              parsedDocument: this.document.parsedDocument,
+              severity: Severity.WARNING,
+              sourceRange: scriptImport.sourceRange!,
+            }).toString());
+        continue;
+      }
+
       // ignore fake script imports injected by various hacks in the
       // analyzer
       if (!scriptImport.sourceRange || !scriptImport.astNode) {

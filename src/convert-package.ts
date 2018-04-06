@@ -14,7 +14,7 @@
 
 import * as fse from 'fs-extra';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
+import {Analyzer, FsUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
 
 import {BowerConfig} from './bower-config';
 import {createDefaultConversionSettings, PartialConversionSettings} from './conversion-settings';
@@ -66,7 +66,7 @@ async function setupOutDir(outDir: string, clean = false) {
 function configureAnalyzer(options: PackageConversionSettings) {
   const urlResolver = new PackageUrlResolver();
   const urlLoader =
-      new InMemoryOverlayUrlLoader(new FSUrlLoader(options.inDir));
+      new InMemoryOverlayUrlLoader(new FsUrlLoader(options.inDir));
   for (const [url, contents] of polymerFileOverrides) {
     urlLoader.urlContentsMap.set(urlResolver.resolve(url)!, contents);
     urlLoader.urlContentsMap.set(

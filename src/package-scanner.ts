@@ -13,13 +13,14 @@
  */
 
 import fetch from 'node-fetch';
-import {Analysis, Document} from 'polymer-analyzer';
+import {Analysis, Document, Severity, Warning} from 'polymer-analyzer';
 
 import {filesJsonObjectToMap, PackageScanResultJson, serializePackageScanResult} from './conversion-manifest';
 import {ConversionSettings} from './conversion-settings';
 import {DocumentConverter} from './document-converter';
 import {ScanResult} from './document-scanner';
 import {DocumentScanner} from './document-scanner';
+import {isImportWithDocument} from './import-with-document';
 import {JsExport} from './js-module';
 import {lookupDependencyMapping} from './package-manifest';
 import {OriginalDocumentUrl} from './urls/types';
@@ -271,6 +272,18 @@ export class PackageScanner {
         this.urlHandler.getOriginalPackageNameForUrl(documentUrl);
 
     for (const htmlImport of DocumentConverter.getAllHtmlImports(document)) {
+      if (!isImportWithDocument(htmlImport)) {
+        console.warn(
+            new Warning({
+              code: 'import-ignored',
+              message: `Import could not be loaded and will be ignored.`,
+              parsedDocument: document.parsedDocument,
+              severity: Severity.WARNING,
+              sourceRange: htmlImport.sourceRange!,
+            }).toString());
+        continue;
+      }
+
       const importDocumentUrl = this.urlHandler.getDocumentUrl(<any>htmlImport);
       const importPackageName =
           this.urlHandler.getOriginalPackageNameForUrl(importDocumentUrl);

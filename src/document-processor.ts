@@ -21,6 +21,7 @@ import * as recast from 'recast';
 
 import {ConversionSettings} from './conversion-settings';
 import {attachCommentsToFirstStatement, canDomModuleBeInlined, createDomNodeInsertStatements, filterClone, getCommentsBetween, getNodePathInProgram, insertStatementsIntoProgramBody, serializeNodeToTemplateLiteral} from './document-util';
+import {ImportWithDocument, isImportWithDocument} from './import-with-document';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeToplevelUseStrict} from './passes/remove-toplevel-use-strict';
 import {removeUnnecessaryEventListeners} from './passes/remove-unnecessary-waits';
@@ -58,7 +59,7 @@ export abstract class DocumentProcessor {
   protected readonly conversionSettings: ConversionSettings;
   protected readonly document: Document;
   protected readonly program: Program;
-  protected readonly convertedHtmlScripts: ReadonlySet<Import>;
+  protected readonly convertedHtmlScripts: ReadonlySet<ImportWithDocument>;
 
   constructor(
       document: Document, originalPackageName: string, urlHandler: UrlHandler,
@@ -83,7 +84,7 @@ export abstract class DocumentProcessor {
          this.prepareJsModule());
   }
 
-  private isInternalNonModuleImport(scriptImport: Import): boolean {
+  private isInternalNonModuleImport(scriptImport: ImportWithDocument): boolean {
     const oldScriptUrl = this.urlHandler.getDocumentUrl(scriptImport.document);
     const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
     const isModuleImport =
@@ -102,15 +103,31 @@ export abstract class DocumentProcessor {
    */
   private prepareJsModule() {
     const combinedToplevelStatements = [];
-    const convertedHtmlScripts = new Set<Import>();
+    const convertedHtmlScripts = new Set<ImportWithDocument>();
     const claimedDomModules = new Set<parse5.ASTNode>();
     let prevScriptNode: parse5.ASTNode|undefined = undefined;
     for (const script of this.document.getFeatures()) {
       let scriptDocument: Document;
-      if (script.kinds.has('html-script') &&
-          this.isInternalNonModuleImport(script as Import)) {
-        scriptDocument = (script as Import).document;
-        convertedHtmlScripts.add(script as Import);
+      if (script.kinds.has('html-script')) {
+        const scriptImport = script as Import;
+        if (!isImportWithDocument(scriptImport)) {
+          console.warn(
+              new Warning({
+                code: 'import-ignored',
+                message: `Import could not be loaded and will be ignored.`,
+                parsedDocument: this.document.parsedDocument,
+                severity: Severity.WARNING,
+                sourceRange: scriptImport.sourceRange!,
+              }).toString());
+          continue;
+        }
+
+        if (!this.isInternalNonModuleImport(scriptImport)) {
+          continue;
+        }
+
+        scriptDocument = scriptImport.document;
+        convertedHtmlScripts.add(scriptImport);
       } else if (script.kinds.has('js-document')) {
         scriptDocument = script as Document;
       } else {

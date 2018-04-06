@@ -15,7 +15,7 @@
 import {assert} from 'chai';
 import {readJson} from 'fs-extra';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
+import {Analyzer, FsUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver} from 'polymer-analyzer';
 
 import {filesJsonObjectToMap, serializePackageScanResult} from '../../conversion-manifest';
 import {WorkspaceUrlHandler} from '../../urls/workspace-url-handler';
@@ -30,7 +30,7 @@ suite('src/conversion-manifest', () => {
   beforeEach(() => {
     const urlResolver = new PackageUrlResolver({packageDir: workspaceDir});
     const urlLoader =
-        new InMemoryOverlayUrlLoader(new FSUrlLoader(workspaceDir));
+        new InMemoryOverlayUrlLoader(new FsUrlLoader(workspaceDir));
     analyzer = new Analyzer({
       urlLoader,
       urlResolver,

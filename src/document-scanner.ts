@@ -12,9 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, Import} from 'polymer-analyzer';
+import {Document, Import, Severity, Warning} from 'polymer-analyzer';
 
 import {DocumentProcessor} from './document-processor';
+import {isImportWithDocument} from './import-with-document';
 import {NamespaceMemberToExport} from './js-module';
 import {rewriteNamespacesAsExports} from './passes/rewrite-namespace-exports';
 import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './urls/types';
@@ -114,9 +115,20 @@ export class DocumentScanner extends DocumentProcessor {
     if (allFeatures.length === 1) {
       const f = allFeatures[0];
       if (f.kinds.has('html-script')) {
-        const sciprtImport = f as Import;
+        const scriptImport = f as Import;
+        if (!isImportWithDocument(scriptImport)) {
+          console.warn(
+              new Warning({
+                code: 'import-ignored',
+                message: `Import could not be loaded and will be ignored.`,
+                parsedDocument: this.document.parsedDocument,
+                severity: Severity.WARNING,
+                sourceRange: scriptImport.sourceRange!,
+              }).toString());
+          return false;
+        }
         const oldScriptUrl =
-            this.urlHandler.getDocumentUrl(sciprtImport.document);
+            this.urlHandler.getDocumentUrl(scriptImport.document);
         const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
         return newScriptUrl === this.convertedUrl;
       }

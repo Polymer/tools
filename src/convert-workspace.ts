@@ -14,7 +14,7 @@
 
 import * as fse from 'fs-extra';
 import * as path from 'path';
-import {Analyzer, FSUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
+import {Analyzer, FsUrlLoader, InMemoryOverlayUrlLoader, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
 import {run, WorkspaceRepo} from 'polymer-workspaces';
 
 import {BowerConfig} from './bower-config';
@@ -83,7 +83,7 @@ async function writeConversionManifest(
 function configureAnalyzer(options: WorkspaceConversionSettings) {
   const workspaceDir = options.workspaceDir;
   const urlResolver = new PackageUrlResolver({packageDir: workspaceDir});
-  const urlLoader = new InMemoryOverlayUrlLoader(new FSUrlLoader(workspaceDir));
+  const urlLoader = new InMemoryOverlayUrlLoader(new FsUrlLoader(workspaceDir));
   for (const [url, contents] of polymerFileOverrides) {
     urlLoader.urlContentsMap.set(
         urlResolver.resolve(`polymer/${url}` as ResolvedUrl)!, contents);
