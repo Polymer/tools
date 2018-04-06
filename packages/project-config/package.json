@@ -1,0 +1,39 @@
+{
+  "name": "polymer-project-config",
+  "version": "3.13.0",
+  "description": "reads, validates, and shapes your polymer.json project configuration",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Polymer/polymer-project-config.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Polymer/polymer-project-config/issues"
+  },
+  "homepage": "https://github.com/Polymer/polymer-project-config#readme",
+  "scripts": {
+    "build": "tsc && typescript-json-schema src/index.ts ProjectOptions --ignoreErrors -o lib/schema.json",
+    "test": "npm run build && mocha --ui tdd",
+    "format": "find src test \\( -iname '*.ts' -o -iname '*.js' \\) | xargs clang-format --style=file -i"
+  },
+  "dependencies": {
+    "@types/node": "^6.0.41",
+    "jsonschema": "^1.1.1",
+    "minimatch-all": "^1.1.0",
+    "plylog": "^0.5.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^3.0.2",
+    "typescript": "^2.0.2",
+    "typescript-json-schema": "^0.9.0",
+    "clang-format": "1.0.49",
+    "polymer-analyzer": "^3.0.0-pre.17 || ^3.0.0"
+  },
+  "peerDependencies": {
+    "polymer-analyzer": "^3.0.0-pre.17 || ^3.0.0"
+  }
+}
