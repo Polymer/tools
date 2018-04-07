@@ -1,0 +1,8 @@
+.DS_Store
+/node_modules/
+/index.js
+/index.d.ts
+/index.js.map
+/test/index_test.js
+/test/index_test.d.ts
+/test/index_test.js.map
