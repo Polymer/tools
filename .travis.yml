@@ -9,8 +9,8 @@ addons:
       - google-chrome-stable
 
 env:
-  - TEST_COMMAND=npm test
-  - TEST_COMMAND=xvfb-run npm run test:integration
+  - TEST_COMMAND=test
+  - TEST_COMMAND=run test:integration
 
 language: node_js
 node_js:
@@ -21,4 +21,4 @@ install:
 - npm run bootstrap
 
 script:
-  - $TEST_COMMAND
+  - xvfb-run npm $TEST_COMMAND
