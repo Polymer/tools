@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    // Targeted standard
+    "target": "es6",
+    "lib": [
+      "es2017",
+      "esnext.asynciterable"
+    ],
+    // Module system
+    "module": "commonjs",
+    "moduleResolution": "node",
+    // Strictness
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
+    // Output
+    "sourceMap": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "declaration": false,
+    "outDir": "lib",
+    "rootDir": "src"
+  },
+  "include": [
+    "custom_typings/**/*.ts",
+    "src/**/*.ts"
+  ]
+}
