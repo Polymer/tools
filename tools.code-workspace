@@ -4,6 +4,9 @@
 			"path": "packages/analyzer"
 		},
 		{
+			"path": "packages/linter"
+		},
+		{
 			"path": "packages/project-config"
 		},
 		{

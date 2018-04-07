@@ -25,6 +25,7 @@
     "@types/babel-traverse": "^6.25.2",
     "@types/babel-types": "^6.25.1",
     "@types/chai": "^3.4.34",
+    "@types/clone": "^0.1.30",
     "@types/mocha": "^2.2.32",
     "@types/node": "^6.0.100",
     "bower": "^1.8.0",
