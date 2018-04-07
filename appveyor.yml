@@ -10,9 +10,8 @@ test_script:
   - node --version
   - npm --version
   - npx lerna --version
-  - npm run test
+  - npm test
   - npm run test:integration
-
 
 # Don't actually build.
 build: off

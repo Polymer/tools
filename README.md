@@ -6,5 +6,5 @@ Workflow
   npm install
   npm run bootstrap
   npm test
-  code ./tools-code-workspace # optional
+  code ./tools.code-workspace # optional
 ```
