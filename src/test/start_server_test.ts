@@ -472,8 +472,11 @@ suite('startServer', () => {
 
     let createServerStub: sinon.SinonStub;
     function _setupStubServer() {
-      _stubServer =
-          sinon.createStubInstance(http['Server']) as any as http.Server;
+      // http.Server instances have some deprecated properties. We don't use or
+      // depend on them, but sinon accesses them, which would trigger
+      // deprecation warnings. Don't log them.
+      _stubServer = ignoreNodeDeprecationWarnings(
+          () => sinon.createStubInstance(http['Server']) as any as http.Server);
       createServerStub = sinon.stub(http, 'createServer').returns(_stubServer);
       _stubServer.close = (cb) => cb.call(_stubServer);
     }
@@ -665,3 +668,15 @@ suite('startServers', () => {
         });
   });
 });
+
+function ignoreNodeDeprecationWarnings<V>(func: () => V): V {
+  type WithNoDeps = NodeJS.Process&{noDeprecation?: boolean};
+  const proc: WithNoDeps = process;
+  const oldDeprecation = proc.noDeprecation;
+  proc.noDeprecation = true;
+  try {
+    return func();
+  } finally {
+    proc.noDeprecation = oldDeprecation;
+  }
+}
