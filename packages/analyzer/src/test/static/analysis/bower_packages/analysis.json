@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "foo-element",
+      "description": "",
+      "summary": "",
+      "superclass": "HTMLElement",
+      "path": "bower_components/foo/foo.html",
+      "privacy": "public",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1002,
+        "column": 8
+      }
+    }
+  ]
+}

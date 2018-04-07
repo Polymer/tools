@@ -1,0 +1,36 @@
+<!--
+@license
+Copyright (c) 2016 The GDG Spain Authors. All rights reserved.
+This code may only be used under the MIT style license found at http://gdg.es/LICENSE.txt
+-->
+
+<dom-module id="el-missing-behaviors">
+
+  <template>
+
+    <a href="https://example.com/" target="_blank" title="Multi-line anchor tag">
+      <span>Foobar</span>
+    </a>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'el-missing-behaviors',
+
+      behaviors: [
+        Polymer.ExpectedMissingBehavior
+      ]
+    });
+  </script>
+
+  <script>
+    Polymer({
+      is: 'behavior-factory',
+
+      behaviors: [
+        BehaviorFactory('give me a behavior plz.')
+      ]
+    });
+  </script>
+</dom-module>

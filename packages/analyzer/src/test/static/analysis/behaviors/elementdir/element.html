@@ -1,0 +1,32 @@
+<link rel="import" href="../behavior.html">
+
+<script>
+  /** An element to test out behavior inheritance. */
+  Polymer({
+    is: 'behavior-test-elem',
+    behaviors: [MyNamespace.SimpleBehavior],
+    properties: {
+      /** A property defined directly on behavior-test-elem. */
+      localProperty: {
+        type: Boolean,
+        value: true,
+        notify: true
+      },
+      /** This can only be used directly by code that mixes in this behavior.*/
+      _protectedProperty: {
+        type: String,
+        value: 'do cool stuff with me!'
+      },
+      /** This is used entirely for internal purposes ok. */
+      __privateProperty: {
+        type: String,
+        value: 'don\'t look!'
+      }
+    },
+
+    created: function () {
+      console.log('created!');
+    }
+  });
+
+</script>

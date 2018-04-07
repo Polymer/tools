@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "element-subdir",
+      "description": "",
+      "summary": "",
+      "superclass": "HTMLElement",
+      "path": "element-subdir/element.html",
+      "privacy": "public",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
+    },
+    {
+      "tagname": "outermost-element",
+      "description": "",
+      "summary": "",
+      "superclass": "HTMLElement",
+      "path": "outermost-element.html",
+      "privacy": "public",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceLocation": {
+        "line": 1,
+        "column": 10
+      }
+    }
+  ]
+}

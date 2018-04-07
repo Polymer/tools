@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "my-element",
+      "description": "my-element!",
+      "summary": "",
+      "superclass": "HTMLElement",
+      "path": "element.js",
+      "privacy": "public",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 26
+        }
+      }
+    }
+  ]
+}

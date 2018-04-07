@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "el-el",
+      "description": "",
+      "summary": "",
+      "superclass": "HTMLElement",
+      "path": "el.html",
+      "privacy": "public",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 1,
+          "column": 10
+        },
+        "end": {
+          "line": 3,
+          "column": 3
+        }
+      }
+    },
+    {
+      "tagname": "sub-el",
+      "description": "",
+      "summary": "",
+      "superclass": "HTMLElement",
+      "path": "subdir/sub-el.html",
+      "privacy": "public",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 1,
+          "column": 10
+        },
+        "end": {
+          "line": 3,
+          "column": 3
+        }
+      }
+    }
+  ]
+}

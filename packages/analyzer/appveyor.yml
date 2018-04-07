@@ -1,0 +1,15 @@
+install:
+  # a version of '' means "the latest one"
+  # ... for some reason.
+  # https://www.appveyor.com/docs/lang/nodejs-iojs/#selecting-nodejs-or-iojs-version
+  - ps: Install-Product node ''
+  - npm install
+
+test_script:
+  - node --version
+  - npm --version
+  - npm test
+
+
+# Don't actually build.
+build: off
