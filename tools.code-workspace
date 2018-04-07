@@ -6,6 +6,9 @@
 		{
 			"path": "packages/cli"
 		},
+    {
+      "path": "packages/bundler"
+    },
 		{
 			"path": "packages/project-config"
 		},
