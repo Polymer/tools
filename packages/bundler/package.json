@@ -1,0 +1,74 @@
+{
+  "name": "polymer-bundler",
+  "version": "4.0.0-pre.4",
+  "description": "Process Web Components into one output file",
+  "main": "lib/bundler.js",
+  "typings": "lib/bundler.d.ts",
+  "files": [
+    "LICENSE",
+    "lib/",
+    "custom_typings/"
+  ],
+  "bin": {
+    "polymer-bundler": "lib/bin/polymer-bundler.js"
+  },
+  "dependencies": {
+    "@types/acorn": "^4.0.3",
+    "@types/babel-generator": "^6.25.1",
+    "@types/babel-traverse": "^6.25.3",
+    "@types/rollup": "^0.54.0",
+    "babel-generator": "^6.26.1",
+    "babel-traverse": "^6.26.0",
+    "clone": "^2.1.0",
+    "command-line-args": "^3.0.1",
+    "command-line-usage": "^3.0.3",
+    "dom5": "^2.2.0",
+    "espree": "^3.5.2",
+    "magic-string": "^0.22.4",
+    "mkdirp": "^0.5.1",
+    "parse5": "^2.2.2",
+    "polymer-analyzer": "^3.0.0-pre.18",
+    "rollup": "^0.56.1",
+    "source-map": "^0.5.6",
+    "vscode-uri": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/chai": "^3.4.30",
+    "@types/chokidar": "^1.7.5",
+    "@types/clone": "^0.1.30",
+    "@types/mocha": "^2.2.29",
+    "@types/node": "^6.0.33",
+    "@types/parse5": "^2.2.33",
+    "@types/source-map": "=0.5.2",
+    "chai": "^3.5.0",
+    "clang-format": "=1.0.49",
+    "eslint": "^2.8.0",
+    "firebase": "^2.4.1",
+    "mocha": "^2.2.4",
+    "rewire": "^2.5.2",
+    "source-map-support": "^0.4.2",
+    "tslint": "^3.15.1",
+    "typescript": "^2.2.0",
+    "typings": "^1.3.2"
+  },
+  "scripts": {
+    "test": "tsc && tslint -c tslint.json src/*.ts src/**/*.ts && mocha",
+    "format": "find src | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
+  },
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [
+    "web components",
+    "polymer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Polymer/polymer-bundler.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Polymer/polymer-bundler/issues"
+  }
+}
