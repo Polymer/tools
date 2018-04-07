@@ -76,7 +76,7 @@ suite('polymer lint', function() {
     assert.deepEqual(output.trim(), `
 Made changes to:
   toplevel-bad.html
-  subdir/nested-bad.html
+  subdir${path.sep}nested-bad.html
 
 Fixed 2 warnings.
 `.trim());

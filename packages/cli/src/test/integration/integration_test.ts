@@ -20,6 +20,10 @@ import {createGithubGenerator} from '../../init/github';
 // A zero priveledge github token of a nonce account, used for quota.
 const githubToken = '8d8622bf09bb1d85cb411b5e475a35e742a7ce35';
 
+// TODO(https://github.com/Polymer/tools/issues/74): some tests time out on
+//     windows.
+const isWindows = process.platform === 'win32';
+const skipOnWindows = isWindows ? test.skip : test;
 
 suite('integration tests', function() {
 
@@ -30,8 +34,7 @@ suite('integration tests', function() {
 
   suite('init templates', () => {
 
-    // TODO(#562): enable test commands.
-    test('test the Polymer 1.x application template', async () => {
+    skipOnWindows('test the Polymer 1.x application template', async () => {
       const dir = await runGenerator(createApplicationGenerator('polymer-1.x'))
                       .withPrompts({name: 'my-app'})  // Mock the prompt answers
                       .toPromise();
@@ -41,7 +44,7 @@ suite('integration tests', function() {
       await runCommand(binPath, ['build'], {cwd: dir});
     });
 
-    test('test the Polymer 2.x application template', async () => {
+    skipOnWindows('test the Polymer 2.x application template', async () => {
       const dir = await runGenerator(createApplicationGenerator('polymer-2.x'))
                       .withPrompts({name: 'my-app'})  // Mock the prompt answers
                       .toPromise();
@@ -51,7 +54,7 @@ suite('integration tests', function() {
       await runCommand(binPath, ['build'], {cwd: dir});
     });
 
-    test('test the Polymer 2.x "element" template', async () => {
+    skipOnWindows('test the Polymer 2.x "element" template', async () => {
       const dir =
           await runGenerator(createElementGenerator('polymer-2.x'))
               .withPrompts({name: 'my-element'})  // Mock the prompt answers
@@ -61,7 +64,7 @@ suite('integration tests', function() {
       await runCommand(binPath, ['test'], {cwd: dir});
     });
 
-    test('test the Polymer 1.x "element" template', async () => {
+    skipOnWindows('test the Polymer 1.x "element" template', async () => {
       const dir =
           await runGenerator(createElementGenerator('polymer-1.x'))
               .withPrompts({name: 'my-element'})  // Mock the prompt answers
