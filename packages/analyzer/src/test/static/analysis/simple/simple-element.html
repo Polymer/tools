@@ -1,0 +1,54 @@
+<!--
+This is a description of the element.
+-->
+<script>
+  Polymer({
+    properties: {
+      /**
+       * This is a simple test property named theValue.
+       */
+      theValue: {
+        type: String,
+        notify: true
+      },
+      _protectedValue: String,
+      __privateValue: String,
+      closureStyleTrailingUnderscoresArePrivate_: String,
+      /** @public */
+      _looksProtectedButActuallyPublic: String,
+      /** @protected */
+      looksPublicButActuallyProtected: String,
+      /** @private */
+      looksPublicButActuallyPrivate: String,
+    },
+    is: 'simple-element',
+    customFunction: function (a, b) { },
+    _customProtectedFunction: function (a, b) { },
+    __customPrivateFunction: function (a, b) { },
+
+    /**
+     * This is the description.
+     * @param {Number} a
+     * @param {Number} b
+     * @return {boolean}
+     */
+    customFunctionWithJsDoc: function (a, b) { return true; },
+
+    /**
+     * This is a protected method.
+     * @param {Number} a
+     * @param {Number} b
+     * @return {boolean}
+     */
+    _customProtectedFunctionWithJsDoc: function (a, b) { return true; },
+
+    /**
+     * This is a private method.
+     * @param {Number} a
+     * @param {Number} b
+     * @return {boolean}
+     */
+    __customPrivateFunctionWithJsDoc: function (a, b) { return true; },
+  });
+
+</script>

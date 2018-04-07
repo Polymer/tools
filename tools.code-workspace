@@ -1,6 +1,9 @@
 {
 	"folders": [
 		{
+			"path": "packages/analyzer"
+		},
+		{
 			"path": "packages/project-config"
 		},
 		{

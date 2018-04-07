@@ -1,0 +1,24 @@
+node_modules
+bower_components
+.DS_Store
+.idea
+.vscode
+.github
+.clang-format
+.editorconfig
+.gitattributes
+.travis.yml
+gulpfile.js
+tslint.json
+npm-debug.log
+
+# The raw typescript source
+src/
+
+# Tests and test fixtures
+lib/test/
+test/
+
+# Bits of code that demonstrate the API
+lib/demo
+

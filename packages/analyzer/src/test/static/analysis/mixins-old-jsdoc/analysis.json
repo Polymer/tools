@@ -1,0 +1,335 @@
+{
+  "schema_version": "1.0.0",
+  "mixins": [
+    {
+      "description": "",
+      "summary": "",
+      "path": "mixins.js",
+      "properties": [
+        {
+          "name": "foo",
+          "type": "string | null | undefined",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 8,
+              "column": 8
+            },
+            "end": {
+              "line": 11,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "notify": true,
+              "attributeType": "String"
+            }
+          }
+        }
+      ],
+      "methods": [],
+      "staticMethods": [],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 4,
+          "column": 0
+        },
+        "end": {
+          "line": 15,
+          "column": 1
+        }
+      },
+      "privacy": "public",
+      "name": "Polymer.TestMixin",
+      "attributes": [
+        {
+          "name": "foo",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 8,
+              "column": 8
+            },
+            "end": {
+              "line": 11,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "string | null | undefined"
+        }
+      ],
+      "events": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": []
+    },
+    {
+      "description": "",
+      "summary": "",
+      "path": "mixins.js",
+      "properties": [
+        {
+          "name": "foo",
+          "type": "string | null | undefined",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 25,
+              "column": 8
+            },
+            "end": {
+              "line": 28,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "notify": true,
+              "attributeType": "String"
+            }
+          }
+        }
+      ],
+      "methods": [],
+      "staticMethods": [],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 21,
+          "column": 0
+        },
+        "end": {
+          "line": 32,
+          "column": 1
+        }
+      },
+      "privacy": "protected",
+      "name": "Polymer._ProtectedMixin",
+      "attributes": [
+        {
+          "name": "foo",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 25,
+              "column": 8
+            },
+            "end": {
+              "line": 28,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "string | null | undefined"
+        }
+      ],
+      "events": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": []
+    },
+    {
+      "description": "",
+      "summary": "",
+      "path": "mixins.js",
+      "properties": [],
+      "methods": [
+        {
+          "name": "frob",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 42,
+              "column": 4
+            },
+            "end": {
+              "line": 43,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "return": {"type": "void"}
+        }
+      ],
+      "staticMethods": [
+        {
+          "name": "glob",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 45,
+              "column": 4
+            },
+            "end": {
+              "line": 46,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        }
+      ],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 40,
+          "column": 0
+        },
+        "end": {
+          "line": 48,
+          "column": 1
+        }
+      },
+      "privacy": "private",
+      "name": "Polymer.InternalMixin",
+      "attributes": [],
+      "events": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": []
+    },
+    {
+      "description": "",
+      "summary": "",
+      "path": "mixins.js",
+      "properties": [
+        {
+          "name": "meta",
+          "type": "boolean | null | undefined",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 59,
+              "column": 8
+            },
+            "end": {
+              "line": 61,
+              "column": 9
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "attributeType": "Boolean"
+            }
+          }
+        }
+      ],
+      "methods": [
+        {
+          "name": "frob",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 42,
+              "column": 4
+            },
+            "end": {
+              "line": 43,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [
+            {
+              "name": "a"
+            },
+            {
+              "name": "b"
+            }
+          ],
+          "return": {"type": "void"},
+          "inheritedFrom": "Polymer.InternalMixin"
+        }
+      ],
+      "staticMethods": [
+        {
+          "name": "glob",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 45,
+              "column": 4
+            },
+            "end": {
+              "line": 46,
+              "column": 5
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"},
+          "inheritedFrom": "Polymer.InternalMixin"
+        }
+      ],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 55,
+          "column": 0
+        },
+        "end": {
+          "line": 65,
+          "column": 1
+        }
+      },
+      "privacy": "public",
+      "name": "Polymer.MetaMixin",
+      "attributes": [
+        {
+          "name": "meta",
+          "description": "",
+          "sourceRange": {
+            "start": {
+              "line": 59,
+              "column": 8
+            },
+            "end": {
+              "line": 61,
+              "column": 9
+            }
+          },
+          "metadata": {},
+          "type": "boolean | null | undefined"
+        }
+      ],
+      "events": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": [],
+      "mixins": [
+        "Polymer.InternalMixin"
+      ]
+    }
+  ]
+}

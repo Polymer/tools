@@ -1,0 +1,99 @@
+{
+  "namespaces": [
+    {
+      "description": "This is the \"aaa\" namespace.",
+      "name": "aaa",
+      "sourceRange": {
+        "end": {
+          "column": 4,
+          "line": 31
+        },
+        "file": "namespaces.html",
+        "start": {
+          "column": 2,
+          "line": 7
+        }
+      },
+      "summary": "This is the \"aaa\" namespace. (summary)",
+      "functions": [
+        {
+          "description": "This is a simple namespace method.",
+          "name": "aaa.sum",
+          "privacy": "public",
+          "sourceRange": {
+            "end": {
+              "column": 5,
+              "line": 21
+            },
+            "file": "namespaces.html",
+            "start": {
+              "column": 4,
+              "line": 19
+            }
+          },
+          "summary": "This is a simple namespace method. (summary)",
+          "params": [
+            {
+              "desc": "The first number",
+              "name": "a",
+              "type": "Number"
+            },
+            {
+              "desc": "The second number",
+              "name": "b",
+              "type": "Number"
+            },
+            {
+              "desc": "The thirsd number",
+              "name": "c",
+              "type": "Number"
+            }
+          ],
+          "return": {
+            "desc": "The sum of the three params",
+            "type": "Number"
+          }
+        },
+        {
+          "description": "",
+          "name": "aaa.ddd",
+          "privacy": "public",
+          "sourceRange": {
+            "end": {
+              "column": 3,
+              "line": 38
+            },
+            "file": "namespaces.html",
+            "start": {
+              "column": 2,
+              "line": 36
+            }
+          },
+          "summary": "",
+          "params": [],
+          "return": {"type": "void"}
+        },
+        {
+          "description": "",
+          "name": "aaa.eee",
+          "privacy": "public",
+          "sourceRange": {
+            "end": {
+              "column": 3,
+              "line": 45
+            },
+            "file": "namespaces.html",
+            "start": {
+              "column": 2,
+              "line": 43
+            }
+          },
+          "summary": "",
+          "params": [],
+          "return": {"type": "void"}
+        }
+      ]
+    }
+  ],
+  "schema_version": "1.0.0"
+}

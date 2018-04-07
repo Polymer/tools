@@ -1,0 +1,379 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 0,
+          "column": 0
+        },
+        "end": {
+          "line": 0,
+          "column": 37
+        }
+      },
+      "privacy": "public",
+      "attributes": [],
+      "events": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": [],
+      "tagname": "my-element",
+      "name": "Element",
+      "superclass": "HTMLElement"
+    },
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [],
+      "staticMethods": [
+        {
+          "description": "",
+          "metadata": {},
+          "name": "staticMeth",
+          "params": [],
+          "return": {"type": "void"},
+          "privacy": "public",
+          "sourceRange": {
+            "end": {
+              "column": 25,
+              "line": 12
+            },
+            "start": {
+              "column": 2,
+              "line": 12
+            }
+          }
+        }
+      ],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 7,
+          "column": 0
+        },
+        "end": {
+          "line": 13,
+          "column": 1
+        }
+      },
+      "privacy": "public",
+      "attributes": [],
+      "events": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": [],
+      "tagname": "annotated-elem",
+      "name": "AnnotatedElement",
+      "superclass": "HTMLElement"
+    }
+  ],
+  "mixins": [
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 19,
+          "column": 0
+        },
+        "end": {
+          "line": 21,
+          "column": 1
+        }
+      },
+      "privacy": "public",
+      "attributes": [],
+      "events": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": [],
+      "name": "Mixin"
+    },
+    {
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 27,
+          "column": 0
+        },
+        "end": {
+          "line": 27,
+          "column": 37
+        }
+      },
+      "privacy": "public",
+      "attributes": [],
+      "events": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "slots": [],
+      "name": "AnnotatedMixin"
+    }
+  ],
+  "classes": [
+    {
+      "name": "Base",
+      "description": "",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [
+        {
+          "name": "baseMethod",
+          "description": "This is a base method.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 32,
+              "column": 2
+            },
+            "end": {
+              "line": 33,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        },
+        {
+          "name": "overriddenMethod",
+          "description": "Will be overriden by Subclass.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 35,
+              "column": 2
+            },
+            "end": {
+              "line": 36,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        }
+      ],
+      "staticMethods": [
+        {
+          "name": "baseStaticMethod",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 38,
+              "column": 2
+            },
+            "end": {
+              "line": 39,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        },
+        {
+          "name": "overriddenStaticMethod",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 41,
+              "column": 2
+            },
+            "end": {
+              "line": 42,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        }
+      ],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 30,
+          "column": 0
+        },
+        "end": {
+          "line": 43,
+          "column": 1
+        }
+      },
+      "privacy": "public"
+    },
+    {
+      "name": "Subclass",
+      "description": "",
+      "superclass": "Base",
+      "summary": "",
+      "path": "classes.js",
+      "properties": [],
+      "methods": [
+        {
+          "name": "baseMethod",
+          "description": "This is a base method.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 32,
+              "column": 2
+            },
+            "end": {
+              "line": 33,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"},
+          "inheritedFrom": "Base"
+        },
+        {
+          "name": "overriddenMethod",
+          "description": "Overrides the method on Base.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 47,
+              "column": 2
+            },
+            "end": {
+              "line": 49,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        },
+        {
+          "name": "subMethod",
+          "description": "This method only exists on Subclass.",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 52,
+              "column": 2
+            },
+            "end": {
+              "line": 53,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        }
+      ],
+      "staticMethods": [
+        {
+          "name": "baseStaticMethod",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 38,
+              "column": 2
+            },
+            "end": {
+              "line": 39,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"},
+          "inheritedFrom": "Base"
+        },
+        {
+          "name": "overriddenStaticMethod",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 55,
+              "column": 2
+            },
+            "end": {
+              "line": 56,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        },
+        {
+          "name": "staticSubMethod",
+          "description": "",
+          "privacy": "public",
+          "sourceRange": {
+            "start": {
+              "line": 58,
+              "column": 2
+            },
+            "end": {
+              "line": 59,
+              "column": 3
+            }
+          },
+          "metadata": {},
+          "params": [],
+          "return": {"type": "void"}
+        }
+      ],
+      "demos": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 45,
+          "column": 0
+        },
+        "end": {
+          "line": 60,
+          "column": 1
+        }
+      },
+      "privacy": "public"
+    }
+  ]
+}

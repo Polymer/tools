@@ -1,0 +1,22 @@
+<!--Just some code taken from various places with interesting styles -->
+
+<dom-module id="paper-button">
+  <template strip-whitespace>
+    <style include="paper-material-styles">
+       :host {
+        @apply(--layout-inline);
+        @apply --layout-center-center;
+      }
+    </style>
+  </template>
+</dom-module>
+
+<custom-style>
+  <style is="custom-style">
+    html {
+      --primary-text-color: var(--light-theme-text-color);
+      --primary-background-color: var(--light-theme-background-color, --orange);
+      --light-theme-background-color: #ffffff;
+    }
+  </style>
+</custom-style>

@@ -1,0 +1,22 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "clang-format.style": "file",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "files.insertFinalNewline": true,
+  "search.exclude": {
+    "node_modules/": true,
+    "lib/": true
+  },
+  "json.schemas": [
+    {
+      "fileMatch": [
+        "analysis.json"
+      ],
+      "url": "./lib/analysis-format/analysis.schema.json"
+    }
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
+}

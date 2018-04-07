@@ -1,0 +1,19 @@
+<script>
+  /**
+   * A simple sub-behavior description.
+   * @polymerBehavior
+   */
+  MyNamespace.SubBehavior = {
+    properties: {
+      /** This is a deeply inherited property. */
+      deeplyInheritedProperty: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+        notify: true
+      }
+    }
+  }
+
+</script>

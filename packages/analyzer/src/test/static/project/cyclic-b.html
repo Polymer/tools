@@ -1,0 +1,7 @@
+<link rel="import" href="./cyclic-a.html">
+<!-- And how about an import of itself just for extra confusion. -->
+<link rel="import" href="">
+
+<script>
+  customElements.define('cyclic-b', class extends HTMLElement { });
+</script>

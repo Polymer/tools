@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "space-pants",
+      "superclass": "HTMLElement",
+      "description": "Space Pants\n\nWhen I say \"space\" you say \"pants\"",
+      "summary": "",
+      "path": "demo-annotation-in-html-and-js-comment.html",
+      "privacy": "public",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [
+        {
+          "description": "a tour of the solar system",
+          "url": "space-demo.html"
+        },
+        {
+          "description": "are intergalactic space pants",
+          "url": "pants-demo.html"
+        }
+      ],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 11,
+          "column": 12
+        },
+        "end": {
+          "line": 13,
+          "column": 5
+        }
+      }
+    },
+    {
+      "description": "I has a demo",
+      "summary": "",
+      "path": "demo-annotation-in-html-comment.html",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [
+        {
+          "description": "An amazing demo",
+          "url": "demo.html"
+        },
+        {
+          "description": "Demos might have querystrings and/or search values.",
+          "url": "demo.html?q=1#s"
+        }
+      ],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 8,
+          "column": 12
+        },
+        "end": {
+          "line": 8,
+          "column": 32
+        }
+      },
+      "privacy": "public",
+      "tagname": "has-a-demo",
+      "superclass": "HTMLElement"
+    },
+    {
+      "description": "This is an element.",
+      "summary": "",
+      "path": "element.html",
+      "attributes": [],
+      "properties": [],
+      "methods": [],
+      "staticMethods": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [
+        {
+          "description": "",
+          "url": "demo.html"
+        }
+      ],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 5,
+          "column": 12
+        },
+        "end": {
+          "line": 5,
+          "column": 30
+        }
+      },
+      "privacy": "public",
+      "tagname": "el-ement",
+      "superclass": "HTMLElement"
+    }
+  ]
+}
