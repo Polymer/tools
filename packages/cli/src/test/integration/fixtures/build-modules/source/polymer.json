@@ -1,0 +1,32 @@
+{
+  "npm": true,
+  "moduleResolution": "node",
+  "builds": [
+    {
+      "name": "unbundled-es",
+      "bundle": false
+    },
+    {
+      "name": "unbundled-amd",
+      "bundle": false,
+      "js": {
+        "transformModulesToAmd": true
+      }
+    },
+    {
+      "name": "bundled-es",
+      "bundle": {
+        "inlineScripts": false
+      }
+    },
+    {
+      "name": "bundled-amd",
+      "bundle": {
+        "inlineScripts": false
+      },
+      "js": {
+        "transformModulesToAmd": true
+      }
+    }
+  ]
+}

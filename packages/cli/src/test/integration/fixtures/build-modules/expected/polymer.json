@@ -1,0 +1,42 @@
+{
+  "entrypoint": "index.html",
+  "fragments": [],
+  "sources": [
+    "src/**/*",
+    "index.html"
+  ],
+  "extraDependencies": [
+    "bower_components/webcomponentsjs/*.js"
+  ],
+  "builds": [
+    {
+      "name": "unbundled-es",
+      "bundle": false
+    },
+    {
+      "name": "unbundled-amd",
+      "bundle": false,
+      "js": {
+        "transformModulesToAmd": true
+      }
+    },
+    {
+      "name": "bundled-es",
+      "bundle": {
+        "inlineScripts": false
+      }
+    },
+    {
+      "name": "bundled-amd",
+      "bundle": {
+        "inlineScripts": false
+      },
+      "js": {
+        "transformModulesToAmd": true
+      }
+    }
+  ],
+  "npm": true,
+  "componentDir": "node_modules/",
+  "moduleResolution": "node"
+}

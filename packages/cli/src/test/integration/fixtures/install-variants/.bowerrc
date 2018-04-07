@@ -1,0 +1,6 @@
+{
+  "storage":{
+    "packages": "./bower_cache",
+    "registry": "./bower-registry"
+  }
+}
