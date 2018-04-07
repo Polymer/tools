@@ -1,0 +1,13 @@
+<dom-module id="foo-bar">
+  <template>
+    <slot name="foo" old-content-selector="!)@#(*(@!#*"></slot>
+    <slot name="bar" old-content-selector=".bar .baz"></slot>
+    <slot name="bar" old-content-selector=".bar > .baz"></slot>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-bar',
+    });
+  </script>
+</dom-module>
+

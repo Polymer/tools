@@ -1,0 +1,95 @@
+<!-- Super simple cases: -->
+<paper-header-panel>
+  <paper-toolbar></paper-toolbar>
+</paper-header-panel>
+
+<paper-header-panel>
+  <div class="paper-header"></div>
+</paper-header-panel>
+
+
+<!-- Trickier cases -->
+
+<paper-header-panel>
+  <paper-toolbar></paper-toolbar>
+  <paper-toolbar class="paper-header"></paper-toolbar>
+  <paper-toolbar></paper-toolbar>
+  <paper-toolbar slot="ignoreme"></paper-toolbar>
+  <paper-toolbar
+      attr1
+      attr2
+      attr3></paper-toolbar>
+</paper-header-panel>
+
+<paper-scroll-header-panel>
+  <paper-toolbar></paper-toolbar>
+  <div>foo</div>
+  <span>bar</span>
+  <paper-toolbar></paper-toolbar>
+</paper-scroll-header-panel>
+
+<paper-drawer-panel right-drawer>
+  <div drawer> Drawer panel... </div>
+  <div main> Main panel... </div>
+</paper-drawer-panel>
+
+<paper-menu-button>
+  <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
+  <paper-menu class="dropdown-content">
+     <paper-item>Share</paper-item>
+     <paper-item>Settings</paper-item>
+     <paper-item>Help</paper-item>
+  </paper-menu>
+</paper-menu-button>
+
+<!-- Test self-closing tag syntax. -->
+<paper-input-container>
+  <input type="text" id="url_criteria"/>
+</paper-input-container>
+
+<paper-dropdown-menu>
+  <paper-listbox class="dropdown-content">
+    <paper-item label="Foo label property">Foo textContent</paper-item>
+    <paper-item label="Foo label attribute">Foo textContent</paper-item>
+  </paper-listbox>
+</paper-dropdown-menu>
+
+<paper-scroll-header-panel fixed header-height="160">
+  <!-- Should apply the styles to the template's children, not the template. -->
+  <template is="dom-if" if="[[!dataLoaded]]">
+    <div>Content here!</div>
+  </template>
+</paper-scroll-header-panel>
+
+<foo-bar>
+  <div class="foo"></div>
+  <div class="bar"></div>
+  <div class="baz">
+    <div class="foo"></div>
+  </div>
+</foo-bar>
+
+<dom-module id="foo-bar">
+  <template>
+    <slot name="foo" old-content-selector=".foo">
+      Foo
+    </slot>
+    <slot name="bar" old-content-selector=".bar">
+      Bar
+    </slot>
+    <slot></slot>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-bar',
+    });
+  </script>
+</dom-module>
+
+<paper-icon-item>
+  <div item-icon>
+    This element will be given the `slot="item-icon"` attribute.
+  </div>
+  Nothing will happen to this text.
+  <span>Nothing will happen to this element.</span>
+</paper-icon-item>

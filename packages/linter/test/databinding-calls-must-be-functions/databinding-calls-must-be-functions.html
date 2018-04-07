@@ -1,0 +1,64 @@
+<dom-module id='fine-element'>
+  <template>
+    {{method(bar)}}
+  </template>
+  <script>
+    Polymer({
+      is: 'fine-element',
+      observers: [
+        'method(bar)'
+      ],
+      properties: {
+        bar: Number,
+        /** @type {function} */
+        funcProp: {
+          type: Function
+        },
+        /** @type {FizzBar} */
+        complexTypedProp: {
+          type: Object
+        },
+        computed: {
+          computed: 'method(bar)'
+        },
+        observed: {
+          observer: 'method'
+        }
+      },
+      observers: [
+        'method(bar)',
+        'funcProp(bar)',
+        'complexTypedProp(bar)'
+      ],
+      method(bar) { /* .. */ }
+    });
+  </script>
+</dom-module>
+
+<dom-module id='warning-element'>
+  <template>
+    {{foo(bar)}}
+  </template>
+  <script>
+    Polymer({
+      is: 'warning-element',
+      observers: [
+        'foo(bar)'
+      ],
+      properties: {
+        foo: String,
+        bar: Number,
+        computed: {
+          computed: 'foo(bar)'
+        },
+        observed: {
+          observer: 'foo'
+        }
+      },
+      observers: [
+        'foo(bar)',
+      ],
+      method(bar) { /* .. */ }
+    });
+  </script>
+</dom-module>

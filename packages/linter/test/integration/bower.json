@@ -1,0 +1,21 @@
+{
+  "name": "integration",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "app-elements": "PolymerElements/app-elements#^1.0.0",
+    "iron-elements": "PolymerElements/iron-elements#^1.0.10",
+    "note-app-elements": "PolymerLabs/note-app-elements",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.7",
+    "web-component-tester": "^6.0.0"
+  },
+  "resolutions": {
+    "webcomponentsjs": "^1.0.0"
+  }
+}

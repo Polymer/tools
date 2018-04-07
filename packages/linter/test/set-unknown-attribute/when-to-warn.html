@@ -1,0 +1,75 @@
+<!--
+  This file covers databindings to test against false positives and false
+  negatives, as well as source ranges.
+-->
+
+<!--
+  Note that there are places where we set attributes but don't yet assert on
+  them. That's intentional, as attribute linting is currently disabled, though
+  the code is written and worked. It will be an option once options are added.
+-->
+<script>
+  customElements.define('elem-one', class extends HTMLElement {
+    static get observedAttributes() {
+      return ['attr-one'];
+    }
+  });
+
+  Polymer({
+    is: 'elem-two',
+    properties: {
+      propTwo: String,
+      propThree: {
+        notify: true
+      }
+    }
+  });
+
+</script>
+
+<dom-module>
+  <template>
+    <elem-one attr-one="is fine"></elem-one>
+    <elem-one unknown="not ok"></elem-one>
+    <unknown-custom-elem unknown="is fine"></unknown-custom-elem>
+    <div unknown="is fine for now"></div>
+    <!-- Not a property on elem-one. Bad. -->
+    <elem-one attr-one="{{bad}}"></elem-one>
+    <!-- Bind to attribute. Good. -->
+    <elem-one attr-one$="{{fine}}"></elem-one>
+    <!-- Need to warn on binding to data-props as properties, but not attrs. -->
+    <elem-one data-whatever="ok"></elem-one>
+    <elem-one data-whatever="{{isError}}"></elem-one>
+
+    <!-- Ok to bind to stuff like title and id as props or attributes-->
+    <elem-one id="ok" title="good"></elem-one>
+    <elem-one id="{{yes}}" title="{{soGood}}"></elem-one>
+
+    <!-- Built in attributes-->
+    <elem-one class="big" style="color: rebeccapurple"></elem-one>
+    <!-- They're not props though. -->
+    <elem-one class="{{nonono}}" style="{{dontDoThis}}"></elem-one>
+    <!-- $= is cool though-->
+    <elem-one class$="{{nonono}}" style$="{{dontDoThis}}"></elem-one>
+    <!-- As are inline expressions -->
+    <elem-one class="so{{size}}" style="--color: {{lol}}"></elem-one>
+
+    <elem-two prop-two="fine"></elem-two>
+    <elem-two prop-two="{{also.ok}}"></elem-two>
+    <elem-two prop-two$="{{still.fine}}"></elem-two>
+    <elem-two propTwo="not ok"></elem-two>
+    <elem-two propTwo="{{also.not.ok}}"></elem-two>
+
+    <elem-two on-prop-three-changed="ok"></elem-two>
+    <!--
+      Not a notify prop, so no such event.
+      <elem-two on-prop-two-changed="not.ok"></elem-two>
+
+      Shouldn't be databinding here.
+      <elem-two on-prop-three-changed="{{problem}}"></elem-two>
+    -->
+  </template>
+</dom-module>
+
+<elem-one attr-one="{{fine because this isn't a databinding}}"></elem-one>
+<elem-one unknown="warns even outside databindings"></elem-one>

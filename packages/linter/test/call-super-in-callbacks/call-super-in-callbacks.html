@@ -1,0 +1,155 @@
+<script>
+  /**
+   * @polymerMixin
+   */
+  function MixinConnected(superClass) {
+    return class extends superClass {
+      connectedCallback() {
+        if (super.connectedCallback) {
+          super.connectedCallback();
+        }
+      }
+    }
+  }
+
+  /**
+   * @polymerMixin
+   * @mixes MixinConnected
+   */
+  function MixinConnectedAndDisconnected(superClass) {
+    return class extends mixinConnected(superClass) {
+      disconnectedCallback() {
+        if (super.disconnectedCallback) {
+          super.disconnectedCallback();
+        }
+      }
+    }
+  }
+
+  /**
+   * @polymerElement
+   */
+  class SuperClass extends HTMLElement {
+    connectedCallback() { }
+    disconnectedCallback() { }
+    attributeChangedCallback() { }
+  };
+
+  // Good:
+  class Vanilla extends HTMLElement {
+    constructor() {
+      super();
+    }
+    connectedCallback() {
+      // We don't need super if none of our parents define it.
+      this.appendChild(document.createElement('lol'));
+    }
+    disconnectedCallback() { }
+    attributeChangedCallback() { }
+  }
+  customElements.define('vanilla-elem', Vanilla);
+
+  class GoodExtends extends SuperClass {
+    constructor() {
+      super();
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this.appendChild(document.createElement('lol'));
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+    }
+    attributeChangedCallback() {
+      super.attributeChangedCallback();
+    }
+  }
+  customElements.define('good-polymer', GoodExtends);
+
+  /**
+   * @mixes MixinConnected
+   * @polymerElement
+   */
+  class GoodMixin1 {
+    connectedCallback() {
+      super.connectedCallback();
+    }
+  }
+
+  /**
+   * @mixes MixinConnected
+   * @polymerElement
+   */
+  class GoodMixin2 extends MixinConnected(HTMLElement) {
+    connectedCallback() {
+      super.connectedCallback();
+    }
+  }
+
+  /**
+   * @mixes MixinConnectedAndDisconnected
+   * @polymerElement
+   */
+  class GoodMixin3 extends MixinConnectedAndDisconnected(HTMLElement) {
+    connectedCallback() {
+      super.connectedCallback();
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+    }
+  }
+
+
+
+  // Bad:
+  class BadSuper extends SuperClass {
+    constructor() {/* BadSuper */ }
+    connectedCallback() { /* BadSuper */ }
+    disconnectedCallback() {/* BadSuper */ }
+    attributeChangedCallback() {/* BadSuper */ }
+  }
+  customElements.define('bad-polymer', BadSuper);
+
+  const ReassignedBad = class AlsoBad extends SuperClass {
+    connectedCallback() { /* ReassignedBad */ }
+  }
+  customElements.define('reassigned-bad', ReassignedBad);
+
+  /**
+   * @polymerElement
+   * @mixes MixinConnected
+   */
+  class BadMixin1 extends MixinConnected(HTMLElement) {
+    connectedCallback() { /* BadMixin1 */ }
+  }
+  customElements.define('bad-mixin1', BadMixin1);
+
+  /**
+   * @polymerElement
+   * @mixes MixinConnectedAndDisconnected
+   */
+  class BadMixin2 extends MixinConnectedAndDisconnected(HTMLElement) {
+    connectedCallback() { /* BadMixin2 */ }
+    disconnectedCallback() { /* BadMixin2 */ }
+  }
+  customElements.define('bad-mixin2', BadMixin2);
+
+
+  /**
+   * @mixes MixinConnectedAndDisconnected
+   */
+  class NotAnElement extends MixinConnectedAndDisconnected(Array) {
+    constructor() { }
+    connectedCallback() { }
+  }
+
+  /**
+   * @polymerMixin
+   */
+  function BadMixinConnected(superClass) {
+    return class extends superClass {
+      connectedCallback() { /** BadMixinConnected */ }
+    }
+  }
+
+</script>

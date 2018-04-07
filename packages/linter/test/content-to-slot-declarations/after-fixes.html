@@ -1,0 +1,26 @@
+<dom-module id="foo-bar">
+  <template>
+    <content select=".foo" existing-nonsense-attribute="bar">
+      Fallback content here
+    </content>
+    <slot></slot>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-bar',
+    });
+  </script>
+</dom-module>
+
+<dom-module id="baz-bing">
+  <template>
+    <content select=".foo"></content>
+    <content select="[foo]"></content>
+    <content select="#foo"></content>
+  </template>
+  <script>
+    Polymer({
+      is: 'baz-bing',
+    });
+  </script>
+</dom-module>
