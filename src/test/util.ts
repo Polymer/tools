@@ -10,11 +10,10 @@
  */
 
 /**
- * Call to begin capturing all output. Call the returned function to
- * stop capturing output and get the contents as a string.
+ * Calls the given async function and captures all console.log and friends
+ * output while until the returned Promise settles.
  *
- * Captures output from console.log and friends. Does not capture plylog, which
- * doesn't seem to be very easy to intercept.
+ * Does not capture plylog, which doesn't seem to be very easy to intercept.
  */
 export async function interceptOutput(captured: () => Promise<void>):
     Promise<string> {
