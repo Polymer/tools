@@ -4,7 +4,10 @@
 			"path": "packages/analyzer"
 		},
 		{
-			"path": "packages/build"
+			"path": "packages/bundler"
+    },
+    {
+      "path": "packages/build"
 		},
 		{
 			"path": "packages/project-config"
