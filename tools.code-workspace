@@ -4,6 +4,9 @@
 			"path": "packages/analyzer"
 		},
 		{
+			"path": "packages/build"
+		},
+		{
 			"path": "packages/project-config"
 		},
 		{
