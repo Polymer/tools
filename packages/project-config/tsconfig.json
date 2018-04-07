@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["es2016"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "isolatedModules": false,
+    "declaration": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "suppressImplicitAnyIndexErrors": false,
+    "strictNullChecks": true,
+    "outDir": "lib",
+    "rootDir": "src"
+  },
+  "include": [
+    "custom_typings/**/*.ts",
+    "src/**/*.ts"
+  ]
+}

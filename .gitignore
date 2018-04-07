@@ -1,2 +1,2 @@
-bin/node_modules
-bin/builds-temp
+/packages/*/node_modules
+/node_modules
