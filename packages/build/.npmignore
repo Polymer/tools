@@ -1,0 +1,13 @@
+.DS_Store
+.clang-format
+.eslintignore
+.github
+.gitignore
+.travis.yml
+.vscode
+appveyor.yml
+gulpfile.js
+node_modules
+test-fixtures
+src/test
+
