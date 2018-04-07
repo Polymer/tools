@@ -4,6 +4,9 @@
 			"path": "packages/analyzer"
 		},
 		{
+			"path": "packages/bundler"
+		},
+		{
 			"path": "packages/project-config"
 		},
 		{
