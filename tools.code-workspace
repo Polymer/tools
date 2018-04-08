@@ -3,18 +3,18 @@
 		{
 			"path": "packages/analyzer"
 		},
+    {
+			"path": "packages/build"
+		},
+		{
+			"path": "packages/bundler"
+		},
 		{
 			"path": "packages/cli"
     },
-    {
-			"path": "packages/bundler"
-    },
-    {
-      "path": "packages/build"
+		{
+			"path": "packages/dom5"
 		},
-    {
-      "path": "packages/bundler"
-    },
 		{
 			"path": "packages/project-config"
 		},
