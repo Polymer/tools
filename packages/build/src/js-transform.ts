@@ -36,8 +36,6 @@ const babelPresetEs2015NoModules =
 // are small, and we have to list syntax plugins separately anyway (see below),
 // just enumerate the transform plugins here instead of merging the 3 presets.
 const babelTransformPlugins = [
-  // Don't emit helpers inline.
-  require('@babel/plugin-external-helpers'),
   // ES2016
   require('@babel/plugin-transform-exponentiation-operator'),
   // ES2017
@@ -46,6 +44,9 @@ const babelTransformPlugins = [
   require('@babel/plugin-proposal-object-rest-spread'),
   require('@babel/plugin-proposal-async-generator-functions'),
 ];
+
+// Loading this plugin removes inlined Babel helpers.
+const babelExternalHelpersPlugin = require('@babel/plugin-external-helpers');
 
 const babelTransformModulesAmd = [
   dynamicImportAmd,
@@ -75,10 +76,14 @@ const babelPresetMinify =
  */
 export interface JsTransformOptions {
   // Whether to compile JavaScript to ES5.
-  //
-  // Note that some JavaScript features may require the Babel helper polyfills,
-  // which this function will not insert and must be loaded separately.
   compileToEs5?: boolean;
+
+  // If true, do not include Babel helper functions in the output. Otherwise,
+  // any Babel helper functions that were required by this transform (e.g. ES5
+  // compilation or AMD module transformation) will be automatically included
+  // inline with this output. If you set this option, you must provide those
+  // required Babel helpers by some other means.
+  externalHelpers?: boolean;
 
   // Whether to minify JavaScript.
   minify?: boolean;
@@ -142,6 +147,9 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   const plugins = [...babelSyntaxPlugins];
   const presets = [];
 
+  if (options.externalHelpers) {
+    plugins.push(babelExternalHelpersPlugin);
+  }
   if (options.minify) {
     doBabel = true;
     // Minify last, so push first.

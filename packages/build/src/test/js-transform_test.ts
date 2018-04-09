@@ -46,6 +46,17 @@ suite('jsTransform', () => {
     assert.equal(jsTransform('const foo = 3;\n', {}), 'const foo = 3;\n');
   });
 
+  test('includes babel helpers by default', () => {
+    const result = jsTransform('class Foo {}', {compileToEs5: true});
+    assert.include(result, 'function _classCallCheck(');
+  });
+
+  test('omits babel helpers when externalHelpers is true', () => {
+    const result = jsTransform(
+        'class Foo {}', {compileToEs5: true, externalHelpers: true});
+    assert.notInclude(result, 'function _classCallCheck(');
+  });
+
   suite('parse errors', () => {
     const invalidJs = ';var{';
 
@@ -88,7 +99,7 @@ suite('jsTransform', () => {
           jsTransform(js, {compileToEs5: true}),
           // Some compiled features are very verbose. Just look for the Babel
           // helper call so we know the plugin ran.
-          'babelHelpers.objectWithoutProperties');
+          'objectWithoutProperties');
     });
   });
 
@@ -100,8 +111,7 @@ suite('jsTransform', () => {
     });
 
     test('compiles to ES5', () => {
-      assert.include(
-          jsTransform(js, {compileToEs5: true}), 'babelHelpers.objectSpread');
+      assert.include(jsTransform(js, {compileToEs5: true}), 'objectSpread');
     });
   });
 
@@ -114,9 +124,7 @@ suite('jsTransform', () => {
     });
 
     test('compiles to ES5', () => {
-      assert.include(
-          jsTransform(js, {compileToEs5: true}),
-          'babelHelpers.asyncToGenerator');
+      assert.include(jsTransform(js, {compileToEs5: true}), 'asyncToGenerator');
     });
   });
 
@@ -130,8 +138,7 @@ suite('jsTransform', () => {
 
     test('compiles to ES5', () => {
       assert.include(
-          jsTransform(js, {compileToEs5: true}),
-          'babelHelpers.wrapAsyncGenerator');
+          jsTransform(js, {compileToEs5: true}), 'wrapAsyncGenerator');
     });
   });
 
