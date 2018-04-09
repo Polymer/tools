@@ -51,9 +51,9 @@ suite('jsTransform', () => {
     assert.include(result, 'function _classCallCheck(');
   });
 
-  test('omits babel helpers when omitInlineHelpers is true', () => {
+  test('omits babel helpers when externalHelpers is true', () => {
     const result = jsTransform(
-        'class Foo {}', {compileToEs5: true, omitInlineHelpers: true});
+        'class Foo {}', {compileToEs5: true, externalHelpers: true});
     assert.notInclude(result, 'function _classCallCheck(');
   });
 

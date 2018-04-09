@@ -115,7 +115,7 @@ export class JsTransform extends GenericOptimizeTransform {
     const transformer = (content: string, file: File) => {
       return jsTransform(content, {
         compileToEs5: shouldCompileFile(file),
-        omitInlineHelpers: true,
+        externalHelpers: true,
         minify: shouldMinifyFile(file),
         moduleResolution: jsOptions.moduleResolution,
         filePath: file.path,
@@ -151,7 +151,7 @@ export class HtmlTransform extends GenericOptimizeTransform {
         js: {
           transformModulesToAmd,
           transformImportMeta: options.js && options.js.transformImportMeta,
-          omitInlineHelpers: true,
+          externalHelpers: true,
           // Note we don't do any other JS transforms here (like compilation),
           // because we're assuming that HtmlSplitter has run and any inline
           // scripts will be compiled in their own stream.

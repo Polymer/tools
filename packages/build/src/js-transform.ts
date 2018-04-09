@@ -83,7 +83,7 @@ export interface JsTransformOptions {
   // compilation or AMD module transformation) will be automatically included
   // inline with this output. If you set this option, you must provide those
   // required Babel helpers by some other means.
-  omitInlineHelpers?: boolean;
+  externalHelpers?: boolean;
 
   // Whether to minify JavaScript.
   minify?: boolean;
@@ -147,7 +147,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   const plugins = [...babelSyntaxPlugins];
   const presets = [];
 
-  if (options.omitInlineHelpers) {
+  if (options.externalHelpers) {
     plugins.push(babelExternalHelpersPlugin);
   }
   if (options.minify) {
