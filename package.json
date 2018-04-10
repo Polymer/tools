@@ -14,10 +14,16 @@
     "test": "lerna run test",
     "test:windows": "lerna run test --ignore polyserve",
     "test:integration": "lerna run test:integration",
-    "test:integration:windows": "lerna run test:integration --ignore polymer-linter"
+    "test:integration:windows": "lerna run test:integration --ignore polymer-linter",
+    "check-deps": "tsc && node scripts/check-deps.js"
   },
   "devDependencies": {
-    "lerna": "^2.9.1"
+    "@types/node": "^7.0.60",
+    "@types/semver": "^5.5.0",
+    "clang-format": "^1.0.41-c",
+    "lerna": "^2.9.1",
+    "semver": "^5.5.0",
+    "typescript": "^2.8.1"
   },
   "engines": {
     "node": ">=6"
