@@ -1,26 +1,29 @@
 {
-  "folders": [
-    {
-      "path": "packages/analyzer"
-    },
-    {
-      "path": "packages/cli"
-    },
-    {
-      "path": "packages/bundler"
-    },
-    {
-      "path": "packages/build"
-    },
-    {
-      "path": "packages/linter"
-    },
-    {
-      "path": "packages/project-config"
-    },
-    {
-      "path": "."
-    }
-  ],
-  "settings": {}
+	"folders": [
+		{
+			"path": "packages/analyzer"
+		},
+		{
+			"path": "packages/build"
+		},
+		{
+			"path": "packages/bundler"
+		},
+		{
+			"path": "packages/cli"
+		},
+		{
+			"path": "packages/linter"
+		},
+		{
+			"path": "packages/polyserve"
+		},
+		{
+			"path": "packages/project-config"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
 }
