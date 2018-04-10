@@ -46,7 +46,7 @@ export default class DefinitionFinder extends Handler {
 
     this.connection.onWorkspaceSymbol(async(params) => {
       const analysis =
-          await this.analyzer.analyzePackage('get workspace symbols');
+          await this.analyzer.analyzePackage({reason: 'get workspace symbols'});
       const symbols = this.findSymbols(analysis);
       return fuzzaldrin.filter(symbols, params.query, {key: 'name'});
     });
@@ -54,7 +54,7 @@ export default class DefinitionFinder extends Handler {
     this.connection.onDocumentSymbol(async(params) => {
       const url = params.textDocument.uri;
       const analysis =
-          await this.analyzer.analyze([url], 'get document symbols');
+          await this.analyzer.analyze([url], {reason: 'get document symbols'});
       const result = analysis.getDocument(url);
       if (!result.successful) {
         return [];
@@ -92,8 +92,8 @@ export default class DefinitionFinder extends Handler {
   private async getDefinitionsForFeatureAtPosition(
       url: string, position: SourcePosition,
       analysis?: Analysis): Promise<SourceRange[]> {
-    analysis =
-        analysis || await this.analyzer.analyze([url], 'get definitions');
+    analysis = analysis ||
+        await this.analyzer.analyze([url], {reason: 'get definitions'});
     const featureResult =
         await this.featureFinder.getFeatureAt(url, position, analysis);
     if (!featureResult) {
@@ -133,7 +133,8 @@ export default class DefinitionFinder extends Handler {
     const localPath =
         this.converter.getWorkspacePathToFile(params.textDocument);
     const position = this.converter.convertPosition(params.position);
-    const analysis = await this.analyzer.analyzePackage('get references');
+    const analysis =
+        await this.analyzer.analyzePackage({reason: 'get references'});
     if (params.context.includeDeclaration) {
       locations.push(...await this.getDefinition(params, analysis));
     }
@@ -215,7 +216,8 @@ export default class DefinitionFinder extends Handler {
     return symbols;
   }
   private async getCodeLenses(params: CodeLensParams) {
-    const analysis = await this.analyzer.analyzePackage('get code lenses');
+    const analysis =
+        await this.analyzer.analyzePackage({reason: 'get code lenses'});
     const uri = params.textDocument.uri;
     const result = analysis.getDocument(uri);
     if (!result.successful) {
