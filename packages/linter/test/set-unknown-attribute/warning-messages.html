@@ -1,0 +1,43 @@
+<!--
+  This file has examples to test our error messages.
+-->
+
+<!--
+  Note that there are places where we set attributes but don't yet assert on
+  them. That's intentional, as attribute linting is currently disabled, though
+  the code is written and worked. It will be an option once options are added.
+-->
+<script>
+  Polymer({
+    is: 'test-elem',
+    properties: {
+      basic: String,
+      multiWord: String
+    }
+  });
+
+</script>
+
+<dom-module>
+  <template>
+    <test-elem basic="ok" multi-word="also ok"></test-elem>
+    <test-elem BaSiC="weird but fine"></test-elem>
+
+    <test-elem bazic="misspelled" multiWord="hyphens where"></test-elem>
+
+    <test-elem id="fine" title="yep"></test-elem>
+    <test-elem ib="spllng" tattle='lol'></test-elem>
+
+    <test-elem class="neat"></test-elem>
+    <test-elem class$="{{good}}"></test-elem>
+    <test-elem class="{{no}}"></test-elem>
+
+    <test-elem data-foo="ok"></test-elem>
+    <test-elem data-foo$="{{fine}}"></test-elem>
+    <test-elem data-foo="{{dont.do.this}}"></test-elem>
+
+    <!--
+      TODO(rictic) binding into on-foo, and onfoo event handlers
+      -->
+  </template>
+</dom-module>

@@ -1,0 +1,45 @@
+<!-- First the good -->
+
+<dom-module id='el-1'>
+  <script>
+    Polymer({ is: 'el-1' });
+  </script>
+</dom-module>
+
+<dom-module id='el-2'>
+  <script src='./el-2.js'></script>
+</dom-module>
+
+<dom-module id='el-3'></dom-module>
+<script>
+  Polymer({ is: 'el-3' });
+
+</script>
+
+<dom-module id='el-4'>
+</dom-module>
+<link rel="import" href="./el-4.html">
+
+<!-- Then the bad-->
+
+<!-- Obviously wrong-->
+<script>
+  Polymer({ is: 'el-5' });
+
+</script>
+<dom-module id='el-5'></dom-module>
+
+<!-- Script src-->
+<script src='./el-6.js'></script>
+<dom-module id='el-6'></dom-module>
+
+<!-- Import above-->
+<link rel="import" href="./el-7.html">
+<dom-module id='el-7'>
+</dom-module>
+
+<!-- First import wins, and first import is above.-->
+<link rel="import" href="./el-8.html">
+<dom-module id='el-8'>
+</dom-module>
+<link rel="import" href="./el-8.html">

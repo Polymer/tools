@@ -3,7 +3,7 @@
 		{
 			"path": "packages/analyzer"
 		},
-		{
+    {
 			"path": "packages/cli"
     },
     {
@@ -12,9 +12,9 @@
     {
       "path": "packages/build"
 		},
-    {
-      "path": "packages/bundler"
-    },
+		{
+			"path": "packages/linter"
+		},
 		{
 			"path": "packages/project-config"
 		},

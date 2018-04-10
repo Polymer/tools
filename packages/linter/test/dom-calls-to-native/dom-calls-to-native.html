@@ -1,0 +1,11 @@
+<script>
+  class Foo {
+    handler(event) {
+      Polymer.dom(event).localTarget.innerHTML = 'foo';
+      const path = Polymer.dom(event).path;
+      const root = Polymer.dom(event).rootTarget;
+      this.path = path;
+      this.root = root;
+    }
+  }
+</script>

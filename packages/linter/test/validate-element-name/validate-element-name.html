@@ -1,0 +1,111 @@
+<!-- Valid -->
+<dom-module id="my-app">
+  <script>
+    class MyApp extends HTMLElement {
+      static get is() {
+        return 'my-app';
+      }
+    }
+    customElements.define(MyApp.is, MyApp);
+  </script>
+</dom-module>
+<!-- Error: Uppercase ASCII -->
+<dom-module id="test-App">
+  <script>
+    class TestApp extends HTMLElement {
+      static get is() {
+        return 'test-App';
+      }
+    }
+    customElements.define(TestApp.is, TestApp);
+  </script>
+</dom-module>
+<!-- Error: Missing hyphen -->
+<dom-module id="app">
+  <script>
+    Polymer({
+      is: 'app'
+    });
+  </script>
+</dom-module>
+<!-- Error: Starts with digit -->
+<dom-module id="1-app">
+  <script>
+    Polymer({
+      is: '1-app'
+    });
+  </script>
+</dom-module>
+<!-- Error: Starts with hyphen -->
+<dom-module id="-app">
+  <script>
+    Polymer({
+      is: '-app'
+    });
+  </script>
+</dom-module>
+<!-- Error: Invalid element name -->
+<dom-module id="my-app!">
+  <script>
+    Polymer({
+      is: 'my-app!'
+    });
+  </script>
+</dom-module>
+<!-- Error: Reserved name -->
+<dom-module id="font-face">
+  <script>
+    Polymer({
+      is: 'font-face'
+    });
+  </script>
+</dom-module>
+
+<!-- Warning: Starts with "polymer-" -->
+<dom-module id="polymer-app">
+  <script>
+    Polymer({
+      is: 'polymer-app'
+    });
+  </script>
+</dom-module>
+<!-- Warning: Starts with "x-" -->
+<dom-module id="x-app">
+  <script>
+    Polymer({
+      is: 'x-app'
+    });
+  </script>
+</dom-module>
+<!-- Warning: Starts with "ng-" -->
+<dom-module id="ng-app">
+  <script>
+    Polymer({
+      is: 'ng-app'
+    });
+  </script>
+</dom-module>
+<!-- Warning: Starts with "xml" -->
+<dom-module id="xml-app">
+  <script>
+    Polymer({
+      is: 'xml-app'
+    });
+  </script>
+</dom-module>
+<!-- Warning: Ends with hyphen -->
+<dom-module id="my-app-">
+  <script>
+    Polymer({
+      is: 'my-app-'
+    });
+  </script>
+</dom-module>
+<!-- Warning: Consecutive hyphens -->
+<dom-module id="my--app">
+  <script>
+    Polymer({
+      is: 'my--app'
+    });
+  </script>
+</dom-module>

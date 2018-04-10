@@ -1,0 +1,53 @@
+<dom-module id="foo-elem">
+  <template>
+    <!-- Good -->
+    <div id="{{declared}}"></div>
+    <div id="{{writtenTo}}"></div>
+    <div id="{{method(writtenTo)}}"></div>
+    <div title="{{title}}"></div>
+
+    <dom-repeat>
+      <template>
+        <div id="{{item}}" title="{{index}}"></div>
+      </template>
+    </dom-repeat>
+
+    <dom-repeat as="smeerp" index-as="gavagai">
+      <template>
+        <div id="{{smeerp}}" title="{{gavagai}}"></div>
+      </template>
+    </dom-repeat>
+
+    <template is='dom-repeat'>
+      <div id="{{item}}" title="{{index}}"></div>
+    </template>
+
+    <template is='dom-repeat' as="tribble" index-as="rabbit">
+      <div id="{{tribble}}" title="{{rabbit}}"></div>
+    </template>
+
+    <!-- Bad -->
+    <div id="{{horse}}"></div>
+    <div id="[[onlyReadFrom]]"></div>
+    <p id="[[onlyReadFrom]]"></p>
+    <nav id="[[onlyReadFrom]]"></nav>
+
+    <div id="{{referencedOnlyOnce}}"></div>
+
+    <!-- The scoped bidirectional bindings above shouldn't count here. -->
+    <div id="{{item}}"></div>
+    <div id="{{rabbit}}"></div>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-elem',
+      properties: {
+        declared: String,
+        house: String,
+      },
+      method: function () {
+
+      }
+    })
+  </script>
+</dom-module>

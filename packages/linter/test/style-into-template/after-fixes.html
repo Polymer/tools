@@ -1,0 +1,72 @@
+<dom-module id="foo-bar">
+  <template>
+    <style>
+      div {
+        color: blue
+      }
+    </style>
+    <div>Hello</div>
+  </template>
+  <script>
+    customElements.define('foo-bar', class extends Polymer.Element {});
+  </script>
+</dom-module>
+
+<dom-module id="bar-baz">
+  <template><style>
+    div {
+      color: blue
+    }
+  </style><div>Hello</div></template>
+  <script>
+    customElements.define('bar-baz', class extends Polymer.Element {});
+  </script>
+</dom-module>
+
+<dom-module id="zim-zam">
+  <link rel="import" type="css" href="./bar.css">
+
+  <template>
+    <link rel="stylesheet" href="./foo.css">
+    <link rel="stylesheet" href="./baz.css">
+    <div>Hello</div>
+  </template>
+  <script>
+    customElements.define('zim-zam', class extends Polymer.Element {});
+  </script>
+</dom-module>
+
+<dom-module id="tim-tam">
+
+  <template>
+    <link rel="stylesheet" href="./foo.css">
+    <link rel="stylesheet" href="./baz.css">
+    <div>Hello</div>
+  </template>
+  <script>
+    customElements.define('tim-tam', class extends Polymer.Element {});
+  </script>
+</dom-module>
+
+<dom-module id="empty-style">
+
+  <template>
+    <style>
+    </style>
+    <div>Hello</div>
+  </template>
+  <script>
+    customElements.define('empty-style', class extends Polymer.Element {});
+  </script>
+</dom-module>
+
+<dom-module id="bad-indent-style">
+
+  <template>
+    <style></style>
+    <div>Hello</div>
+  </template>
+  <script>
+    customElements.define('bad-indent-style', class extends Polymer.Element {});
+  </script>
+</dom-module>

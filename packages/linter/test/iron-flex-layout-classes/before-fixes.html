@@ -1,0 +1,179 @@
+<html>
+
+<head>
+  <style is="custom-style" include="iron-flex"></style>
+</head>
+
+<body class="fullbleed">
+  <p class="flex">main doc</p>
+
+  <dom-module id="no-classes">
+    <template>
+      <div>
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "no-classes"
+      });
+    </script>
+  </dom-module>
+
+
+  <dom-module id="no-style">
+    <template>
+      <div class="layout horizontal">
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "no-style"
+      });
+    </script>
+  </dom-module>
+
+
+  <dom-module id="with-style">
+    <template>
+      <style>
+         :host {
+          display: block;
+        }
+      </style>
+      <div class="layout horizontal">
+        <p class="flex">lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-style"
+      });
+    </script>
+  </dom-module>
+
+
+  <dom-module id="with-include">
+    <template>
+      <style include="awesome-style">
+         :host {
+          display: block;
+        }
+      </style>
+      <div class="flex">
+        <p class="flex-1">lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-include"
+      });
+    </script>
+  </dom-module>
+
+
+  <dom-module id="with-partial-include">
+    <template>
+      <style include="awesome-style"></style>
+      <style include="iron-flex">
+         :host {
+          display: block;
+        }
+      </style>
+      <div class="layout horizontal-reverse">
+        <p class="layout vertical">lorem</p>
+        <p class="flex-1">ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-partial-include"
+      });
+    </script>
+  </dom-module>
+
+
+  <dom-module id="with-style-outside">
+    <style>
+       :host {
+        display: block;
+      }
+    </style>
+    <template>
+      <div class="layout horizontal">
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-style-outside"
+      });
+    </script>
+  </dom-module>
+
+
+  <dom-module id="with-right-include">
+    <template>
+      <style include="iron-flex">
+         :host {
+          display: block;
+        }
+      </style>
+      <div class="flex">
+        <p>lorem</p>
+        <p>ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-right-include"
+      });
+    </script>
+  </dom-module>
+
+
+  <dom-module id="with-inner-template">
+    <template>
+      <iron-list>
+        <template>
+          <div class="layout horizontal">
+            <p>lorem</p>
+            <p>ipsum</p>
+          </div>
+        </template>
+      </iron-list>
+    </template>
+    <script>
+      Polymer({
+        is: "with-inner-template"
+      });
+    </script>
+  </dom-module>
+
+
+  <dom-module id="with-class-binding">
+    <template>
+      <div class$="layout horizontal [[flex]]">
+        <p class="flex" class$="flex [[flex]]">lorem</p>
+        <p class$="{{flex}}">ipsum</p>
+      </div>
+    </template>
+    <script>
+      Polymer({
+        is: "with-class-binding",
+        properties: {
+          flex: String
+        }
+      });
+    </script>
+  </dom-module>
+
+</body>
+
+</html>

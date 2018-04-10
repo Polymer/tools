@@ -1,0 +1,26 @@
+<dom-module id="foo-bar">
+  <template>
+    <slot name="foo" existing-nonsense-attribute="bar" old-content-selector=".foo">
+      Fallback content here
+    </slot>
+    <slot></slot>
+  </template>
+  <script>
+    Polymer({
+      is: 'foo-bar',
+    });
+  </script>
+</dom-module>
+
+<dom-module id="baz-bing">
+  <template>
+    <slot name="foo" old-content-selector=".foo"></slot>
+    <slot name="foo-unique-suffix" old-content-selector="[foo]"></slot>
+    <slot name="foo-unique-suffix-unique-suffix" old-content-selector="#foo"></slot>
+  </template>
+  <script>
+    Polymer({
+      is: 'baz-bing',
+    });
+  </script>
+</dom-module>
