@@ -3,6 +3,10 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.0-pre.5 [04-09-2018]
+* Bring in latest polymer-analyzer and polymer-build fixes to node resolution
+  and babel helpers.
+
 ## v1.7.0-pre.4 [04-05-2018]
 - `build`
   - ES modules are now be bundled.
