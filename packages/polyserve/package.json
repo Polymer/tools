@@ -14,7 +14,6 @@
     "build": "npm run clean && tsc",
     "test": "npm run build && mocha && tslint \"src/**/*.ts\"",
     "test:watch": "tsc-then -- mocha -c",
-    "prepublish": "npm run build",
     "format": "find src test -iname '*.ts' | xargs clang-format --style=file -i"
   },
   "keywords": [
