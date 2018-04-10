@@ -1,26 +1,26 @@
 {
-	"folders": [
-		{
-			"path": "packages/analyzer"
-		},
+  "folders": [
     {
-			"path": "packages/cli"
+      "path": "packages/analyzer"
     },
     {
-			"path": "packages/bundler"
+      "path": "packages/cli"
+    },
+    {
+      "path": "packages/bundler"
     },
     {
       "path": "packages/build"
-		},
-		{
-			"path": "packages/linter"
-		},
-		{
-			"path": "packages/project-config"
-		},
-		{
-			"path": "."
-		}
-	],
-	"settings": {}
+    },
+    {
+      "path": "packages/linter"
+    },
+    {
+      "path": "packages/project-config"
+    },
+    {
+      "path": "."
+    }
+  ],
+  "settings": {}
 }
