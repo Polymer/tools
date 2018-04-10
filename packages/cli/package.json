@@ -61,6 +61,7 @@
     "plylog": "^0.4.0",
     "polymer-analyzer": "3.0.0-pre.22",
     "polymer-build": "3.0.0-pre.10",
+    "polymer-bundler": "^4.0.0-pre.4",
     "polymer-linter": "^3.0.0-pre.3",
     "polymer-project-config": "^3.13.0",
     "polyserve": "0.27.1",
