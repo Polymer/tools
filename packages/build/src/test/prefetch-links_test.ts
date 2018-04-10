@@ -9,16 +9,15 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-
 import {assert} from 'chai';
-
-const mergeStream = require('merge-stream');
+import {FsUrlResolver, PackageRelativeUrl} from 'polymer-analyzer';
 
 import {PolymerProject} from '../polymer-project';
 import {createLinks} from '../prefetch-links';
+
 import {emittedFiles} from './util';
-import {FsUrlResolver, PackageRelativeUrl} from 'polymer-analyzer';
+
+const mergeStream = require('merge-stream');
 
 suite('prefetch-links', () => {
   suite('AddPrefetchLinks', () => {

@@ -12,9 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-
-
 import {assert} from 'chai';
 import {Analyzer, FsUrlLoader, FsUrlResolver, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {Bundle} from 'polymer-bundler/lib/bundle-manifest';
