@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.22] - 2018-04-09
 * Fix module resolution in the case of root packages served from a component
   directory.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.21] - 2018-04-05
 * Clarify module resolution error message.
