@@ -6,6 +6,7 @@ install:
   - npm install
   - rm packages/*/package-lock.json
   - npm run bootstrap
+  - ls -l packages/cli/node_modules
 
 test_script:
   - node --version
