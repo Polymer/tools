@@ -1,0 +1,17 @@
+<dom-module id="with-databinding">
+  <template>
+    <div id="{{foo}}"></div>
+    {{_internal}}
+  </template>
+  <script>
+    Polymer({
+      is: 'with-databinding',
+      properties: {
+        /** This is the foo property. */
+        foo: String,
+        /** A private internal prop. */
+        _internal: String,
+      }
+    });
+  </script>
+</dom-module>

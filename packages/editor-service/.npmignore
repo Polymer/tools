@@ -1,0 +1,24 @@
+/node_modules
+/bower_components
+.DS_Store
+.idea
+npm-debug.log
+
+# The raw typescript source
+/src/
+# The tests and test fixtures.
+/lib/test
+
+# Misc development-time files
+.travis.yml
+/test
+/.vscode
+/.github
+/.npmignore
+/.gitignore
+/tslint.json
+/tsconfig.json
+
+
+# To test this file and see its output, run:
+#    npm pack --loglevel=silent && tar -ztvf *.tgz && rm *.tgz

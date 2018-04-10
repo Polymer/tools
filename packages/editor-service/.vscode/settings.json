@@ -1,0 +1,13 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "clang-format.style": "file",
+  "editor.formatOnSave": true,
+  "search.exclude": {
+    "node_modules/": true,
+    "lib/": true,
+    "src/test/static/**": true
+  },
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
