@@ -1,0 +1,39 @@
+{
+  "name": "polymer-workspaces",
+  "description": "Perform work across multiple GitHub repos",
+  "version": "2.1.0",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "repository": "https://github.com/Polymer/polymer-workspaces.git",
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "format": "find src | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "lint": "tslint -p ./",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "npm run build && mocha"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.43",
+    "@types/nock": "^8.2.1",
+    "@types/node": "^8.0.0",
+    "chai": "^4.1.2",
+    "clang-format": "^1.0.55",
+    "mocha": "^3.5.3",
+    "nock": "^9.0.18",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.2"
+  },
+  "dependencies": {
+    "@types/rimraf": "^2.0.2",
+    "bottleneck": "^1.16.0",
+    "@octokit/rest": "^14.0.0",
+    "rimraf": "^2.6.2"
+  },
+  "files": [
+    "lib/",
+    "src/"
+  ]
+}
