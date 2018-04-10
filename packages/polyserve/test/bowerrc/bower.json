@@ -1,0 +1,12 @@
+{
+  "name": "bowerrc-test",
+  "description": "test package for the bowerrc feature",
+  "main": "index.html",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "polymer",
+    "polyserve"
+  ],
+  "homepage": "https://github.com/PolymerLabs/polyserve",
+  "private": true
+}

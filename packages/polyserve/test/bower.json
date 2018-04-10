@@ -1,0 +1,15 @@
+{
+  "name": "polyserve-test",
+  "description": "test package",
+  "main": "main.js",
+  "authors": [
+    "Justin Fagnani <justinfagnani@google.com>"
+  ],
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "polymer",
+    "polyserve"
+  ],
+  "homepage": "https://github.com/PolymerLabs/polyserve",
+  "private": true
+}

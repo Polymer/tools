@@ -1,0 +1,5 @@
+{
+    "extends": [
+        "@polymer/tools-common/tslint.json"
+    ]
+}
