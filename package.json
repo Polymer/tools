@@ -53,7 +53,7 @@
     "polymer-project-config": "^3.11.1",
     "semver": "^5.4.1",
     "split": "^1.0.0",
-    "vscode-languageserver": "=4.0.0",
+    "vscode-languageserver": "^4.1.1",
     "vscode-uri": "^1.0.0",
     "winston": "^2.3.1"
   },
