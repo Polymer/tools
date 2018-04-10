@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* [breaking] The `jsTransform` function will now inline any required Babel helper functions by default. Previously they were always omitted. Added `externalHelpers` option to disable inlining. Note that the behavior of the build transformers from `getOptimizeStreams` continue to never inline the Babel helpers.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.10] - 2018-04-09
+* [breaking] The `jsTransform` function will now inline any required Babel helper functions by default. Previously they were always omitted. Added `externalHelpers` option to disable inlining. Note that the behavior of the build transformers from `getOptimizeStreams` continue to never inline the Babel helpers.
 
 ## [3.0.0-pre.9] - 2018-04-05
 * Fix bug with node module resolution where specifiers in dynamic import() were rewritten.
