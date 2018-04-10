@@ -4,6 +4,7 @@ install:
   # https://www.appveyor.com/docs/lang/nodejs-iojs/#selecting-nodejs-or-iojs-version
   - ps: Install-Product node ''
   - npm install
+  - rm packages/*/package-lock.json
   - npm run bootstrap
 
 test_script:
