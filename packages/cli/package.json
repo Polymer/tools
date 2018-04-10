@@ -78,7 +78,7 @@
     "yeoman-generator": "^1.0.1"
   },
   "devDependencies": {
-    "@polymer/tools-common": "^1.0.1",
+    "@polymer/tools-common": "^2.0.0",
     "@types/chokidar": "^1.7.3",
     "@types/fs-extra": "^5.0.1",
     "@types/mocha": "^2.2.44",
