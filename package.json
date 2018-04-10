@@ -10,7 +10,7 @@
     "url": "https://github.com/Polymer/tools.git"
   },
   "scripts": {
-    "bootstrap": "rm -rf packages/*/node_modules && lerna bootstrap",
+    "bootstrap": "lerna bootstrap",
     "test": "lerna run test",
     "test:windows": "lerna run test --ignore polyserve",
     "test:integration": "lerna run test:integration",
