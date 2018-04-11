@@ -18,7 +18,8 @@
     "test:integration:windows": "lerna run test:integration --ignore polymer-linter"
   },
   "devDependencies": {
-    "lerna": "^2.10.1"
+    "lerna": "^2.10.1",
+    "typescript": "^2.8.1"
   },
   "engines": {
     "node": ">=6"
