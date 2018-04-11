@@ -16,6 +16,7 @@
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
   "dependencies": {
+    "@types/node": "^9.6.4",
     "depcheck": "^0.6.0",
     "fs-extra": "^3.0.0",
     "gulp-eslint": "^4.0.0",

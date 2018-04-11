@@ -6,6 +6,7 @@
   "typings": "lib/linter.d.ts",
   "dependencies": {
     "@types/fast-levenshtein": "0.0.1",
+    "@types/node": "^9.6.4",
     "@types/parse5": "^2.2.34",
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",
