@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [0.27.2] (2018-04-10)
+* Really bring in latest changes.
+
 ## [0.27.1] (2018-04-09)
 * Bring in latest polymer-analyzer and polymer-build fixes to node resolution
   and babel helpers.

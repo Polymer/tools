@@ -14,7 +14,6 @@
     "build": "npm run clean && tsc",
     "test": "npm run build && mocha && tslint \"src/**/*.ts\"",
     "test:watch": "tsc-then -- mocha -c",
-    "prepublish": "npm run build",
     "format": "find src test -iname '*.ts' | xargs clang-format --style=file -i"
   },
   "keywords": [
@@ -53,7 +52,7 @@
     "mz": "^2.4.0",
     "opn": "^3.0.2",
     "pem": "^1.8.3",
-    "polymer-build": "=3.0.0-pre.7",
+    "polymer-build": "^3.0.0-pre.10",
     "requirejs": "^2.3.4",
     "resolve": "^1.5.0",
     "send": "^0.14.1",

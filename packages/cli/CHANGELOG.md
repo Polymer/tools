@@ -3,6 +3,9 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.0-pre.7 [04-10-2018]
+* Update polyserve for latest changes.
+
 ## v1.7.0-pre.6 [04-09-2018]
 * Bring in latest polymer-analyzer and polymer-build fixes to node resolution
   and babel helpers.
