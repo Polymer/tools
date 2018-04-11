@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [3.0.0-pre.6] - 2018-04-11
+- Bump dependencies.
+
 ## [3.0.0-pre.5] - 2018-04-05
 - Accept AnalysisOptions as an argument to `Linter#lint` and
   `Linter#lintPackage`.
