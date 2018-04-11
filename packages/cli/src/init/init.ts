@@ -39,6 +39,11 @@ interface GeneratorInfo {
 }
 
 const localGenerators: {[name: string]: GeneratorInfo} = {
+  'polymer-3-element': {
+    id: 'polymer-init-polymer-3-element:app',
+    description: 'A simple Polymer 3.0 element template',
+    generator: createElementGenerator('polymer-3.x'),
+  },
   'polymer-2-element': {
     id: 'polymer-init-polymer-2-element:app',
     description: 'A simple Polymer 2.0 element template',

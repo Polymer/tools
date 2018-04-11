@@ -27,7 +27,7 @@ const logger = logging.getLogger('init');
  */
 export function createElementGenerator(templateName: string):
     (typeof Generator) {
-  return class ElementGenerator extends Generator {
+  class ElementGenerator extends Generator {
     props: any;
 
     constructor(args: string|string[], options: any) {
@@ -119,4 +119,42 @@ export function createElementGenerator(templateName: string):
           'Check out your new project README for information about what to do next.\n');
     }
   };
+
+  class Polymer3ElementGenerator extends ElementGenerator {
+    // TODO(bicknellr): Why doesn't this inherit properly? Because `async` is
+    // compiled out?
+    async prompting() {
+      return super.prompting();
+    }
+
+    writing() {
+      const name = this.props.name;
+
+      this.fs.copyTpl(
+          `${this.templatePath()}/**/?(.)!(_)*`,
+          this.destinationPath(),
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('_element.js'), `${name}.js`, this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('test/_element_test.html'),
+          `test/${name}_test.html`,
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('test/index.html'), `test/index.html`, this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('.gitignore'), '.gitignore', this.props);
+    }
+  }
+
+  switch (templateName) {
+    case "polymer-3.x":
+      return Polymer3ElementGenerator;
+    default:
+      return ElementGenerator;
+  }
 }

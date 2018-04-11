@@ -1,0 +1,14 @@
+{
+  "name": "<%= name %>",
+<% if (description) { -%>  "description": "<%= description %>",
+<% } -%>
+  "main": "<%= name %>.js",
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0-pre.12"
+  },
+  "devDependencies": {
+    "@polymer/iron-demo-helpers": "^3.0.0-pre.12",
+    "@webcomponents/webcomponentsjs": "^1.0.0",
+    "wct-browser-legacy": "^0.0.1-pre.11"
+  }
+}

@@ -6,10 +6,10 @@
 
     <title><%= name %> test</title>
 
-    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/wct-browser-legacy/browser.js"></script>
 
-    <link rel="import" href="../<%= name %>.html">
+    <script type="module" src="../<%= name %>.js"></script>
   </head>
   <body>
 
@@ -25,7 +25,7 @@
       </template>
     </test-fixture>
 
-    <script>
+    <script type="module">
       suite('<%= name %>', () => {
 
         test('instantiating the element with default properties works', () => {
