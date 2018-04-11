@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {isCancel} from 'cancel-token';
 import {Analysis, Analyzer, AnalyzerOptions, ResolvedUrl, UrlResolver} from 'polymer-analyzer';
 import {AnalysisCache} from 'polymer-analyzer/lib/core/analysis-cache';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
@@ -131,29 +132,59 @@ export class LsAnalyzer extends Analyzer {
   }
 
   analyze(files: string[], options: LsAnalyzeOptions = {}): Promise<Analysis> {
-    const prefix = options.reason ? `${options.reason}: ` : '';
+    const prefix = (options.reason ? `${options.reason}: ` : '') + `(` +
+                options.cancelToken ===
+            undefined ?
+        'without' :
+        'with' +
+            `cancel token)`;
+
     this.logger.log(`${prefix}Analyzing files: ${files.join(', ')}`);
     const start = (new Date().getTime());
     const result = this.annotateWithVersionMap(super.analyze(files, options));
-    result.then(() => {
-      const end = (new Date().getTime());
-      const elapsed = ((end - start) / 1000).toFixed(2);
-      this.logger.log(
-          `${prefix}Took ${elapsed}s to analyze files: ${files.join(', ')}`);
-    });
+    result.then(
+        () => {
+          const end = (new Date().getTime());
+          const elapsed = ((end - start) / 1000).toFixed(2);
+          this.logger.log(`${prefix}Took ${elapsed}s to analyze files: ${
+              files.join(', ')}`);
+        },
+        (err) => {
+          if (isCancel(err)) {
+            const end = (new Date().getTime());
+            const elapsed = ((end - start) / 1000).toFixed(2);
+            this.logger.log(`${prefix}Cancelled anlysis after ${
+                elapsed}s of files: ${files.join(', ')}`);
+          }
+        });
     return result;
   }
 
   analyzePackage(options: LsAnalyzeOptions = {}): Promise<Analysis> {
-    const prefix = options.reason ? `${options.reason}: ` : '';
+    const prefix = (options.reason ? `${options.reason}: ` : '') + `(` +
+                options.cancelToken ===
+            undefined ?
+        'without' :
+        'with' +
+            `cancel token)`;
     this.logger.log(`${prefix}Analyzing package...`);
     const start = (new Date().getTime());
     const result = this.annotateWithVersionMap(super.analyzePackage(options));
-    result.then(() => {
-      const end = (new Date().getTime());
-      const elapsed = ((end - start) / 1000).toFixed(2);
-      this.logger.log(`${prefix}:Took ${elapsed}s to analyze package.`);
-    });
+    result.then(
+        () => {
+          const end = (new Date().getTime());
+          const elapsed = ((end - start) / 1000).toFixed(2);
+          this.logger.log(`${prefix}:Took ${elapsed}s to analyze package.`);
+        },
+        (err) => {
+          if (isCancel(err)) {
+            const end = (new Date().getTime());
+            const elapsed = ((end - start) / 1000).toFixed(2);
+            this.logger.log(
+                `${prefix}Cancelled package anlysis ` +
+                `after ${elapsed}s`);
+          }
+        });
     return result;
   }
 

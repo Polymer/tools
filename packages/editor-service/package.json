@@ -42,6 +42,7 @@
     "@types/parse5": "^2.2.34",
     "@types/split": "^0.3.28",
     "@types/winston": "^2.2.0",
+    "cancel-token": "^0.1.1",
     "command-line-args": "^4.0.7",
     "dom5": "^2.0.1",
     "fuzzaldrin": "^2.1.0",

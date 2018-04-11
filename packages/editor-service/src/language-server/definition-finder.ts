@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {CancelToken} from 'cancel-token';
 import * as fuzzaldrin from 'fuzzaldrin';
 import {Analysis, SourcePosition, SourceRange} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
@@ -22,6 +23,7 @@ import {TextDocumentPositionParams} from 'vscode-languageserver-protocol';
 import {LsAnalyzer} from './analyzer-synchronizer';
 import AnalyzerLSPConverter from './converter';
 import FeatureFinder, {DatabindingFeature} from './feature-finder';
+import {Logger} from './logger';
 import Settings from './settings';
 import {Handler} from './util';
 
@@ -31,30 +33,36 @@ import {Handler} from './util';
  */
 export default class DefinitionFinder extends Handler {
   constructor(
-      protected connection: IConnection,
-      private converter: AnalyzerLSPConverter,
-      private featureFinder: FeatureFinder, private analyzer: LsAnalyzer,
-      settings: Settings) {
+      protected readonly connection: IConnection,
+      private readonly converter: AnalyzerLSPConverter,
+      private readonly featureFinder: FeatureFinder,
+      private readonly analyzer: LsAnalyzer, settings: Settings,
+      protected readonly logger: Logger) {
     super();
-    this.connection.onDefinition(async(textPosition) => {
-      return this.handleErrors(this.getDefinition(textPosition), null);
+    this.connection.onDefinition(async(textPosition, cancellation) => {
+      const cancelToken = this.converter.convertCancelToken(cancellation);
+      return this.handleErrors(
+          this.getDefinition(textPosition, cancelToken), null);
     });
 
-    this.connection.onReferences(async(params) => {
-      return this.handleErrors(this.getReferences(params), []);
+    this.connection.onReferences(async(params, cancellation) => {
+      const cancelToken = this.converter.convertCancelToken(cancellation);
+      return this.handleErrors(this.getReferences(params, cancelToken), []);
     });
 
-    this.connection.onWorkspaceSymbol(async(params) => {
-      const analysis =
-          await this.analyzer.analyzePackage({reason: 'get workspace symbols'});
+    this.connection.onWorkspaceSymbol(async(params, cancellation) => {
+      const cancelToken = this.converter.convertCancelToken(cancellation);
+      const analysis = await this.analyzer.analyzePackage(
+          {reason: 'get workspace symbols', cancelToken});
       const symbols = this.findSymbols(analysis);
       return fuzzaldrin.filter(symbols, params.query, {key: 'name'});
     });
 
-    this.connection.onDocumentSymbol(async(params) => {
+    this.connection.onDocumentSymbol(async(params, cancellation) => {
+      const cancelToken = this.converter.convertCancelToken(cancellation);
       const url = params.textDocument.uri;
-      const analysis =
-          await this.analyzer.analyze([url], {reason: 'get document symbols'});
+      const analysis = await this.analyzer.analyze(
+          [url], {reason: 'get document symbols', cancelToken});
       const result = analysis.getDocument(url);
       if (!result.successful) {
         return [];
@@ -62,10 +70,12 @@ export default class DefinitionFinder extends Handler {
       return this.findSymbols(result.value);
     });
 
-    this.connection.onCodeLens(async(params) => {
+    this.connection.onCodeLens(async(params, cancellation) => {
+      const cancelToken = this.converter.convertCancelToken(cancellation);
       const lenses = [];
       if (settings.referencesCodeLens) {
-        lenses.push(...await this.handleErrors(this.getCodeLenses(params), []));
+        lenses.push(...await this.handleErrors(
+            this.getCodeLenses(params, cancelToken), []));
       }
       return lenses;
     });
@@ -79,23 +89,25 @@ export default class DefinitionFinder extends Handler {
    * https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md#textDocument_definition
    */
   private async getDefinition(
-      textPosition: TextDocumentPositionParams,
+      textPosition: TextDocumentPositionParams, cancelToken: CancelToken,
       analysis?: Analysis): Promise<Location[]> {
     const sourceRanges = await this.getDefinitionsForFeatureAtPosition(
         textPosition.textDocument.uri,
-        this.converter.convertPosition(textPosition.position), analysis);
+        this.converter.convertPosition(textPosition.position), cancelToken,
+        analysis);
     return sourceRanges.map((sr): Location => {
       return {uri: sr.file, range: this.converter.convertPRangeToL(sr)};
     });
   }
 
   private async getDefinitionsForFeatureAtPosition(
-      url: string, position: SourcePosition,
+      url: string, position: SourcePosition, cancelToken: CancelToken,
       analysis?: Analysis): Promise<SourceRange[]> {
     analysis = analysis ||
-        await this.analyzer.analyze([url], {reason: 'get definitions'});
-    const featureResult =
-        await this.featureFinder.getFeatureAt(url, position, analysis);
+        await this.analyzer.analyze(
+            [url], {reason: 'get definitions', cancelToken});
+    const featureResult = await this.featureFinder.getFeatureAt(
+        url, position, cancelToken, analysis);
     if (!featureResult) {
       return [];
     }
@@ -128,15 +140,17 @@ export default class DefinitionFinder extends Handler {
    * Implements:
    * https://github.com/Microsoft/language-server-protocol/blob/master/protocol.md#textDocument_references
    */
-  private async getReferences(params: ReferenceParams): Promise<Location[]> {
+  private async getReferences(
+      params: ReferenceParams, cancelToken: CancelToken): Promise<Location[]> {
     const locations: Location[] = [];
     const localPath =
         this.converter.getWorkspacePathToFile(params.textDocument);
     const position = this.converter.convertPosition(params.position);
-    const analysis =
-        await this.analyzer.analyzePackage({reason: 'get references'});
+    const analysis = await this.analyzer.analyzePackage(
+        {reason: 'get references', cancelToken});
     if (params.context.includeDeclaration) {
-      locations.push(...await this.getDefinition(params, analysis));
+      locations.push(
+          ...await this.getDefinition(params, cancelToken, analysis));
     }
 
     const result = analysis.getDocument(localPath);
@@ -215,9 +229,10 @@ export default class DefinitionFinder extends Handler {
     }
     return symbols;
   }
-  private async getCodeLenses(params: CodeLensParams) {
-    const analysis =
-        await this.analyzer.analyzePackage({reason: 'get code lenses'});
+  private async getCodeLenses(
+      params: CodeLensParams, cancelToken: CancelToken) {
+    const analysis = await this.analyzer.analyzePackage(
+        {reason: 'get code lenses', cancelToken});
     const uri = params.textDocument.uri;
     const result = analysis.getDocument(uri);
     if (!result.successful) {

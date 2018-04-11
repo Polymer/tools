@@ -11,9 +11,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {CancelToken} from 'cancel-token';
 import * as path from 'path';
 import {Edit, PackageRelativeUrl, ResolvedUrl, Severity, SourcePosition, SourceRange, UrlResolver, Warning} from 'polymer-analyzer';
-import {Diagnostic, DiagnosticSeverity, Location, Position as LSPosition, Range as LSRange, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
+import {CancellationToken, Diagnostic, DiagnosticSeverity, Location, Position as LSPosition, Range as LSRange, TextEdit, WorkspaceEdit} from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
 /**
@@ -115,5 +116,14 @@ export default class AnalyzerLSPConverter {
 
   getLocation(sourceRange: SourceRange): Location {
     return {uri: sourceRange.file, range: this.convertPRangeToL(sourceRange)};
+  }
+
+  convertCancelToken(lsToken: CancellationToken): CancelToken {
+    const {cancel, token} = CancelToken.source();
+    lsToken.onCancellationRequested((_) => cancel());
+    if (lsToken.isCancellationRequested) {
+      cancel();
+    }
+    return token;
   }
 }

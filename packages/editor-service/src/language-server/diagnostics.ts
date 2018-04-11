@@ -23,6 +23,8 @@ import {Handler} from './util';
 
 import minimatch = require('minimatch');
 import {IMinimatch} from 'minimatch';
+import {CancelToken} from 'cancel-token';
+import {Logger} from './logger';
 
 /**
  * Handles publishing diagnostics and code actions on those diagnostics.
@@ -31,11 +33,15 @@ export default class DiagnosticGenerator extends Handler {
   private linter: Linter;
   private warningCodesToFilterOut: ReadonlySet<string> = new Set<string>();
   private fileGlobsToFilterOut: ReadonlyArray<IMinimatch> = [];
+  private cancelPreviousLintRun: () => void = () => undefined;
   constructor(
-      private analyzer: LsAnalyzer, private converter: AnalyzerLSPConverter,
-      protected connection: IConnection, private settings: Settings,
-      analyzerSynchronizer: AnalyzerSynchronizer,
-      private documents: TextDocuments) {
+      private readonly analyzer: LsAnalyzer,
+      private readonly converter: AnalyzerLSPConverter,
+      protected readonly connection: IConnection,
+      private readonly settings: Settings,
+      readonly analyzerSynchronizer: AnalyzerSynchronizer,
+      private readonly documents: TextDocuments,
+      protected readonly logger: Logger) {
     super();
     this.updateLinter();
 
@@ -71,17 +77,20 @@ export default class DiagnosticGenerator extends Handler {
       }
     });
 
-    this.connection.onCodeAction(async(req) => {
-      return this.handleErrors(this.getCodeActions(req), []);
+    this.connection.onCodeAction(async(req, cancellation) => {
+      const cancelToken = this.converter.convertCancelToken(cancellation);
+      return this.handleErrors(this.getCodeActions(req, cancelToken), []);
     });
 
-    this.connection.onWillSaveTextDocumentWaitUntil(async(req) => {
-      if (this.settings.fixOnSave) {
-        return this.handleErrors(
-            this.getFixesForFile(req.textDocument.uri), []);
-      }
-      return [];
-    });
+    this.connection.onWillSaveTextDocumentWaitUntil(
+        async(req, cancellation) => {
+          if (this.settings.fixOnSave) {
+            const cancelToken = this.converter.convertCancelToken(cancellation);
+            return this.handleErrors(
+                this.getFixesForFile(req.textDocument.uri, cancelToken), []);
+          }
+          return [];
+        });
   }
 
   async getAllFixes(): Promise<WorkspaceEdit> {
@@ -98,8 +107,9 @@ export default class DiagnosticGenerator extends Handler {
     return this.converter.editsToWorkspaceEdit(appliedEdits);
   }
 
-  private async getFixesForFile(uri: string): Promise<TextEdit[]> {
-    const {warnings, analysis} = await this.linter.lint([uri]);
+  private async getFixesForFile(uri: string, cancelToken: CancelToken):
+      Promise<TextEdit[]> {
+    const {warnings, analysis} = await this.linter.lint([uri], {cancelToken});
     const edits: Edit[] = [];
     for (const warning of warnings) {
       if (!warning.fix) {
@@ -170,22 +180,26 @@ export default class DiagnosticGenerator extends Handler {
    */
   private urisReportedWarningsFor = new Set<string>();
   private async reportWarnings(): Promise<void> {
+    const {token, cancel} = CancelToken.source();
+    this.cancelPreviousLintRun();
+    this.cancelPreviousLintRun = cancel;
+
     if (this.settings.analyzeWholePackage) {
       return this.reportPackageWarnings(
-          (await this.linter.lintPackage()).warnings);
+          (await this.linter.lintPackage({cancelToken: token})).warnings);
     } else {
-      return this.reportWarningsForOpenFiles();
+      return this.reportWarningsForOpenFiles(token);
     }
   }
 
-  private async reportWarningsForOpenFiles() {
+  private async reportWarningsForOpenFiles(cancelToken: CancelToken) {
     const openURIs = this.documents.keys();
     const paths =
         openURIs.map(uri => this.converter.getWorkspacePathToFile({uri}))
             .filter(
                 path =>
                     !this.fileGlobsToFilterOut.some(glob => glob.match(path)));
-    const {warnings} = await this.linter.lint(paths);
+    const {warnings} = await this.linter.lint(paths, {cancelToken});
     const diagnosticsByUri =
         new Map(openURIs.map((k): [string, Diagnostic[]] => [k, []]));
     for (const warning of this.filterWarnings(warnings)) {
@@ -245,14 +259,16 @@ export default class DiagnosticGenerator extends Handler {
     this.urisReportedWarningsFor = new Set(diagnosticsByUri.keys());
   }
 
-  private async getCodeActions(req: CodeActionParams) {
+  private async getCodeActions(
+      req: CodeActionParams, cancelToken: CancelToken) {
     const commands: Command[] = [];
     if (req.context.diagnostics.length === 0) {
       // Currently we only support code actions on Warnings,
       // so we can early-exit in the case where there aren't any.
       return commands;
     }
-    const {warnings} = await this.linter.lint([req.textDocument.uri]);
+    const {warnings} =
+        await this.linter.lint([req.textDocument.uri], {cancelToken});
     const requestedRange =
         this.converter.convertLRangeToP(req.range, req.textDocument);
     if (requestedRange === undefined) {

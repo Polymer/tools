@@ -14,6 +14,7 @@
 import {ApplyWorkspaceEditParams, ApplyWorkspaceEditRequest, ApplyWorkspaceEditResponse, IConnection, WorkspaceEdit} from 'vscode-languageserver';
 
 import DiagnosticGenerator from './diagnostics';
+import {Logger} from './logger';
 import {Handler} from './util';
 
 export const applyEditCommandName = 'polymer-ide/applyEdit';
@@ -40,7 +41,8 @@ export const allSupportedCommands =
 export default class CommandExecutor extends Handler {
   constructor(
       protected connection: IConnection,
-      private diagnosticGenerator: DiagnosticGenerator) {
+      private diagnosticGenerator: DiagnosticGenerator,
+      protected readonly logger: Logger) {
     super();
     connection.onExecuteCommand(async(req) => {
       if (req.command === applyEditCommandName) {

@@ -11,6 +11,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {CancelToken} from 'cancel-token';
 import * as dom5 from 'dom5';
 import * as fuzzaldrin from 'fuzzaldrin';
 import {Document, Element, isPositionInsideRange, ParsedHtmlDocument, SourcePosition} from 'polymer-analyzer';
@@ -24,6 +25,7 @@ import {standardJavaScriptSnippets} from '../standard-snippets';
 import {LsAnalyzer} from './analyzer-synchronizer';
 import AnalyzerLSPConverter from './converter';
 import FeatureFinder, {DatabindingFeature} from './feature-finder';
+import {Logger} from './logger';
 import {Handler} from './util';
 
 
@@ -41,7 +43,8 @@ export default class AutoCompleter extends Handler {
       protected connection: IConnection,
       private converter: AnalyzerLSPConverter,
       private featureFinder: FeatureFinder, private analyzer: LsAnalyzer,
-      private capabilities: ClientCapabilities) {
+      private capabilities: ClientCapabilities,
+      protected readonly logger: Logger) {
     super();
 
     const completionCapabilities =
@@ -71,19 +74,22 @@ export default class AutoCompleter extends Handler {
         !!ourExperimentalCapabilities.doesNotFilterCompletions :
         false;
 
-    this.connection.onCompletion(async(request) => {
+    this.connection.onCompletion(async(request, cancellation) => {
+      const cancelToken = this.converter.convertCancelToken(cancellation);
       const result = await this.handleErrors(
-          this.autoComplete(request), {isIncomplete: true, items: []});
+          this.autoComplete(request, cancelToken),
+          {isIncomplete: true, items: []});
       return result;
     });
   }
 
-  private async autoComplete(textPosition: TextDocumentPositionParams):
-      Promise<CompletionList> {
+  private async autoComplete(
+      textPosition: TextDocumentPositionParams,
+      cancelToken: CancelToken): Promise<CompletionList> {
     const url = textPosition.textDocument.uri;
-    const result = (await this.analyzer.analyze([url], {
-                     reason: 'autocomplete'
-                   })).getDocument(url);
+    const result = (await this.analyzer.analyze(
+                        [url], {reason: 'autocomplete', cancelToken}))
+                       .getDocument(url);
     if (!result.successful) {
       return {isIncomplete: true, items: []};
     }
