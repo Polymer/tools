@@ -10,14 +10,15 @@
     "url": "https://github.com/Polymer/tools.git"
   },
   "scripts": {
-    "bootstrap": "rm -rf packages/*/node_modules && lerna bootstrap",
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna run build",
     "test": "lerna run test",
     "test:windows": "lerna run test --ignore polyserve",
     "test:integration": "lerna run test:integration",
     "test:integration:windows": "lerna run test:integration --ignore polymer-linter"
   },
   "devDependencies": {
-    "lerna": "^2.9.1"
+    "lerna": "^2.10.1"
   },
   "engines": {
     "node": ">=6"

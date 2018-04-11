@@ -31,9 +31,9 @@
     "typescript": "^2.0.2",
     "typescript-json-schema": "^0.9.0",
     "clang-format": "1.0.49",
-    "polymer-analyzer": "^3.0.0-pre.17 || ^3.0.0"
+    "polymer-analyzer": "^3.0.0-pre.22"
   },
   "peerDependencies": {
-    "polymer-analyzer": "^3.0.0-pre.17 || ^3.0.0"
+    "polymer-analyzer": "^3.0.0-pre.22"
   }
 }

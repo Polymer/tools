@@ -3,14 +3,14 @@
 		{
 			"path": "packages/analyzer"
 		},
-    {
-			"path": "packages/cli"
-    },
-    {
+		{
+			"path": "packages/build"
+		},
+		{
 			"path": "packages/bundler"
-    },
-    {
-      "path": "packages/build"
+		},
+		{
+			"path": "packages/cli"
 		},
 		{
 			"path": "packages/linter"

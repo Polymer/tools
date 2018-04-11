@@ -114,6 +114,9 @@ task('json-schema', function () {
   const inPath = 'src/analysis-format/analysis-format.ts';
   const outPath = 'lib/analysis.schema.json';
   const command = path.normalize(`node_modules/.bin/typescript-json-schema`);
+  try {
+    fs.mkdirSync('lib');
+  } catch(e) { /* probably already exists, don't care */ }
   const child = child_process.spawn(
       command,
       [`--required`, `--ignoreErrors`, `${inPath}`, `Analysis`],
