@@ -6,13 +6,12 @@ install:
   - npm install
   - rm packages/*/package-lock.json
   - npm run bootstrap
+  - npm run build
+  - ls -l packages/polyserve/lib
 
 test_script:
   - node --version
   - npm --version
-  - npx lerna --version
-  - npx lerna run build
-  - ls -l packages/polyserve/lib
   - npm run test:windows
   - npm run test:integration:windows
 
