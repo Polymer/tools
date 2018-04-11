@@ -103,4 +103,4 @@ const maybeResolve = (
     }
     return specifier;
   }
-}
+};
