@@ -3,6 +3,9 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.0-pre.8 [04-10-2018]
+* Fix broken release.
+
 ## v1.7.0-pre.7 [04-10-2018]
 * Update polyserve for latest changes.
 
