@@ -25,6 +25,9 @@
 			"path": "packages/project-config"
 		},
 		{
+			"path": "packages/dom5"
+		},
+		{
 			"path": "."
 		}
 	],
