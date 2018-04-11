@@ -53,7 +53,7 @@ suite('install-variants', function() {
  * cache is used in fixtures/install-variants/bower_cache
  */
 function envExcludingBowerVars() {
-  const env: {[envVar: string]: string} = {};
+  const env: {[envVar: string]: string|undefined} = {};
   for (const envVar of Object.keys(process.env)) {
     if (!envVar.startsWith('bower_')) {
       env[envVar] = process.env[envVar];

@@ -1,6 +1,6 @@
 {
   "name": "polymer-cli",
-  "version": "1.7.0-pre.7",
+  "version": "1.7.0-pre.8",
   "description": "A commandline tool for Polymer projects",
   "main": "lib/polymer-cli.js",
   "engines": {
@@ -33,6 +33,7 @@
     "@types/inquirer": "0.0.32",
     "@types/merge-stream": "^1.0.28",
     "@types/mz": "^0.0.31",
+    "@types/node": "^9.6.4",
     "@types/request": "2.0.3",
     "@types/resolve": "0.0.4",
     "@types/rimraf": "^0.0.28",

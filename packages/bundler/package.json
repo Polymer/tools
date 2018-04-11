@@ -16,6 +16,7 @@
     "@types/acorn": "^4.0.3",
     "@types/babel-generator": "^6.25.1",
     "@types/babel-traverse": "^6.25.3",
+    "@types/node": "^9.6.4",
     "@types/rollup": "^0.54.0",
     "babel-generator": "^6.26.1",
     "babel-traverse": "^6.26.0",

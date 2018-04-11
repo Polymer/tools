@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-
 import {assert} from 'chai';
 import * as path from 'path';
 import File = require('vinyl');

@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-
 import {assert} from 'chai';
 import {FsUrlResolver, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {Bundle} from 'polymer-bundler';
@@ -531,9 +529,10 @@ suite('BuildBundler', () => {
             map.set(
                 urlResolver.resolve(
                     `bundled/${
-                            [...bundle.entrypoints]
-                                .map((u) => urlResolver.relative(u))
-                                .join()}` as PackageRelativeUrl)!,
+                                   [...bundle.entrypoints]
+                                       .map((u) => urlResolver.relative(u))
+                                       .join()
+                             }` as PackageRelativeUrl)!,
                 bundle);
           }
           return map;

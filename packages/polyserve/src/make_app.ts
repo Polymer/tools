@@ -100,7 +100,7 @@ export function makeApp(options: AppOptions): PolyserveApplication {
               res.end('Redirecting to ' + req.originalUrl + '/');
             })
         .on('error',
-            (err) => {
+            (err: any) => {
               // A RequireJS found in the user's components directory will win
               // over our verison.
               if (err.statusCode === 404 &&
