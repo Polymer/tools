@@ -1,0 +1,39 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "0.1.0",
+  "command": "npm",
+  "isShellCommand": true,
+  "showOutput": "always",
+  "suppressTaskName": true,
+  "tasks": [
+    {
+      "taskName": "test",
+      "args": [
+        "run",
+        "test:watch"
+      ],
+      "isTestCommand": true,
+      "isBackground": true,
+      "problemMatcher": {
+        "fileLocation": [
+          "relative",
+          "${workspaceRoot}/src"
+        ],
+        "background": {
+          "beginsPattern": "tsc-then: Running",
+          "endsPattern": "tsc-then: command finished"
+        },
+        "pattern": [
+          {
+            "regexp": "^  (\\d+)\\) ((\\w+).*)",
+            "message": 2,
+            "file": 3,
+            "line": 1,
+            "column": 1
+          }
+        ]
+      }
+    }
+  ]
+}

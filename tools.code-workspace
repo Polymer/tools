@@ -16,6 +16,9 @@
 			"path": "packages/linter"
 		},
 		{
+			"path": "packages/editor-service"
+		},
+		{
 			"path": "packages/polyserve"
 		},
 		{

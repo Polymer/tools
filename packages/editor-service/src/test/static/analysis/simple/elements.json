@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "simple-element",
+      "description": "This is a description of the element.",
+      "superclass": "HTMLElement",
+      "path": "simple-element.html",
+      "attributes": [
+        {
+          "name": "the-value",
+          "description": "This is a simple test property named theValue.",
+          "sourceRange": {
+            "start": {
+              "line": 9,
+              "column": 6
+            },
+            "end": {
+              "line": 12,
+              "column": 7
+            }
+          },
+          "type": "string",
+          "metadata": {}
+        }
+      ],
+      "properties": [
+        {
+          "name": "theValue",
+          "type": "string",
+          "description": "This is a simple test property named theValue.",
+          "sourceRange": {
+            "start": {
+              "line": 9,
+              "column": 6
+            },
+            "end": {
+              "line": 12,
+              "column": 7
+            }
+          },
+          "metadata": {
+            "polymer": {
+              "notify": true
+            }
+          }
+        }
+      ],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [
+        {
+          "name": "the-value-changed",
+          "description": "Fired when the `theValue` property changes.",
+          "type": "CustomEvent",
+          "metadata": {}
+        }
+      ],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 4,
+          "column": 10
+        },
+        "end": {
+          "line": 15,
+          "column": 3
+        }
+      }
+    }
+  ]
+}

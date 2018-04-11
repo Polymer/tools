@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0",
+  "elements": [
+    {
+      "tagname": "my-element",
+      "description": "This is a big comment on the element!",
+      "superclass": "HTMLElement",
+      "path": "documented.html",
+      "attributes": [],
+      "properties": [],
+      "styling": {
+        "cssVariables": [],
+        "selectors": []
+      },
+      "demos": [],
+      "slots": [],
+      "events": [],
+      "metadata": {},
+      "sourceRange": {
+        "start": {
+          "line": 12,
+          "column": 12
+        },
+        "end": {
+          "line": 14,
+          "column": 5
+        }
+      }
+    }
+  ]
+}

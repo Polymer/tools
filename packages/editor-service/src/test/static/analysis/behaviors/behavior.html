@@ -1,0 +1,16 @@
+<link rel="import" href="./subdir/subbehavior.html">
+
+<script>
+  /** @polymerBehavior */
+  MyNamespace.SimpleBehavior = {
+    behaviors: [MyNamespace.SubBehavior],
+    properties: {
+      /** A property provided by SimpleBehavior. */
+      inheritPlease: {
+        type: Number,
+        value: 10,
+        notify: true
+      }
+    }
+  };
+</script>
