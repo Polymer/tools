@@ -60,7 +60,6 @@
     "temp": "^0.8.3",
     "tsc-then": "^1.0.1",
     "tslint": "^4.1.1",
-    "typescript": "^2.7.1",
     "typescript-json-schema": "^0.21.0"
   },
   "dependencies": {

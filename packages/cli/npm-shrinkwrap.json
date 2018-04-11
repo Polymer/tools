@@ -9067,7 +9067,6 @@
           "integrity": "sha1-+CBJdb0NrLvltYqKk//B/tD/zSo=",
           "requires": {
             "@types/clone": "0.1.30",
-            "@types/node": "6.0.65",
             "@types/parse5": "2.2.34",
             "clone": "2.1.2",
             "parse5": "2.2.3"
@@ -11124,11 +11123,6 @@
       "version": "0.0.6",
       "resolved": "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz",
       "integrity": "sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c="
-    },
-    "typescript": {
-      "version": "2.8.1",
-      "resolved": "https://registry.npmjs.org/typescript/-/typescript-2.8.1.tgz",
-      "integrity": "sha512-Ao/f6d/4EPLq0YwzsQz8iXflezpTkQzqAyenTiw4kCUGr1uPiFLC3+fZ+gMZz6eeI/qdRUqvC+HxIJzUAzEFdg=="
     },
     "typical": {
       "version": "2.6.1",

@@ -33,8 +33,7 @@
     "mocha": "^3",
     "source-map-support": "^0.4.2",
     "tsc-then": "^1.0.1",
-    "tslint": "^5",
-    "typescript": "^2.4.2"
+    "tslint": "^5"
   },
   "dependencies": {
     "@types/minimatch": "^3.0.1",
