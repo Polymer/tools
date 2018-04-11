@@ -1,0 +1,37 @@
+{
+  "name": "@polymer/tools-common",
+  "repository": "https://github.com/Polymer/tools-common",
+  "version": "2.0.0",
+  "engines": {
+    "node": ">=6.0"
+  },
+  "scripts-to-copy": {
+    "lint": "gulp lint",
+    "init": "gulp init",
+    "build": "gulp build",
+    "test": "gulp test",
+    "prepublishOnly": "gulp build-all",
+    "format": "find src/ test/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
+  },
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "depcheck": "^0.6.0",
+    "fs-extra": "^3.0.0",
+    "gulp-eslint": "^4.0.0",
+    "gulp-mocha": "^4.0.0",
+    "gulp-tslint": "^8.0.0",
+    "gulp-typescript": "^3.0.0",
+    "merge-stream": "^1.0.0",
+    "run-sequence": "^1.0.0",
+    "tslint": "^5.0.0"
+  },
+  "peerDependencies": {
+    "gulp": "^3.9.1"
+  },
+  "devDependencies": {
+    "clang-format": "1.0.46",
+    "gulp": "^3.9.1",
+    "typescript": "^2.2.0"
+  }
+}
