@@ -54,7 +54,7 @@
     "semver": "^5.4.1",
     "shady-css-parser": "^0.1.0",
     "split": "^1.0.0",
-    "vscode-languageserver": "=4.0.0",
+    "vscode-languageserver": "^4.1.1",
     "vscode-uri": "^1.0.0",
     "winston": "^2.3.1"
   },
