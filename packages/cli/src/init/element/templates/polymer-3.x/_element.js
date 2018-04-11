@@ -1,4 +1,4 @@
-import { PolymerElement } from "@polymer/polymer/polymer-element.js";
+import {PolymerElement} from '@polymer/polymer/polymer-element.js';
 
 /**
  * `<%= name %>`
@@ -23,8 +23,8 @@ class <%= elementClassName %> extends PolymerElement {
     return {
       prop1: {
         type: String,
-        value: '<%= name %>'
-      }
+        value: '<%= name %>',
+      },
     };
   }
 }

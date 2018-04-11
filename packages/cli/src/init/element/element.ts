@@ -152,7 +152,7 @@ export function createElementGenerator(templateName: string):
   }
 
   switch (templateName) {
-    case "polymer-3.x":
+    case 'polymer-3.x':
       return Polymer3ElementGenerator;
     default:
       return ElementGenerator;
