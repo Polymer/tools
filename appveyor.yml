@@ -4,12 +4,14 @@ install:
   # https://www.appveyor.com/docs/lang/nodejs-iojs/#selecting-nodejs-or-iojs-version
   - ps: Install-Product node ''
   - npm install
+  - rm packages/*/package-lock.json
   - npm run bootstrap
+  - npm run build
+  - ls -l packages/polyserve/lib
 
 test_script:
   - node --version
   - npm --version
-  - npx lerna --version
   - npm run test:windows
   - npm run test:integration:windows
 

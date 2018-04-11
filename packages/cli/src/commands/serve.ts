@@ -19,10 +19,8 @@
 
 import * as logging from 'plylog';
 import {ProjectConfig} from 'polymer-project-config';
-import * as polyserveTypeOnly from 'polyserve';
 import {args as polyserveArgs} from 'polyserve/lib/args';
 import {ServerOptions} from 'polyserve/lib/start_server';
-import * as urlTypeOnly from 'url';
 
 import {Environment} from '../environment/environment';
 
@@ -40,10 +38,10 @@ export class ServeCommand implements Command {
 
   async run(options: CommandOptions, config: ProjectConfig) {
     // Defer dependency loading until this specific command is run
-    const polyserve = require('polyserve') as typeof polyserveTypeOnly;
+    const polyserve = await import('polyserve');
     const startServers = polyserve.startServers;
     const getServerUrls = polyserve.getServerUrls;
-    const url = require('url') as typeof urlTypeOnly;
+    const url = await import('url');
 
     let openPath: string|undefined;
     if (config.entrypoint && config.shell) {

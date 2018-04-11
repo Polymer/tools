@@ -75,8 +75,12 @@ gulp.task('depcheck', ['build'], () => {
            // automatically
            // loaded by TypeScript during build. depcheck can't detect this
            // so we ignore them here. Same with babel plugins.
-           ignoreMatches:
-               ['@types/*', 'vinyl', 'babel-plugin-external-helpers']
+           ignoreMatches: [
+             '@types/*',
+             'vinyl',
+             'babel-plugin-external-helpers',
+             'polymer-bundler',
+            ],
          })
       .then((result) => {
         let invalidFiles = Object.keys(result.invalidFiles) || [];

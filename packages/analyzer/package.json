@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "clean": "touch lib && rm -rf lib && mkdir lib",
-    "build": "gulp build --silent",
+    "build": "gulp build",
     "release": "npm run compile",
     "lint": "gulp lint",
     "test": "npm run clean && npm run build && npm run lint && mocha",
