@@ -64,7 +64,7 @@
     "polymer-bundler": "^4.0.0-pre.4",
     "polymer-linter": "^3.0.0-pre.5",
     "polymer-project-config": "^3.13.0",
-    "polyserve": "^0.27.1",
+    "polyserve": "^0.27.2",
     "request": "^2.72.0",
     "rimraf": "^2.6.1",
     "semver": "^5.3.0",
