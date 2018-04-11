@@ -19,7 +19,7 @@ import {PackageUrlResolver, SourcePosition, SourceRange, UrlLoader, UrlResolver}
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
 import {ClientCapabilities, CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeConfigurationNotification, DidChangeConfigurationParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
-import {DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
+import {CancellationToken, DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
 import URI from 'vscode-uri';
 
 import AnalyzerLSPConverter from '../language-server/converter';
@@ -222,7 +222,8 @@ export class TestClient {
       capabilities,
       workspaceFolders: null,
     };
-    return this.connection.sendRequest(InitializeRequest.type, init);
+    return this.connection.sendRequest(
+        InitializeRequest.type, init, CancellationToken.None);
   }
 
 
@@ -238,7 +239,8 @@ export class TestClient {
       position: this.converter.convertSourcePosition(position),
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
     };
-    return this.connection.sendRequest(HoverRequest.type, params);
+    return this.connection.sendRequest(
+        HoverRequest.type, params, CancellationToken.None);
   }
 
   async getDefinition(path: string, position: SourcePosition):
@@ -247,7 +249,8 @@ export class TestClient {
       position: this.converter.convertSourcePosition(position),
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
     };
-    return this.connection.sendRequest(DefinitionRequest.type, params);
+    return this.connection.sendRequest(
+        DefinitionRequest.type, params, CancellationToken.None);
   }
 
   private openFiles = new Set<string>();
@@ -337,7 +340,8 @@ export class TestClient {
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
     };
     return this.connection.sendRequest(
-        CompletionRequest.type, params) as Promise<CompletionList>;
+        CompletionRequest.type, params,
+        CancellationToken.None) as Promise<CompletionList>;
   }
 
   async getReferences(
@@ -347,26 +351,30 @@ export class TestClient {
       textDocument: {uri: this.converter.getUriForLocalPath(path)},
       context: {includeDeclaration: includeDefinition}
     };
-    return this.connection.sendRequest(ReferencesRequest.type, params);
+    return this.connection.sendRequest(
+        ReferencesRequest.type, params, CancellationToken.None);
   }
 
   async getWorkspaceSymbols(query: string): Promise<null|SymbolInformation[]> {
     const params: WorkspaceSymbolParams = {query};
-    return this.connection.sendRequest(WorkspaceSymbolRequest.type, params);
+    return this.connection.sendRequest(
+        WorkspaceSymbolRequest.type, params, CancellationToken.None);
   }
 
   async getDocumentSymbols(filePath: string) {
     const params: DocumentSymbolParams = {
       textDocument: {uri: this.converter.getUriForLocalPath(filePath)}
     };
-    return this.connection.sendRequest(DocumentSymbolRequest.type, params);
+    return this.connection.sendRequest(
+        DocumentSymbolRequest.type, params, CancellationToken.None);
   }
 
   async getCodeLenses(path: string): Promise<null|CodeLens[]> {
     const params: CodeLensParams = {
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
     };
-    return this.connection.sendRequest(CodeLensRequest.type, params);
+    return this.connection.sendRequest(
+        CodeLensRequest.type, params, CancellationToken.None);
   }
 
   private latestVersionMap = new Map<string, number>();
