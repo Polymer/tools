@@ -220,14 +220,21 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     const previousGeneratedModule = options.moduleScriptIdx === 0 ?
         undefined :
         generateModuleName(options.moduleScriptIdx - 1);
-    const depStr = previousGeneratedModule === undefined ?
-        '' :
-        `'${previousGeneratedModule}', `;
     // The AMD Babel plugin will produce a `define` call with no name argument,
     // since it assumes its name corresponds to its file name. This is an inline
-    // script, though, and we need a handle to it for chaining, so insert a name
-    // argument.
-    js = js.replace('define([', `define('${generatedModule}', [${depStr}`);
+    // script, though, and we need a handle to it for chaining, so insert a
+    // module name argument, plus a dependency on the previous module.
+    js = js.replace(/define\(\[([^\]]*)\]/, (_match, deps) => {
+      if (previousGeneratedModule !== undefined) {
+        // Note that existing dependencies must come before our generated one,
+        // becuase we are not updating the callback function parameters.
+        if (deps.length > 0) {
+          deps += ', ';
+        }
+        deps += `'${previousGeneratedModule}'`;
+      }
+      return `define('${generatedModule}', [${deps}]`;
+    });
   }
 
   js = replaceTemplateObjectNames(js);

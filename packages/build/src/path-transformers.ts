@@ -53,9 +53,13 @@
 import * as path from 'path';
 import {PackageRelativeUrl} from 'polymer-analyzer';
 
-export declare class LocalFsPathBrand { private LocalFsPathBrand: never; }
+export declare class LocalFsPathBrand {
+  private LocalFsPathBrand: never;
+}
 export type LocalFsPath = string&LocalFsPathBrand;
-export declare class PosixPathBrand { private PosixPathBrand: never; }
+export declare class PosixPathBrand {
+  private PosixPathBrand: never;
+}
 export type PosixPath = string&PosixPathBrand;
 
 /**
