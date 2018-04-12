@@ -12,9 +12,9 @@
     <!-- See https://goo.gl/OOhYW5 -->
     <link rel="manifest" href="/manifest.json">
 
-    <script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
 
-    <link rel="import" href="/src/<%= elementName %>/<%= elementName %>.html">
+    <script type="module" src="/src/<%= elementName %>/<%= elementName %>.js"></script>
   </head>
   <body>
     <<%= elementName %>></<%= elementName %>>

@@ -23,7 +23,7 @@ import Generator = require('yeoman-generator');
  */
 export function createApplicationGenerator(templateName: string):
     (typeof Generator) {
-  return class ApplicationGenerator extends Generator {
+  class ApplicationGenerator extends Generator {
     props: any;
 
     constructor(args: string|string[], options: any) {
@@ -116,4 +116,41 @@ export function createApplicationGenerator(templateName: string):
           'Check out your new project README for information about what to do next.\n');
     }
   };
+
+  class Polymer3ApplicationGenerator extends ApplicationGenerator {
+    // TODO(bicknellr): Why doesn't this inherit properly? Because `async` is
+    // compiled out?
+    async prompting() {
+      return super.prompting();
+    }
+
+    writing() {
+      const elementName = this.props.elementName;
+
+      this.fs.copyTpl(
+          `${this.templatePath()}/**/?(.)!(_)*`,
+          this.destinationPath(),
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('src/_element/_element.js'),
+          `src/${elementName}/${elementName}.js`,
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('test/_element/_element_test.html'),
+          `test/${elementName}/${elementName}_test.html`,
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('.gitignore'), '.gitignore', this.props);
+    }
+  }
+
+  switch (templateName) {
+    case 'polymer-3.x':
+      return Polymer3ApplicationGenerator;
+    default:
+      return ApplicationGenerator;
+  }
 }
