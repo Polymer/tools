@@ -3,7 +3,7 @@
 		{
 			"path": "packages/analyzer"
 		},
-	        {
+		{
 			"path": "packages/browser-capabilities"
 		},
 		{
@@ -16,10 +16,10 @@
 			"path": "packages/cli"
 		},
 		{
-			"path": "packages/linter"
+			"path": "packages/editor-service"
 		},
 		{
-			"path": "packages/editor-service"
+			"path": "packages/linter"
 		},
 		{
 			"path": "packages/polyserve"
