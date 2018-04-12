@@ -19,7 +19,6 @@ import {assert} from 'chai';
 import {rewriteImportMeta} from '../babel-plugin-import-meta';
 
 suite('babel-plugin-import-meta', () => {
-
   test('transforms import.meta', () => {
     const input = stripIndent(`
       console.log(import.meta);
@@ -62,5 +61,4 @@ suite('babel-plugin-import-meta', () => {
     const result = babelCore.transform(input, {plugins: [plugin]}).code;
     assert.equal(result.trim(), expected.trim());
   });
-
 });

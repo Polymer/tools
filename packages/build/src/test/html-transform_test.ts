@@ -194,16 +194,18 @@ suite('htmlTransform', () => {
           <script type="module">import { depA } from './depA.js';</script>
           <script type="module" src="./depB.js"></script>
           <script type="module">import { depC } from './depC.js';</script>
+          <script type="module">'no imports';</script>
           <script type="module" src="./depD.js"></script>
         </body></html>`;
 
       const expected = `
       <html><head></head><body>
         <script>define('polymer-build-generated-module-0', ["./depA.js"], function (_depA) {"use strict";});</script>
-        <script>define('polymer-build-generated-module-1', ['polymer-build-generated-module-0', './depB.js']);</script>
-        <script>define('polymer-build-generated-module-2', ['polymer-build-generated-module-1', "./depC.js"], function (_depC) {"use strict";});</script>
-        <script>define('polymer-build-generated-module-3', ['polymer-build-generated-module-2', './depD.js']);</script>
-        <script>require(['polymer-build-generated-module-3']);</script>
+        <script>define('polymer-build-generated-module-1', ['./depB.js', 'polymer-build-generated-module-0']);</script>
+        <script>define('polymer-build-generated-module-2', ["./depC.js", 'polymer-build-generated-module-1'], function (_depC) {"use strict";});</script>
+        <script>define('polymer-build-generated-module-3', ['polymer-build-generated-module-2'], function () {"use strict";'no imports';});</script>
+        <script>define('polymer-build-generated-module-4', ['./depD.js', 'polymer-build-generated-module-3']);</script>
+        <script>require(['polymer-build-generated-module-4']);</script>
       </body></html>`;
 
       assertEqualIgnoringWhitespace(

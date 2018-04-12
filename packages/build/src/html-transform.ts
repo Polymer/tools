@@ -203,11 +203,11 @@ function transformEsModuleToAmd(
   const isExternal = dom5.hasAttribute(script, 'src');
   if (isExternal) {
     const deps = [];
+    const externalSrc = dom5.getAttribute(script, 'src');
+    deps.push(externalSrc);
     if (previousGeneratedModule !== undefined) {
       deps.push(previousGeneratedModule);
     }
-    const externalSrc = dom5.getAttribute(script, 'src');
-    deps.push(externalSrc);
     const depsStr = deps.map((dep) => `'${dep}'`).join(', ');
     dom5.removeAttribute(script, 'src');
     dom5.setTextContent(script, `define('${generatedModule}', [${depsStr}]);`);

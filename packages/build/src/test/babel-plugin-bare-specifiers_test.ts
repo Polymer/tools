@@ -20,7 +20,6 @@ import * as path from 'path';
 import {resolveBareSpecifiers} from '../babel-plugin-bare-specifiers';
 
 suite('babel-plugin-bare-specifiers', () => {
-
   const rootDir =
       path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
   const filePath = path.join(rootDir, 'foo.js');
@@ -39,5 +38,4 @@ suite('babel-plugin-bare-specifiers', () => {
             .code;
     assert.equal(result.trim(), expected.trim());
   });
-
 });
