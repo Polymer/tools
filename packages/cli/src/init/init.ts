@@ -44,6 +44,11 @@ const localGenerators: {[name: string]: GeneratorInfo} = {
     description: 'A simple Polymer 3.0 element template',
     generator: createElementGenerator('polymer-3.x'),
   },
+  'polymer-3-application': {
+    id: 'polymer-init-polymer-3-application:app',
+    description: 'A simple Polymer 3.0 application',
+    generator: createApplicationGenerator('polymer-3.x'),
+  },
   'polymer-2-element': {
     id: 'polymer-init-polymer-2-element:app',
     description: 'A simple Polymer 2.0 element template',
