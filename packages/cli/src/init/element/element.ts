@@ -149,6 +149,15 @@ export function createElementGenerator(templateName: string):
       this.fs.copyTpl(
           this.templatePath('.gitignore'), '.gitignore', this.props);
     }
+
+    install() {
+      this.log(chalk.bold('\nProject generated!'));
+      this.log('Installing dependencies...');
+      this.installDependencies({
+        bower: false,
+        npm: true,
+      });
+    }
   }
 
   switch (templateName) {
