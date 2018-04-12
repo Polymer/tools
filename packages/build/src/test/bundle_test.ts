@@ -529,10 +529,9 @@ suite('BuildBundler', () => {
             map.set(
                 urlResolver.resolve(
                     `bundled/${
-                                   [...bundle.entrypoints]
-                                       .map((u) => urlResolver.relative(u))
-                                       .join()
-                             }` as PackageRelativeUrl)!,
+                            [...bundle.entrypoints]
+                                .map((u) => urlResolver.relative(u))
+                                .join()}` as PackageRelativeUrl)!,
                 bundle);
           }
           return map;

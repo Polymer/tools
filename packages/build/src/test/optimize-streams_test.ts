@@ -158,8 +158,8 @@ suite('optimize-streams', () => {
           expected: `
             <html><head></head><body>
               <script>define('polymer-build-generated-module-0', ["./depA.js"], function (_depA) {"use strict";});</script>
-              <script>define('polymer-build-generated-module-1', ['polymer-build-generated-module-0', './depB.js']);</script>
-              <script>define('polymer-build-generated-module-2', ['polymer-build-generated-module-1', "./depC.js"], function (_depC) {"use strict";});</script>
+              <script>define('polymer-build-generated-module-1', ['./depB.js', 'polymer-build-generated-module-0']);</script>
+              <script>define('polymer-build-generated-module-2', ["./depC.js", 'polymer-build-generated-module-1'], function (_depC) {"use strict";});</script>
               <script>require(['polymer-build-generated-module-2']);</script>
             </body></html>
           `,
