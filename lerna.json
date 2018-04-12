@@ -8,14 +8,12 @@
     "publish": {
       "allowBranch": ["master"],
       "ignoreChanges": [
-        "README.md",
-        "CHANGELOG.md",
-        ".travis.yml",
-        "appveyor.yml",
-        ".gitignore",
         ".clang-format",
-        "tslint.json",
-        "src/test/**/*"
+        ".gitignore",
+        ".travis.yml",
+        "README.md",
+        "appveyor.yml",
+        "tslint.json"
       ]
     }
   }
