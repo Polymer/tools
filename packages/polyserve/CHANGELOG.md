@@ -8,13 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased-->
 <!-- Add new, unreleased items here. -->
 
-## [0.27.3] (2018-04-11)
+## [0.27.4] (2018-04-11)
 * Fix AMD transform bug where if an HTML document had multiple type=module scripts, and any of them (apart from the first) had any kind of import, then that import was not accessible (because it was mapped to the wrong module callback function argument).
 
 ## [0.27.2] (2018-04-10)
-* Really bring in latest changes.
-
-## [0.27.1] (2018-04-09)
 * Bring in latest polymer-analyzer and polymer-build fixes to node resolution
   and babel helpers.
 
