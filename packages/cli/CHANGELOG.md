@@ -3,7 +3,10 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
-## v1.7.0-pre.8 [04-10-2018]
+## v1.7.0-pre.9 [04-11-2018]
+* Update to latest web-component-tester.
+
+## v1.7.0-pre.8 [04-11-2018]
 * Fix broken release.
 
 ## v1.7.0-pre.7 [04-10-2018]
