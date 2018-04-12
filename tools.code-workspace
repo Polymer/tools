@@ -3,6 +3,9 @@
 		{
 			"path": "packages/analyzer"
 		},
+	        {
+			"path": "packages/browser-capabilities"
+		},
 		{
 			"path": "packages/build"
 		},
