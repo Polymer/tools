@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Fix AMD transform bug where if an HTML document had multiple type=module scripts, and any of them (apart from the first) had any kind of import, then that import was not accessible (because it was mapped to the wrong module callback function argument).
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.11] - 2018-04-11
+* Fix AMD transform bug where if an HTML document had multiple type=module scripts, and any of them (apart from the first) had any kind of import, then that import was not accessible (because it was mapped to the wrong module callback function argument).
 
 ## [3.0.0-pre.10] - 2018-04-09
 * [breaking] The `jsTransform` function will now inline any required Babel helper functions by default. Previously they were always omitted. Added `externalHelpers` option to disable inlining. Note that the behavior of the build transformers from `getOptimizeStreams` continue to never inline the Babel helpers.
