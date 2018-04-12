@@ -32,7 +32,7 @@ export function createElementGenerator(templateName: string):
 
     constructor(args: string|string[], options: any) {
       super(args, options);
-      this.sourceRoot(path.join(__dirname, 'templates', templateName));
+      this.sourceRoot(path.join(__dirname, '../../../templates/element', templateName));
     }
 
     // This is necessary to prevent an exception in Yeoman when creating

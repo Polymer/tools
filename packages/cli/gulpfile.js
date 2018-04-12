@@ -81,6 +81,9 @@ gulp.task('depcheck', ['build'], () => {
              'babel-plugin-external-helpers',
              'polymer-bundler',
             ],
+           ignoreDirs: [
+             'templates',
+           ],
          })
       .then((result) => {
         let invalidFiles = Object.keys(result.invalidFiles) || [];
