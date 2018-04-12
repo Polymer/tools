@@ -3,6 +3,9 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.0-pre.10 [04-12-2018]
+* Pick up latest fixes to web-component-tester.
+
 ## v1.7.0-pre.9 [04-11-2018]
 * Fix AMD transform bug where if an HTML document had multiple type=module scripts, and any of them (apart from the first) had any kind of import, then that import was not accessible (because it was mapped to the wrong module callback function argument).
 * Update to latest web-component-tester.
