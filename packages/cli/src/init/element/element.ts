@@ -121,8 +121,16 @@ export function createElementGenerator(templateName: string):
   };
 
   class Polymer3ElementGenerator extends ElementGenerator {
-    // TODO(bicknellr): Why doesn't this inherit properly? Because `async` is
-    // compiled out?
+    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
+    initializing() {
+      return super.initializing();
+    }
+
+    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
     async prompting() {
       return super.prompting();
     }
@@ -148,6 +156,22 @@ export function createElementGenerator(templateName: string):
 
       this.fs.copyTpl(
           this.templatePath('.gitignore'), '.gitignore', this.props);
+    }
+
+    install() {
+      this.log(chalk.bold('\nProject generated!'));
+      this.log('Installing dependencies...');
+      this.installDependencies({
+        bower: false,
+        npm: true,
+      });
+    }
+
+    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
+    end() {
+      return super.end();
     }
   }
 
