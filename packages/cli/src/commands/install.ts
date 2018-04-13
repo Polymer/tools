@@ -45,10 +45,16 @@ export class InstallCommand implements Command {
     },
   ];
 
-  async run(options: CommandOptions, _config: ProjectConfig): Promise<void> {
+  async run(options: CommandOptions, config: ProjectConfig): Promise<void> {
     // Defer dependency loading until this specific command is run
     const install =
         require('../install/install').install as typeof installTypeOnly;
+
+    // Use `npm` from the config, if available and not passed as a CLI arg.
+    if (options.npm === undefined && config.npm !== undefined) {
+      options.npm = config.npm;
+    }
+
     await install(options);
   }
 }
