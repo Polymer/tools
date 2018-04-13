@@ -160,11 +160,11 @@ const babelHelperWhitelist = [
   'readOnlyError',
   'temporalRef',
   'temporalUndefined',
- 
+
   // es2015 destructuring
   'objectDestructuringEmpty',
   'objectWithoutProperties',
-  
+
   // es2015 template-literals
   'taggedTemplateLiteral',
   //'taggedTemplateLiteralLoose',
@@ -179,28 +179,34 @@ const babelHelperWhitelist = [
   'asyncIterator',
   'awaitAsyncGenerator',
   'wrapAsyncGenerator',
-  
+
   // es2018 proposal-object-rest-spread
   'objectSpread',
   'toPropertyKey',
 
-  // modules
-  'interopRequireDefault',
-  'interopRequireWildcard',
-
   // proposal-function-sent
   //'skipFirstGeneratorNext',
-  
+
   // proposal-class-properties
   //'classNameTDZError',
-  
+
   // proposal-decorators
   //'applyDecoratedDescriptor',
   //'initializerDefineProperty',
   //'initializerWarningHelper',
-  
+
   // react-inline-elements
   //'jsx',
+];
+
+/**
+ * Babel helpers needed only for ES module transformation. We bundle these with
+ * the require.js AMD module loader instead so that the AMD transform does not
+ * depend on loading all Babel helpers.
+ */
+const moduleHelpers = [
+  'interopRequireDefault',
+  'interopRequireWildcard',
 ];
 
 gulp.task('gen-babel-helpers', () => {
@@ -215,8 +221,10 @@ gulp.task('minify-requirejs', () => {
   const requireJsPath =
       path.join(path.dirname(require.resolve('requirejs')), '..', 'require.js');
   const requireJsCode = fs.readFileSync(requireJsPath, 'utf-8');
+  const moduleBabelHelpers = babelCore.buildExternalHelpers(moduleHelpers);
+  const combined = requireJsCode + moduleBabelHelpers;
   const minified =
-      babelCore.transform(requireJsCode, {presets: [babelPresetMinify]}).code;
+      babelCore.transform(combined, {presets: [babelPresetMinify]}).code;
   fs.mkdirpSync('./lib/');
   fs.writeFileSync('./lib/requirejs.min.js', minified, {encoding: 'utf-8'});
 });
