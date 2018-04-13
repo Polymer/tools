@@ -121,8 +121,14 @@ export function createElementGenerator(templateName: string):
   };
 
   class Polymer3ElementGenerator extends ElementGenerator {
-    // TODO(bicknellr): Why doesn't this inherit properly? Because `async` is
-    // compiled out?
+    // This is not a no-op: Yeoman only checks the object's prototype's own
+    // properties for methods.
+    initializing() {
+      return super.initializing();
+    }
+
+    // This is not a no-op: Yeoman only checks the object's prototype's own
+    // properties for methods.
     async prompting() {
       return super.prompting();
     }
@@ -157,6 +163,12 @@ export function createElementGenerator(templateName: string):
         bower: false,
         npm: true,
       });
+    }
+
+    // This is not a no-op: Yeoman only checks the object's prototype's own
+    // properties for methods.
+    end() {
+      return super.end();
     }
   }
 
