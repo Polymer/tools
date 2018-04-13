@@ -25,7 +25,7 @@ tmp.setGracefulCleanup();
 suite('polymer build', function() {
   const binPath = path.join(__dirname, '../../../bin/polymer.js');
 
-  this.timeout(5 * 1000);
+  this.timeout(15 * 1000);
 
   test('handles a simple correct case', async () => {
     const tmpDir = tmp.dirSync();
