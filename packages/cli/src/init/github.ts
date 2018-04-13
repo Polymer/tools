@@ -55,9 +55,9 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
 
       if (branch === undefined) {
         logger.info(
-          (semverRange === '*') ?
-              `Finding latest release of ${owner}/${repo}` :
-              `Finding latest ${semverRange} release of ${owner}/${repo}`);
+            (semverRange === '*') ?
+                `Finding latest release of ${owner}/${repo}` :
+                `Finding latest ${semverRange} release of ${owner}/${repo}`);
         codeSource = await this._github.getSemverRelease(semverRange);
       } else {
         codeSource = await this._github.getBranch(branch);

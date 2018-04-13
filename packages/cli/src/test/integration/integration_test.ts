@@ -45,10 +45,9 @@ suite('integration tests', function() {
     });
 
     skipOnWindows('test the Polymer 3.x application template', async () => {
-      const dir =
-          await runGenerator(createApplicationGenerator('polymer-3.x'))
-              .withPrompts({name: 'my-app'})  // Mock the prompt answers
-              .toPromise();
+      const dir = await runGenerator(createApplicationGenerator('polymer-3.x'))
+                      .withPrompts({name: 'my-app'})  // Mock the prompt answers
+                      .toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
       await runCommand(binPath, ['lint'], {cwd: dir});
       await runCommand(binPath, ['test'], {cwd: dir});
@@ -113,12 +112,8 @@ suite('integration tests', function() {
     });
 
     test('test the 3.0 "shop" template', async () => {
-      const ShopGenerator = createGithubGenerator({
-        owner: 'Polymer',
-        repo: 'shop',
-        githubToken,
-        branch: '3.0'
-      });
+      const ShopGenerator = createGithubGenerator(
+          {owner: 'Polymer', repo: 'shop', githubToken, branch: '3.0'});
 
 
       // https://github.com/Polymer/tools/issues/137 for filling this out more.

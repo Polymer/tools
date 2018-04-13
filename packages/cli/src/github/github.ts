@@ -42,7 +42,10 @@ export class GithubResponseError extends Error {
   readonly statusMessage: string|undefined;
   readonly url: string;
 
-  constructor(url: string, statusCode: number|undefined, statusMessage: string|undefined) {
+  constructor(
+      url: string,
+      statusCode: number|undefined,
+      statusMessage: string|undefined) {
     super(`${statusCode} fetching ${url} - ${statusMessage}`);
     this.url = url;
     this.statusCode = statusCode;
@@ -185,21 +188,21 @@ export class Github {
     return {
       name: maxSatisfyingRelease.tag_name,
       tarball_url: maxSatisfyingRelease.tarball_url
-      }  ;
+    };
   }
 
   async getBranch(branchName: string): Promise<CodeSource> {
     // GitHubApi.Branch is not correct.
-    type ActualBranch = {
+    interface ActualBranch {
       name: string;
-      commit: {
-        sha: string;
-      };
-    };
-    const branch: ActualBranch = await this._github.repos.getBranch({owner: this._owner, repo: this._repo, branch: branchName});
+      commit: {sha: string};
+    }
+    const branch: ActualBranch = await this._github.repos.getBranch(
+        {owner: this._owner, repo: this._repo, branch: branchName});
     return {
       name: branch.name,
-      tarball_url: `https://codeload.github.com/${this._owner}/${this._repo}/legacy.tar.gz/${branch.commit.sha}`
+      tarball_url: `https://codeload.github.com/${this._owner}/${
+          this._repo}/legacy.tar.gz/${branch.commit.sha}`
     };
   }
 }
