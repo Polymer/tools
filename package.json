@@ -15,7 +15,7 @@
     "test": "lerna run test",
     "test:windows": "lerna run test --ignore polyserve",
     "test:integration": "lerna run test:integration",
-    "test:integration:windows": "lerna run test:integration --ignore polymer-linter"
+    "test:integration:windows": "lerna run test:integration"
   },
   "devDependencies": {
     "lerna": "^2.10.1"
