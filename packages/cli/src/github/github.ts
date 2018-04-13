@@ -37,12 +37,14 @@ export type RequestAPI = request.RequestAPI<
     request.RequiredUriUrl>;
 
 export class GithubResponseError extends Error {
-  name = 'GithubResponseError';
-  statusCode?: number;
-  statusMessage?: string;
+  readonly name = 'GithubResponseError';
+  readonly statusCode: number|undefined;
+  readonly statusMessage: string|undefined;
+  readonly url: string;
 
-  constructor(statusCode?: number, statusMessage?: string) {
-    super('unexpected response: ' + statusCode + ' ' + statusMessage);
+  constructor(url: string, statusCode: number|undefined, statusMessage: string|undefined) {
+    super(`${statusCode} fetching ${url} - ${statusMessage}`);
+    this.url = url;
     this.statusCode = statusCode;
     this.statusMessage = statusMessage;
   }
@@ -55,6 +57,11 @@ export interface GithubOpts {
   githubApi?: GitHubApi;
   requestApi?: request
       .RequestAPI<request.Request, request.CoreOptions, request.RequiredUriUrl>;
+}
+
+export interface CodeSource {
+  name: string;
+  tarball_url: string;
 }
 
 export class Github {
@@ -121,10 +128,10 @@ export class Github {
             }
           })
           .on('response',
-              function(response) {
+              (response) => {
                 if (response.statusCode !== 200) {
                   reject(new GithubResponseError(
-                      response.statusCode, response.statusMessage));
+                      tarballUrl, response.statusCode, response.statusMessage));
                   return;
                 }
                 logger.info('Unpacking template files');
@@ -156,7 +163,7 @@ export class Github {
    * Get all Github releases and match their tag names against the given semver
    * range. Return the release with the latest possible match.
    */
-  async getSemverRelease(semverRange: string): Promise<GitHubApi.Release> {
+  async getSemverRelease(semverRange: string): Promise<CodeSource> {
     // Note that we only see the 100 most recent releases. If we ever release
     // enough versions that this becomes a concern, we'll need to improve this
     // call to request multiple pages of results.
@@ -175,6 +182,24 @@ export class Github {
       throw new Error(`${this._owner}/${this._repo} has no releases matching ${
           semverRange}.`);
     }
-    return maxSatisfyingRelease;
+    return {
+      name: maxSatisfyingRelease.tag_name,
+      tarball_url: maxSatisfyingRelease.tarball_url
+      }  ;
+  }
+
+  async getBranch(branchName: string): Promise<CodeSource> {
+    // GitHubApi.Branch is not correct.
+    type ActualBranch = {
+      name: string;
+      commit: {
+        sha: string;
+      };
+    };
+    const branch: ActualBranch = await this._github.repos.getBranch({owner: this._owner, repo: this._repo, branch: branchName});
+    return {
+      name: branch.name,
+      tarball_url: `https://codeload.github.com/${this._owner}/${this._repo}/legacy.tar.gz/${branch.commit.sha}`
+    };
   }
 }

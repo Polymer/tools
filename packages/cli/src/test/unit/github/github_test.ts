@@ -173,7 +173,7 @@ suite('github/github', () => {
       getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('*');
-      assert.deepEqual(release, {tag_name: 'v2.1.0'});
+      assert.deepEqual(release, {name: 'v2.1.0'});
     });
 
     testName =
@@ -182,7 +182,7 @@ suite('github/github', () => {
       getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('^v1.0.0');
-      assert.deepEqual(release, {tag_name: 'v1.2.1'});
+      assert.deepEqual(release, {name: 'v1.2.1'});
     });
 
     testName =
@@ -191,7 +191,7 @@ suite('github/github', () => {
       getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('^v2.0.0');
-      assert.deepEqual(release, {tag_name: 'v2.1.0'});
+      assert.deepEqual(release, {name: 'v2.1.0'});
     });
 
     testName = 'rejects with an error if no matching releases are found';

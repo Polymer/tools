@@ -23,6 +23,7 @@ export interface GithubGeneratorOptions {
   owner: string;
   repo: string;
   semverRange?: string;
+  branch?: string;
 }
 
 export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
@@ -31,6 +32,7 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
   const owner = githubOptions.owner;
   const repo = githubOptions.repo;
   const semverRange = githubOptions.semverRange || '*';
+  const branch = githubOptions.branch;
 
   return class GithubGenerator extends Generator {
     _github: Github;
@@ -48,31 +50,28 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
       return 'GithubGenerator';
     }
 
-    async writing(): Promise<void> {
-      const done = this.async();
-      let release;
+    async _writing() {
+      let codeSource;
 
-      logger.info(
+      if (branch === undefined) {
+        logger.info(
           (semverRange === '*') ?
               `Finding latest release of ${owner}/${repo}` :
               `Finding latest ${semverRange} release of ${owner}/${repo}`);
-      try {
-        release = await this._github.getSemverRelease(semverRange);
-      } catch (error) {
-        done(error);
-        return;
+        codeSource = await this._github.getSemverRelease(semverRange);
+      } else {
+        codeSource = await this._github.getBranch(branch);
       }
 
-      logger.info(`Downloading ${release.tag_name} of ${owner}/${repo}`);
-      try {
-        await this._github.extractReleaseTarball(
-            release.tarball_url, this.destinationRoot());
-        this._github.removeUnwantedFiles(this.destinationRoot());
-        done();
-      } catch (error) {
-        logger.error(`Could not download release from ${owner}/${repo}`);
-        done(error);
-      }
+      logger.info(`Downloading ${codeSource.name} of ${owner}/${repo}`);
+      await this._github.extractReleaseTarball(
+          codeSource.tarball_url, this.destinationRoot());
+      this._github.removeUnwantedFiles(this.destinationRoot());
+    }
+
+    async writing(): Promise<void> {
+      const done = this.async();
+      this._writing().then(() => done(), (err) => done(err));
     }
 
     install() {
