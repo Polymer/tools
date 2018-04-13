@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased-->
+## Unreleased
+* The AMD loader script now includes the Babel helpers needed by the AMD module transform.
 <!-- Add new, unreleased items here. -->
 
 ## [0.27.4] (2018-04-11)
