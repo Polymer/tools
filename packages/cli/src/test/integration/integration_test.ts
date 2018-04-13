@@ -42,15 +42,15 @@ suite('integration tests', function() {
           await runGenerator(createElementGenerator('polymer-3.x'))
               .withPrompts({name: 'my-element'})  // Mock the prompt answers
               .toPromise();
-      // TODO(bicknellr): Use `polymer install` once it supports installing npm
+      // TODO(#118): Use `polymer install` once it supports installing npm
       // packages.
       await exec('npm install', {cwd: dir});
 
-      // TODO(bicknellr): Add this back in when `polymer lint` has a Polymer 3
+      // TODO(#130): Add this back in when `polymer lint` has a Polymer 3
       // option.
       // await runCommand(binPath, ['lint'], {cwd: dir});
 
-      // TODO(bicknellr): Remove the `--module-resolution=node` argument once
+      // TODO(#113): Remove the `--module-resolution=node` argument once
       // `polymer test` passes them in correctly
       await runCommand(binPath, ['test', '--module-resolution=node'], {cwd: dir});
     });
