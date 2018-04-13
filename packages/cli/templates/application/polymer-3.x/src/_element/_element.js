@@ -5,7 +5,6 @@ import {PolymerElement} from '@polymer/polymer/polymer-element.js';
  * @polymer
  */
 class <%= elementClassName %> extends PolymerElement {
-  static get is() { return '<%= elementName %>'; }
   static get template() {
     return `
       <style>
@@ -26,4 +25,4 @@ class <%= elementClassName %> extends PolymerElement {
   }
 }
 
-window.customElements.define(<%= elementClassName %>.is, <%= elementClassName %>);
+window.customElements.define('<%= elementName %>', <%= elementClassName %>);
