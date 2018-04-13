@@ -10,7 +10,7 @@ addons:
 
 env:
   - TEST_COMMAND=test
-  - TEST_COMMAND=run test:integration
+  - TEST_COMMAND="run test:integration"
 
 language: node_js
 node_js:
