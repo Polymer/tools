@@ -101,47 +101,112 @@ gulp.task('depcheck', function() {
  * There doesn't seem to be documentation on what helpers are available, or
  * which helpers are required for which transforms. The
  * source is here:
- * https://github.com/babel/babel/blob/6.x/packages/babel-helpers/src/helpers.js
+ * https://github.com/babel/babel/tree/master/packages/babel-helpers
  *
- * This list is an educated guess at the helpers needed for our transform set
- * of ES2015 - modules. When we switch to loose mode we should update the list.
+ * You can usually tell what the helpers are used for by searching the babel
+ * source to find out which plugin packages make an `addHelper` call for it.
  *
  * All helpers are listed here, with some commented out, so it's clear what
  * we've excluded.
  */
 const babelHelperWhitelist = [
-  'typeof',  // Symbol support, for IE11
-  // 'jsx', // we don't support JSX
-  // 'asyncIterator', // async-iterators are not in ES2015
-  // 'asyncGenerator', // async-iterators are not in ES2015
-  // 'asyncGeneratorDelegate', // async-iterators are not in ES2015
-  // 'asyncToGenerator', // async functions are not in ES2015
+
+  // __proto__ assignment
+  'defaults',
+  'extends',
+
+  // es2015 classes
+  'assertThisInitialized',
   'classCallCheck',
+  'construct',
   'createClass',
-  'defineEnumerableProperties',
-  'defaults',  // used to make `obj.__proto__ = bar` work
-  'defineProperty',
-  'extends',   // used when setting __proto__
-  'get',       // needed for class compilation
-  'inherits',  // used for es6 class inheritance
-  'instanceof',
-  // 'interopRequireDefault', // for modules support
-  // 'interopRequireWildcard', // for modules support
-  'newArrowCheck',  // confirms that `this` is correct inside arrow function
-                    // body
-  'objectDestructuringEmpty',
-  'objectWithoutProperties',
-  'possibleConstructorReturn',  // can we exclude with loose?
-  // 'selfGlobal', // not needed. `global` is not ES2015
-  'set',  // difficult to tell if needed
+  'get',
+  'getPrototypeOf',
+  'inherits',
+  //'inheritsLoose',
+  'possibleConstructorReturn',
+  'set',
+  'setPrototypeOf',
+  'superPropBase',
+  'wrapNativeSuper',
+
+  // es2015 array-spread
   'slicedToArray',
-  // 'slicedToArrayLoose',
-  'taggedTemplateLiteral',
-  // 'taggedTemplateLiteralLoose',
-  'temporalRef',  // not needed in loose?
-  'temporalUndefined',
+  //'slicedToArrayLoose',
   'toArray',
   'toConsumableArray',
+  'arrayWithoutHoles',
+  'arrayWithHoles',
+  'iterableToArray',
+  'iterableToArrayLimit',
+  //'iterableToArrayLimitLoose',
+  'nonIterableSpread',
+  'nonIterableRest',
+
+  // es2015 instanceof
+  'instanceof',
+
+  // es2015 arrow-functions
+  'newArrowCheck',
+
+  // es2015 typeof-symbol
+  'typeof',
+
+  // es2015 computed-properties
+  'defineEnumerableProperties',
+  'defineProperty',
+
+  // es2015 block-scoping
+  'readOnlyError',
+  'temporalRef',
+  'temporalUndefined',
+
+  // es2015 destructuring
+  'objectDestructuringEmpty',
+  'objectWithoutProperties',
+
+  // es2015 template-literals
+  'taggedTemplateLiteral',
+  //'taggedTemplateLiteralLoose',
+
+  // es2017 async-to-generator
+  'asyncToGenerator',
+
+  // es2018 proposal-async-generator-functions
+  'AsyncGenerator',
+  'AwaitValue',
+  'asyncGeneratorDelegate',
+  'asyncIterator',
+  'awaitAsyncGenerator',
+  'wrapAsyncGenerator',
+
+  // es2018 proposal-object-rest-spread
+  'objectSpread',
+  'toPropertyKey',
+
+  // proposal-function-sent
+  //'skipFirstGeneratorNext',
+
+  // proposal-class-properties
+  //'classNameTDZError',
+
+  // proposal-decorators
+  //'applyDecoratedDescriptor',
+  //'initializerDefineProperty',
+  //'initializerWarningHelper',
+
+  // react-inline-elements
+  //'jsx',
+];
+
+/**
+ * Babel helpers needed only for ES module transformation. We bundle these with
+ * the require.js AMD module loader instead so that the AMD transform does not
+ * depend on loading all Babel helpers.
+ */
+const moduleHelpers = [
+  'interopRequireDefault',
+  'interopRequireWildcard',
 ];
 
 gulp.task('gen-babel-helpers', () => {
@@ -156,8 +221,10 @@ gulp.task('minify-requirejs', () => {
   const requireJsPath =
       path.join(path.dirname(require.resolve('requirejs')), '..', 'require.js');
   const requireJsCode = fs.readFileSync(requireJsPath, 'utf-8');
+  const moduleBabelHelpers = babelCore.buildExternalHelpers(moduleHelpers);
+  const combined = requireJsCode + moduleBabelHelpers;
   const minified =
-      babelCore.transform(requireJsCode, {presets: [babelPresetMinify]}).code;
+      babelCore.transform(combined, {presets: [babelPresetMinify]}).code;
   fs.mkdirpSync('./lib/');
   fs.writeFileSync('./lib/requirejs.min.js', minified, {encoding: 'utf-8'});
 });
