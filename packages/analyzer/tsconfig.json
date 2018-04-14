@@ -5,7 +5,7 @@
     "outDir": "./lib"
   },
   "include": [
-    "custom_typings/*.d.ts",
+    "custom_typings/**/*.d.ts",
     "src/**/*.ts"
   ],
   "exclude": [

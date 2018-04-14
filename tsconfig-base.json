@@ -5,15 +5,13 @@
     "moduleResolution": "node",
 
     "strict": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-
     "preserveConstEnums": true,
 
     "lib": [
-      "es2017"
+      "es2017",
+      "esnext.asynciterable"
     ],
 
     "declaration": true,
