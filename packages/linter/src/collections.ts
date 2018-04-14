@@ -18,6 +18,31 @@ import {registry} from './registry';
 import {RuleCollection} from './rule';
 
 registry.register(
+    new RuleCollection('polymer-3', `Rules for projects that use Polymer 3.x`, [
+      'behaviors-spelling',
+      'call-super-in-callbacks',
+      'content-to-slot-declarations',
+      'content-to-slot-usages',
+      'content-selector-to-slotted',
+      'create-element-extension',
+      'custom-style-extension',
+      'databind-with-unknown-property',
+      'databinding-calls-must-be-functions',
+      'deprecated-css-custom-property-syntax',
+      'deprecated-shadow-dom-selectors',
+      'dom-calls-to-native',
+      'dom-module-invalid-attrs',
+      'element-before-dom-module',
+      'paper-toolbar-v1-to-v2',
+      'root-selector-to-html',
+      'set-unknown-attribute',
+      'style-into-template',
+      'unbalanced-polymer-delimiters',
+      'undefined-elements',
+      'validate-element-name',
+    ]));
+
+registry.register(
     new RuleCollection('polymer-2', `Rules for projects that use Polymer 2.x`, [
       'behaviors-spelling',
       'call-super-in-callbacks',
