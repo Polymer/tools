@@ -408,10 +408,12 @@ export function attachCommentsToFirstStatement(
   if (comments.length === 0) {
     return statements;
   }
-  if (statements.length === 0) {
-    // Create the emptiest statement we can. This is serialized as just ';'
-    statements = [jsc.expressionStatement(jsc.identifier(''))];
-  }
+  const message = `TODO(modulizer): the above comments were extracted\n` +
+      `  from HTML and may be out of place here. Review them and\n` +
+      `  then delete this string!`;
+  const firstStatement = jsc.expressionStatement(jsc.templateLiteral(
+      [jsc.templateElement({cooked: message, raw: message}, true)], [])) as RecastNode & estree.ExpressionStatement;
+  statements.unshift(firstStatement);
 
   /** Recast represents comments differently than espree. */
   interface RecastNode {
@@ -424,9 +426,6 @@ export function attachCommentsToFirstStatement(
     trailing: boolean;
     value: string;
   }
-  const firstStatement: (estree.Statement|estree.ModuleDeclaration)&RecastNode =
-      statements[0]!;
-
   const recastComments: RecastComment[] = comments.map((comment) => {
     const escapedComment = comment.replace(/\*\//g, '*\\/');
     return {
@@ -436,6 +435,7 @@ export function attachCommentsToFirstStatement(
       value: escapedComment,
     };
   });
+
   firstStatement.comments =
       (firstStatement.comments || []).concat(recastComments);
 

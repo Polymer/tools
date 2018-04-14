@@ -1,8 +1,8 @@
 
 declare module 'ast-types' {
-  import * as estree from 'estree';
-  import {Node} from 'estree';
-  export interface NodePath<N extends Node = Node> {
+import * as estree from 'estree';
+import {Node} from 'estree';
+  export interface NodePath<N = Node> {
     node: N;
     parent?: NodePath;
 
@@ -46,10 +46,10 @@ declare module 'ast-types' {
         (this: VisitorContext, path: NodePath<estree.Program>): void|boolean;
     visitEmptyStatement?
         (this: VisitorContext, path: NodePath<estree.EmptyStatement>):
-      void | boolean;
+            void|boolean;
     visitCallExpression?
         (this: VisitorContext, path: NodePath<estree.CallExpression>):
-      void | boolean;
+            void|boolean;
     visitBlockStatement?
         (this: VisitorContext, path: NodePath<estree.BlockStatement>):
             void|boolean;

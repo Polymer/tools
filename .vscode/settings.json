@@ -13,7 +13,7 @@
     "modulizer_workspace/**": true,
     "untouched_workspace/**": true,
     "modularizer_workspace/**": true,
-    "fixtures/generated/**": true
+    "fixtures/packages/**": true
   },
   "html.format.enable": false
 }

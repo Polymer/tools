@@ -95,6 +95,7 @@ $_documentContainer.innerHTML = `<dom-module id="paper-button">
 </dom-module>`;
 
 document.head.appendChild($_documentContainer);
+
 /**
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
@@ -171,6 +172,10 @@ Custom property | Description | Default
 
 @demo demo/index.html
 */
+`TODO(modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this string!`;
+
 Polymer({
   importPath: import.meta.url,
   is: 'paper-button',

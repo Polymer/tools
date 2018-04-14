@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `package.json`. Both default to `false`.
 * `deleteFiles` option will no longer delete any file from `node_modules/` or
   `bower_components/`.
+* Preserve comments more reliably.
 <!-- Add new, unreleased changes here. -->
 
 ## [0.3.0] - 2017-11-28

@@ -14,9 +14,9 @@
 
 export class Def {
   _name: string;
-  _bases: string[];
+  _bases: string[]|undefined;
   _fields = new Map<string, Field>();
-  _build: string[];
+  _build: string[]|undefined;
 
   constructor(name: string) {
     this._name = name;

@@ -58,14 +58,15 @@ require('./def/esprima')(fork);
 
 const types = [...Type.types.values()];
 const builders = types.filter((t) => t._build != null).map((t) => {
+  const build = t._build!;
   const name = leadingLowerCase(t._name);
-  const fields = t._build.map((f) => getField(t, f)!);
+  const fields = build.map((f) => getField(t, f)!);
 
   let lastRequiredIndex = -1;
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i];
     if (field === undefined) {
-      console.error(`field not found: ${t._build[i]} for type ${t._name}`);
+      console.error(`field not found: ${build[i]} for type ${t._name}`);
     }
     const optional = field.default != null || nullable(field.type);
     if (!optional) {
@@ -74,7 +75,7 @@ const builders = types.filter((t) => t._build != null).map((t) => {
   }
 
   let i = 0;
-  const args = t._build.map((f) => {
+  const args = build.map((f) => {
     const field = getField(t, f);
     if (field == null) {
       console.error(`field ${f} not found for type ${t._name}`);

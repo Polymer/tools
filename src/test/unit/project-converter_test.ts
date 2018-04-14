@@ -3093,7 +3093,9 @@ console.log('two');
 /* Second comment */
 /* Another comment */
 /* Final trailing comment */
-;
+\`TODO(modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this string!\`;
 
 // comment in script
 console.log('second script');
@@ -3116,7 +3118,9 @@ console.log('second script');
 /* First comment */
 /* Second comment */
 /* Final trailing comment */
-;
+\`TODO(modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this string!\`;
 `,
       });
     });
@@ -3142,7 +3146,6 @@ console.log('second script');
 
       assertSources(await convert(), {
         'test.js': `
-// comment in script
 /* /* First comment *\\/ */
 /* /* 1/2 comments *\\/ /* 2/2 comments *\\/ */
 /*
@@ -3150,6 +3153,11 @@ console.log('second script');
    *  Final comment
    **\\/
 */
+\`TODO(modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this string!\`;
+
+// comment in script
 console.log('second script');
 `,
       });
@@ -3171,7 +3179,9 @@ console.log('second script');
 /** @license This is a license */
 /* Second comment */
 /* Final trailing comment */
-;
+\`TODO(modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this string!\`;
 `,
       });
     });
@@ -3272,6 +3282,76 @@ export function methodOnFoo() {
       });
     });
 
+    testName = 'copy header comments';
+    test(testName, async () => {
+
+      setSources({
+        'test.html': `<!--
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<script>
+(function() {
+  'use strict';
+
+  // unresolved
+
+  function resolve() {
+    document.body.removeAttribute('unresolved');
+  }
+
+  if (window.WebComponents) {
+    window.addEventListener('WebComponentsReady', resolve);
+  } else {
+    if (document.readyState === 'interactive' || document.readyState === 'complete') {
+      resolve();
+    } else {
+      window.addEventListener('DOMContentLoaded', resolve);
+    }
+  }
+
+})();
+</script>`
+      });
+
+      assertSources(await convert(), {
+        'test.js': `
+/**
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
+\`TODO(modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this string!\`;
+
+// unresolved
+
+function resolve() {
+  document.body.removeAttribute('unresolved');
+}
+
+if (window.WebComponents) {
+  window.addEventListener('WebComponentsReady', resolve);
+} else {
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    resolve();
+  } else {
+    window.addEventListener('DOMContentLoaded', resolve);
+  }
+}
+`,
+      });
+    });
 
     suite('regression tests', () => {
       testName = `propagate templates for scripts consisting ` +
