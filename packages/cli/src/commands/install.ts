@@ -28,20 +28,21 @@ export class InstallCommand implements Command {
   aliases = ['i'];
 
   // TODO(justinfagnani): Expand and link to eventual doc on variants.
-  description = 'installs Bower dependencies, optionally installing "variants"';
+  description = 'Installs project dependencies from npm or Bower (optionally ' +
+      'installing "variants").';
 
   args = [
     {
       name: 'variants',
       type: Boolean,
       defaultValue: false,
-      description: 'Whether to install variants'
+      description: 'Whether to install Bower variants'
     },
     {
       name: 'offline',
       type: Boolean,
       defaultValue: false,
-      description: 'Don\'t hit the network'
+      description: 'Don\'t hit the network when installing Bower dependencies'
     },
   ];
 
