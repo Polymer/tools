@@ -48,7 +48,7 @@
     "gulp-shell": "^0.5.2",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-tslint": "^7.0.1",
-    "gulp-typescript": "^2.13.4",
+    "gulp-typescript": "^4.0.2",
     "knuth-shuffle": "^1.0.8",
     "memory-streams": "^0.1.1",
     "merge-stream": "^1.0.0",
