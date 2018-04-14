@@ -171,7 +171,18 @@ class RewriteNamespaceExportsPass {
         getNamespaceExports(body, this.mutableNames, fullyQualifiedName);
 
     // Replace nodePath with some number of namespace exports. Easiest way
-    // is to insert the exports before nodePath, then remove nodePath.
+    // is to insert the exports after nodePath, then remove nodePath.
+    const nodePathComments = getComments(nodePath);
+    if (nodePathComments.length > 0) {
+      const message =
+          `TODO(modulizer): A namespace named ${fullyQualifiedName} was\n` +
+          `declared here. The surrounding comments should be reviewed,\n` +
+          `and this string can then be deleted`;
+      const tombstone = jsc.expressionStatement(jsc.templateLiteral(
+          [jsc.templateElement({raw: message, cooked: message}, true)], []));
+      (tombstone as NodeWithComments).comments = nodePathComments;
+      nodePath.insertBefore(tombstone);
+    }
     for (const {node} of namespaceExports) {
       nodePath.insertBefore(node);
     }
@@ -311,7 +322,8 @@ function getNamespaceExports(
     namespaceName: string) {
   const exportRecords: {name: string, node: estree.Node}[] = [];
 
-  for (const {key, value} of namespace.properties) {
+  for (const propNode of namespace.properties) {
+    const {key, value} = propNode;
     if (key.type !== 'Identifier') {
       console.warn(`unsupported namespace property type ${key.type}`);
       continue;
@@ -323,36 +335,32 @@ function getNamespaceExports(
     const isMutable = mutableNames.has(fullName) || mutableNames.has(thisName);
     if (value.type === 'ObjectExpression' || value.type === 'ArrayExpression' ||
         value.type === 'Literal') {
-      exportRecords.push({
-        name,
-        node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
-            isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]))
-      });
+      const node = jsc.exportNamedDeclaration(jsc.variableDeclaration(
+          isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]));
+      (node as NodeWithComments).comments = getCommentsFromNode(propNode);
+      exportRecords.push({name, node});
     } else if (value.type === 'FunctionExpression') {
       const func = value;
-      exportRecords.push({
-        name,
-        node: jsc.exportNamedDeclaration(jsc.functionDeclaration(
-            key,  // id
-            func.params,
-            func.body,
-            func.generator))
-      });
+      const node = jsc.exportNamedDeclaration(jsc.functionDeclaration(
+          key,  // id
+          func.params,
+          func.body,
+          func.generator));
+      (node as NodeWithComments).comments = getCommentsFromNode(propNode);
+      exportRecords.push({name, node});
     } else if (value.type === 'ArrowFunctionExpression') {
       const isMutable =
           mutableNames.has(fullName) || mutableNames.has(thisName);
-      exportRecords.push({
-        name,
-        node: jsc.exportNamedDeclaration(jsc.variableDeclaration(
-            isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]))
-      });
+      const node = jsc.exportNamedDeclaration(jsc.variableDeclaration(
+          isMutable ? 'let' : 'const', [jsc.variableDeclarator(key, value)]));
+      (node as NodeWithComments).comments = getCommentsFromNode(propNode);
+      exportRecords.push({name, node});
     } else if (value.type === 'Identifier') {
-      exportRecords.push({
-        name,
-        node: jsc.exportNamedDeclaration(
-            null,
-            [jsc.exportSpecifier(jsc.identifier(name), jsc.identifier(name))]),
-      });
+      const node = jsc.exportNamedDeclaration(
+          null,
+          [jsc.exportSpecifier(jsc.identifier(name), jsc.identifier(name))]);
+      (node as NodeWithComments).comments = getCommentsFromNode(propNode);
+      exportRecords.push({name, node});
     } else {
       console.warn('Namespace property not handled:', name, value);
     }
@@ -445,11 +453,28 @@ function replacePreservingComments(
     nodePath: NodePath, replacement: estree.Node) {
   const comments = getComments(nodePath);
   nodePath.replace(replacement);
-  const commentsToRemove = new Set<estree.Comment>();
-  for (const comment of comments) {
-    if (!jsdocToRemove.test(comment.value)) {
-      continue;
-    }
+  (nodePath.node as any).comments = comments;
+}
+
+type NodeWithComments = estree.Node&{comments?: estree.Comment[]};
+
+
+function getComments(nodePath: NodePath) {
+  return getCommentsFromNode(nodePath.node);
+}
+function getCommentsFromNode(node: estree.Node&
+                             {comments?: estree.Comment[]}): estree.Comment[] {
+  const results = [];
+  if (node.comments) {
+    results.push(...node.comments);
+  }
+  return correctComments(results);
+}
+
+function correctComments(comments: estree.Comment[]): estree.Comment[] {
+  const correctedComments = [];
+  for (const existingComment of comments) {
+    const comment = {...existingComment};
     // Filter out namespace and memberof comments, which no longer make sense.
     const lines = comment.value.split('\n');
     comment.value =
@@ -467,21 +492,9 @@ function replacePreservingComments(
     // If a comment now only has whitespace and * charactes, we should filter it
     // out entirely.
     if (!/[^\s\*]/.test(comment.value)) {
-      commentsToRemove.add(comment);
+      continue;
     }
+    correctedComments.push(comment);
   }
-  (nodePath.node as any).comments =
-      comments.filter((c) => !commentsToRemove.has(c));
-}
-
-function getComments(nodePath: NodePath) {
-  return getCommentsFromNode(nodePath.node);
-}
-function getCommentsFromNode(node: estree.Node&
-                             {comments?: estree.Comment[]}): estree.Comment[] {
-  const results = [];
-  if (node.comments) {
-    results.push(...node.comments);
-  }
-  return results;
+  return correctedComments;
 }

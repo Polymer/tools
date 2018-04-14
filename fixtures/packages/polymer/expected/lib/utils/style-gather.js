@@ -27,6 +27,24 @@ function styleForImport(importDoc) {
 /** @typedef {{assetpath: string}} */
 let templateWithAssetPath; // eslint-disable-line no-unused-vars
 
+/**
+ * Module with utilities for collection CSS text from `<templates>`, external
+ * stylesheets, and `dom-module`s.
+ *
+ * @summary Module with utilities for collection CSS text from various sources.
+ */
+`TODO(modulizer): A namespace named Polymer.StyleGather was
+declared here. The surrounding comments should be reviewed,
+and this string can then be deleted`;
+
+/**
+ * Returns a list of <style> elements in a space-separated list of `dom-module`s.
+ *
+ * @param {string} moduleIds List of dom-module id's within which to
+ * search for css.
+ * @return {!Array<!HTMLStyleElement>} Array of contained <style> elements
+ * @this {StyleGather}
+ */
 export function stylesFromModules(moduleIds) {
  const modules = moduleIds.trim().split(/\s+/);
  const styles = [];
@@ -36,6 +54,16 @@ export function stylesFromModules(moduleIds) {
  return styles;
 }
 
+/**
+ * Returns a list of <style> elements in a given `dom-module`.
+ * Styles in a `dom-module` can come either from `<style>`s within the
+ * first `<template>`, or else from one or more
+ * `<link rel="import" type="css">` links outside the template.
+ *
+ * @param {string} moduleId dom-module id to gather styles from
+ * @return {!Array<!HTMLStyleElement>} Array of contained styles.
+ * @this {StyleGather}
+ */
 export function stylesFromModule(moduleId) {
   const m = importModule(moduleId);
 
@@ -61,6 +89,14 @@ export function stylesFromModule(moduleId) {
   return m._styles;
 }
 
+/**
+ * Returns the `<style>` elements within a given template.
+ *
+ * @param {!HTMLTemplateElement} template Template to gather styles from
+ * @param {string} baseURI baseURI for style content
+ * @return {!Array<!HTMLStyleElement>} Array of styles
+ * @this {StyleGather}
+ */
 export function stylesFromTemplate(template, baseURI) {
   if (!template._styles) {
     const styles = [];
@@ -86,11 +122,23 @@ export function stylesFromTemplate(template, baseURI) {
   return template._styles;
 }
 
+/**
+ * Returns a list of <style> elements  from stylesheets loaded via `<link rel="import" type="css">` links within the specified `dom-module`.
+ *
+ * @param {string} moduleId Id of `dom-module` to gather CSS from
+ * @return {!Array<!HTMLStyleElement>} Array of contained styles.
+ * @this {StyleGather}
+ */
 export function stylesFromModuleImports(moduleId) {
  let m = importModule(moduleId);
  return m ? _stylesFromModuleImports(m) : [];
 }
 
+/**
+ * @this {StyleGather}
+ * @param {!HTMLElement} module dom-module element that could contain `<link rel="import" type="css">` styles
+ * @return {!Array<!HTMLStyleElement>} Array of contained styles
+ */
 export function _stylesFromModuleImports(module) {
   const styles = [];
   const p$ = module.querySelectorAll(MODULE_STYLE_LINK_SELECTOR);
@@ -112,6 +160,17 @@ export function _stylesFromModuleImports(module) {
   return styles;
 }
 
+/**
+ *
+ * Returns CSS text of styles in a space-separated list of `dom-module`s.
+ * Note: This method is deprecated, use `stylesFromModules` instead.
+ *
+ * @deprecated
+ * @param {string} moduleIds List of dom-module id's within which to
+ * search for css.
+ * @return {string} Concatenated CSS content from specified `dom-module`s
+ * @this {StyleGather}
+ */
 export function cssFromModules(moduleIds) {
  let modules = moduleIds.trim().split(/\s+/);
  let cssText = '';
@@ -121,6 +180,20 @@ export function cssFromModules(moduleIds) {
  return cssText;
 }
 
+/**
+ * Returns CSS text of styles in a given `dom-module`.  CSS in a `dom-module`
+ * can come either from `<style>`s within the first `<template>`, or else
+ * from one or more `<link rel="import" type="css">` links outside the
+ * template.
+ *
+ * Any `<styles>` processed are removed from their original location.
+ * Note: This method is deprecated, use `styleFromModule` instead.
+ *
+ * @deprecated
+ * @param {string} moduleId dom-module id to gather styles from
+ * @return {string} Concatenated CSS content from specified `dom-module`
+ * @this {StyleGather}
+ */
 export function cssFromModule(moduleId) {
   let m = importModule(moduleId);
   if (m && m._cssText === undefined) {
@@ -140,6 +213,18 @@ export function cssFromModule(moduleId) {
   return m && m._cssText || '';
 }
 
+/**
+ * Returns CSS text of `<styles>` within a given template.
+ *
+ * Any `<styles>` processed are removed from their original location.
+ * Note: This method is deprecated, use `styleFromTemplate` instead.
+ *
+ * @deprecated
+ * @param {!HTMLTemplateElement} template Template to gather styles from
+ * @param {string} baseURI Base URI to resolve the URL against
+ * @return {string} Concatenated CSS content from specified template
+ * @this {StyleGather}
+ */
 export function cssFromTemplate(template, baseURI) {
   let cssText = '';
   const e$ = stylesFromTemplate(template, baseURI);
@@ -154,11 +239,29 @@ export function cssFromTemplate(template, baseURI) {
   return cssText;
 }
 
+/**
+ * Returns CSS text from stylesheets loaded via `<link rel="import" type="css">`
+ * links within the specified `dom-module`.
+ *
+ * Note: This method is deprecated, use `stylesFromModuleImports` instead.
+ *
+ * @deprecated
+ *
+ * @param {string} moduleId Id of `dom-module` to gather CSS from
+ * @return {string} Concatenated CSS content from links in specified `dom-module`
+ * @this {StyleGather}
+ */
 export function cssFromModuleImports(moduleId) {
   let m = importModule(moduleId);
   return m ? _cssFromModuleImports(m) : '';
 }
 
+/**
+ * @deprecated
+ * @this {StyleGather}
+ * @param {!HTMLElement} module dom-module element that could contain `<link rel="import" type="css">` styles
+ * @return {string} Concatenated CSS content from links in the dom-module
+ */
 export function _cssFromModuleImports(module) {
  let cssText = '';
  let styles = _stylesFromModuleImports(module);

@@ -942,6 +942,7 @@ export function fn() {
   foobar();
 }
 
+// NOTE: this is not a valid reference to Namespace.foobar
 export const isArrowFn = () => {
   this.foobar();
 };
@@ -3189,9 +3190,8 @@ console.log('second script');
             Polymer.MyBehavior = {};
 
             /**
-             * This comment is also important, but its
-             * whitespace is handled better, because it doesn't
-             * have any lines that need filtering out.
+             * This comment is also important!
+             *
              * @polymer
              * @mixinFunction
              */
@@ -3210,9 +3210,8 @@ console.log('second script');
 export const MyBehavior = {};
 
 /**
- * This comment is also important, but its
- * whitespace is handled better, because it doesn't
- * have any lines that need filtering out.
+ * This comment is also important!
+ *
  * @polymer
  * @mixinFunction
  */
@@ -3220,6 +3219,59 @@ export const MyMixinFunction = function() {};
 `,
       });
     });
+
+    testName = 'copy over namespace method comments';
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            /**
+             * This is a comment on the namespace itself.
+             *
+             * @namespace
+             * @memberof Polymer
+             * @summary This is a summary on the namespace.
+             */
+            Polymer.Foo = {
+              /**
+               * This is a method on Foo.
+               *
+               * @function
+               * @memberof Foo
+               * @return {string}
+               */
+              methodOnFoo() {
+                return 'foo result';
+              }
+            };
+          </script>
+        `
+      });
+
+      assertSources(await convert(), {
+        'test.js': `
+/**
+ * This is a comment on the namespace itself.
+ *
+ * @summary This is a summary on the namespace.
+ */
+\`TODO(modulizer): A namespace named Polymer.Foo was
+declared here. The surrounding comments should be reviewed,
+and this string can then be deleted\`;
+
+/**
+ * This is a method on Foo.
+ *
+ * @function
+ * @return {string}
+ */
+export function methodOnFoo() {
+  return 'foo result';
+}
+`,
+      });
+    });
+
 
     suite('regression tests', () => {
       testName = `propagate templates for scripts consisting ` +
