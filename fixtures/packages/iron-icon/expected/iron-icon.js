@@ -83,6 +83,10 @@ Custom property | Description | Default
 @hero hero.svg
 @homepage polymer.github.io
 */
+`TODO(modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this string!`;
+
 Polymer({
   importPath: import.meta.url,
 

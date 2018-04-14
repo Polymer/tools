@@ -36,4 +36,6 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-;
+`TODO(modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this string!`;
