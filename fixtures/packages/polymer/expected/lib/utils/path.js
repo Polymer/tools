@@ -6,7 +6,7 @@ import './boot.js';
  * @summary Module with utilities for manipulating structured data path strings.
  */
 `TODO(modulizer): A namespace named Polymer.Path was
-declared here. The above comments should be reviewed,
+declared here. The surrounding comments should be reviewed,
 and this string can then be deleted`;
 
 /**

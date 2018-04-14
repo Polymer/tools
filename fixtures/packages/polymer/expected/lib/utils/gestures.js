@@ -323,7 +323,7 @@ document.addEventListener('touchend', ignoreMouse, SUPPORTS_PASSIVE ? {passive: 
  * @summary Module for adding cross-platform gesture event listeners.
  */
 `TODO(modulizer): A namespace named Polymer.Gestures was
-declared here. The above comments should be reviewed,
+declared here. The surrounding comments should be reviewed,
 and this string can then be deleted`;
 
 export const gestures = {};

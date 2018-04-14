@@ -262,7 +262,7 @@ function equals(currentValue, previousValue) {
  * @summary Module that provides utilities for diffing arrays.
  */
 `TODO(modulizer): A namespace named Polymer.ArraySplice was
-declared here. The above comments should be reviewed,
+declared here. The surrounding comments should be reviewed,
 and this string can then be deleted`;
 
 /**

@@ -34,7 +34,7 @@ let templateWithAssetPath; // eslint-disable-line no-unused-vars
  * @summary Module with utilities for collection CSS text from various sources.
  */
 `TODO(modulizer): A namespace named Polymer.StyleGather was
-declared here. The above comments should be reviewed,
+declared here. The surrounding comments should be reviewed,
 and this string can then be deleted`;
 
 /**

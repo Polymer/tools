@@ -6,7 +6,7 @@ let workingURL;
 let resolveDoc;
 /**
  * Resolves the given URL against the provided `baseUri'.
- * 
+ *
  * Note that this function performs no resolution for URLs that start
  * with `/` (absolute URLs) or `#` (hash identifiers).  For general purpose
  * URL resolution, use `window.URL`.
@@ -86,7 +86,7 @@ function pathFromUrl(url) {
  * @summary Module with utilities for resolving relative URL's.
  */
 `TODO(modulizer): A namespace named Polymer.ResolveUrl was
-declared here. The above comments should be reviewed,
+declared here. The surrounding comments should be reviewed,
 and this string can then be deleted`;
 
 export { resolveCss };

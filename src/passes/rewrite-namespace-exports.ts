@@ -176,7 +176,7 @@ class RewriteNamespaceExportsPass {
     if (nodePathComments.length > 0) {
       const message =
           `TODO(modulizer): A namespace named ${fullyQualifiedName} was\n` +
-          `declared here. The above comments should be reviewed,\n` +
+          `declared here. The surrounding comments should be reviewed,\n` +
           `and this string can then be deleted`;
       const tombstone = jsc.expressionStatement(jsc.templateLiteral(
           [jsc.templateElement({raw: message, cooked: message}, true)], []));

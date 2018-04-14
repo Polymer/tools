@@ -3256,7 +3256,7 @@ export const MyMixinFunction = function() {};
  * @summary This is a summary on the namespace.
  */
 \`TODO(modulizer): A namespace named Polymer.Foo was
-declared here. The above comments should be reviewed,
+declared here. The surrounding comments should be reviewed,
 and this string can then be deleted\`;
 
 /**

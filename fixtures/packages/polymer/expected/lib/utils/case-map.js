@@ -12,7 +12,7 @@ const CAMEL_TO_DASH = /([A-Z])/g;
  *   and "camelCase".
  */
 `TODO(modulizer): A namespace named Polymer.CaseMap was
-declared here. The above comments should be reviewed,
+declared here. The surrounding comments should be reviewed,
 and this string can then be deleted`;
 
 /**
