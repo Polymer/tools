@@ -412,8 +412,8 @@ export function attachCommentsToFirstStatement(
       `  from HTML and may be out of place here. Review them and\n` +
       `  then delete this string!`;
   const firstStatement = jsc.expressionStatement(jsc.templateLiteral(
-      [jsc.templateElement({cooked: message, raw: message}, true)], []));
-  statements.unshift(firstStatement) as RecastNode;
+      [jsc.templateElement({cooked: message, raw: message}, true)], [])) as RecastNode & estree.ExpressionStatement;
+  statements.unshift(firstStatement);
 
   /** Recast represents comments differently than espree. */
   interface RecastNode {
