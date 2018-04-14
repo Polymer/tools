@@ -16,9 +16,6 @@ import {createApplicationGenerator} from '../../init/application/application';
 import {runCommand} from './run-command';
 import {createElementGenerator} from '../../init/element/element';
 import {createGithubGenerator} from '../../init/github';
-import * as child_process from 'child_process';
-import * as util from 'util';
-const exec = util.promisify(child_process.exec);
 
 // A zero priveledge github token of a nonce account, used for quota.
 const githubToken = '8d8622bf09bb1d85cb411b5e475a35e742a7ce35';
@@ -42,9 +39,7 @@ suite('integration tests', function() {
           await runGenerator(createElementGenerator('polymer-3.x'))
               .withPrompts({name: 'my-element'})  // Mock the prompt answers
               .toPromise();
-      // TODO(#118): Use `polymer install` once it supports installing npm
-      // packages.
-      await exec('npm install', {cwd: dir});
+      await runCommand(binPath, ['install'], {cwd: dir});
 
       // TODO(#130): Add this back in when `polymer lint` has a Polymer 3
       // option.
