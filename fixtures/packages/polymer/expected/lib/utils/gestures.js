@@ -312,9 +312,34 @@ function untrackDocument(stateObj) {
 // Use passive event listeners, if supported, to not affect scrolling performance
 document.addEventListener('touchend', ignoreMouse, SUPPORTS_PASSIVE ? {passive: true} : false);
 
+/**
+ * Module for adding listeners to a node for the following normalized
+ * cross-platform "gesture" events:
+ * - `down` - mouse or touch went down
+ * - `up` - mouse or touch went up
+ * - `tap` - mouse click or finger tap
+ * - `track` - mouse drag or touch move
+ *
+ * @summary Module for adding cross-platform gesture event listeners.
+ */
+`TODO(modulizer): A namespace named Polymer.Gestures was
+declared here. The above comments should be reviewed,
+and this string can then be deleted`;
+
 export const gestures = {};
 export const recognizers = [];
 
+/**
+ * Finds the element rendered on the screen at the provided coordinates.
+ *
+ * Similar to `document.elementFromPoint`, but pierces through
+ * shadow roots.
+ *
+ * @param {number} x Horizontal pixel coordinate
+ * @param {number} y Vertical pixel coordinate
+ * @return {Element} Returns the deepest shadowRoot inclusive element
+ * found at the screen position given.
+ */
 export function deepTargetFind(x, y) {
   let node = document.elementFromPoint(x, y);
   let next = node;
@@ -336,6 +361,13 @@ export function deepTargetFind(x, y) {
   return node;
 }
 
+/**
+ * a cheaper check than ev.composedPath()[0];
+ *
+ * @private
+ * @param {Event} ev Event.
+ * @return {EventTarget} Returns the event target.
+ */
 export function _findOriginalTarget(ev) {
   // shadowdom
   if (ev.composedPath) {
@@ -347,6 +379,11 @@ export function _findOriginalTarget(ev) {
   return ev.target;
 }
 
+/**
+ * @private
+ * @param {Event} ev Event.
+ * @return {void}
+ */
 export function _handleNative(ev) {
   let handled;
   let type = ev.type;
@@ -404,6 +441,11 @@ export function _handleNative(ev) {
   }
 }
 
+/**
+ * @private
+ * @param {TouchEvent} ev Event.
+ * @return {void}
+ */
 export function _handleTouchAction(ev) {
   let t = ev.changedTouches[0];
   let type = ev.type;
@@ -437,6 +479,15 @@ export function _handleTouchAction(ev) {
   }
 }
 
+/**
+ * Adds an event listener to a node for the given gesture type.
+ *
+ * @param {!Node} node Node to add listener on
+ * @param {string} evType Gesture type: `down`, `up`, `track`, or `tap`
+ * @param {!function(!Event):void} handler Event listener function to call
+ * @return {boolean} Returns true if a gesture event listener was added.
+ * @this {Gestures}
+ */
 export function addListener(node, evType, handler) {
   if (gestures[evType]) {
     _add(node, evType, handler);
@@ -445,6 +496,16 @@ export function addListener(node, evType, handler) {
   return false;
 }
 
+/**
+ * Removes an event listener from a node for the given gesture type.
+ *
+ * @param {!Node} node Node to remove listener from
+ * @param {string} evType Gesture type: `down`, `up`, `track`, or `tap`
+ * @param {!function(!Event):void} handler Event listener function previously passed to
+ *  `addListener`.
+ * @return {boolean} Returns true if a gesture event listener was removed.
+ * @this {Gestures}
+ */
 export function removeListener(node, evType, handler) {
   if (gestures[evType]) {
     _remove(node, evType, handler);
@@ -453,6 +514,16 @@ export function removeListener(node, evType, handler) {
   return false;
 }
 
+/**
+ * automate the event listeners for the native events
+ *
+ * @private
+ * @param {!HTMLElement} node Node on which to add the event.
+ * @param {string} evType Event type to add.
+ * @param {function(!Event)} handler Event handler function.
+ * @return {void}
+ * @this {Gestures}
+ */
 export function _add(node, evType, handler) {
   let recognizer = gestures[evType];
   let deps = recognizer.deps;
@@ -483,6 +554,16 @@ export function _add(node, evType, handler) {
   }
 }
 
+/**
+ * automate event listener removal for native events
+ *
+ * @private
+ * @param {!HTMLElement} node Node on which to remove the event.
+ * @param {string} evType Event type to remove.
+ * @param {function(Event?)} handler Event handler function.
+ * @return {void}
+ * @this {Gestures}
+ */
 export function _remove(node, evType, handler) {
   let recognizer = gestures[evType];
   let deps = recognizer.deps;
@@ -504,6 +585,14 @@ export function _remove(node, evType, handler) {
   node.removeEventListener(evType, handler);
 }
 
+/**
+ * Registers a new gesture event recognizer for adding new custom
+ * gesture event types.
+ *
+ * @param {!GestureRecognizer} recog Gesture recognizer descriptor
+ * @return {void}
+ * @this {Gestures}
+ */
 export function register(recog) {
   recognizers.push(recog);
   for (let i = 0; i < recog.emits.length; i++) {
@@ -511,6 +600,12 @@ export function register(recog) {
   }
 }
 
+/**
+ * @private
+ * @param {string} evName Event name.
+ * @return {Object} Returns the gesture for the given event name.
+ * @this {Gestures}
+ */
 export function _findRecognizerByEvent(evName) {
   for (let i = 0, r; i < recognizers.length; i++) {
     r = recognizers[i];
@@ -524,6 +619,16 @@ export function _findRecognizerByEvent(evName) {
   return null;
 }
 
+/**
+ * Sets scrolling direction on node.
+ *
+ * This value is checked on first move, thus it should be called prior to
+ * adding event listeners.
+ *
+ * @param {!Element} node Node to set touch action setting on
+ * @param {string} value Touch action value
+ * @return {void}
+ */
 export function setTouchAction(node, value) {
   if (HAS_NATIVE_TA) {
     // NOTE: add touchAction async so that events can be added in
@@ -537,6 +642,15 @@ export function setTouchAction(node, value) {
   node[TOUCH_ACTION] = value;
 }
 
+/**
+ * Dispatches an event on the `target` element of `type` with the given
+ * `detail`.
+ * @private
+ * @param {!EventTarget} target The element on which to fire an event.
+ * @param {string} type The type of event to fire.
+ * @param {!Object=} detail The detail object to populate on the event.
+ * @return {void}
+ */
 export function _fire(target, type, detail) {
   let ev = new Event(type, { bubbles: true, cancelable: true, composed: true });
   ev.detail = detail;
@@ -550,6 +664,13 @@ export function _fire(target, type, detail) {
   }
 }
 
+/**
+ * Prevents the dispatch and default action of the given event name.
+ *
+ * @param {string} evName Event name.
+ * @return {void}
+ * @this {Gestures}
+ */
 export function prevent(evName) {
   let recognizer = _findRecognizerByEvent(evName);
   if (recognizer.info) {
@@ -557,6 +678,15 @@ export function prevent(evName) {
   }
 }
 
+/**
+ * Reset the 2500ms timeout on processing mouse input after detecting touch input.
+ *
+ * Touch inputs create synthesized mouse inputs anywhere from 0 to 2000ms after the touch.
+ * This method should only be called during testing with simulated touch inputs.
+ * Calling this method in production may cause duplicate taps or other Gestures.
+ *
+ * @return {void}
+ */
 export function resetMouseCanceller() {
   if (POINTERSTATE.mouse.mouseIgnoreJob) {
     POINTERSTATE.mouse.mouseIgnoreJob.flush();

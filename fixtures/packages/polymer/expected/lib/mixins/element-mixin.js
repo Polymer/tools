@@ -650,18 +650,54 @@ export const ElementMixin = dedupingMixin(base => {
   return PolymerElement;
 });
 
+/**
+ * Provides basic tracking of element definitions (registrations) and
+ * instance counts.
+ *
+ * @summary Provides basic tracking of element definitions (registrations) and
+ * instance counts.
+ */
+`TODO(modulizer): A namespace named Polymer.telemetry was
+declared here. The above comments should be reviewed,
+and this string can then be deleted`;
+
+/**
+ * Total number of Polymer element instances created.
+ * @type {number}
+ */
 export let instanceCount = 0;
+
+/**
+ * Array of Polymer element classes that have been finalized.
+ * @type {Array<Polymer.Element>}
+ */
 export const registrations = [];
 
+/**
+ * @param {!PolymerElementConstructor} prototype Element prototype to log
+ * @this {this}
+ * @private
+ */
 export function _regLog(prototype) {
   console.log('[' + prototype.is + ']: registered');
 }
 
+/**
+ * Registers a class prototype for telemetry purposes.
+ * @param {HTMLElement} prototype Element prototype to register
+ * @this {this}
+ * @protected
+ */
 export function register(prototype) {
   registrations.push(prototype);
   undefined && _regLog(prototype);
 }
 
+/**
+ * Logs all elements registered with an `is` to the console.
+ * @public
+ * @this {this}
+ */
 export function dumpRegistrations() {
   registrations.forEach(_regLog);
 }

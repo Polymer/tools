@@ -80,6 +80,15 @@ function pathFromUrl(url) {
   return url.substring(0, url.lastIndexOf('/') + 1);
 }
 
+/**
+ * Module with utilities for resolving relative URL's.
+ *
+ * @summary Module with utilities for resolving relative URL's.
+ */
+`TODO(modulizer): A namespace named Polymer.ResolveUrl was
+declared here. The above comments should be reviewed,
+and this string can then be deleted`;
+
 export { resolveCss };
 export { resolveUrl };
 export { pathFromUrl };

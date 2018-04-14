@@ -1,9 +1,44 @@
 import './boot.js';
 
+/**
+ * Module with utilities for manipulating structured data path strings.
+ *
+ * @summary Module with utilities for manipulating structured data path strings.
+ */
+`TODO(modulizer): A namespace named Polymer.Path was
+declared here. The above comments should be reviewed,
+and this string can then be deleted`;
+
+/**
+ * Returns true if the given string is a structured data path (has dots).
+ *
+ * Example:
+ *
+ * ```
+ * Polymer.Path.isPath('foo.bar.baz') // true
+ * Polymer.Path.isPath('foo')         // false
+ * ```
+ *
+ * @param {string} path Path string
+ * @return {boolean} True if the string contained one or more dots
+ */
 export function isPath(path) {
   return path.indexOf('.') >= 0;
 }
 
+/**
+ * Returns the root property name for the given path.
+ *
+ * Example:
+ *
+ * ```
+ * Polymer.Path.root('foo.bar.baz') // 'foo'
+ * Polymer.Path.root('foo')         // 'foo'
+ * ```
+ *
+ * @param {string} path Path string
+ * @return {string} Root property name
+ */
 export function root(path) {
   let dotIndex = path.indexOf('.');
   if (dotIndex === -1) {
@@ -12,26 +47,94 @@ export function root(path) {
   return path.slice(0, dotIndex);
 }
 
+/**
+ * Given `base` is `foo.bar`, `foo` is an ancestor, `foo.bar` is not
+ * Returns true if the given path is an ancestor of the base path.
+ *
+ * Example:
+ *
+ * ```
+ * Polymer.Path.isAncestor('foo.bar', 'foo')         // true
+ * Polymer.Path.isAncestor('foo.bar', 'foo.bar')     // false
+ * Polymer.Path.isAncestor('foo.bar', 'foo.bar.baz') // false
+ * ```
+ *
+ * @param {string} base Path string to test against.
+ * @param {string} path Path string to test.
+ * @return {boolean} True if `path` is an ancestor of `base`.
+ */
 export function isAncestor(base, path) {
   //     base.startsWith(path + '.');
   return base.indexOf(path + '.') === 0;
 }
 
+/**
+ * Given `base` is `foo.bar`, `foo.bar.baz` is an descendant
+ *
+ * Example:
+ *
+ * ```
+ * Polymer.Path.isDescendant('foo.bar', 'foo.bar.baz') // true
+ * Polymer.Path.isDescendant('foo.bar', 'foo.bar')     // false
+ * Polymer.Path.isDescendant('foo.bar', 'foo')         // false
+ * ```
+ *
+ * @param {string} base Path string to test against.
+ * @param {string} path Path string to test.
+ * @return {boolean} True if `path` is a descendant of `base`.
+ */
 export function isDescendant(base, path) {
   //     path.startsWith(base + '.');
   return path.indexOf(base + '.') === 0;
 }
 
+/**
+ * Replaces a previous base path with a new base path, preserving the
+ * remainder of the path.
+ *
+ * User must ensure `path` has a prefix of `base`.
+ *
+ * Example:
+ *
+ * ```
+ * Polymer.Path.translate('foo.bar', 'zot', 'foo.bar.baz') // 'zot.baz'
+ * ```
+ *
+ * @param {string} base Current base string to remove
+ * @param {string} newBase New base string to replace with
+ * @param {string} path Path to translate
+ * @return {string} Translated string
+ */
 export function translate(base, newBase, path) {
   return newBase + path.slice(base.length);
 }
 
+/**
+ * @param {string} base Path string to test against
+ * @param {string} path Path string to test
+ * @return {boolean} True if `path` is equal to `base`
+ * @this {Path}
+ */
 export function matches(base, path) {
   return (base === path) ||
          isAncestor(base, path) ||
          isDescendant(base, path);
 }
 
+/**
+ * Converts array-based paths to flattened path.  String-based paths
+ * are returned as-is.
+ *
+ * Example:
+ *
+ * ```
+ * Polymer.Path.normalize(['foo.bar', 0, 'baz'])  // 'foo.bar.0.baz'
+ * Polymer.Path.normalize('foo.bar.0.baz')        // 'foo.bar.0.baz'
+ * ```
+ *
+ * @param {string | !Array<string|number>} path Input path
+ * @return {string} Flattened path
+ */
 export function normalize(path) {
   if (Array.isArray(path)) {
     let parts = [];
@@ -47,6 +150,22 @@ export function normalize(path) {
   }
 }
 
+/**
+ * Splits a path into an array of property names. Accepts either arrays
+ * of path parts or strings.
+ *
+ * Example:
+ *
+ * ```
+ * Polymer.Path.split(['foo.bar', 0, 'baz'])  // ['foo', 'bar', '0', 'baz']
+ * Polymer.Path.split('foo.bar.0.baz')        // ['foo', 'bar', '0', 'baz']
+ * ```
+ *
+ * @param {string | !Array<string|number>} path Input path
+ * @return {!Array<string>} Array of path parts
+ * @this {Path}
+ * @suppress {checkTypes}
+ */
 export function split(path) {
   if (Array.isArray(path)) {
     return normalize(path).split('.');
@@ -54,6 +173,18 @@ export function split(path) {
   return path.toString().split('.');
 }
 
+/**
+ * Reads a value from a path.  If any sub-property in the path is `undefined`,
+ * this method returns `undefined` (will never throw.
+ *
+ * @param {Object} root Object from which to dereference path from
+ * @param {string | !Array<string|number>} path Path to read
+ * @param {Object=} info If an object is provided to `info`, the normalized
+ *  (flattened) path will be set to `info.path`.
+ * @return {*} Value at path, or `undefined` if the path could not be
+ *  fully dereferenced.
+ * @this {Path}
+ */
 export function get(root, path, info) {
   let prop = root;
   let parts = split(path);
@@ -71,6 +202,16 @@ export function get(root, path, info) {
   return prop;
 }
 
+/**
+ * Sets a value to a path.  If any sub-property in the path is `undefined`,
+ * this method will no-op.
+ *
+ * @param {Object} root Object from which to dereference path from
+ * @param {string | !Array<string|number>} path Path to set
+ * @param {*} value Value to set to path
+ * @return {string | undefined} The normalized version of the input path
+ * @this {Path}
+ */
 export function set(root, path, value) {
   let prop = root;
   let parts = split(path);

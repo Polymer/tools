@@ -50,6 +50,30 @@ function flush() {
   scheduled = false;
 }
 
+/**
+ * Module for scheduling flushable pre-render and post-render tasks.
+ *
+ * @summary Module for scheduling flushable pre-render and post-render tasks.
+ */
+`TODO(modulizer): A namespace named Polymer.RenderStatus was
+declared here. The above comments should be reviewed,
+and this string can then be deleted`;
+
+/**
+ * Enqueues a callback which will be run before the next render, at
+ * `requestAnimationFrame` timing.
+ *
+ * This method is useful for enqueuing work that requires DOM measurement,
+ * since measurement may not be reliable in custom element callbacks before
+ * the first render, as well as for batching measurement tasks in general.
+ *
+ * Tasks in this queue may be flushed by calling `Polymer.RenderStatus.flush()`.
+ *
+ * @param {*} context Context object the callback function will be bound to
+ * @param {function(...*):void} callback Callback function
+ * @param {!Array=} args An array of arguments to call the callback function with
+ * @return {void}
+ */
 export function beforeNextRender(context, callback, args) {
   if (!scheduled) {
     schedule();
@@ -57,6 +81,20 @@ export function beforeNextRender(context, callback, args) {
   beforeRenderQueue.push([context, callback, args]);
 }
 
+/**
+ * Enqueues a callback which will be run after the next render, equivalent
+ * to one task (`setTimeout`) after the next `requestAnimationFrame`.
+ *
+ * This method is useful for tuning the first-render performance of an
+ * element or application by deferring non-critical work until after the
+ * first paint.  Typical non-render-critical work may include adding UI
+ * event listeners and aria attributes.
+ *
+ * @param {*} context Context object the callback function will be bound to
+ * @param {function(...*):void} callback Callback function
+ * @param {!Array=} args An array of arguments to call the callback function with
+ * @return {void}
+ */
 export function afterNextRender(context, callback, args) {
   if (!scheduled) {
     schedule();
@@ -64,4 +102,10 @@ export function afterNextRender(context, callback, args) {
   afterRenderQueue.push([context, callback, args]);
 }
 
+/**
+ * Flushes all `beforeNextRender` tasks, followed by all `afterNextRender`
+ * tasks.
+ *
+ * @return {void}
+ */
 export { flush };
