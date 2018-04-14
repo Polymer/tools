@@ -12,7 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babylon from 'babylon';
 import {browserCapabilities} from 'browser-capabilities';
 import {parse as parseContentType} from 'content-type';
 import {Request, RequestHandler, Response} from 'express';
@@ -149,8 +148,7 @@ export function babelCompile(
       } else if (javaScriptMimeTypes.includes(contentType)) {
         transformed = jsTransform(body, {
           compileToEs5: options.transformES2015,
-          transformModulesToAmd:
-              options.transformModules && hasImportOrExport(body),
+          transformModulesToAmd: options.transformModules ? 'auto' : false,
           moduleResolution,
           filePath: filePath,
           isComponentRequest,
@@ -166,23 +164,4 @@ export function babelCompile(
       return transformed;
     },
   });
-}
-
-function hasImportOrExport(js: string): boolean {
-  let ast;
-  try {
-    ast = babylon.parse(js, {sourceType: 'module'});
-  } catch (e) {
-    return false;
-  }
-  for (const node of ast.program.body) {
-    switch (node.type) {
-      case 'ImportDeclaration':
-      case 'ExportNamedDeclaration':
-      case 'ExportDefaultDeclaration':
-      case 'ExportAllDeclaration':
-        return true;
-    }
-  }
-  return false;
 }

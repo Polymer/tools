@@ -21,7 +21,6 @@
     "polyserve"
   ],
   "dependencies": {
-    "@types/babylon": "^6.16.2",
     "@types/compression": "^0.0.33",
     "@types/content-type": "^1.1.0",
     "@types/escape-html": "0.0.20",
@@ -36,7 +35,6 @@
     "@types/serve-static": "^1.7.31",
     "@types/spdy": "^3.4.1",
     "@types/ua-parser-js": "^0.7.30",
-    "babylon": "^6.17.4",
     "bower-config": "^1.4.1",
     "browser-capabilities": "^0.2.2",
     "command-line-args": "^3.0.1",
