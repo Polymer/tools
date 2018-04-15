@@ -114,7 +114,7 @@ export abstract class DocumentProcessor {
      * Inserting leading comments is surprisingly tricky, because they must
      * be attached to a node, but very few nodes can come before an import,
      * and in general we don't want to insert fake nodes, so instead we
-     * pass these up to be added onto the first node in the
+     * pass these up to be added onto the first node in the final output script.
      */
     let htmlCommentsBeforeFirstScriptNode: undefined|string[];
     for (const script of this.document.getFeatures()) {
