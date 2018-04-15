@@ -429,11 +429,15 @@ export function attachCommentsToFirstStatement(
   if (comments.length === 0) {
     return;
   }
-  const message =
-      `\n  FIXME(polymer-modulizer): the above comments were extracted\n` +
-      `  from HTML and may be out of place here. Review them and\n` +
-      `  then delete this comment!\n`;
-  comments.push(message);
+  // A license comment is appropriate at the top of a file. Anything else
+  //   should be checked.
+  if (comments.filter((c) => !/@license/.test(c)).length > 0) {
+    const message =
+        `\n  FIXME(polymer-modulizer): the above comments were extracted\n` +
+        `  from HTML and may be out of place here. Review them and\n` +
+        `  then delete this comment!\n`;
+    comments.push(message);
+  }
 
   const recastComments = getCommentsFromTexts(comments);
   let firstStatement: RecastNode&(estree.Statement | estree.ModuleDeclaration) =

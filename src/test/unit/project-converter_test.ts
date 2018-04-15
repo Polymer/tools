@@ -3362,11 +3362,6 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-/*
-  FIXME(polymer-modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this comment!
-*/
 // unresolved
 
 function resolve() {
@@ -3464,6 +3459,42 @@ console.log('main file contents');
       });
     });
 
+    testName = `no need for a FIXME if it's just a license comment`;
+    test(testName, async () => {
+      setSources({
+        'test.html': `<!--
+            @license
+            imagine this is a license
+          -->
+          <link rel="import" href="./foo.html">
+          <script>
+          (function() {
+            'use strict';
+
+            console.log('main file contents');
+
+          })();
+          </script>
+          <link rel="import" href="./bar.html">
+        `,
+        'foo.html': ``,
+        'bar.html': ``
+      });
+
+      assertSources(await convert(), {
+        'test.js': `
+/**
+            @license
+            imagine this is a license
+          */
+import './foo.js';
+
+import './bar.js';
+
+console.log('main file contents');
+`,
+      });
+    });
 
     suite('regression tests', () => {
       testName = `propagate templates for scripts consisting ` +
