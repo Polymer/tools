@@ -1,12 +1,3 @@
-import '../utils/boot.js';
-import { rootPath as rootPath$0 } from '../utils/settings.js';
-import { dedupingMixin } from '../utils/mixin.js';
-import { stylesFromTemplate, stylesFromModuleImports } from '../utils/style-gather.js';
-import { resolveCss, resolveUrl as resolveUrl$0 } from '../utils/resolve-url.js';
-import { DomModule } from '../elements/dom-module.js';
-import { PropertyEffects } from './property-effects.js';
-import { PropertiesMixin } from './properties-mixin.js';
-
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -16,9 +7,15 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-`TODO(modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this string!`;
+import '../utils/boot.js';
+
+import { rootPath as rootPath$0 } from '../utils/settings.js';
+import { dedupingMixin } from '../utils/mixin.js';
+import { stylesFromTemplate, stylesFromModuleImports } from '../utils/style-gather.js';
+import { resolveCss, resolveUrl as resolveUrl$0 } from '../utils/resolve-url.js';
+import { DomModule } from '../elements/dom-module.js';
+import { PropertyEffects } from './property-effects.js';
+import { PropertiesMixin } from './properties-mixin.js';
 
 /**
  * Element class mixin that provides the core API for Polymer's meta-programming

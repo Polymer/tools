@@ -1,10 +1,3 @@
-import { PolymerElement } from '../../polymer-element.js';
-import { templatize } from '../utils/templatize.js';
-import { Debouncer } from '../utils/debounce.js';
-import { enqueueDebouncer, flush } from '../utils/flush.js';
-import { microTask } from '../utils/async.js';
-import { root as root$0 } from '../utils/path.js';
-
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -14,9 +7,13 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-`TODO(modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this string!`;
+import { PolymerElement } from '../../polymer-element.js';
+
+import { templatize } from '../utils/templatize.js';
+import { Debouncer } from '../utils/debounce.js';
+import { enqueueDebouncer, flush } from '../utils/flush.js';
+import { microTask } from '../utils/async.js';
+import { root as root$0 } from '../utils/path.js';
 
 /**
  * The `<dom-if>` element will stamp a light-dom `<template>` child when

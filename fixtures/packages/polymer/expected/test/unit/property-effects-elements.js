@@ -1,10 +1,3 @@
-import '../../polymer-legacy.js';
-import { Polymer } from '../../lib/legacy/polymer-fn.js';
-import { html } from '../../lib/utils/html-tag.js';
-import { PolymerElement } from '../../polymer-element.js';
-import { MutableDataBehavior } from '../../lib/legacy/mutable-data-behavior.js';
-import { MutableData } from '../../lib/mixins/mutable-data.js';
-
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -14,10 +7,13 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-`TODO(modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this string!`;
+import '../../polymer-legacy.js';
 
+import { Polymer } from '../../lib/legacy/polymer-fn.js';
+import { html } from '../../lib/utils/html-tag.js';
+import { PolymerElement } from '../../polymer-element.js';
+import { MutableDataBehavior } from '../../lib/legacy/mutable-data-behavior.js';
+import { MutableData } from '../../lib/mixins/mutable-data.js';
 let ComputingBehavior = {
   properties: {
     computeFromBehavior: Function

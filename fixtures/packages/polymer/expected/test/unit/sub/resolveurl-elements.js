@@ -1,10 +1,3 @@
-import { html } from '../../../lib/utils/html-tag.js';
-import { PolymerElement } from '../../../polymer-element.js';
-const $_documentContainer = document.createElement('div');
-$_documentContainer.setAttribute('style', 'display: none;');
-$_documentContainer.innerHTML = `<dom-module id="p-r-ap" assetpath="../../assets/"></dom-module>`;
-document.head.appendChild($_documentContainer);
-
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -14,10 +7,13 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-`TODO(modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this string!`;
+import { html } from '../../../lib/utils/html-tag.js';
 
+import { PolymerElement } from '../../../polymer-element.js';
+const $_documentContainer = document.createElement('div');
+$_documentContainer.setAttribute('style', 'display: none;');
+$_documentContainer.innerHTML = `<dom-module id="p-r-ap" assetpath="../../assets/"></dom-module>`;
+document.head.appendChild($_documentContainer);
 class PR extends PolymerElement {
   static get importPath() {
     return import.meta.url;

@@ -1,12 +1,3 @@
-import '../utils/boot.js';
-import { dedupingMixin } from '../utils/mixin.js';
-import { root as root$0, isAncestor, isDescendant, get as get$0, translate, isPath as isPath$0, set as set$0, normalize } from '../utils/path.js';
-import * as caseMap from '../utils/case-map.js';
-import { camelToDashCase as camelToDashCase$0, dashToCamelCase } from '../utils/case-map.js';
-import { PropertyAccessors } from './property-accessors.js';
-import { TemplateStamp } from './template-stamp.js';
-import { sanitizeDOMValue } from '../utils/settings.js';
-
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -18,9 +9,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 /* for notify, reflect */
 /* for annotated effects */
-`TODO(modulizer): the above comments were extracted
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
   from HTML and may be out of place here. Review them and
-  then delete this string!`;
+  then delete this comment!
+*/
+import '../utils/boot.js';
+
+import { dedupingMixin } from '../utils/mixin.js';
+import { root as root$0, isAncestor, isDescendant, get as get$0, translate, isPath as isPath$0, set as set$0, normalize } from '../utils/path.js';
+import * as caseMap from '../utils/case-map.js';
+import { camelToDashCase as camelToDashCase$0, dashToCamelCase } from '../utils/case-map.js';
+import { PropertyAccessors } from './property-accessors.js';
+import { TemplateStamp } from './template-stamp.js';
+import { sanitizeDOMValue } from '../utils/settings.js';
 
 /** @const {Object} */
 const CaseMap = caseMap;

@@ -1,8 +1,3 @@
-import '../utils/boot.js';
-import { PropertyEffects } from '../mixins/property-effects.js';
-import { OptionalMutableData } from '../mixins/mutable-data.js';
-import { GestureEventListeners } from '../mixins/gesture-event-listeners.js';
-
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -12,9 +7,11 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-`TODO(modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this string!`;
+import '../utils/boot.js';
+
+import { PropertyEffects } from '../mixins/property-effects.js';
+import { OptionalMutableData } from '../mixins/mutable-data.js';
+import { GestureEventListeners } from '../mixins/gesture-event-listeners.js';
 
 /**
  * @constructor

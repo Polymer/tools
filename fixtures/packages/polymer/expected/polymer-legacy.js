@@ -1,14 +1,3 @@
-import { LegacyElementMixin } from './lib/legacy/legacy-element-mixin.js';
-import './lib/legacy/polymer-fn.js';
-import './lib/legacy/templatizer-behavior.js';
-import './lib/elements/dom-bind.js';
-import './lib/elements/dom-repeat.js';
-import './lib/elements/dom-if.js';
-import './lib/elements/array-selector.js';
-import './lib/elements/custom-style.js';
-import './lib/legacy/mutable-data-behavior.js';
-import { html as html$0 } from './lib/utils/html-tag.js';
-
 /**
 @license
 Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
@@ -22,9 +11,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 /* custom-style */
 /* bc behaviors */
 /* import html-tag to export html */
-`TODO(modulizer): the above comments were extracted
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
   from HTML and may be out of place here. Review them and
-  then delete this string!`;
+  then delete this comment!
+*/
+import { LegacyElementMixin } from './lib/legacy/legacy-element-mixin.js';
+
+import './lib/legacy/polymer-fn.js';
+import './lib/legacy/templatizer-behavior.js';
+import './lib/elements/dom-bind.js';
+import './lib/elements/dom-repeat.js';
+import './lib/elements/dom-if.js';
+import './lib/elements/array-selector.js';
+import './lib/elements/custom-style.js';
+import './lib/legacy/mutable-data-behavior.js';
+import { html as html$0 } from './lib/utils/html-tag.js';
 
 // bc
 export const Base = LegacyElementMixin(HTMLElement).prototype;

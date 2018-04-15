@@ -1,4 +1,14 @@
+/**
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+*/
 import '../../../../@webcomponents/shadycss/entrypoints/apply-shim.js';
+
 import { ElementMixin } from '../mixins/element-mixin.js';
 import { GestureEventListeners } from '../mixins/gesture-event-listeners.js';
 import { DirMixin } from '../mixins/dir-mixin.js';
@@ -11,19 +21,6 @@ import { setTouchAction } from '../utils/gestures.js';
 import { Debouncer } from '../utils/debounce.js';
 import { timeOut, microTask } from '../utils/async.js';
 import { get as get$0 } from '../utils/path.js';
-
-/**
-@license
-Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
-`TODO(modulizer): the above comments were extracted
-  from HTML and may be out of place here. Review them and
-  then delete this string!`;
 
 let styleInterface = window.ShadyCSS;
 
