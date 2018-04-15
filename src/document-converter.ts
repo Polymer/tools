@@ -297,6 +297,12 @@ export class DocumentConverter extends DocumentProcessor {
     rewriteReferencesToNamespaceMembers(this.program, allNamespaceNames);
     this.warnOnDangerousReferences(this.program);
 
+    // Attach any leading comments to the first statement.
+    if (this.leadingCommentsToPrepend !== undefined) {
+      attachCommentsToFirstStatement(
+          this.leadingCommentsToPrepend, this.program.body);
+    }
+
     const outputProgram = recast.print(
         this.program, {quote: 'single', wrapColumn: 80, tabWidth: 2});
 
@@ -837,11 +843,6 @@ export class DocumentConverter extends DocumentProcessor {
 
     // Prepend JS imports into the program body
     program.body.splice(0, 0, ...jsImportDeclarations);
-    // Attach any leading comments to the first statement, imports or no.
-    if (this.leadingCommentsToPrepend !== undefined) {
-      attachCommentsToFirstStatement(
-          this.leadingCommentsToPrepend, program.body);
-    }
     // Return true if any imports were added, false otherwise
     return jsImportDeclarations.length > 0;
   }

@@ -3426,6 +3426,45 @@ console.log('main file contents');
       });
     });
 
+    testName = `don't migrate comments when going html -> html`;
+    test(testName, async () => {
+      setSources({
+        'index.html': `<!--
+          leading comment!
+          -->
+          <link rel="import" href="./foo.html">
+          <script>
+          (function() {
+            'use strict';
+
+            console.log('main file contents');
+
+          })();
+          </script>
+          <link rel="import" href="./bar.html">
+`,
+        'foo.html': ``,
+        'bar.html': ``
+      });
+
+      assertSources(await convert(), {
+        'index.html': `
+<!--
+          leading comment!
+          -->
+          <script type="module" src="./foo.js"></script>
+          <script type="module">
+import './foo.js';
+import './bar.js';
+
+console.log('main file contents');
+</script>
+          <script type="module" src="./bar.js"></script>
+`,
+      });
+    });
+
+
     suite('regression tests', () => {
       testName = `propagate templates for scripts consisting ` +
           `only of an element definition`;
