@@ -39,7 +39,9 @@ export class HtmlElementReferenceScanner implements HtmlScanner {
     const visitor = (node: ASTNode) => {
       if (node.tagName && this.matches(node)) {
         const element = new ScannedElementReference(
-            node.tagName, document.sourceRangeForNode(node)!, node);
+            node.tagName,
+            document.sourceRangeForNode(node)!,
+            {language: 'html', containingDocument: document, node});
 
         if (node.attrs) {
           for (const attr of node.attrs) {

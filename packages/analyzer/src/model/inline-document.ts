@@ -15,8 +15,10 @@
 import * as babel from '@babel/types';
 import * as dom5 from 'dom5/lib/index-next';
 import {ASTNode} from 'parse5';
+import * as shady from 'shady-css-parser';
 import * as util from 'util';
 
+import {ParsedCssDocument} from '..';
 import {isFakeNode, ParsedHtmlDocument} from '../html/html-document';
 import {JavaScriptDocument} from '../javascript/javascript-document';
 import * as jsdoc from '../javascript/jsdoc';
@@ -36,15 +38,26 @@ export interface InlineDocInfo {
   baseUrl?: ResolvedUrl;
 }
 
-export type AstNodeWithLanguage = {
-  language: 'html',
-  node: dom5.Node,
-  containingDocument: ParsedHtmlDocument,
-}|{
-  language: 'js',
-  node: babel.Node,
-  containingDocument: JavaScriptDocument,
-};
+export interface HtmlAstNode {
+  language: 'html';
+  node: dom5.Node;
+  containingDocument: ParsedHtmlDocument;
+}
+;
+
+export interface JsAstNode<N extends babel.Node = babel.Node> {
+  language: 'js';
+  node: N;
+  containingDocument: JavaScriptDocument;
+}
+
+export interface CssAstNode {
+  language: 'css';
+  node: shady.Node;
+  containingDocument: ParsedCssDocument;
+}
+
+export type AstNodeWithLanguage = HtmlAstNode|JsAstNode|CssAstNode;
 
 /**
  * Represents an inline document, usually a <script> or <style> tag in an HTML

@@ -51,7 +51,8 @@ class UndefinedElements extends HtmlRule {
       });
 
       if (el.size === 0) {
-        const sourceRange = parsedDocument.sourceRangeForStartTag(ref.astNode);
+        const sourceRange =
+            parsedDocument.sourceRangeForStartTag(ref.astNode.node);
         if (!sourceRange) {
           continue;
         }

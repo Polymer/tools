@@ -15,10 +15,14 @@
 
 import {assert} from 'chai';
 
+import {Analyzer} from '../../core/analyzer';
 import {createForDirectory, fixtureDir} from '../test-utils';
 
-suite('JavaScriptExportScanner', async () => {
-  const {analyzer} = await createForDirectory(fixtureDir);
+suite('JavaScriptExportScanner', () => {
+  let analyzer: Analyzer;
+  suiteSetup(async () => {
+    analyzer = (await createForDirectory(fixtureDir)).analyzer;
+  });
 
   async function getExports(filename: string) {
     const analysis = await analyzer.analyze([filename]);
@@ -30,7 +34,7 @@ suite('JavaScriptExportScanner', async () => {
     return result.value.getFeatures({kind: 'export'});
   }
 
-  test('identifies the names that of exports', async () => {
+  test('identifies the names of exports', async () => {
     const features = await getExports('javascript/all-export-types.js');
     assert.deepEqual([...features].map((f) => [...f.identifiers]), [
       ['namedConstIdentifier'],

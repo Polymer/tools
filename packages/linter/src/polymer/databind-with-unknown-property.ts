@@ -53,7 +53,7 @@ class DatabindWithUnknownProperty extends HtmlRule {
       ]);
       const scopedProperties: {scope: SourceRange, property: string}[] = [];
       const domRepeats = dom5.queryAll(
-          domModule.astNode, isDomRepeat, dom5.childNodesIncludeTemplate);
+          domModule.astNode.node, isDomRepeat, dom5.childNodesIncludeTemplate);
       for (const domRepeat of domRepeats) {
         const scope = parsedDocument.sourceRangeForNode(domRepeat)!;
         const itemProperty = dom5.getAttribute(domRepeat, 'as') || 'item';

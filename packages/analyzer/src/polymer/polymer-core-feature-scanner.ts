@@ -65,7 +65,7 @@ class PolymerCoreFeatureVisitor implements Visitor {
         jsdoc.parseJsdoc(esutil.getAttachedComment(parent) || '');
     const feature = new ScannedPolymerCoreFeature(
         this.document.sourceRangeForNode(assignment),
-        assignment,
+        {node: assignment, language: 'js', containingDocument: this.document},
         parsedJsdoc.description.trim(),
         parsedJsdoc);
     this.features.push(feature);
@@ -100,7 +100,7 @@ class PolymerCoreFeatureVisitor implements Visitor {
         jsdoc.parseJsdoc(esutil.getAttachedComment(parent) || '');
     const feature = new ScannedPolymerCoreFeature(
         this.document.sourceRangeForNode(call),
-        call,
+        {language: 'js', node: call, containingDocument: this.document},
         parsedJsdoc.description.trim(),
         parsedJsdoc);
     this.features.push(feature);

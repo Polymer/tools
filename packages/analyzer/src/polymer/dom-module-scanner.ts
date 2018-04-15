@@ -17,7 +17,7 @@ import {ASTNode, treeAdapters} from 'parse5';
 
 import {HtmlVisitor, ParsedHtmlDocument} from '../html/html-document';
 import {HtmlScanner} from '../html/html-scanner';
-import {Feature, getAttachedCommentText, Resolvable, Slot, SourceRange, Warning} from '../model/model';
+import {Feature, getAttachedCommentText, HtmlAstNode, Resolvable, Slot, SourceRange, Warning} from '../model/model';
 
 import {HtmlDatabindingExpression, scanDatabindingTemplateForExpressions, Template} from './expression-scanner';
 import {LocalId} from './polymer-element';
@@ -31,7 +31,7 @@ export class ScannedDomModule implements Resolvable {
   node: ASTNode;
   comment?: string;
   sourceRange: SourceRange;
-  astNode: dom5.Node;
+  astNode: HtmlAstNode;
   warnings: Warning[] = [];
   'slots': Slot[];
   localIds: LocalId[];
@@ -39,9 +39,10 @@ export class ScannedDomModule implements Resolvable {
   databindings: HtmlDatabindingExpression[];
 
   constructor(
-      id: string|null, node: ASTNode, sourceRange: SourceRange, ast: dom5.Node,
-      warnings: Warning[], template: Template|undefined, slots: Slot[],
-      localIds: LocalId[], databindings: HtmlDatabindingExpression[]) {
+      id: string|null, node: ASTNode, sourceRange: SourceRange,
+      ast: HtmlAstNode, warnings: Warning[], template: Template|undefined,
+      slots: Slot[], localIds: LocalId[],
+      databindings: HtmlDatabindingExpression[]) {
     this.id = id;
     this.node = node;
     this.comment = getAttachedCommentText(node);
@@ -81,7 +82,7 @@ export class DomModule implements Feature {
   id: string|null;
   comment?: string;
   sourceRange: SourceRange;
-  astNode: dom5.Node;
+  astNode: HtmlAstNode;
   warnings: Warning[];
   'slots': Slot[];
   localIds: LocalId[];
@@ -90,7 +91,7 @@ export class DomModule implements Feature {
 
   constructor(
       node: ASTNode, id: string|null, comment: string|undefined,
-      sourceRange: SourceRange, ast: dom5.Node, warnings: Warning[],
+      sourceRange: SourceRange, ast: HtmlAstNode, warnings: Warning[],
       slots: Slot[], localIds: LocalId[], template: Template|undefined,
       databindings: HtmlDatabindingExpression[]) {
     this.node = node;
@@ -134,7 +135,11 @@ export class DomModuleScanner implements HtmlScanner {
                           (s) => new Slot(
                               dom5.getAttribute(s, 'name') || '',
                               document.sourceRangeForNode(s)!,
-                              s));
+                              {
+                                language: 'html',
+                                node: s,
+                                containingDocument: document
+                              }));
           localIds =
               [...dom5.queryAll(templateContent, dom5.predicates.hasAttr('id'))]
                   .map(
@@ -151,7 +156,7 @@ export class DomModuleScanner implements HtmlScanner {
             dom5.getAttribute(node, 'id'),
             node,
             document.sourceRangeForNode(node)!,
-            node,
+            {language: 'html', node, containingDocument: document},
             warnings,
             template,
             slots,
