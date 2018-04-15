@@ -11,8 +11,11 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+
+import * as babel from '@babel/types';
 import chalk from 'chalk';
 import {ExecOptions} from 'child_process';
+import * as estree from 'estree';
 import * as fse from 'fs-extra';
 import {Iterable as IterableX} from 'ix';
 import * as path from 'path';
@@ -132,4 +135,8 @@ export async function deleteGlobsSafe(
     }
   }
   await Promise.all([...toDelete].map((filepath) => fse.remove(filepath)));
+}
+
+export function babelNodeToEstreeNode(node: babel.Node) {
+  return node as estree.Node;
 }

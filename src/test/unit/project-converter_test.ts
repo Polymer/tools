@@ -3076,10 +3076,13 @@ console.log('two');
       setSources({
         'test.html': `
           <!-- First comment -->
-          <script></script>
+          <script>
+            // comment in first script
+            console.log('first script');
+          </script>
           <!-- Second comment -->
           <script>
-            // comment in script
+            // comment in second script
             console.log('second script');
           </script>
           <!-- Another comment -->
@@ -3090,15 +3093,35 @@ console.log('two');
       assertSources(await convert(), {
         'test.js': `
 /* First comment */
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this comment!
+*/
+;
+
+// comment in first script
+console.log('first script');
+
 /* Second comment */
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this comment!
+*/
+;
+
+// comment in second script
+console.log('second script');
+
 /* Another comment */
 /* Final trailing comment */
-\`TODO(modulizer): the above comments were extracted
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
   from HTML and may be out of place here. Review them and
-  then delete this string!\`;
-
-// comment in script
-console.log('second script');
+  then delete this comment!
+*/
+;
 `,
       });
     });
@@ -3118,9 +3141,12 @@ console.log('second script');
 /* First comment */
 /* Second comment */
 /* Final trailing comment */
-\`TODO(modulizer): the above comments were extracted
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
   from HTML and may be out of place here. Review them and
-  then delete this string!\`;
+  then delete this comment!
+*/
+;
 `,
       });
     });
@@ -3149,16 +3175,26 @@ console.log('second script');
 /* /* First comment *\\/ */
 /* /* 1/2 comments *\\/ /* 2/2 comments *\\/ */
 /*
+  FIXME(polymer-modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this comment!
+*/
+;
+
+// comment in script
+console.log('second script');
+
+/*
   /**
    *  Final comment
    **\\/
 */
-\`TODO(modulizer): the above comments were extracted
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
   from HTML and may be out of place here. Review them and
-  then delete this string!\`;
-
-// comment in script
-console.log('second script');
+  then delete this comment!
+*/
+;
 `,
       });
     });
@@ -3179,9 +3215,12 @@ console.log('second script');
 /** @license This is a license */
 /* Second comment */
 /* Final trailing comment */
-\`TODO(modulizer): the above comments were extracted
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
   from HTML and may be out of place here. Review them and
-  then delete this string!\`;
+  then delete this comment!
+*/
+;
 `,
       });
     });
@@ -3282,7 +3321,7 @@ export function methodOnFoo() {
       });
     });
 
-    testName = 'copy header comments';
+    testName = 'regression test: do not delete header comments';
     test(testName, async () => {
 
       setSources({
@@ -3330,9 +3369,12 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-\`TODO(modulizer): the above comments were extracted
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
   from HTML and may be out of place here. Review them and
-  then delete this string!\`;
+  then delete this comment!
+*/
+;
 
 // unresolved
 

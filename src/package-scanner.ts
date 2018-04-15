@@ -13,7 +13,7 @@
  */
 
 import fetch from 'node-fetch';
-import {Analysis, Document, Severity, Warning} from 'polymer-analyzer';
+import {Analysis, Document, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 
 import {filesJsonObjectToMap, PackageScanResultJson, serializePackageScanResult} from './conversion-manifest';
 import {ConversionSettings} from './conversion-settings';
@@ -218,7 +218,8 @@ export class PackageScanner {
    * Scan a document and any of its dependency packages.
    */
   private scanDocument(
-      document: Document, scanAs: 'js-module'|'html-document') {
+      document: Document<ParsedHtmlDocument>,
+      scanAs: 'js-module'|'html-document') {
     console.assert(
         document.kinds.has('html-document'),
         `scanDocument() must be called with an HTML document, but got ${
@@ -289,7 +290,8 @@ export class PackageScanner {
           this.urlHandler.getOriginalPackageNameForUrl(importDocumentUrl);
 
       if (importPackageName === packageName) {
-        this.scanDocument(htmlImport.document, 'js-module');
+        this.scanDocument(
+            htmlImport.document as Document<ParsedHtmlDocument>, 'js-module');
       } else {
         this.externalDependencies.add(importPackageName);
       }

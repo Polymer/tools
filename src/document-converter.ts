@@ -436,33 +436,35 @@ export class DocumentConverter extends DocumentProcessor {
 
       // ignore fake script imports injected by various hacks in the
       // analyzer
-      if (!scriptImport.sourceRange || !scriptImport.astNode) {
+      if (scriptImport.sourceRange === undefined ||
+          scriptImport.astNode === undefined ||
+          scriptImport.astNode.language !== 'html') {
         continue;
       }
-      if (!dom5.predicates.hasTagName('script')(scriptImport.astNode)) {
+      if (!dom5.predicates.hasTagName('script')(scriptImport.astNode.node)) {
         throw new Error(
             `Expected an 'html-script' kinded feature to ` +
             `have a script tag for an AST node.`);
       }
       const offsets = htmlDocument.sourceRangeToOffsets(
-          htmlDocument.sourceRangeForNode(scriptImport.astNode)!);
+          htmlDocument.sourceRangeForNode(scriptImport.astNode.node)!);
 
       const convertedUrl = this.convertDocumentUrl(
           this.urlHandler.getDocumentUrl(scriptImport.document));
       const formattedUrl =
           this.formatImportUrl(convertedUrl, scriptImport.originalUrl, true);
-      dom5.setAttribute(scriptImport.astNode, 'src', formattedUrl);
+      dom5.setAttribute(scriptImport.astNode.node, 'src', formattedUrl);
 
       // Temporary: Check if imported script is a known module.
       // See `knownScriptModules` for more information.
       for (const importUrlEnding of knownScriptModules) {
         if (scriptImport.url.endsWith(importUrlEnding)) {
-          dom5.setAttribute(scriptImport.astNode, 'type', 'module');
+          dom5.setAttribute(scriptImport.astNode.node, 'type', 'module');
         }
       }
 
       edits.push(
-          {offsets, replacementText: serializeNode(scriptImport.astNode)});
+          {offsets, replacementText: serializeNode(scriptImport.astNode.node)});
     }
 
     // We need to ensure that custom styles are inserted into the document

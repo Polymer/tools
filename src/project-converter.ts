@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Analysis, Document} from 'polymer-analyzer';
+import {Analysis, Document, ParsedHtmlDocument} from 'polymer-analyzer';
 
 import {ConversionSettings} from './conversion-settings';
 import {DocumentConverter} from './document-converter';
@@ -83,7 +83,8 @@ export class ProjectConverter {
    * Convert a document. The output format (JS Module or HTML Document) is
    * dictated by the results of the scanner.
    */
-  private convertDocument(document: Document, packageName: string) {
+  private convertDocument(
+      document: Document<ParsedHtmlDocument>, packageName: string) {
     console.assert(
         document.kinds.has('html-document'),
         `convertDocument() must be called with an HTML document, but got ${

@@ -16,11 +16,11 @@ import * as dom5 from 'dom5';
 import {Program} from 'estree';
 import * as jsc from 'jscodeshift';
 import * as parse5 from 'parse5';
-import {Document, Import, isPositionInsideRange, Severity, Warning} from 'polymer-analyzer';
+import {Document, Import, isPositionInsideRange, ParsedHtmlDocument, Severity, Warning} from 'polymer-analyzer';
 import * as recast from 'recast';
 
 import {ConversionSettings} from './conversion-settings';
-import {attachCommentsToFirstStatement, canDomModuleBeInlined, createDomNodeInsertStatements, filterClone, getCommentsBetween, getNodePathInProgram, insertStatementsIntoProgramBody, serializeNodeToTemplateLiteral} from './document-util';
+import {attachCommentsToEndOfProgram, attachCommentsToFirstStatement, canDomModuleBeInlined, createDomNodeInsertStatements, filterClone, getCommentsBetween, getNodePathInProgram, insertStatementsIntoProgramBody, serializeNodeToTemplateLiteral} from './document-util';
 import {ImportWithDocument, isImportWithDocument} from './import-with-document';
 import {removeNamespaceInitializers} from './passes/remove-namespace-initializers';
 import {removeToplevelUseStrict} from './passes/remove-toplevel-use-strict';
@@ -57,13 +57,13 @@ export abstract class DocumentProcessor {
   protected readonly convertedFilePath: ConvertedDocumentFilePath;
   protected readonly urlHandler: UrlHandler;
   protected readonly conversionSettings: ConversionSettings;
-  protected readonly document: Document;
+  protected readonly document: Document<ParsedHtmlDocument>;
   protected readonly program: Program;
   protected readonly convertedHtmlScripts: ReadonlySet<ImportWithDocument>;
 
   constructor(
-      document: Document, originalPackageName: string, urlHandler: UrlHandler,
-      conversionSettings: ConversionSettings) {
+      document: Document<ParsedHtmlDocument>, originalPackageName: string,
+      urlHandler: UrlHandler, conversionSettings: ConversionSettings) {
     // The `originalPackageName` given by `PackageConverter` is sometimes
     // incorrect because it is always the name of the root package being
     // converted, even if this `DocumentConverter` is converting a file in a
@@ -87,8 +87,9 @@ export abstract class DocumentProcessor {
   private isInternalNonModuleImport(scriptImport: ImportWithDocument): boolean {
     const oldScriptUrl = this.urlHandler.getDocumentUrl(scriptImport.document);
     const newScriptUrl = this.convertScriptUrl(oldScriptUrl);
-    const isModuleImport =
-        dom5.getAttribute(scriptImport.astNode, 'type') === 'module';
+    const isModuleImport = scriptImport.astNode !== undefined &&
+        scriptImport.astNode.language === 'html' &&
+        dom5.getAttribute(scriptImport.astNode.node, 'type') === 'module';
     const isInternalImport =
         this.urlHandler.isImportInternal(this.convertedUrl, newScriptUrl);
     return isInternalImport && !isModuleImport;
@@ -106,6 +107,7 @@ export abstract class DocumentProcessor {
     const convertedHtmlScripts = new Set<ImportWithDocument>();
     const claimedDomModules = new Set<parse5.ASTNode>();
     let prevScriptNode: parse5.ASTNode|undefined = undefined;
+    let htmlCommentsBeforeFirstScriptNode: undefined|string[];
     for (const script of this.document.getFeatures()) {
       let scriptDocument: Document;
       if (script.kinds.has('html-script')) {
@@ -147,19 +149,33 @@ export abstract class DocumentProcessor {
       if (this.conversionSettings.addImportPath) {
         this.addImportPathsToElements(scriptProgram, scriptDocument);
       }
-      const comments: string[] = getCommentsBetween(
-          this.document.parsedDocument.ast, prevScriptNode, script.astNode);
-      const statements =
-          attachCommentsToFirstStatement(comments, scriptProgram.body);
+      const statements = scriptProgram.body;
+      if (script.astNode && script.astNode.language === 'html') {
+        if (prevScriptNode !== undefined) {
+          const comments: string[] = getCommentsBetween(
+              this.document.parsedDocument.ast,
+              prevScriptNode,
+              script.astNode.node);
+          attachCommentsToFirstStatement(comments, statements);
+        } else {
+          htmlCommentsBeforeFirstScriptNode = getCommentsBetween(
+              this.document.parsedDocument.ast,
+              prevScriptNode,
+              script.astNode.node);
+        }
+        prevScriptNode = script.astNode.node;
+      }
+
       combinedToplevelStatements.push(...statements);
-      prevScriptNode = script.astNode;
     }
 
+    if (htmlCommentsBeforeFirstScriptNode !== undefined) {
+      attachCommentsToFirstStatement(
+          htmlCommentsBeforeFirstScriptNode, combinedToplevelStatements);
+    }
     const trailingComments = getCommentsBetween(
         this.document.parsedDocument.ast, prevScriptNode, undefined);
-    const maybeCommentStatement =
-        attachCommentsToFirstStatement(trailingComments, []);
-    combinedToplevelStatements.push(...maybeCommentStatement);
+    attachCommentsToEndOfProgram(trailingComments, combinedToplevelStatements);
     const program = jsc.program(combinedToplevelStatements);
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFEs(program);

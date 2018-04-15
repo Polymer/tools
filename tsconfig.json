@@ -9,6 +9,7 @@
     "sourceMap": true,
     "outDir": "./lib",
     "strict": true,
+    "pretty": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noImplicitThis": true,

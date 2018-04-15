@@ -20,6 +20,7 @@ import {Document} from 'polymer-analyzer';
 
 import {getMemberName, getMemberPath, getNodePathInProgram, getTopLevelStatements, isSourceLocationEqual} from '../document-util';
 import {NamespaceMemberToExport} from '../js-module';
+import {babelNodeToEstreeNode} from '../util';
 
 export function rewriteNamespacesAsExports(
     program: estree.Program,
@@ -264,7 +265,8 @@ class RewriteNamespaceExportsPass {
   private isNamespace(node: estree.Node) {
     const namespaces = this.document.getFeatures({kind: 'namespace'});
     for (const namespace of namespaces) {
-      if (isSourceLocationEqual(namespace.astNode, node)) {
+      if (isSourceLocationEqual(
+              babelNodeToEstreeNode(namespace.astNode.node), node)) {
         return true;
       }
     }
@@ -283,13 +285,11 @@ class RewriteNamespaceExportsPass {
 function getLocalNamesOfLocallyDeclaredNamespaces(document: Document) {
   const names = [];
   for (const namespace of document.getFeatures({kind: 'namespace'})) {
-    if (namespace.astNode && namespace.astNode.type) {
-      const astNode = namespace.astNode as estree.Node;
-      if (astNode.type === 'VariableDeclaration') {
-        const declaration = astNode.declarations[0];
-        if (declaration.id.type === 'Identifier') {
-          names.push(declaration.id.name);
-        }
+    const astNode = babelNodeToEstreeNode(namespace.astNode.node);
+    if (astNode.type === 'VariableDeclaration') {
+      const declaration = astNode.declarations[0];
+      if (declaration.id.type === 'Identifier') {
+        names.push(declaration.id.name);
       }
     }
   }

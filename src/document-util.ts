@@ -19,6 +19,8 @@ import {Iterable as IterableX} from 'ix';
 import * as jsc from 'jscodeshift';
 import {EOL} from 'os';
 import * as parse5 from 'parse5';
+import {AstNodeWithLanguage} from 'polymer-analyzer';
+import {babelNodeToEstreeNode} from './util';
 
 /**
  * Serialize a parse5 Node to a string.
@@ -161,7 +163,11 @@ export function getMemberOrIdentifierName(expression: estree.Node): string|
  * possibly by a different parser, though they output the same format).
  */
 export function getNodePathInProgram(
-    program: estree.Program, node: estree.Node) {
+    program: estree.Program, astNode: AstNodeWithLanguage|undefined) {
+  if (astNode === undefined || astNode.language !== 'js') {
+    return;
+  }
+  const node = astNode.node;
   let associatedNodePath: NodePath|undefined;
 
   astTypes.visit(program, {
@@ -171,7 +177,7 @@ export function getNodePathInProgram(
       // matches the given node.
       this.traverse(path);
       if (associatedNodePath === undefined &&
-          isSourceLocationEqual(path.node, node) &&
+          isSourceLocationEqual(path.node, babelNodeToEstreeNode(node)) &&
           path.node.type === node.type) {
         associatedNodePath = path;
         return false;
@@ -375,6 +381,9 @@ export function getCommentsBetween(
     document: parse5.ASTNode,
     from: parse5.ASTNode|undefined,
     until: parse5.ASTNode|undefined): string[] {
+  if (until === undefined) {
+    debugger;
+  }
   const nodesStart =
       from === undefined ? nodesInside(document) : nodesAfter(from);
   const nodesBetween =
@@ -396,6 +405,18 @@ export function getCommentsBetween(
   return Array.from(formattedCommentStringsBetween);
 }
 
+/** Recast represents comments differently than espree. */
+interface RecastNode {
+  comments?: null|undefined|Array<RecastComment>;
+}
+
+interface RecastComment {
+  type: 'Line'|'Block';
+  leading: boolean;
+  trailing: boolean;
+  value: string;
+}
+
 /**
  * Given some comments, attach them to the first statement, if any, in the
  * given array of statements.
@@ -406,27 +427,46 @@ export function attachCommentsToFirstStatement(
     comments: string[],
     statements: Array<estree.Statement|estree.ModuleDeclaration>) {
   if (comments.length === 0) {
-    return statements;
+    return;
   }
-  const message = `TODO(modulizer): the above comments were extracted\n` +
+  const message =
+      `\n  FIXME(polymer-modulizer): the above comments were extracted\n` +
       `  from HTML and may be out of place here. Review them and\n` +
-      `  then delete this string!`;
-  const firstStatement = jsc.expressionStatement(jsc.templateLiteral(
-      [jsc.templateElement({cooked: message, raw: message}, true)], [])) as RecastNode & estree.ExpressionStatement;
+      `  then delete this comment!\n`;
+  comments.push(message);
+
+  const recastComments = getCommentsFromTexts(comments);
+  const firstStatement =
+      jsc.expressionStatement(jsc.identifier('')) as RecastNode &
+      estree.Statement;
+  firstStatement.comments =
+      (firstStatement.comments || []).concat(recastComments);
   statements.unshift(firstStatement);
+}
 
-  /** Recast represents comments differently than espree. */
-  interface RecastNode {
-    comments?: null|undefined|Array<RecastComment>;
+export function attachCommentsToEndOfProgram(
+    comments: string[],
+    statements: Array<estree.Statement|estree.ModuleDeclaration>) {
+  if (comments.length === 0) {
+    return;
   }
+  const message =
+      `\n  FIXME(polymer-modulizer): the above comments were extracted\n` +
+      `  from HTML and may be out of place here. Review them and\n` +
+      `  then delete this comment!\n`;
+  comments.push(message);
 
-  interface RecastComment {
-    type: 'Line'|'Block';
-    leading: boolean;
-    trailing: boolean;
-    value: string;
-  }
-  const recastComments: RecastComment[] = comments.map((comment) => {
+  const recastComments = getCommentsFromTexts(comments);
+  const lastStatement =
+      jsc.expressionStatement(jsc.identifier('')) as RecastNode &
+      estree.Statement;
+  lastStatement.comments =
+      (lastStatement.comments || []).concat(recastComments);
+  statements.push(lastStatement);
+}
+
+function getCommentsFromTexts(commentTexts: string[]) {
+  const recastComments: RecastComment[] = commentTexts.map((comment) => {
     const escapedComment = comment.replace(/\*\//g, '*\\/');
     return {
       type: 'Block' as 'Block',
@@ -435,11 +475,7 @@ export function attachCommentsToFirstStatement(
       value: escapedComment,
     };
   });
-
-  firstStatement.comments =
-      (firstStatement.comments || []).concat(recastComments);
-
-  return statements;
+  return recastComments;
 }
 
 /**
