@@ -436,12 +436,15 @@ export function attachCommentsToFirstStatement(
   comments.push(message);
 
   const recastComments = getCommentsFromTexts(comments);
-  const firstStatement =
-      jsc.expressionStatement(jsc.identifier('')) as RecastNode &
-      estree.Statement;
+  let firstStatement: RecastNode&(estree.Statement | estree.ModuleDeclaration) =
+      statements[0];
+  if (firstStatement === undefined) {
+    firstStatement = jsc.expressionStatement(jsc.identifier(''));
+    statements.unshift(firstStatement);
+  }
+
   firstStatement.comments =
-      (firstStatement.comments || []).concat(recastComments);
-  statements.unshift(firstStatement);
+      recastComments.concat(firstStatement.comments || []);
 }
 
 export function attachCommentsToEndOfProgram(

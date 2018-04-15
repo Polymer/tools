@@ -60,6 +60,7 @@ export abstract class DocumentProcessor {
   protected readonly document: Document<ParsedHtmlDocument>;
   protected readonly program: Program;
   protected readonly convertedHtmlScripts: ReadonlySet<ImportWithDocument>;
+  protected readonly leadingCommentsToPrepend: string[]|undefined;
 
   constructor(
       document: Document<ParsedHtmlDocument>, originalPackageName: string,
@@ -80,8 +81,10 @@ export abstract class DocumentProcessor {
     this.convertedFilePath =
         this.urlHandler.packageRelativeConvertedUrlToConvertedDocumentFilePath(
             originalPackageName, relativeConvertedUrl);
-    ({program: this.program, convertedHtmlScripts: this.convertedHtmlScripts} =
-         this.prepareJsModule());
+    const prepareResult = this.prepareJsModule();
+    this.program = prepareResult.program;
+    this.convertedHtmlScripts = prepareResult.convertedHtmlScripts;
+    this.leadingCommentsToPrepend = prepareResult.leadingCommentsToPrepend;
   }
 
   private isInternalNonModuleImport(scriptImport: ImportWithDocument): boolean {
@@ -107,6 +110,12 @@ export abstract class DocumentProcessor {
     const convertedHtmlScripts = new Set<ImportWithDocument>();
     const claimedDomModules = new Set<parse5.ASTNode>();
     let prevScriptNode: parse5.ASTNode|undefined = undefined;
+    /**
+     * Inserting leading comments is surprisingly tricky, because they must
+     * be attached to a node, but very few nodes can come before an import,
+     * and in general we don't want to insert fake nodes, so instead we
+     * pass these up to be added onto the first node in the
+     */
     let htmlCommentsBeforeFirstScriptNode: undefined|string[];
     for (const script of this.document.getFeatures()) {
       let scriptDocument: Document;
@@ -169,21 +178,22 @@ export abstract class DocumentProcessor {
       combinedToplevelStatements.push(...statements);
     }
 
-    if (htmlCommentsBeforeFirstScriptNode !== undefined) {
-      attachCommentsToFirstStatement(
-          htmlCommentsBeforeFirstScriptNode, combinedToplevelStatements);
-    }
-    const trailingComments = getCommentsBetween(
-        this.document.parsedDocument.ast, prevScriptNode, undefined);
-    attachCommentsToEndOfProgram(trailingComments, combinedToplevelStatements);
     const program = jsc.program(combinedToplevelStatements);
     removeUnnecessaryEventListeners(program);
     removeWrappingIIFEs(program);
 
+    const trailingComments = getCommentsBetween(
+        this.document.parsedDocument.ast, prevScriptNode, undefined);
+    attachCommentsToEndOfProgram(trailingComments, combinedToplevelStatements);
+
     this.insertCodeToGenerateHtmlElements(program, claimedDomModules);
     removeNamespaceInitializers(program, this.conversionSettings.namespaces);
 
-    return {program, convertedHtmlScripts};
+    return {
+      program,
+      convertedHtmlScripts,
+      leadingCommentsToPrepend: htmlCommentsBeforeFirstScriptNode
+    };
   }
 
   /**

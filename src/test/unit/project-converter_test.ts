@@ -3098,19 +3098,14 @@ console.log('two');
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-;
-
 // comment in first script
 console.log('first script');
-
 /* Second comment */
 /*
   FIXME(polymer-modulizer): the above comments were extracted
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-;
-
 // comment in second script
 console.log('second script');
 
@@ -3179,8 +3174,6 @@ console.log('second script');
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-;
-
 // comment in script
 console.log('second script');
 
@@ -3374,8 +3367,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   from HTML and may be out of place here. Review them and
   then delete this comment!
 */
-;
-
 // unresolved
 
 function resolve() {
@@ -3391,6 +3382,46 @@ if (window.WebComponents) {
     window.addEventListener('DOMContentLoaded', resolve);
   }
 }
+`,
+      });
+    });
+
+    testName = `insert leading comments before imports`;
+    test(testName, async () => {
+      setSources({
+        'test.html': `<!--
+    leading comment!
+    -->
+    <link rel="import" href="./foo.html">
+    <script>
+    (function() {
+      'use strict';
+
+      console.log('main file contents');
+
+    })();
+    </script>
+    <link rel="import" href="./bar.html">
+`,
+        'foo.html': ``,
+        'bar.html': ``
+      });
+
+      assertSources(await convert(), {
+        'test.js': `
+/*
+    leading comment!
+    */
+/*
+  FIXME(polymer-modulizer): the above comments were extracted
+  from HTML and may be out of place here. Review them and
+  then delete this comment!
+*/
+import './foo.js';
+
+import './bar.js';
+
+console.log('main file contents');
 `,
       });
     });

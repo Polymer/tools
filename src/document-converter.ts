@@ -26,7 +26,7 @@ import {Document, Import, ParsedHtmlDocument, Severity, Warning} from 'polymer-a
 import * as recast from 'recast';
 
 import {DocumentProcessor} from './document-processor';
-import {collectIdentifierNames, containsWriteToGlobalSettingsObject, createDomNodeInsertStatements, findAvailableIdentifier, getMemberPath, getPathOfAssignmentTo, getSetterName, serializeNode} from './document-util';
+import {attachCommentsToFirstStatement, collectIdentifierNames, containsWriteToGlobalSettingsObject, createDomNodeInsertStatements, findAvailableIdentifier, getMemberPath, getPathOfAssignmentTo, getSetterName, serializeNode} from './document-util';
 import {ImportWithDocument, isImportWithDocument} from './import-with-document';
 import {ConversionResult, JsExport} from './js-module';
 import {addA11ySuiteIfUsed} from './passes/add-a11y-suite-if-used';
@@ -837,6 +837,11 @@ export class DocumentConverter extends DocumentProcessor {
 
     // Prepend JS imports into the program body
     program.body.splice(0, 0, ...jsImportDeclarations);
+    // Attach any leading comments to the first statement, imports or no.
+    if (this.leadingCommentsToPrepend !== undefined) {
+      attachCommentsToFirstStatement(
+          this.leadingCommentsToPrepend, program.body);
+    }
     // Return true if any imports were added, false otherwise
     return jsImportDeclarations.length > 0;
   }
