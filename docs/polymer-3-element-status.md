@@ -37,9 +37,9 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-behaviors | ✅ | ✅ | ❔ | ❔ | |
 | iron-checked-element-behavior | ✅ | ✅ | ❔ | ❔ | |
 | iron-collapse | ✅ | ✅ | ❔ | ❔ | |
-| iron-component-page | ✅ | ✅ | ✅ | ✅ | Tests failed: Timed out |
+| iron-component-page | ✅ | ✅ | ✅ | ✅ | |
 | iron-demo-helpers | ✅ | ✅ | ❔ | ❔ | |
-| iron-doc-viewer | ✅ | ✅ | ✅ | ✅ | 3 failed tests |
+| iron-doc-viewer | ✅ | ✅ | ✅ | ✅ | |
 | iron-dropdown | ✅ | ❌ | ❌ | ❌ | Animations are broken and FF require.js is duplicating |
 | iron-fit-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-flex-layout | ✅ | ✅ | ❔ | ❔ | |
