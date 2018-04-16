@@ -14,7 +14,7 @@
 
 import {Document} from './document';
 import {Feature} from './feature';
-import {SourceRange} from './model';
+import {AstNodeWithLanguage, SourceRange} from './model';
 import {Resolvable} from './resolvable';
 import {FileRelativeUrl, ResolvedUrl} from './url';
 import {Severity, Warning} from './warning';
@@ -44,7 +44,7 @@ export class ScannedImport implements Resolvable {
    */
   urlSourceRange: SourceRange|undefined;
 
-  astNode: any|null;
+  astNode: AstNodeWithLanguage|undefined;
 
   warnings: Warning[] = [];
 
@@ -57,7 +57,7 @@ export class ScannedImport implements Resolvable {
   constructor(
       type: string, url: FileRelativeUrl|undefined,
       sourceRange: SourceRange|undefined, urlSourceRange: SourceRange|undefined,
-      ast: any|null, lazy: boolean) {
+      ast: AstNodeWithLanguage|undefined, lazy: boolean) {
     this.type = type;
     this.url = url;
     this.sourceRange = sourceRange;
@@ -163,15 +163,15 @@ export class Import implements Feature {
   readonly kinds = new Set(['import']);
   readonly sourceRange: SourceRange|undefined;
   readonly urlSourceRange: SourceRange|undefined;
-  readonly astNode: any|null;
+  readonly astNode: AstNodeWithLanguage|undefined;
   readonly warnings: Warning[];
   readonly lazy: boolean;
 
   constructor(
       url: ResolvedUrl, originalUrl: FileRelativeUrl, type: string,
       document: Document|undefined, sourceRange: SourceRange|undefined,
-      urlSourceRange: SourceRange|undefined, ast: any, warnings: Warning[],
-      lazy: boolean) {
+      urlSourceRange: SourceRange|undefined, ast: AstNodeWithLanguage|undefined,
+      warnings: Warning[], lazy: boolean) {
     this.url = url;
     this.originalUrl = originalUrl;
     this.type = type;

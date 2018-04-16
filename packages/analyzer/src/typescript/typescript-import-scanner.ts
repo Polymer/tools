@@ -40,7 +40,8 @@ export class TypeScriptImportScanner implements
             // TODO(justinfagnani): make SourceRanges work
             null as any as SourceRange,
             null as any as SourceRange,
-            node,
+            // TODO(justinfagnani): add TypeScript to AstNodeWithLanguage
+            undefined,
             false));
       }
     }

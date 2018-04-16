@@ -183,7 +183,7 @@ class FunctionVisitor implements Visitor {
         description,
         summary,
         getOrInferPrivacy(specificName, docs),
-        node,
+        {language: 'js', node, containingDocument: this.document},
         docs,
         sourceRange,
         functionParams,

@@ -109,7 +109,7 @@ class IronFlexLayoutClasses extends HtmlRule {
     // Search in the dom-modules.
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
       const misplacedStyle =
-          dom5.query(domModule.astNode, p.hasTagName('style'));
+          dom5.query(domModule.astNode.node, p.hasTagName('style'));
       if (misplacedStyle) {
         warnings.push(new Warning({
           code: 'iron-flex-layout-classes',
@@ -121,7 +121,8 @@ class IronFlexLayoutClasses extends HtmlRule {
         }));
         continue;
       }
-      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
+      const template =
+          dom5.query(domModule.astNode.node, p.hasTagName('template'));
       if (!template) {
         continue;
       }

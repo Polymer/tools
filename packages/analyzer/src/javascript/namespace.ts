@@ -12,9 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as babel from '@babel/types';
-
-import {Document, Feature, Property, Resolvable, ScannedProperty, SourceRange, Warning} from '../model/model';
+import {Document, Feature, JsAstNode, Property, Resolvable, ScannedProperty, SourceRange, Warning} from '../model/model';
 
 import {Annotation as JsDocAnnotation} from './jsdoc';
 
@@ -27,12 +25,12 @@ export class ScannedNamespace implements Resolvable {
   summary?: string;
   jsdoc?: JsDocAnnotation;
   sourceRange: SourceRange;
-  astNode: babel.Node;
+  astNode: JsAstNode;
   warnings: Warning[];
   properties: Map<string, ScannedProperty>;
 
   constructor(
-      name: string, description: string, summary: string, astNode: babel.Node,
+      name: string, description: string, summary: string, astNode: JsAstNode,
       properties: Map<string, ScannedProperty>, jsdoc: JsDocAnnotation,
       sourceRange: SourceRange) {
     this.name = name;
@@ -63,7 +61,7 @@ export class Namespace implements Feature {
   kinds: Set<string>;
   identifiers: Set<string>;
   sourceRange: SourceRange;
-  astNode: any;
+  astNode: JsAstNode;
   warnings: Warning[];
   readonly properties = new Map<string, Property>();
 

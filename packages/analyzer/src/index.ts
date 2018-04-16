@@ -25,6 +25,8 @@ export * from './model/model';
 export {WarningPrinter, Verbosity as WarningPrinterVerbosity} from './warning/warning-printer';
 export {WarningFilter} from './warning/warning-filter';
 export {Namespace} from './javascript/namespace';
+export {JavascriptImport} from './javascript/javascript-import-scanner';
+export {Export} from './javascript/javascript-export-scanner';
 export {ParsedDocument} from './parser/document';
 
 // Analysis

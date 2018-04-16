@@ -254,7 +254,7 @@ export function getPropertyValue(
 export function toScannedMethod(
     node: babel.ObjectProperty|babel.ObjectMethod|babel.ClassMethod,
     sourceRange: SourceRange,
-    document: ParsedDocument): ScannedMethod {
+    document: JavaScriptDocument): ScannedMethod {
   const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
   const description = parsedJsdoc.description.trim();
   const maybeName = getPropertyName(node);
@@ -283,7 +283,7 @@ export function toScannedMethod(
     description,
     sourceRange,
     warnings,
-    astNode: node,
+    astNode: {language: 'js', node, containingDocument: document},
     jsdoc: parsedJsdoc,
     privacy: getOrInferPrivacy(name, parsedJsdoc)
   };
@@ -571,7 +571,7 @@ export function extractPropertyFromGetterOrSetter(
 
   return {
     name,
-    astNode: method,
+    astNode: {language: 'js', node: method, containingDocument: document},
     type,
     jsdoc: jsdocAnn,
     sourceRange: document.sourceRangeForNode(method)!,
@@ -646,7 +646,7 @@ export function extractPropertiesFromClassOrObjectBody(
 
     properties.set(name, {
       name,
-      astNode,
+      astNode: {language: 'js', node: astNode, containingDocument: document},
       type,
       jsdoc: jsdocAnn,
       sourceRange,

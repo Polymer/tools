@@ -69,7 +69,7 @@ export class HtmlImportScanner implements HtmlScanner {
           href,
           document.sourceRangeForNode(node)!,
           document.sourceRangeForAttributeValue(node, 'href')!,
-          node,
+          {language: 'html', node, containingDocument: document},
           lazy));
     });
     if (this._lazyEdges) {
@@ -77,7 +77,13 @@ export class HtmlImportScanner implements HtmlScanner {
       if (edges) {
         for (const edge of edges) {
           imports.push(new ScannedImport(
-              type, edge as any, undefined, undefined, null, true));
+              type,
+              // This cast is very suspicious.
+              edge as string as FileRelativeUrl,
+              undefined,
+              undefined,
+              undefined,
+              true));
         }
       }
     }

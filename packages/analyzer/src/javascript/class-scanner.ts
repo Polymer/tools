@@ -118,7 +118,8 @@ export class ClassScanner implements JavaScriptScanner {
     const classMap = new Map<string, ScannedClass>();
 
     for (const class_ of classFinder.classes) {
-      if (mixinClassExpressions.has(class_.astNode)) {
+      if (class_.astNode.language === 'js' &&
+          mixinClassExpressions.has(class_.astNode.node)) {
         // This class is a mixin and has already been handled as such.
         continue;
       }
@@ -126,9 +127,9 @@ export class ClassScanner implements JavaScriptScanner {
         classMap.set(class_.name, class_);
       }
       // Class expressions inside the customElements.define call
-      if (babel.isClassExpression(class_.astNode)) {
+      if (babel.isClassExpression(class_.astNode.node)) {
         const definition =
-            elementDefinitionsByClassExpression.get(class_.astNode);
+            elementDefinitionsByClassExpression.get(class_.astNode.node);
         if (definition) {
           customElements.push({class_, definition});
           continue;
@@ -195,8 +196,9 @@ export class ClassScanner implements JavaScriptScanner {
     } else if (customElementTag && customElementTag.description) {
       tagName = customElementTag.description;
     } else if (
-        babel.isClassExpression(astNode) || babel.isClassDeclaration(astNode)) {
-      tagName = getIsValue(astNode);
+        babel.isClassExpression(astNode.node) ||
+        babel.isClassDeclaration(astNode.node)) {
+      tagName = getIsValue(astNode.node);
     }
     let warnings: Warning[] = [];
 
@@ -207,14 +209,15 @@ export class ClassScanner implements JavaScriptScanner {
 
     // This will cover almost all classes, except those defined only by
     // applying a mixin. e.g.   const MyElem = Mixin(HTMLElement)
-    if (babel.isClassExpression(astNode) || babel.isClassDeclaration(astNode)) {
-      const observersResult = this._getObservers(astNode, document);
+    if (babel.isClassExpression(astNode.node) ||
+        babel.isClassDeclaration(astNode.node)) {
+      const observersResult = this._getObservers(astNode.node, document);
       observers = [];
       if (observersResult) {
         observers = observersResult.observers;
         warnings = warnings.concat(observersResult.warnings);
       }
-      const polymerProps = getPolymerProperties(astNode, document);
+      const polymerProps = getPolymerProperties(astNode.node, document);
       for (const prop of polymerProps) {
         const constructorProp = class_.properties.get(prop.name);
         let finalProp;
@@ -225,13 +228,12 @@ export class ClassScanner implements JavaScriptScanner {
         }
         class_.properties.set(prop.name, finalProp);
       }
-      methods = getMethods(astNode, document);
-      staticMethods = getStaticMethods(astNode, document);
+      methods = getMethods(astNode.node, document);
+      staticMethods = getStaticMethods(astNode.node, document);
     }
 
     const extendsTag = jsdoc.getTag(docs, 'extends');
     const extends_ = extendsTag !== undefined ? extendsTag.name : undefined;
-
     // TODO(justinfagnani): Infer mixin applications and superclass from AST.
     scannedElement = new ScannedPolymerElement({
       className: class_.name,
@@ -242,7 +244,9 @@ export class ClassScanner implements JavaScriptScanner {
       methods,
       staticMethods,
       observers,
-      events: esutil.getEventComments(astNode),
+      events: astNode.language === 'js' ?
+          esutil.getEventComments(astNode.node) :
+          new Map(),
       attributes: new Map(),
       behaviors: [],
       extends: extends_,
@@ -257,8 +261,10 @@ export class ClassScanner implements JavaScriptScanner {
       privacy: class_.privacy
     });
 
-    if (babel.isClassExpression(astNode) || babel.isClassDeclaration(astNode)) {
-      const observedAttributes = this._getObservedAttributes(astNode, document);
+    if (babel.isClassExpression(astNode.node) ||
+        babel.isClassDeclaration(astNode.node)) {
+      const observedAttributes =
+          this._getObservedAttributes(astNode.node, document);
 
       if (observedAttributes != null) {
         // If a class defines observedAttributes, it overrides what the base
@@ -336,7 +342,7 @@ export class ClassScanner implements JavaScriptScanner {
           name: value,
           description: description,
           sourceRange: document.sourceRangeForNode(expr),
-          astNode: expr,
+          astNode: {language: 'js', containingDocument: document, node: expr},
           warnings: [],
         };
         if (type) {
@@ -483,7 +489,8 @@ class PrototypeMemberFinder implements Visitor {
 
     return {
       name,
-      astNode: node,
+      astNode:
+          {language: 'js' as 'js', containingDocument: this._document, node},
       type,
       jsdoc: jsdocAnn,
       sourceRange,
@@ -541,7 +548,8 @@ class PrototypeMemberFinder implements Visitor {
       description,
       sourceRange: this._document.sourceRangeForNode(node)!,
       warnings: [],
-      astNode: node,
+      astNode:
+          {language: 'js' as 'js', containingDocument: this._document, node},
       jsdoc: jsdocAnn,
       params: Array.from(params.values()),
       return: ret,
@@ -636,7 +644,7 @@ class ClassFinder implements Visitor {
     this.classes.push(new ScannedClass(
         namespacedName,
         name,
-        astNode,
+        {language: 'js', containingDocument: this._document, node: astNode},
         esutil.getCanonicalStatement(path),
         doc,
         (doc.description || '').trim(),
@@ -695,7 +703,15 @@ class ClassFinder implements Visitor {
           }
           const sourceRange = document.sourceRangeForNode(superClass)!;
           return new ScannedReference(
-              'class', extendsId, sourceRange, node.superClass, path);
+              'class',
+              extendsId,
+              sourceRange,
+              {
+                language: 'js',
+                node: node.superClass,
+                containingDocument: document
+              },
+              path);
         }
       }
     }
@@ -873,7 +889,8 @@ function extractPropertyFromExpressionStatement(
 
   return {
     name,
-    astNode,
+    astNode:
+        {language: 'js' as 'js', containingDocument: document, node: astNode},
     type: getTypeFromAnnotation(annotation),
     default: defaultValue,
     jsdoc: annotation,

@@ -13,7 +13,6 @@
  */
 
 import {NodePath} from '@babel/traverse';
-
 import * as babel from '@babel/types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
@@ -156,9 +155,8 @@ class BehaviorVisitor implements Visitor {
         return;
       }
     }
-
     this._startBehavior(new ScannedBehavior({
-      astNode: node,
+      astNode: {language: 'js', node, containingDocument: this.document},
       statementAst: esutil.getCanonicalStatement(path),
       description: parsedJsdocs.description,
       events: esutil.getEventComments(node),
@@ -272,7 +270,11 @@ class BehaviorVisitor implements Visitor {
               'behavior',
               behaviorName,
               this.document.sourceRangeForNode(arrElement)!,
-              arrElement,
+              {
+                language: 'js',
+                node: arrElement,
+                containingDocument: this.document
+              },
               path));
         }
       }

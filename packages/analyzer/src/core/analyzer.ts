@@ -16,6 +16,7 @@
 
 import * as path from 'path';
 
+import {ParsedDocument} from '..';
 import {Analysis, Document, Warning} from '../model/model';
 import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
 import {Parser} from '../parser/parser';
@@ -29,7 +30,7 @@ import {MinimalCancelToken, neverCancels} from './cancel-token';
 export interface Options {
   urlLoader: UrlLoader;
   urlResolver?: UrlResolver;
-  parsers?: Map<string, Parser<any>>;
+  parsers?: Map<string, Parser<ParsedDocument>>;
   scanners?: ScannerTable;
 
   /**
@@ -65,7 +66,7 @@ export interface ForkOptions { urlLoader?: UrlLoader; }
 
 export class NoKnownParserError extends Error {};
 
-export type ScannerTable = Map<string, Scanner<any, any, any>[]>;
+export type ScannerTable = Map<string, Scanner<ParsedDocument, {}, {}>[]>;
 export type LazyEdgeMap = Map<ResolvedUrl, PackageRelativeUrl[]>;
 
 /**

@@ -33,7 +33,7 @@ export {Visitor} from './estree-visitor';
  * operator, and it doesn't need to be a real Node as all of this happens at
  * analysis time, and nothing happens at runtime.
  */
-const __exampleNode: Node = <any>null;
+const __exampleNode: Node = null as any;
 type EstreeType = typeof __exampleNode.type;
 interface SkipRecord {
   type: EstreeType;
