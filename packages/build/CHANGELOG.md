@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* The Babel helpers script now includes all Babel helpers that could be used by the ES5 compilation transform.
+* The AMD loader script now includes the Babel helpers needed by the AMD module transform.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.11] - 2018-04-11

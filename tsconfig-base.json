@@ -3,18 +3,17 @@
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
-    "isolatedModules": false,
-    "noImplicitAny": true,
+
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitThis": true,
-    "strictNullChecks": true,
-    "removeComments": false,
     "preserveConstEnums": true,
-    "strict": true,
+
     "lib": [
-      "es2017"
+      "es2017",
+      "esnext.asynciterable"
     ],
+
     "declaration": true,
     "sourceMap": true,
     "pretty": true
