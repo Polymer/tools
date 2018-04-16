@@ -87,7 +87,7 @@ export class MixinVisitor implements Visitor {
     const mixin = new ScannedPolymerElementMixin({
       name: namespacedName,
       sourceRange,
-      astNode: node,
+      astNode: {language: 'js', node, containingDocument: this._document},
       statementAst: esutil.getCanonicalStatement(nodePath),
       description: docs.description,
       summary: (summaryTag && summaryTag.description) || '',

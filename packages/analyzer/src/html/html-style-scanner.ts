@@ -50,7 +50,7 @@ export class HtmlStyleScanner implements HtmlScanner {
               href,
               document.sourceRangeForNode(node)!,
               document.sourceRangeForAttributeValue(node, 'href')!,
-              node,
+              {language: 'html', node, containingDocument: document},
               true));
         } else {
           const contents = dom5.getTextContent(node);

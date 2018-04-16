@@ -254,9 +254,8 @@ export interface EditResult {
  * over later ones.
  */
 export async function applyEdits(
-    edits: Edit[],
-    loader: (url: ResolvedUrl) =>
-        Promise<ParsedDocument<any, any>>): Promise<EditResult> {
+    edits: Edit[], loader: (url: ResolvedUrl) => Promise<ParsedDocument>):
+    Promise<EditResult> {
   const result: EditResult = {
     appliedEdits: [],
     incompatibleEdits: [],

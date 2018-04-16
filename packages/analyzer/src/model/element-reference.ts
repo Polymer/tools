@@ -12,9 +12,8 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as dom5 from 'dom5/lib/index-next';
 
-import {Feature, Resolvable, SourceRange, Warning} from '../model/model';
+import {Feature, HtmlAstNode, Resolvable, SourceRange, Warning} from '../model/model';
 
 import {Document} from './document';
 import {ImmutableArray, ImmutableMap, ImmutableSet} from './immutable';
@@ -37,7 +36,7 @@ export class ElementReference implements Feature {
   readonly tagName: string;
   readonly attributes: ImmutableMap<string, Attribute>;
   readonly sourceRange: SourceRange;
-  readonly astNode: dom5.Node;
+  readonly astNode: HtmlAstNode;
   readonly warnings: ImmutableArray<Warning>;
   readonly kinds: ImmutableSet<string> = new Set(['element-reference']);
 
@@ -58,10 +57,10 @@ export class ScannedElementReference implements Resolvable {
   readonly tagName: string;
   readonly attributes = new Map<string, Attribute>();
   readonly sourceRange: SourceRange;
-  readonly astNode: dom5.Node;
+  readonly astNode: HtmlAstNode;
   readonly warnings: ImmutableArray<Warning> = [];
 
-  constructor(tagName: string, sourceRange: SourceRange, ast: dom5.Node) {
+  constructor(tagName: string, sourceRange: SourceRange, ast: HtmlAstNode) {
     this.tagName = tagName;
     this.sourceRange = sourceRange;
     this.astNode = ast;

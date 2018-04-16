@@ -15,7 +15,7 @@
 import * as shady from 'shady-css-parser';
 
 import {ImmutableArray} from '../model/immutable';
-import {Feature, ScannedFeature, SourceRange, Warning} from '../model/model';
+import {CssAstNode, Feature, ScannedFeature, SourceRange, Warning} from '../model/model';
 
 import {ParsedCssDocument, Visitor} from './css-document';
 import {CssScanner} from './css-scanner';
@@ -44,11 +44,13 @@ export class CssCustomPropertyAssignment implements ScannedFeature, Feature {
   readonly kinds = new Set(['css-custom-property-assignment']);
   readonly identifiers: Set<string>;
   readonly name: string;
+  readonly astNode: CssAstNode;
 
-  constructor(name: string, sourceRange: SourceRange) {
+  constructor(name: string, sourceRange: SourceRange, astNode: CssAstNode) {
     this.identifiers = new Set([name]);
     this.name = name;
     this.sourceRange = sourceRange;
+    this.astNode = astNode;
   }
 
   resolve() {
@@ -68,11 +70,13 @@ export class CssCustomPropertyUse implements ScannedFeature, Feature {
   readonly kinds = new Set(['css-custom-property-use']);
   readonly identifiers: Set<string>;
   readonly name: string;
+  readonly astNode: CssAstNode;
 
-  constructor(name: string, sourceRange: SourceRange) {
+  constructor(name: string, sourceRange: SourceRange, astNode: CssAstNode) {
     this.identifiers = new Set([name]);
     this.sourceRange = sourceRange;
     this.name = name;
+    this.astNode = astNode;
   }
 
   resolve() {
@@ -90,16 +94,19 @@ class CssCustomPropertyVisitor implements Visitor {
     if (node.type === shady.nodeType.declaration &&
         node.name.startsWith('--')) {
       this.features.push(new CssCustomPropertyAssignment(
-          node.name, this.document.sourceRangeForShadyRange(node.nameRange)));
+          node.name,
+          this.document.sourceRangeForShadyRange(node.nameRange),
+          {language: 'css', node, containingDocument: this.document}));
     } else if (node.type === shady.nodeType.expression) {
-      this.getCustomPropertiesIn(node.text, node.range);
+      this.getCustomPropertiesIn(node, node.text, node.range);
     } else if (node.type === shady.nodeType.atRule && node.parametersRange) {
-      this.getCustomPropertiesIn(node.parameters, node.parametersRange);
+      this.getCustomPropertiesIn(node, node.parameters, node.parametersRange);
     }
   }
 
   private static readonly customPropRegex = /--[A-Za-z0-9_\-]+/;
-  private getCustomPropertiesIn(text: string, range: shady.Range) {
+  private getCustomPropertiesIn(
+      node: shady.Node, text: string, range: shady.Range) {
     const matches =
         findAllMatchesInString(CssCustomPropertyVisitor.customPropRegex, text);
     const baseOffset = range.start;
@@ -108,7 +115,10 @@ class CssCustomPropertyVisitor implements Visitor {
         start: offset + baseOffset,
         end: offset + baseOffset + matched.length
       });
-      this.features.push(new CssCustomPropertyUse(matched, range));
+      this.features.push(new CssCustomPropertyUse(
+          matched,
+          range,
+          {language: 'css', node, containingDocument: this.document}));
     }
   }
 }
