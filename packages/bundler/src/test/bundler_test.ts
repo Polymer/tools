@@ -902,10 +902,10 @@ suite('Bundler', () => {
     test('Entrypoint body content should not be wrapped', async () => {
       const {ast: doc} = await bundle('default.html');
       assert(doc);
-      const myElement = dom5.query(doc, preds.hasTagName('my-element'));
+      const myElement = dom5.query(doc, preds.hasTagName('my-element'))!;
       assert(myElement);
-      assert(preds.NOT(preds.parentMatches(
-          preds.hasAttr('by-polymer-bundler')))(<parse5.ASTNode>myElement));
+      assert(preds.NOT(
+          preds.parentMatches(preds.hasAttr('by-polymer-bundler')))(myElement));
     });
 
     test('eagerly importing a fragment', async () => {

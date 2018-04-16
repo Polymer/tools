@@ -13,7 +13,6 @@
  */
 
 import * as babel from '@babel/types';
-import * as dom5 from 'dom5/lib/index-next';
 import {ASTNode} from 'parse5';
 
 import * as jsdoc from '../javascript/jsdoc';
@@ -23,7 +22,7 @@ import {Class, ClassInit} from './class';
 import {Privacy} from './feature';
 import {ImmutableArray} from './immutable';
 import {ScannedMethod} from './method';
-import {Attribute, Document, Event, Feature, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference, SourceRange, Warning} from './model';
+import {AstNodeWithLanguage, Attribute, Document, Event, Feature, Resolvable, ScannedAttribute, ScannedEvent, ScannedProperty, ScannedReference, SourceRange, Warning} from './model';
 import {FileRelativeUrl} from './url';
 import {Severity} from './warning';
 
@@ -42,7 +41,7 @@ export abstract class ScannedElementBase implements Resolvable {
   sourceRange: SourceRange|undefined;
   staticMethods: Map<string, ScannedMethod> = new Map();
   methods: Map<string, ScannedMethod> = new Map();
-  astNode: babel.Node|null = null;
+  astNode: AstNodeWithLanguage|undefined = undefined;
   statementAst: babel.Statement|undefined;
   warnings: Warning[] = [];
   jsdoc?: jsdoc.Annotation;
@@ -79,17 +78,17 @@ export abstract class ScannedElementBase implements Resolvable {
     }
   }
 
-  resolve(_document: Document): any {
-    throw new Error('abstract');
-  }
+  abstract resolve(_document: Document): Feature;
 }
 
 export class Slot {
   name: string;
   range: SourceRange;
-  astNode?: dom5.Node;
+  astNode?: AstNodeWithLanguage;
 
-  constructor(name: string, range: SourceRange, astNode: dom5.Node|undefined) {
+  constructor(
+      name: string, range: SourceRange,
+      astNode: AstNodeWithLanguage|undefined) {
     this.name = name;
     this.range = range;
     this.astNode = astNode;

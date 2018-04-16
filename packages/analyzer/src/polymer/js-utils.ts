@@ -15,9 +15,9 @@
 import * as babel from '@babel/types';
 
 import {configurationProperties, getAttachedComment, getClosureType, getOrInferPrivacy, getPropertyName} from '../javascript/esutil';
+import {JavaScriptDocument} from '../javascript/javascript-document';
 import * as jsdoc from '../javascript/jsdoc';
 import {Severity, SourceRange, Warning} from '../model/model';
-import {ParsedDocument} from '../parser/document';
 
 import {ScannedPolymerProperty} from './polymer-element';
 
@@ -27,7 +27,7 @@ import {ScannedPolymerProperty} from './polymer-element';
 export function toScannedPolymerProperty(
     node: babel.ObjectMethod|babel.ObjectProperty|babel.ClassMethod,
     sourceRange: SourceRange,
-    document: ParsedDocument): ScannedPolymerProperty|undefined {
+    document: JavaScriptDocument): ScannedPolymerProperty|undefined {
   const parsedJsdoc = jsdoc.parseJsdoc(getAttachedComment(node) || '');
   const description = parsedJsdoc.description.trim();
   const maybeName = getPropertyName(node);
@@ -64,7 +64,7 @@ export function toScannedPolymerProperty(
     description,
     sourceRange,
     warnings,
-    astNode: node,
+    astNode: {node, language: 'js', containingDocument: document},
     isConfiguration: configurationProperties.has(name),
     jsdoc: parsedJsdoc,
     privacy: getOrInferPrivacy(name, parsedJsdoc)

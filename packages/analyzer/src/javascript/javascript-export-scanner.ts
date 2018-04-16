@@ -15,7 +15,7 @@
 import {NodePath} from '@babel/traverse';
 import * as babel from '@babel/types';
 
-import {Document, Feature, SourceRange, Warning} from '../model/model';
+import {Document, Feature, JsAstNode, SourceRange, Warning} from '../model/model';
 import {Resolvable} from '../model/resolvable';
 
 import {Visitor} from './estree-visitor';
@@ -42,12 +42,12 @@ export class Export implements Resolvable, Feature {
   readonly jsdoc: undefined;
   readonly sourceRange: SourceRange|undefined;
   readonly astNodePath: NodePath<babel.Node>;
-  readonly astNode: ExportNode;
+  readonly astNode: JsAstNode<ExportNode>;
   readonly statementAst: babel.Statement;
   readonly warnings: ReadonlyArray<Warning> = [];
 
   constructor(
-      astNode: ExportNode, statementAst: babel.Statement,
+      astNode: JsAstNode<ExportNode>, statementAst: babel.Statement,
       sourceRange: SourceRange|undefined, nodePath: NodePath<babel.Node>,
       exportingAllFrom?: Iterable<Export>) {
     this.astNode = astNode;
@@ -58,7 +58,7 @@ export class Export implements Resolvable, Feature {
           exportingAllFrom,
           (export_) => [...export_.identifiers].filter((i) => i !== 'default'));
     } else {
-      exportedIdentifiers = esutil.getBindingNamesFromDeclaration(astNode);
+      exportedIdentifiers = esutil.getBindingNamesFromDeclaration(astNode.node);
     }
     for (const name of exportedIdentifiers) {
       this.identifiers.add(name);
@@ -72,13 +72,14 @@ export class Export implements Resolvable, Feature {
   //   resolution algorithm here, rather than re-doing it every single place
   //   this export is referenced.
   resolve(document: Document): Feature|undefined {
-    if (babel.isExportAllDeclaration(this.astNode)) {
+    if (babel.isExportAllDeclaration(this.astNode.node)) {
       const [import_] =
           document.getFeatures({kind: 'import', statement: this.statementAst});
       if (import_ === undefined || import_.document === undefined) {
         // Import did not resolve.
         return undefined;
       }
+
       return new Export(
           this.astNode,
           this.statementAst,
@@ -112,21 +113,21 @@ export class JavaScriptExportScanner implements JavaScriptScanner {
     await visit({
       enterExportNamedDeclaration(node, _parent, path) {
         exports.push(new Export(
-            node,
+            {language: 'js', containingDocument: document, node},
             esutil.getCanonicalStatement(path)!,
             document.sourceRangeForNode(node),
             path));
       },
       enterExportAllDeclaration(node, _parent, path) {
         exports.push(new Export(
-            node,
+            {language: 'js', containingDocument: document, node},
             esutil.getCanonicalStatement(path)!,
             document.sourceRangeForNode(node),
             path));
       },
       enterExportDefaultDeclaration(node, _parent, path) {
         exports.push(new Export(
-            node,
+            {language: 'js', containingDocument: document, node},
             esutil.getCanonicalStatement(path)!,
             document.sourceRangeForNode(node),
             path));

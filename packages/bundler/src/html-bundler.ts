@@ -248,7 +248,10 @@ export class HtmlBundler {
         if (existingImportDependencies.get(existingImport.document!.url)!
                 .indexOf(importUrl) !== -1) {
           const newPrependTarget = dom5.query(
-              ast, (node) => isSameNode(node, existingImport.astNode));
+              ast,
+              (node) => existingImport.astNode !== undefined &&
+                  existingImport.astNode.language === 'html' &&
+                  isSameNode(node, existingImport.astNode.node));
 
           // IF we don't have a target already or if the old target comes
           // after the new one in the source code, the new one will replace
@@ -467,11 +470,13 @@ export class HtmlBundler {
       const {code} = await es6Rewriter.rollup(
           this.document.parsedDocument.baseUrl,
           inlineModuleScript.parsedDocument.contents);
-      // Second argument 'true' tells encodeString to escape the <script>
-      // content.
-      dom5.setTextContent(
-          (inlineModuleScript.astNode as any).node,
-          encodeString(`\n${code}\n`, true));
+      if (inlineModuleScript.astNode &&
+          inlineModuleScript.astNode.language === 'html') {
+        // Second argument 'true' tells encodeString to escape the <script>
+        // content.
+        dom5.setTextContent(
+            inlineModuleScript.astNode.node, encodeString(`\n${code}\n`, true));
+      }
     }
   }
 

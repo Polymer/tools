@@ -1,29 +1,13 @@
 {
+  "extends": "../../tsconfig-base.json",
   "compilerOptions": {
-    // Targeted standard
-    "target": "es6",
-    "lib": [
-      "es2017",
-      "esnext.asynciterable"
-    ],
-    // Module system
-    "module": "commonjs",
-    "moduleResolution": "node",
-    // Strictness
-    "strict": true,
-    "noUnusedLocals": true,
+    "declaration": false,
     "noUnusedParameters": true,
     "skipLibCheck": true,
-    // Output
-    "sourceMap": true,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "declaration": false,
-    "outDir": "lib",
-    "rootDir": "src"
+    "outDir": "./lib"
   },
   "include": [
-    "custom_typings/**/*.ts",
+    "custom_typings/**/*.d.ts",
     "src/**/*.ts"
   ]
 }

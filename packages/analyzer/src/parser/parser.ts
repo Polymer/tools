@@ -18,7 +18,7 @@ import {UrlResolver} from '../url-loader/url-resolver';
 
 import {ParsedDocument} from './document';
 
-export interface Parser<D extends ParsedDocument<any, any>> {
+export interface Parser<D extends ParsedDocument> {
   parse(
       contents: string, url: ResolvedUrl, urlResolver: UrlResolver,
       inlineDocInfo?: InlineDocInfo): D;

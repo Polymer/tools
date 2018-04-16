@@ -27,12 +27,12 @@ const logger = logging.getLogger('init');
  */
 export function createElementGenerator(templateName: string):
     (typeof Generator) {
-  return class ElementGenerator extends Generator {
+  class ElementGenerator extends Generator {
     props: any;
 
     constructor(args: string|string[], options: any) {
       super(args, options);
-      this.sourceRoot(path.join(__dirname, 'templates', templateName));
+      this.sourceRoot(path.join(__dirname, '../../../templates/element', templateName));
     }
 
     // This is necessary to prevent an exception in Yeoman when creating
@@ -119,4 +119,66 @@ export function createElementGenerator(templateName: string):
           'Check out your new project README for information about what to do next.\n');
     }
   };
+
+  class Polymer3ElementGenerator extends ElementGenerator {
+    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
+    initializing() {
+      return super.initializing();
+    }
+
+    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
+    async prompting() {
+      return super.prompting();
+    }
+
+    writing() {
+      const name = this.props.name;
+
+      this.fs.copyTpl(
+          `${this.templatePath()}/**/?(.)!(_)*`,
+          this.destinationPath(),
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('_element.js'), `${name}.js`, this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('test/_element_test.html'),
+          `test/${name}_test.html`,
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('test/index.html'), `test/index.html`, this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('.gitignore'), '.gitignore', this.props);
+    }
+
+    install() {
+      this.log(chalk.bold('\nProject generated!'));
+      this.log('Installing dependencies...');
+      this.installDependencies({
+        bower: false,
+        npm: true,
+      });
+    }
+
+    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
+    end() {
+      return super.end();
+    }
+  }
+
+  switch (templateName) {
+    case 'polymer-3.x':
+      return Polymer3ElementGenerator;
+    default:
+      return ElementGenerator;
+  }
 }

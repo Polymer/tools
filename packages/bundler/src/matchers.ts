@@ -116,7 +116,10 @@ export const elementsWithUrlAttrsToRewrite: Matcher = predicates.AND(
  */
 const nextToHiddenDiv = (offset: number) => {
   return (node: parse5.ASTNode) => {
-    const siblings = node.parentNode!.childNodes!;
+    if (!node.parentNode) {
+      return false;
+    }
+    const siblings = node.parentNode.childNodes!;
     const hiddenDivIndex = siblings.indexOf(node) + offset;
     if (hiddenDivIndex < 0 || hiddenDivIndex >= siblings.length) {
       return false;

@@ -53,7 +53,7 @@ export function getBehaviorReference(
         'behavior',
         behaviorName,
         document.sourceRangeForNode(argNode)!,
-        argNode,
+        {language: 'js', node: argNode, containingDocument: document},
         path)
   };
 }

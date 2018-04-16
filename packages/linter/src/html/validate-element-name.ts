@@ -51,9 +51,13 @@ class ValidateElementName extends Rule {
         continue;  // Valid element
       }
 
-      const isP2 = babel.isClassDeclaration(el.astNode);
+      if (el.astNode === undefined || el.astNode.language !== 'js') {
+        continue;
+      }
+
+      const isP2 = babel.isClassDeclaration(el.astNode.node);
       let sourceRange = el.sourceRange;
-      babelTraverse(el.astNode, {
+      babelTraverse(el.astNode.node, {
         noScope: true,
         ObjectProperty(path) {
           if (isP2) {

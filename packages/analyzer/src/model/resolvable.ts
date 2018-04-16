@@ -23,6 +23,7 @@ export interface Resolvable extends ScannedFeature {
   resolve(document: Document): Feature|undefined;
 }
 
-export function isResolvable(x: any): x is Resolvable {
-  return x.resolve && typeof x.resolve === 'function';
+export function isResolvable(x: ScannedFeature&
+                             {resolve?: Function}): x is Resolvable {
+  return !!x.resolve && typeof x.resolve === 'function';
 }

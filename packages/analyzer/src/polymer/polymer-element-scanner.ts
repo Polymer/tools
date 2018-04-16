@@ -63,7 +63,7 @@ class ElementVisitor implements Visitor {
     const jsDoc = jsdoc.parseJsdoc(rawDescription || '');
     const element = new ScannedPolymerElement({
       className,
-      astNode: node,
+      astNode: {node, language: 'js', containingDocument: this.document},
       statementAst: esutil.getCanonicalStatement(path),
       description: jsDoc.description,
       events: esutil.getEventComments(parent),

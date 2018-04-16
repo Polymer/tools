@@ -14,7 +14,7 @@
 import * as babel from '@babel/types';
 
 import {Annotation as JsDocAnnotation} from '../javascript/jsdoc';
-import {Class, Document, ElementMixin, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
+import {AstNodeWithLanguage, Class, Document, ElementMixin, Privacy, ScannedElementMixin, ScannedMethod, ScannedReference, SourceRange} from '../model/model';
 
 import {addMethod, addProperty, getBehaviors, LocalId, Observer, PolymerExtension, PolymerProperty, ScannedPolymerExtension, ScannedPolymerProperty} from './polymer-element';
 
@@ -26,7 +26,7 @@ export interface Options {
   privacy: Privacy;
   sourceRange: SourceRange;
   mixins: ScannedReference<'element-mixin'>[];
-  astNode: babel.Node;
+  astNode: AstNodeWithLanguage;
   statementAst: babel.Statement|undefined;
   classAstNode?: babel.Node;
 }

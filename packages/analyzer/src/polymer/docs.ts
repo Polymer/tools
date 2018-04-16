@@ -91,7 +91,7 @@ export function annotateEvent(annotation: jsdoc.Annotation): ScannedEvent {
         undefined,
     jsdoc: annotation,
     sourceRange: undefined,
-    astNode: null,
+    astNode: undefined,
     warnings: [],
     params: []
   };

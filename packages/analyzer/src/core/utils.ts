@@ -50,10 +50,10 @@ export function trimLeft(str: string, char: string): string {
 export class Deferred<T> {
   promise: Promise<T>;
   resolve!: (result: T) => void;
-  reject!: (error: Error) => void;
+  reject!: (error: {}|undefined|null) => void;
   resolved = false;
   rejected = false;
-  error: any;
+  error: {}|undefined|null;
 
   constructor() {
     this.promise = new Promise((resolve, reject) => {

@@ -16,7 +16,7 @@ import * as babel from '@babel/types';
 
 import {ElementMixin} from '..';
 import * as jsdocLib from '../javascript/jsdoc';
-import {Document, Feature, Method, Privacy, Property, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
+import {AstNodeWithLanguage, Document, Feature, Method, Privacy, Property, Resolvable, ScannedFeature, ScannedMethod, ScannedProperty, ScannedReference, Severity, SourceRange, Warning} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
 import {DeclaredWithStatement} from './document';
@@ -39,7 +39,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly name: string|undefined;
   /** The name of the class in the local scope where it is defined. */
   readonly localName: string|undefined;
-  readonly astNode: babel.Node;
+  readonly astNode: AstNodeWithLanguage;
   readonly statementAst: babel.Statement|undefined;
   readonly jsdoc: jsdocLib.Annotation;
   readonly description: string;
@@ -57,7 +57,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly demos: Demo[];
   constructor(
       className: string|undefined, localClassName: string|undefined,
-      astNode: babel.Node, statementAst: babel.Statement|undefined,
+      astNode: AstNodeWithLanguage, statementAst: babel.Statement|undefined,
       jsdoc: jsdocLib.Annotation, description: string, sourceRange: SourceRange,
       properties: Map<string, ScannedProperty>,
       methods: Map<string, ScannedMethod>,
@@ -116,7 +116,7 @@ declare module '../model/queryable' {
 
 export interface ClassInit {
   readonly sourceRange: SourceRange|undefined;
-  readonly astNode: any;
+  readonly astNode: AstNodeWithLanguage|undefined;
   readonly statementAst: babel.Statement|undefined;
   readonly warnings?: Warning[];
   readonly summary: string;
@@ -139,8 +139,7 @@ export class Class implements Feature, DeclaredWithStatement {
   readonly kinds = new Set(['class']);
   readonly identifiers = new Set<string>();
   readonly sourceRange: SourceRange|undefined;
-  // TODO(rictic): make this an AstWithLanguage
-  readonly astNode: any;
+  readonly astNode: AstNodeWithLanguage|undefined;
   readonly statementAst: babel.Statement|undefined;
   readonly warnings: Warning[];
   readonly summary: string;

@@ -123,7 +123,7 @@ class NamespaceVisitor implements Visitor {
 
   private _createPropertyFromExpression(
       name: string, node: babel.AssignmentExpression|babel.MemberExpression,
-      jsdocAnn: jsdoc.Annotation|undefined) {
+      jsdocAnn: jsdoc.Annotation|undefined): ScannedProperty|undefined {
     let description;
     let type;
     let readOnly = false;
@@ -155,7 +155,7 @@ class NamespaceVisitor implements Visitor {
 
     return {
       name,
-      astNode: node,
+      astNode: {language: 'js', node, containingDocument: this.document},
       type,
       jsdoc: jsdocAnn,
       sourceRange,
@@ -203,7 +203,7 @@ class NamespaceVisitor implements Visitor {
             namespaceName,
             description,
             summary,
-            node,
+            {language: 'js', node, containingDocument: this.document},
             properties,
             docs,
             sourceRange));
