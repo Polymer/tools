@@ -49,6 +49,7 @@
     "build": "tsc && gulp build",
     "test": "tsc && gulp test",
     "prepublishOnly": "gulp prepublish",
+    "test:integration": "tsc && gulp test:integration",
     "test:watch": "watch 'gulp test:unit' runner/ browser/ bin/ test/ tasks/",
     "format": "find runner test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
