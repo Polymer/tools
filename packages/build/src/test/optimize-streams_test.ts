@@ -143,13 +143,14 @@ suite('optimize-streams', () => {
     });
   });
 
-  suite('transforms ES modules to AMD with HTML splitter', async () => {
-    test('inline and external', async () => {
+  suite('transforms ES modules to AMD', async () => {
+    test('inline and external script tags', async () => {
       const files = [
         {
           path: 'index.html',
           contents: `
             <html><head></head><body>
+              <script>// not a module</script>
               <script type="module">import { depA } from './depA.js';</script>
               <script type="module" src="./depB.js"></script>
               <script type="module">import { depC } from './depC.js';</script>
@@ -157,11 +158,73 @@ suite('optimize-streams', () => {
           `,
           expected: `
             <html><head></head><body>
+              <script>// not a module</script>
               <script>define('polymer-build-generated-module-0', ["./depA.js"], function (_depA) {"use strict";});</script>
               <script>define('polymer-build-generated-module-1', ['./depB.js', 'polymer-build-generated-module-0']);</script>
               <script>define('polymer-build-generated-module-2', ["./depC.js", 'polymer-build-generated-module-1'], function (_depC) {"use strict";});</script>
               <script>require(['polymer-build-generated-module-2']);</script>
             </body></html>
+          `,
+        },
+      ];
+
+      const opts = {
+        js: {
+          transformModulesToAmd: true,
+        },
+        rootDir: fixtureRoot,
+      };
+
+      const expected = new Map<string, string>(
+          files.map((file): [string, string] => [file.path, file.expected]));
+
+      const htmlSplitter = new HtmlSplitter();
+      const result = await getFileMap(pipeStreams([
+        vfs.src(files),
+        htmlSplitter.split(),
+        getOptimizeStreams(opts),
+        htmlSplitter.rejoin()
+      ]));
+      assertMapEqualIgnoringWhitespace(result, expected);
+    });
+
+    test('auto-detects when to transform external js', async () => {
+      const files = [
+        {
+          path: 'has-import-statement.js',
+          contents: `
+            import {foo} from './foo.js';
+          `,
+          expected: `
+            define(["./foo.js"], function (_foo) {
+              "use strict";
+            });
+          `,
+        },
+
+        {
+          path: 'has-export-statement.js',
+          contents: `
+            export const foo = 'foo';
+          `,
+          expected: `
+            define(["exports"], function (_exports) {
+              "use strict";
+              Object.defineProperty(_exports, "__esModule", {value: true});
+              _exports.foo = void 0;
+              const foo = 'foo';
+              _exports.foo = foo;
+            });
+          `,
+        },
+
+        {
+          path: 'not-a-module.js',
+          contents: `
+            const foo = 'import export';
+          `,
+          expected: `
+            const foo = 'import export';
           `,
         },
       ];

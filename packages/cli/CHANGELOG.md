@@ -4,6 +4,8 @@
 * `build`
   * The Babel helpers script now includes all Babel helpers that could be used by the ES5 compilation transform.
   * The AMD loader script now includes the Babel helpers needed by the AMD module transform.
+  * Inline JavaScript will now only be transformed to AMD modules if they have type=module.
+  * External JavaScript files will now only be transformed to AMD modules if they contain module import/export syntax.
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.10 [04-12-2018]
