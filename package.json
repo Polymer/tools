@@ -13,9 +13,9 @@
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
     "test": "lerna run test",
-    "test:windows": "lerna run test --ignore polyserve",
+    "test:windows": "lerna run test --ignore polyserve --ignore web-component-tester",
     "test:integration": "lerna run test:integration",
-    "test:integration:windows": "lerna run test:integration"
+    "test:integration:windows": "lerna run test:integration --ignore polymer-linter --ignore web-component-tester"
   },
   "devDependencies": {
     "lerna": "^2.10.1"

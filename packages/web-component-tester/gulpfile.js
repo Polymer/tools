@@ -24,7 +24,7 @@ const rollup = require('rollup');
 const runSequence = require('run-sequence');
 const typescript = require('typescript');
 
-const mochaConfig = { reporter: 'spec' };
+const mochaConfig = { reporter: 'spec', timeout: 10000 };
 if (process.env.MOCHA_TIMEOUT) {
   mochaConfig.timeout = parseInt(process.env.MOCHA_TIMEOUT, 10);
 }
@@ -192,6 +192,7 @@ commonTools.depcheck({
     '@webcomponents/webcomponentsjs',
     'async',
     'findup-sync',
+    'spdy',
 
     // Only included to satisfy peer dependency and suppress error on install
     'sinon',

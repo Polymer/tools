@@ -1,25 +1,26 @@
 sudo: required
 dist: trusty
 addons:
-  firefox: 'latest'
+  firefox: latest
   apt:
     sources:
-      - google-chrome
+    - google-chrome
     packages:
-      - google-chrome-stable
-
+    - google-chrome-stable
 env:
+  global:
+  - secure: IbrybaUaJDiwNh8VodFfTIAdSw2Nl4DGRh2oDIO2vL8SPgGilwxY0go5DWrxAG0aP+YIXFkK+SpblFppQqqxnAoLVYmd7kFSJoOZraNqmcJqUYSzrHrWArmuiGzY8gMgOWTsnbzVVNRldN8tpoSwpQB/+YhCtbYb9eqvw+u5Izk=
+  - secure: grvHX6c0ReQwRsuQZferI+uyGsKlubujURKuJB8coNdA9lgZcvf+nmCkNBpSML83hSjQkJUTt8XnucNNgL/1VxUhgy0O/wkTUEmcDAU1b80As8NJkbreJcc3HFASA68wou4HoJsFmJV2cpBYoAJJSX+HyT6mYd6pBh09tPfOeBg=
+  matrix:
   - TEST_COMMAND=test
-  - TEST_COMMAND="run test:integration"
-
+  - TEST_COMMAND="run test:integration" MOCHA_TIMEOUT=300000
 language: node_js
 node_js:
-  - "6"
-  - "node"
+- '6'
+- node
 install:
 - npm install
 - npm run bootstrap
 - npm run build
-
 script:
-  - xvfb-run npm $TEST_COMMAND
+- xvfb-run npm $TEST_COMMAND
