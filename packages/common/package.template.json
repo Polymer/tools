@@ -7,7 +7,8 @@
     "build": "gulp build --silent",
     "release": "npm run compile",
     "lint": "gulp lint",
-    "test": "npm run clean && npm run build && npm run lint && mocha",
+    "test": "npm run clean && npm run build && npm run lint && npm run test:unit",
+    "test:unit": "mocha",
     "test:watch": "watchy -w src/ -- npm test --loglevel=silent",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i",
     "prepublish": "tsc && npm test"

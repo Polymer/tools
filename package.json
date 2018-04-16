@@ -12,10 +12,11 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "test": "lerna run test",
-    "test:windows": "lerna run test --ignore polyserve",
+    "test": "lerna run build && lerna run test:unit",
     "test:integration": "lerna run test:integration",
-    "test:integration:windows": "lerna run test:integration"
+    "test:integration:windows": "lerna run test:integration",
+    "test:unit": "lerna run test:unit",
+    "test:unit:windows": "lerna run test:unit --ignore polyserve"
   },
   "devDependencies": {
     "lerna": "^2.10.1"

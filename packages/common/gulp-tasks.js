@@ -154,13 +154,21 @@ module.exports.buildAll = function(options) {
 module.exports.test = function(options) {
   module.exports.buildAll(options);
 
-  task('test', ['build'], () =>
-    gulp.src(['test/**/*_test.js', 'src/test/**/*_test.js'], {read: false})
+  task('test', ['build', 'test:unit', 'test:integration']);
+  
+  task('test:integration', () =>
+    gulp.src(['lib/test/integration/**/*_test.js'], {read: false})
         .pipe(mocha({
           ui: 'tdd',
           reporter: 'spec',
-        }))
-  );
+        })));
+
+  task('test:unit', () =>
+    gulp.src(['lib/test/unit/**/*_test.js'], {read: false})
+        .pipe(mocha({
+          ui: 'tdd',
+          reporter: 'spec',
+        })));
 }
 
 module.exports.generateCompleteTaskgraph = function(options) {

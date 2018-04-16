@@ -52,7 +52,9 @@ gulp.task('compile', () => {
       .pipe(gulp.dest('lib'));
 });
 
-gulp.task('test', ['build'], function() {
+gulp.task('test', ['build', 'test:unit']);
+
+gulp.task('test:unit', function() {
   return gulp.src('lib/test/**/*_test.js', {read: false}).pipe(mocha({
     ui: 'tdd',
     reporter: 'spec',
