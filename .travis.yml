@@ -10,7 +10,7 @@ addons:
 
 env:
   - TEST_COMMAND=test
-  - TEST_COMMAND=run test:integration
+  - TEST_COMMAND="run test:integration"
 
 language: node_js
 node_js:
@@ -19,6 +19,7 @@ node_js:
 install:
 - npm install
 - npm run bootstrap
+- npm run build
 
 script:
   - xvfb-run npm $TEST_COMMAND
