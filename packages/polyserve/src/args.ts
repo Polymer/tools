@@ -91,8 +91,9 @@ export const args: ArgDescriptor[] = [
   },
   {
     name: 'npm',
-    description: 'Sets npm mode: component directory is "node_modules" and ' +
-        'the package name is read from package.json',
+    description: 'Sets npm mode: dependencies are installed from npm, ' +
+        'component directory is "node_modules" and the package name is read ' +
+        'from package.json',
     type: Boolean,
   },
   {
