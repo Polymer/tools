@@ -70,9 +70,7 @@ suite('integration tests', function() {
       // packages.
       await exec('npm install', {cwd: dir});
 
-      // TODO(#130): Add this back in when `polymer lint` has a Polymer 3
-      // option.
-      // await runCommand(binPath, ['lint'], {cwd: dir});
+      await runCommand(binPath, ['lint'], {cwd: dir});
 
       // TODO(#113): Remove the `--module-resolution=node` argument once
       // `polymer test` passes them in correctly
