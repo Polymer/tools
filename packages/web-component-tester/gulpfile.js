@@ -80,7 +80,6 @@ gulp.task('test', function (done) {
     'build:typescript-server',
     'lint',
     'test:unit',
-    'test:integration',
     done);
 });
 
