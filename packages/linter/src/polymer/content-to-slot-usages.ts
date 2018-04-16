@@ -37,14 +37,18 @@ class ContentToSlot extends HtmlRule {
       const result = determineMigrationDescriptors(element);
       if (!result.success) {
         for (const error of result.value) {
+          if (error.slot.astNode === undefined ||
+              error.slot.astNode.language !== 'html') {
+            continue;
+          }
           warnings.push(new Warning({
             code: 'invalid-old-content-selector',
             parsedDocument,
             severity: Severity.WARNING,
             message: error.message,
             sourceRange: parsedDocument.sourceRangeForAttributeValue(
-                             error.slot.astNode!, 'old-content-selector') ||
-                parsedDocument.sourceRangeForStartTag(error.slot.astNode!)!
+                             error.slot.astNode.node, 'old-content-selector') ||
+                parsedDocument.sourceRangeForStartTag(error.slot.astNode.node)!
           }));
         }
       }
@@ -71,7 +75,7 @@ class ContentToSlot extends HtmlRule {
             }
           }
         }
-        matchChildNodes(reference.astNode);
+        matchChildNodes(reference.astNode.node);
         for (const lightContent of matchingLightContents) {
           if (dom5.hasAttribute(lightContent, 'slot')) {
             continue;
@@ -114,7 +118,7 @@ class ContentToSlot extends HtmlRule {
           parsedDocument,
           severity: Severity.WARNING,
           sourceRange:
-              parsedDocument.sourceRangeForStartTag(reference.astNode)!,
+              parsedDocument.sourceRangeForStartTag(reference.astNode.node)!,
           fix
         }));
       }
@@ -180,8 +184,9 @@ function determineMigrationDescriptors(element: Element): MigrationResult {
   const descriptors = [];
   const errors = [];
   for (const slot of element.slots) {
-    if (slot.astNode) {
-      const selector = dom5.getAttribute(slot.astNode, 'old-content-selector');
+    if (slot.astNode && slot.astNode.language === 'html') {
+      const selector =
+          dom5.getAttribute(slot.astNode.node, 'old-content-selector');
       if (!selector) {
         continue;
       }

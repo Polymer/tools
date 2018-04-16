@@ -98,7 +98,7 @@ suite('Bundler', () => {
           [common, entrypoint1, entrypoint2],
           {strategy: generateSharedDepsMergeStrategy(2)});
       assert.equal(documents.size, 4);
-      const commonDoc: parse5.ASTNode = documents.get(common)!.ast;
+      const commonDoc = documents.get(common)!.ast;
       assert.isDefined(commonDoc);
       const entrypoint1Doc = documents.get(entrypoint1)!.ast;
       assert.isDefined(entrypoint1Doc);
@@ -129,7 +129,7 @@ suite('Bundler', () => {
             strategy: generateShellMergeStrategy(analyzer.resolveUrl(shell)!, 2)
           });
       assert.equal(documents.size, 3);
-      const shellDoc: parse5.ASTNode = documents.get(shell)!.ast;
+      const shellDoc = documents.get(shell)!.ast;
       assert.isDefined(shellDoc);
       const entrypoint1Doc = documents.get(entrypoint1)!.ast;
       assert.isDefined(entrypoint1Doc);

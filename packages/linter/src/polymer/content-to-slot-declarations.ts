@@ -45,7 +45,8 @@ class ContentToSlotDeclarations extends HtmlRule {
     const warnings: Warning[] = [];
 
     for (const domModule of document.getFeatures({kind: 'dom-module'})) {
-      const template = dom5.query(domModule.astNode, p.hasTagName('template'));
+      const template =
+          dom5.query(domModule.astNode.node, p.hasTagName('template'));
       if (!template) {
         continue;
       }

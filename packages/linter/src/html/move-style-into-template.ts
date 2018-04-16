@@ -64,7 +64,7 @@ class MoveStyleIntoTemplate extends HtmlRule {
     const warnings: Warning[] = [];
     const domModules = document.getFeatures({kind: 'dom-module'});
     for (const domModule of domModules) {
-      const moduleChildren = domModule.astNode.childNodes || [];
+      const moduleChildren = domModule.astNode.node.childNodes || [];
       const template = moduleChildren.find((n) => n.tagName === 'template');
       if (!template) {
         continue;

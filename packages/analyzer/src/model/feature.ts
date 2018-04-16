@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {AstNodeWithLanguage} from '..';
 import * as jsdoc from '../javascript/jsdoc';
 
 import {ImmutableArray, ImmutableSet} from './immutable';
@@ -29,13 +30,13 @@ export abstract class Feature {
    * The AST Node, if any, that corresponds to this feature in its containing
    * document.
    */
-  readonly astNode?: any;
+  readonly astNode?: AstNodeWithLanguage;
 
   /** Warnings that were encountered while processing this feature. */
   readonly warnings: Array<Warning>|ImmutableArray<Warning>;
 
   constructor(
-      sourceRange?: SourceRange, astNode?: any,
+      sourceRange?: SourceRange, astNode?: AstNodeWithLanguage,
       warnings?: Array<Warning>|ImmutableArray<Warning>) {
     this.sourceRange = sourceRange;
     this.astNode = astNode;
@@ -57,14 +58,14 @@ export abstract class ScannedFeature {
    * The AST Node, if any, that corresponds to this feature in its containing
    * document.
    */
-  readonly astNode?: any;
+  readonly astNode?: AstNodeWithLanguage;
 
   /** Warnings that were encountered while processing this feature. */
   readonly warnings: Array<Warning>|ImmutableArray<Warning>;
 
   constructor(
-      sourceRange?: SourceRange, astNode?: any, description?: string,
-      jsdoc?: jsdoc.Annotation, warnings?: Warning[]) {
+      sourceRange?: SourceRange, astNode?: AstNodeWithLanguage,
+      description?: string, jsdoc?: jsdoc.Annotation, warnings?: Warning[]) {
     this.sourceRange = sourceRange;
     this.astNode = astNode;
     this.description = description;

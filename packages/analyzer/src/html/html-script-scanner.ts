@@ -47,7 +47,7 @@ export class HtmlScriptScanner implements HtmlScanner {
               src,
               document.sourceRangeForNode(node)!,
               document.sourceRangeForAttributeValue(node, 'src')!,
-              node,
+              {language: 'html', node, containingDocument: document},
               false));
         } else {
           const locationOffset =

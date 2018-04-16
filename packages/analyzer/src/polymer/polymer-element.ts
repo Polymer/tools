@@ -20,7 +20,7 @@ import {getOrInferPrivacy} from '../javascript/esutil';
 import * as jsdoc from '../javascript/jsdoc';
 import {Annotation as JsDocAnnotation, Annotation} from '../javascript/jsdoc';
 import {ImmutableArray} from '../model/immutable';
-import {Class, Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange, Warning} from '../model/model';
+import {AstNodeWithLanguage, Class, Document, Element, ElementBase, LiteralValue, Privacy, Property, ScannedAttribute, ScannedElement, ScannedElementBase, ScannedEvent, ScannedMethod, ScannedProperty, SourceRange, Warning} from '../model/model';
 import {ScannedReference} from '../model/reference';
 
 import {Behavior} from './behavior';
@@ -155,8 +155,7 @@ export interface Options {
 
   abstract: boolean;
   privacy: Privacy;
-  // TODO(rictic): make this AstNodeWithLanguage
-  astNode: any;
+  astNode: AstNodeWithLanguage;
   statementAst: babel.Statement|undefined;
   sourceRange: SourceRange|undefined;
 }

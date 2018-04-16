@@ -15,7 +15,7 @@
 import * as babel from '@babel/types';
 import {parseURL, URL} from 'whatwg-url';
 
-import {Document, FileRelativeUrl, Import, ResolvedUrl, ScannedImport, Severity, Warning} from '../model/model';
+import {Document, FileRelativeUrl, Import, JsAstNode, ResolvedUrl, ScannedImport, Severity, Warning} from '../model/model';
 
 import {Visitor} from './estree-visitor';
 import * as esutil from './esutil';
@@ -41,6 +41,10 @@ export interface JavaScriptImportScannerOptions {
   moduleResolution?: 'node';
 }
 
+export type ImportNode = babel.ImportDeclaration|babel.CallExpression|
+                         babel.ExportAllDeclaration|
+                         babel.ExportNamedDeclaration;
+
 export class ScannedJavascriptImport extends ScannedImport {
   readonly type!: 'js-import';
 
@@ -49,17 +53,17 @@ export class ScannedJavascriptImport extends ScannedImport {
   readonly specifier: string;
 
   readonly statementAst: babel.Statement|undefined;
+  readonly astNode: JsAstNode<ImportNode>;
 
   constructor(
       url: FileRelativeUrl|undefined, sourceRange: SourceRange|undefined,
-      urlSourceRange: SourceRange|undefined,
-      ast: babel.ImportDeclaration|babel.CallExpression|
-      babel.ExportAllDeclaration|babel.ExportNamedDeclaration,
+      urlSourceRange: SourceRange|undefined, ast: JsAstNode<ImportNode>,
       lazy: boolean, originalSpecifier: string,
       statementAst: babel.Statement|undefined) {
     super('js-import', url, sourceRange, urlSourceRange, ast, lazy);
     this.specifier = originalSpecifier;
     this.statementAst = statementAst;
+    this.astNode = ast;
   }
 
   protected constructImport(
@@ -92,13 +96,12 @@ export class JavascriptImport extends Import implements DeclaredWithStatement {
    */
   readonly specifier: string;
   readonly statementAst: babel.Statement|undefined;
+  readonly astNode: JsAstNode<ImportNode>;
 
   constructor(
       url: ResolvedUrl, originalUrl: FileRelativeUrl, type: string,
       document: Document|undefined, sourceRange: SourceRange|undefined,
-      urlSourceRange: SourceRange|undefined,
-      ast: babel.ImportDeclaration|babel.CallExpression|
-      babel.ExportAllDeclaration|babel.ExportNamedDeclaration,
+      urlSourceRange: SourceRange|undefined, ast: JsAstNode<ImportNode>,
       warnings: Warning[], lazy: boolean, specifier: string,
       statementAst: babel.Statement|undefined) {
     super(
@@ -113,6 +116,7 @@ export class JavascriptImport extends Import implements DeclaredWithStatement {
         lazy);
     this.specifier = specifier;
     this.statementAst = statementAst;
+    this.astNode = ast;
   }
 }
 
@@ -165,7 +169,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             scanner._resolveSpecifier(specifier, document, node, warnings),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.callee)!,
-            node,
+            {language: 'js', node, containingDocument: document},
             true,
             specifier,
             esutil.getCanonicalStatement(path)));
@@ -177,7 +181,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             scanner._resolveSpecifier(specifier, document, node, warnings),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
-            node,
+            {language: 'js', node, containingDocument: document},
             false,
             specifier,
             esutil.getCanonicalStatement(path)));
@@ -189,7 +193,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             scanner._resolveSpecifier(specifier, document, node, warnings),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
-            node,
+            {language: 'js', node, containingDocument: document},
             false,
             specifier,
             esutil.getCanonicalStatement(path)));
@@ -204,7 +208,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             scanner._resolveSpecifier(specifier, document, node, warnings),
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
-            node,
+            {language: 'js', node, containingDocument: document},
             false,
             specifier,
             esutil.getCanonicalStatement(path)));

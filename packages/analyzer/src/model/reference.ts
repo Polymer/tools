@@ -16,6 +16,7 @@ import {NodePath} from '@babel/traverse';
 import * as babel from '@babel/types';
 import * as util from 'util';
 
+import {AstNodeWithLanguage} from '..';
 import * as esutil from '../javascript/esutil';
 import {Annotation} from '../javascript/jsdoc';
 
@@ -37,12 +38,12 @@ export class ScannedReference<K extends keyof FeatureKindMap> extends
   readonly kind: K;
   readonly sourceRange: SourceRange|undefined;
   readonly astPath: NodePath;
-  readonly astNode: babel.Node|undefined;
+  readonly astNode: AstNodeWithLanguage|undefined;
 
   constructor(
       kind: K, identifier: string, sourceRange: SourceRange|undefined,
-      astNode: babel.Node|undefined, astPath: NodePath, description?: string,
-      jsdoc?: Annotation, warnings?: Warning[]) {
+      astNode: AstNodeWithLanguage|undefined, astPath: NodePath,
+      description?: string, jsdoc?: Annotation, warnings?: Warning[]) {
     super(sourceRange, astNode, description, jsdoc, warnings);
     this.kind = kind;
     this.astNode = astNode;
@@ -105,7 +106,8 @@ export class ScannedReference<K extends keyof FeatureKindMap> extends
       }
       [feature] = features;
     }
-    return new Reference<FeatureKindMap[K]>(this, feature, warnings);
+    return new Reference<FeatureKindMap[K]>(
+        this.identifier, this.sourceRange, this.astNode, feature, warnings);
   }
 }
 
@@ -235,15 +237,17 @@ export class Reference<F extends Feature> implements Feature {
   readonly identifiers = emptySet;
   readonly identifier: string;
   readonly sourceRange: SourceRange|undefined;
-  readonly astNode: any;
+  readonly astNode: AstNodeWithLanguage|undefined;
   readonly feature: F|undefined;
   readonly warnings: ReadonlyArray<Warning>;
 
   constructor(
-      scannedReference: ScannedReference<any>, feature: F|undefined,
+      identifier: string, sourceRange: SourceRange|undefined,
+      astNode: AstNodeWithLanguage|undefined, feature: F|undefined,
       warnings: ReadonlyArray<Warning>) {
-    this.identifier = scannedReference.identifier;
-    this.sourceRange = scannedReference.sourceRange;
+    this.identifier = identifier;
+    this.sourceRange = sourceRange;
+    this.astNode = astNode;
     this.warnings = warnings;
     this.feature = feature;
   }

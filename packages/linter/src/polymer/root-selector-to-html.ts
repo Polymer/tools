@@ -49,7 +49,7 @@ class RootSelectorToHtml extends Rule {
     const domModules = document.getFeatures({kind: 'dom-module'});
     if (domModules.size > 0) {
       for (const domModule of domModules) {
-        const moduleChildren = domModule.astNode.childNodes || [];
+        const moduleChildren = domModule.astNode.node.childNodes || [];
         const template: any =
             moduleChildren.find((m) => m.tagName === 'template');
         if (template === undefined ||

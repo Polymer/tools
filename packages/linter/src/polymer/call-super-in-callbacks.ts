@@ -42,10 +42,14 @@ class CallSuperInCallbacks extends Rule {
         ...document.getFeatures({kind: 'element-mixin'}));
 
     for (const elementLike of elementLikes) {
+      if (elementLike.astNode === undefined ||
+          elementLike.astNode.language !== 'js') {
+        continue;
+      }
       // TODO(rictic): methods should have astNodes, that would make this
       //     simpler. Filed as:
       //     https://github.com/Polymer/polymer-analyzer/issues/562
-      const classBody = getClassBody(elementLike.astNode);
+      const classBody = getClassBody(elementLike.astNode.node);
       if (!classBody) {
         continue;
       }

@@ -114,7 +114,8 @@ class ElementBeforeDomModule extends HtmlRule {
                 `\`<dom-module>\`. If it can't find its \`<dom-module>\` ` +
                 `when it is registered, it will assume it does not have one.`,
             severity: Severity.ERROR,
-            sourceRange: parsedHtml.sourceRangeForStartTag(domModule.astNode) ||
+            sourceRange:
+                parsedHtml.sourceRangeForStartTag(domModule.astNode.node) ||
                 domModule.sourceRange,
           }));
         }

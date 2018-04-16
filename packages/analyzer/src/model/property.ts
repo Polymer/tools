@@ -13,7 +13,7 @@
  */
 
 import * as jsdoc from '../javascript/jsdoc';
-import {SourceRange} from '../model/model';
+import {JsAstNode, SourceRange} from '../model/model';
 
 import {Privacy, ScannedFeature} from './model';
 import {Warning} from './warning';
@@ -26,6 +26,7 @@ export interface ScannedProperty extends ScannedFeature {
   readOnly?: boolean;
   changeEvent?: string;
   warnings: Warning[];
+  astNode: JsAstNode|undefined;
 }
 
 export interface Property {
@@ -39,4 +40,5 @@ export interface Property {
   readonly sourceRange?: SourceRange;
   readonly inheritedFrom?: string;
   readonly changeEvent?: string;
+  readonly astNode: JsAstNode|undefined;
 }
