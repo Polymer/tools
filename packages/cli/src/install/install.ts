@@ -25,6 +25,14 @@ import BowerProject = require('bower/lib/core/Project');
 
 const logger = logging.getLogger('cli.install');
 
+async function exec(command: string, opts: child_process.ExecOptions) {
+  return new Promise<[string, string]>((resolve, reject) => {
+    child_process.exec(command, opts, (err, stdout, stderr) => {
+      err ? reject(err) : resolve([stdout, stderr]);
+    });
+  });
+}
+
 type JsonValue = string|number|boolean|null|JsonObject|JsonArray;
 
 interface JsonObject {
@@ -57,11 +65,7 @@ export async function install(options?: Options): Promise<void> {
 
 async function npmInstall() {
   logger.info('Installing npm dependencies...');
-  await new Promise((resolve, reject) => {
-    child_process.exec('npm install', {cwd: process.cwd()}, (error, stdout, stderr) => {
-      error ? reject(error) : resolve([stdout, stderr]);
-    });
-  });
+  await exec('npm install', {cwd: process.cwd()});
   logger.info('Finished installing npm dependencies.');
 }
 
