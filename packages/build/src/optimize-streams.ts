@@ -23,6 +23,7 @@ import matcher = require('matcher');
 
 import {jsTransform} from './js-transform';
 import {htmlTransform} from './html-transform';
+import {isHtmlSplitterFile} from './html-splitter';
 
 // TODO(fks) 09-22-2016: Latest npm type declaration resolves to a non-module
 // entity. Upgrade to proper JS import once compatible .d.ts file is released,
@@ -113,6 +114,22 @@ export class JsTransform extends GenericOptimizeTransform {
         jsOptions.minify ? notExcluded(jsOptions.minify) : () => false;
 
     const transformer = (content: string, file: File) => {
+      let transformModulesToAmd: boolean|'auto' = false;
+      let moduleScriptIdx;
+
+      if (jsOptions.transformModulesToAmd) {
+        if (isHtmlSplitterFile(file)) {
+          // This is a type=module script in an HTML file. Definitely AMD
+          // transform.
+          transformModulesToAmd = file.moduleScriptIdx !== undefined;
+          moduleScriptIdx = file.moduleScriptIdx;
+        } else {
+          // This is an external script file. Only AMD transform it if it looks
+          // like a module.
+          transformModulesToAmd = 'auto';
+        }
+      }
+
       return jsTransform(content, {
         compileToEs5: shouldCompileFile(file),
         externalHelpers: true,
@@ -120,9 +137,9 @@ export class JsTransform extends GenericOptimizeTransform {
         moduleResolution: jsOptions.moduleResolution,
         filePath: file.path,
         rootDir: options.rootDir,
-        transformModulesToAmd: jsOptions.transformModulesToAmd,
+        transformModulesToAmd,
         transformImportMeta: jsOptions.transformImportMeta,
-        moduleScriptIdx: file.moduleScriptIdx,
+        moduleScriptIdx,
       });
     };
 
