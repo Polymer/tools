@@ -83,7 +83,7 @@ task('compile', function () {
     gulp.src('src/**/*.ts');  //.pipe(newer({dest: 'lib', ext: '.js'}));
   const tsResult =
     srcs.pipe(sourcemaps.init())
-      .pipe(typescript(tsProject, [], typescript.reporter.fullReporter()));
+      .pipe(tsProject(typescript.reporter.fullReporter()));
 
   // Use this once typescript-gulp supports `include` in tsconfig:
   // const srcs = tsProject.src();

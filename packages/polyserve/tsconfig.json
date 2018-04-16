@@ -1,28 +1,13 @@
 {
+  "extends": "../../tsconfig-base.json",
   "compilerOptions": {
-    "target": "es6",
-    "lib": [
-      "es2016",
-      "esnext.asynciterable"
-    ],
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "isolatedModules": false,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "declaration": true,
-    "noImplicitAny": true,
-    "removeComments": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "preserveConstEnums": true,
+    "strictNullChecks": false,
     "suppressImplicitAnyIndexErrors": true,
-    "outDir": "lib",
-    "sourceMap": true
+    "outDir": "./lib"
   },
   "include": [
     "node_modules/polymer-build/custom_typings/**/*.ts",
-    "custom_typings/**/*.ts",
+    "custom_typings/**/*.d.ts",
     "src/**/*.ts"
   ]
 }
