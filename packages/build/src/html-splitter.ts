@@ -95,6 +95,19 @@ export function scriptWasSplitByHtmlSplitter(script: dom5.Node): boolean {
   return dom5.hasAttribute(script, htmlSplitterAttribute);
 }
 
+export type HtmlSplitterFile = File&{
+  fromHtmlSplitter?: true;
+  moduleScriptIdx?: number
+}
+
+/**
+ * Return whether the given Vinyl file was created by the HtmlSplitter from an
+ * HTML document script tag.
+ */
+export function isHtmlSplitterFile(file: File): file is HtmlSplitterFile {
+  return file.fromHtmlSplitter === true;
+}
+
 /**
  * Represents a file that is split into multiple files.
  */
@@ -180,12 +193,13 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
           scriptTag.childNodes = [];
           dom5.setAttribute(scriptTag, 'src', childFilename);
           dom5.setAttribute(scriptTag, htmlSplitterAttribute, '');
-          const scriptFile = new File({
+          const scriptFile: HtmlSplitterFile = new File({
             cwd: file.cwd,
             base: file.base,
             path: childPath,
             contents: new Buffer(source),
           });
+          scriptFile.fromHtmlSplitter = true;
           this._state.addSplitPath(filePath, childPath);
           if (isModule) {
             scriptFile.moduleScriptIdx = moduleScriptIdx;

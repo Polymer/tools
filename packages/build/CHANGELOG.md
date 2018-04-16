@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 * The Babel helpers script now includes all Babel helpers that could be used by the ES5 compilation transform.
 * The AMD loader script now includes the Babel helpers needed by the AMD module transform.
+* Inline JavaScript will now only be transformed to AMD modules if they have type=module.
+* External JavaScript files will now only be transformed to AMD modules if they contain module import/export syntax.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.11] - 2018-04-11
