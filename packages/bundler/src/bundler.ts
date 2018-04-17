@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {Analyzer, Document, FsUrlLoader, InMemoryOverlayUrlLoader, ResolvedUrl} from 'polymer-analyzer';
+import {Analyzer, Document, FsUrlLoader, InMemoryOverlayUrlLoader, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
 
 import {getAnalysisDocument} from './analyzer-utils';
 import * as bundleManifestLib from './bundle-manifest';
@@ -109,8 +109,8 @@ export class Bundler {
   }
 
   /**
-   * Analyze a URL using the given contents in place of what would otherwise
-   * have been loaded.
+   * Analyze an HTML URL using the given contents in place of what would
+   * otherwise have been loaded.
    */
   async analyzeContents(
       url: ResolvedUrl,
@@ -121,7 +121,7 @@ export class Bundler {
       // in-memory overlay will not be purged of the contents.  This toggle lets
       // us use the Analyzer to process documents in intermediate stages without
       // committing to them.
-      permanent?: boolean): Promise<Document> {
+      permanent?: boolean): Promise<Document<ParsedHtmlDocument>> {
     this._overlayUrlLoader.urlContentsMap.set(url, contents);
     await this.analyzer.filesChanged([url]);
     const analysis = await this.analyzer.analyze([url]);

@@ -13,11 +13,11 @@
  */
 
 import * as dom5 from 'dom5/lib/index-next';
-import {Document, isPositionInsideRange, ParsedCssDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
+import {Document, isPositionInsideRange, ParsedCssDocument, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 import * as shady from 'shady-css-parser';
 
+import {HtmlRule} from '../html/rule';
 import {registry} from '../registry';
-import {Rule} from '../rule';
 import {getDocumentContaining, stripIndentation, stripWhitespace} from '../util';
 
 const p = dom5.predicates;
@@ -28,21 +28,19 @@ const isCustomStyle = p.AND(
         (node: dom5.Node) => !!(
             node.parentNode && p.hasTagName('custom-style')(node.parentNode))));
 
-class RootSelectorToHtml extends Rule {
+class RootSelectorToHtml extends HtmlRule {
   code = 'root-selector-to-html';
   description = stripIndentation(`
       Warns when using :root inside an element's template, custom-style, or style module.
   `);
 
-  async check(document: Document) {
+  async checkDocument(parsedDocument: ParsedHtmlDocument, document: Document) {
     const elementStyleTags: dom5.Node[] = [];
     const styleModuleStyleTags: dom5.Node[] = [];
 
     // Get custom-styles
     const customStyleTags = [...dom5.queryAll(
-        document.parsedDocument.ast,
-        isCustomStyle,
-        dom5.childNodesIncludeTemplate)];
+        parsedDocument.ast, isCustomStyle, dom5.childNodesIncludeTemplate)];
 
     // Get dom-modules then sort style tags into element styles or style module
     // styles

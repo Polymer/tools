@@ -53,7 +53,7 @@ export async function bundle(
  * exported bundle function above.
  */
 export class HtmlBundler {
-  protected document: Document;
+  protected document: Document<ParsedHtmlDocument>;
 
   constructor(
       public bundler: Bundler,
@@ -728,7 +728,8 @@ export class HtmlBundler {
    * prepare it as the bundle document, otherwise we'll create a clean/empty
    * HTML document.
    */
-  private async _prepareBundleDocument(): Promise<Document> {
+  private async _prepareBundleDocument():
+      Promise<Document<ParsedHtmlDocument>> {
     if (!this.assignedBundle.bundle.files.has(this.assignedBundle.url)) {
       return this._reanalyze('');
     }
@@ -746,7 +747,8 @@ export class HtmlBundler {
    * Fetch a new copy of an analyzed document serializing an AST and analyzing
    * it.
    */
-  private async _reanalyze(code: string): Promise<Document> {
+  private async _reanalyze(code: string):
+      Promise<Document<ParsedHtmlDocument>> {
     return this.bundler.analyzeContents(this.assignedBundle.url, code);
   }
 
