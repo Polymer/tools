@@ -5,13 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.23] - 2018-04-16
 * [BREAKING] `Feature.astNode` is now an `AstNodeWithLanguage` rather than
   being an unwrapped ast node (usually typed as `any`). This makes it easier
   and safer to handle features which could be declared in HTML or JS. Most
   tools will not care about these ast nodes, this mostly comes up in tools
   like the linter, which does additional analysis of the AST.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.22] - 2018-04-09
 * Fix module resolution in the case of root packages served from a component

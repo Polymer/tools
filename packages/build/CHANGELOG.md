@@ -5,12 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* The Babel helpers script now includes all Babel helpers that could be used by the ES5 compilation transform.
-* The AMD loader script now includes the Babel helpers needed by the AMD module transform.
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.12] - 2018-04-16
+* The Babel helpers script now includes all Babel helpers that could be used by the ES5 compilation and AMD transforms.
 * Inline JavaScript will now only be transformed to AMD modules if they have type=module.
 * External JavaScript files will now only be transformed to AMD modules if they contain module import/export syntax.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.11] - 2018-04-11
 * Fix AMD transform bug where if an HTML document had multiple type=module scripts, and any of them (apart from the first) had any kind of import, then that import was not accessible (because it was mapped to the wrong module callback function argument).
