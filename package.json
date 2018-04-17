@@ -52,7 +52,7 @@
     "mkdirp": "^0.5.1",
     "mz": "^2.6.0",
     "node-fetch": "^2.1.1",
-    "polymer-analyzer": "^3.0.0-pre.20",
+    "polymer-analyzer": "^3.0.0-pre.23",
     "polymer-workspaces": "^2.1.0",
     "recast": "^0.12.4",
     "rimraf": "^2.6.1",
