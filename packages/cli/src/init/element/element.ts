@@ -121,14 +121,14 @@ export function createElementGenerator(templateName: string):
   };
 
   class Polymer3ElementGenerator extends ElementGenerator {
-    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
     // checks the object's prototype's own properties for generator task
     // methods. http://yeoman.io/authoring/running-context.html
     initializing() {
       return super.initializing();
     }
 
-    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
     // checks the object's prototype's own properties for generator task
     // methods. http://yeoman.io/authoring/running-context.html
     async prompting() {
@@ -167,7 +167,7 @@ export function createElementGenerator(templateName: string):
       });
     }
 
-    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
     // checks the object's prototype's own properties for generator task
     // methods. http://yeoman.io/authoring/running-context.html
     end() {

@@ -118,14 +118,14 @@ export function createApplicationGenerator(templateName: string):
   };
 
   class Polymer3ApplicationGenerator extends ApplicationGenerator {
-    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
     // checks the object's prototype's own properties for generator task
     // methods. http://yeoman.io/authoring/running-context.html
     initializing() {
       return super.initializing();
     }
 
-    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
     // checks the object's prototype's own properties for generator task
     // methods. http://yeoman.io/authoring/running-context.html
     async prompting() {
@@ -163,7 +163,7 @@ export function createApplicationGenerator(templateName: string):
       });
     }
 
-    // TODO(yeoman/generator#1065): This is function not a no-op: Yeoman only
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
     // checks the object's prototype's own properties for generator task
     // methods. http://yeoman.io/authoring/running-context.html
     end() {
