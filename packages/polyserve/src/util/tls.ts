@@ -54,7 +54,7 @@ async function _readKeyAndCert(
   try {
     const results =
         (await Promise.all([fs.readFile(certPath), fs.readFile(keyPath)]))
-            .map(buffer => buffer.toString().trim());
+            .map((buffer) => buffer.toString().trim());
     const cert = results[0];
     const key = results[1];
     if (key && cert) {

@@ -366,9 +366,9 @@ suite('startServer', () => {
           await sinon.assert.calledOnce(createCertSpy);
           await Promise.all([
             fs.readFile(certFilePath)
-                .then(buf => _assertValidCert(buf.toString())),
+                .then((buf) => _assertValidCert(buf.toString())),
             fs.readFile(keyFilePath)
-                .then(buf => _assertValidKey(buf.toString()))
+                .then((buf) => _assertValidKey(buf.toString()))
           ]);
           await _deleteFiles([certFilePath, keyFilePath]);
           await new Promise((resolve) => server.close(resolve));
@@ -388,9 +388,9 @@ suite('startServer', () => {
             // _certFile and _keyFile point to newly created (blank) temp
             // files
             fs.readFile(_certFile.name)
-                .then(buf => _assertValidCert(buf.toString())),
+                .then((buf) => _assertValidCert(buf.toString())),
             fs.readFile(_keyFile.name)
-                .then(buf => _assertValidKey(buf.toString()))
+                .then((buf) => _assertValidKey(buf.toString()))
           ]);
           await new Promise((resolve) => server.close(resolve));
         } finally {
@@ -486,7 +486,7 @@ suite('startServer', () => {
     }
 
     async function _startStubServer(options: ServerOptions) {
-      return new Promise<http.server.Server>(resolve => {
+      return new Promise<http.server.Server>((resolve) => {
         _stubServer.listen = (() => resolve(_stubServer)) as any;
         startServer(options);
       });
@@ -585,12 +585,12 @@ suite('startServers', () => {
           .get('/components/contents.txt')
           .expect(200, 'mainline\n');
 
-      const fooServer = servers.variants.find(s => s.variantName === 'foo');
+      const fooServer = servers.variants.find((s) => s.variantName === 'foo');
       await supertest(fooServer.server)
           .get('/components/contents.txt')
           .expect(200, 'foo\n');
 
-      const barServer = servers.variants.find(s => s.variantName === 'bar');
+      const barServer = servers.variants.find((s) => s.variantName === 'bar');
       await supertest(barServer.server)
           .get('/components/contents.txt')
           .expect(200, 'bar\n');
@@ -639,12 +639,12 @@ suite('startServers', () => {
               .get('/components/contents.txt')
               .expect(200, 'my-mainline\n');
 
-          const fooServer = servers.variants.find(s => s.variantName === 'foo');
+          const fooServer = servers.variants.find((s) => s.variantName === 'foo');
           await supertest(fooServer.server)
               .get('/components/contents.txt')
               .expect(200, 'my-foo\n');
 
-          const barServer = servers.variants.find(s => s.variantName === 'bar');
+          const barServer = servers.variants.find((s) => s.variantName === 'bar');
           await supertest(barServer.server)
               .get('/components/contents.txt')
               .expect(200, 'my-bar\n');

@@ -238,11 +238,11 @@ async function findVariants(options: ServerOptions) {
   const root = options.root || process.cwd();
   const filesInRoot = await fs.readdir(root);
   const variants = filesInRoot
-                       .map(f => {
+                       .map((f) => {
                          const match = f.match(`^${options.componentDir}-(.*)`);
                          return match && {name: match[1], directory: match[0]};
                        })
-                       .filter(f => f != null && f.name !== '');
+                       .filter((f) => f != null && f.name !== '');
   return variants;
 }
 
@@ -274,7 +274,7 @@ async function startVariants(
       app: variantServer.app,
       options: variantOpts
     });
-  };
+  }
 
   const controlServerInfo =
       await startControlServer(options, mainServerInfo, variantServerInfos);
@@ -289,7 +289,7 @@ async function startVariants(
     servers,
   };
   return result;
-};
+}
 
 export async function startControlServer(
     options: ServerOptions,
@@ -304,7 +304,7 @@ export async function startControlServer(
       mainlineServer: {
         port: mainlineInfo.server.address().port,
       },
-      variants: variantInfos.map(info => {
+      variants: variantInfos.map((info) => {
         return {name: info.variantName, port: info.server.address().port};
       })
     }));
@@ -364,7 +364,7 @@ export function getApp(options: ServerOptions): express.Express {
 
     let escapedPath = options.proxy.path;
 
-    for (let char of ['*', '?', '+']) {
+    for (const char of ['*', '?', '+']) {
       if (escapedPath.indexOf(char) > -1) {
         console.warn(
             `Proxy path includes character "${char}"` +
