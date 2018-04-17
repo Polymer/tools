@@ -9,7 +9,7 @@ addons:
       - google-chrome-stable
 
 env:
-  - TEST_COMMAND=test
+  - TEST_COMMAND="run test:unit"
   - TEST_COMMAND="run test:integration"
 
 language: node_js

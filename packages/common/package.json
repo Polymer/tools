@@ -10,6 +10,7 @@
     "init": "gulp init",
     "build": "gulp build",
     "test": "gulp test",
+    "test:unit": "gulp test:unit",
     "prepublishOnly": "gulp build-all",
     "format": "find src/ test/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
   },
