@@ -149,6 +149,10 @@ export class TestCommand implements Command {
       wctArgs.push('--npm');
     }
 
+    if (config.moduleResolution) {
+      wctArgs.push(`--module-resolution=${config.moduleResolution}`);
+    }
+
     if (config.componentDir) {
       wctArgs.push(`--component-dir='${config.componentDir}'`);
     }
