@@ -128,7 +128,9 @@
     "run-sequence": "^1.0.1",
     "tslint": "^5.7.0",
     "typescript": "^2.1.4",
-    "watch": "^0.18.0"
+    "watch": "^0.18.0",
+    "wct-local": "^2.1.0",
+    "wct-sauce": "^2.0.0"
   },
   "engines": {
     "node": ">= 6.0"
