@@ -28,19 +28,19 @@ suite('AnalyzerSynchronizer', function() {
     const {client, baseDir} = await createTestEnvironment();
     await client.openFile('foo.html', `<link rel="import" href="./bar.html">`);
     assert.deepEqual(
-        (await client.getNextDiagnostics('foo.html')).map(d => d.code),
+        (await client.getNextDiagnostics('foo.html')).map((d) => d.code),
         ['could-not-load']);
     writeFileSync(path.join(baseDir, 'bar.html'), '', 'utf-8');
     await client.watchedFilesChanged(
         [{path: 'bar.html', type: FileChangeType.Created}]);
     assert.deepEqual(
-        (await client.getNextDiagnostics('foo.html')).map(d => d.code), []);
+        (await client.getNextDiagnostics('foo.html')).map((d) => d.code), []);
 
     unlinkSync(path.join(baseDir, 'bar.html'));
     await client.watchedFilesChanged(
         [{path: 'bar.html', type: FileChangeType.Deleted}]);
     assert.deepEqual(
-        (await client.getNextDiagnostics('foo.html')).map(d => d.code),
+        (await client.getNextDiagnostics('foo.html')).map((d) => d.code),
         ['could-not-load']);
     await client.cleanup();
   });
@@ -50,14 +50,14 @@ suite('AnalyzerSynchronizer', function() {
     await client.openFile(
         'foo.html', `<link rel="import" href="./dir/bar.html">`);
     assert.deepEqual(
-        (await client.getNextDiagnostics('foo.html')).map(d => d.code),
+        (await client.getNextDiagnostics('foo.html')).map((d) => d.code),
         ['could-not-load']);
     mkdirSync(path.join(baseDir, 'dir'));
     writeFileSync(path.join(baseDir, 'dir', 'bar.html'), '', 'utf-8');
     await client.watchedFilesChanged(
         [{path: 'dir/bar.html', type: FileChangeType.Created}]);
     assert.deepEqual(
-        (await client.getNextDiagnostics('foo.html')).map(d => d.code), []);
+        (await client.getNextDiagnostics('foo.html')).map((d) => d.code), []);
 
     unlinkSync(path.join(baseDir, 'dir', 'bar.html'));
     rmdirSync(path.join(baseDir, 'dir'));
@@ -65,7 +65,7 @@ suite('AnalyzerSynchronizer', function() {
     await client.watchedFilesChanged(
         [{path: 'dir', type: FileChangeType.Deleted}]);
     assert.deepEqual(
-        (await client.getNextDiagnostics('foo.html')).map(d => d.code),
+        (await client.getNextDiagnostics('foo.html')).map((d) => d.code),
         ['could-not-load']);
     await client.cleanup();
   });

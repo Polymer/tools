@@ -41,7 +41,7 @@ async function main(options: Options) {
       await import('./language-server/language-server');
 
   // Create a connection for the server. Communicate using stdio.
-  let connection = createConnection(process.stdin, process.stdout);
+  const connection = createConnection(process.stdin, process.stdout);
 
   const serverPromise = LanguageServer.initializeWithConnection(
       connection, {interceptConsole: true, logToFile: options.logToFile});

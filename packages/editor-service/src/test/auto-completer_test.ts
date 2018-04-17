@@ -91,11 +91,11 @@ const elementCompletions: CompletionItem[] = [
 ];
 
 // Like elementCompletions, but without leading `<` characters.
-const elementTagnameCompletions = elementCompletions.map(ec => {
+const elementTagnameCompletions = elementCompletions.map((ec) => {
   return {...ec, insertText: ec.insertText!.slice(1)};
 });
 
-const elementCompletionsWithPlainDescriptions = elementCompletions.map(ec => {
+const elementCompletionsWithPlainDescriptions = elementCompletions.map((ec) => {
   return {...ec, documentation: (ec.documentation as MarkupContent).value};
 });
 
@@ -339,7 +339,7 @@ suite('AutoCompleter', () => {
         });
     // There's an invalid expression in this source file, but that's ok.
     assert.deepEqual(
-        (await client.getNextDiagnostics(testFile)).map(d => d.code),
+        (await client.getNextDiagnostics(testFile)).map((d) => d.code),
         ['invalid-polymer-expression']);
     await client.cleanup();
   });
@@ -377,7 +377,7 @@ suite('AutoCompleter', () => {
         });
     // There's an invalid expression in this source file, but that's ok.
     assert.deepEqual(
-        (await client.getNextDiagnostics(testFile)).map(d => d.code),
+        (await client.getNextDiagnostics(testFile)).map((d) => d.code),
         ['invalid-polymer-expression']);
     await client.cleanup();
   });
@@ -417,7 +417,7 @@ suite('AutoCompleter', () => {
         });
     // There's an invalid expression in this source file, but that's ok.
     assert.deepEqual(
-        (await client.getNextDiagnostics(testFile)).map(d => d.code),
+        (await client.getNextDiagnostics(testFile)).map((d) => d.code),
         ['invalid-polymer-expression']);
     await client.cleanup();
   });
@@ -482,7 +482,7 @@ suite('AutoCompleter', () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     assert.deepEqual(
-        (await client.getNextDiagnostics(indexFile)).map(d => d.code), []);
+        (await client.getNextDiagnostics(indexFile)).map((d) => d.code), []);
 
     // We load a file that contains a reference error.
     await client.changeFile(indexFile, `${indexContents}
@@ -495,7 +495,7 @@ suite('AutoCompleter', () => {
         {isIncomplete: false, items: attributeCompletions});
 
     assert.deepEqual(
-        (await client.getNextDiagnostics(indexFile)).map(d => d.code),
+        (await client.getNextDiagnostics(indexFile)).map((d) => d.code),
         ['could-not-load']);
     await client.cleanup();
   });
@@ -518,15 +518,15 @@ suite('AutoCompleter', () => {
 
     // Consume diagnostics that are reported.
     assert.deepEqual(
-        (await client.getNextDiagnostics(indexFile)).map(d => d.code),
+        (await client.getNextDiagnostics(indexFile)).map((d) => d.code),
         ['could-not-load']);
     // We get this one twice, once when the file is opened, and again when
     // indexFile is modified.
     assert.deepEqual(
-        (await client.getNextDiagnostics('syntax-error.js')).map(d => d.code),
+        (await client.getNextDiagnostics('syntax-error.js')).map((d) => d.code),
         ['parse-error']);
     assert.deepEqual(
-        (await client.getNextDiagnostics('syntax-error.js')).map(d => d.code),
+        (await client.getNextDiagnostics('syntax-error.js')).map((d) => d.code),
         ['parse-error']);
     await client.cleanup();
   });

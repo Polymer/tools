@@ -171,7 +171,7 @@ export default class AutoCompleter extends Handler {
       imported: true,
       externalPackages: true
     });
-    const names = new Set<string>([...propertyAssignments].map(a => a.name));
+    const names = new Set<string>([...propertyAssignments].map((a) => a.name));
     const items = [...names].sort().map((name): CompletionItem => {
       return {label: name, kind: CompletionItemKind.Variable};
     });
@@ -203,11 +203,11 @@ export default class AutoCompleter extends Handler {
     const elements = [
       ...document.getFeatures(
           {kind: 'element', externalPackages: true, imported: true})
-    ].filter(e => e.tagName);
+    ].filter((e) => e.tagName);
     const prefix = location.kind === 'tagName' ? '' : '<';
-    const items = elements.map(e => {
+    const items = elements.map((e) => {
       const tagName = e.tagName!;
-      let item: CompletionItem = {
+      const item: CompletionItem = {
         label: `<${tagName}>`,
         documentation: this.documentationFromMarkdown(e.description),
         filterText: tagName.replace(/-/g, ''),
@@ -284,10 +284,10 @@ export default class AutoCompleter extends Handler {
     const attributeValue =
         dom5.getAttribute(location.element, innerAttribute.name)!;
     const hasDelimeters = /^\s*(\{\{|\[\[)/.test(attributeValue);
-    const attributes = [...outerElement.properties.values()].map(p => {
+    const attributes = [...outerElement.properties.values()].map((p) => {
       const sortText = (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
       let autocompletion;
-      let autocompletionSnippet;
+      const autocompletionSnippet = undefined;
       if (attributeValue && hasDelimeters) {
         autocompletion = p.name;
       } else {
@@ -369,10 +369,10 @@ export default class AutoCompleter extends Handler {
       externalPackages: true,
       imported: true
     });
-    let attributes: AttributeCompletion[] = [];
+    const attributes: AttributeCompletion[] = [];
     if (element) {
       const sortPrefixes = this.createSortPrefixes(element);
-      attributes.push(...[...element.attributes.values()].map(p => {
+      attributes.push(...[...element.attributes.values()].map((p) => {
         const sortText = (sortPrefixes.get(p.inheritedFrom) || `ddd-`) + p.name;
         return {
           label: p.name,
@@ -450,7 +450,7 @@ export default class AutoCompleter extends Handler {
       completions: CompletionList, position: SourcePosition,
       document: Document): CompletionList {
     const leadingText = this.getLeadingIdentifier(position, document);
-    const filterableCompletions = completions.items.map(completion => {
+    const filterableCompletions = completions.items.map((completion) => {
       return {
         filterText: completion.filterText || completion.label,
         completion
@@ -459,7 +459,7 @@ export default class AutoCompleter extends Handler {
     const items =
         fuzzaldrin
             .filter(filterableCompletions, leadingText, {key: 'filterText'})
-            .map(i => i.completion);
+            .map((i) => i.completion);
     return {isIncomplete: true, items};
   }
 

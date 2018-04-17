@@ -104,7 +104,7 @@ export default class FeatureFinder {
       }
 
       const feature = concatMap(elements, (el) => el.attributes.values())
-                          .find(at => at.name === htmlLocation.attribute);
+                          .find((at) => at.name === htmlLocation.attribute);
       if (feature) {
         return {document, feature};
       }
@@ -221,7 +221,7 @@ export class DatabindingFeature {
 }
 
 function concatMap<I, O>(inputs: Iterable<I>, f: (i: I) => Iterable<O>): O[] {
-  let results: O[] = [];
+  const results: O[] = [];
   for (const input of inputs) {
     results.push(...f(input));
   }

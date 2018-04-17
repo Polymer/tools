@@ -49,7 +49,7 @@ export default class HoverDocumenter extends Handler {
     if (!documentation) {
       return;
     }
-    let result: Hover = {contents: documentation.contents, range: undefined};
+    const result: Hover = {contents: documentation.contents, range: undefined};
     if (documentation.range) {
       result.range = this.converter.convertPRangeToL(documentation.range);
     }
