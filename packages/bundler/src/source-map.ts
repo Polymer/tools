@@ -52,11 +52,11 @@ function createJsIdentitySourcemap(
   const generator = new SourceMapGenerator();
   const tokens = espree.tokenize(
       sourceContent, {loc: true, ecmaVersion: 2017, sourceType: 'module'});
-  tokens.forEach(token => {
+  tokens.forEach((token) => {
     if (!token.loc) {
       return null;
     }
-    let mapping: any = {
+    const mapping: any = {
       original: {
         line: token.loc.start.line + lineOffset,
         column: token.loc.start.column +
@@ -81,7 +81,7 @@ function offsetSourceMap(
   const consumer = new SourceMapConsumer(sourcemap);
   const generator = new SourceMapGenerator();
 
-  consumer.eachMapping(mapping => {
+  consumer.eachMapping((mapping) => {
     const newMapping: any = {
       source: mapping.source,
       generated: {
@@ -131,7 +131,7 @@ export async function getExistingSourcemap(
   // Rewrite the sources array to be relative to the current URL
   if (sourcemap.sources) {
     sourcemap.sources =
-        sourcemap.sources.map(source => urlLib.resolve(mapUrl, source));
+        sourcemap.sources.map((source) => urlLib.resolve(mapUrl, source));
   }
   return sourcemap;
 }
@@ -219,7 +219,7 @@ export function updateSourcemapLocations(
   });
 
   const inlineScripts = dom5.queryAll(ast, matchers.nonModuleScript);
-  inlineScripts.forEach(script => {
+  inlineScripts.forEach((script) => {
     let content = dom5.getTextContent(script);
 
     const sourceMapUrlParts = content.match(sourceMappingUrlExpr);

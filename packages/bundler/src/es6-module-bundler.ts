@@ -64,7 +64,7 @@ export async function bundle(
 async function prepareBundleModule(
     bundler: Bundler, manifest: BundleManifest, assignedBundle: AssignedBundle):
     Promise<string> {
-      let bundleSource = babel.program([]);
+      const bundleSource = babel.program([]);
       const sourceAnalysis =
           await bundler.analyzer.analyze([...assignedBundle.bundle.files]);
       for (const sourceUrl of [...assignedBundle.bundle.files].sort()) {
