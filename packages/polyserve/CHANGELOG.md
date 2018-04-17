@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## [0.27.5] (2018-04-17)
+* Update --npm flag description.
+
 ## [0.27.4] (2018-04-11)
 * Fix AMD transform bug where if an HTML document had multiple type=module scripts, and any of them (apart from the first) had any kind of import, then that import was not accessible (because it was mapped to the wrong module callback function argument).
 
