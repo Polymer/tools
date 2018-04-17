@@ -28,27 +28,34 @@ export class InstallCommand implements Command {
   aliases = ['i'];
 
   // TODO(justinfagnani): Expand and link to eventual doc on variants.
-  description = 'installs Bower dependencies, optionally installing "variants"';
+  description = 'Installs project dependencies from npm or Bower (optionally ' +
+      'installing "variants").';
 
   args = [
     {
       name: 'variants',
       type: Boolean,
       defaultValue: false,
-      description: 'Whether to install variants'
+      description: 'Whether to install Bower variants'
     },
     {
       name: 'offline',
       type: Boolean,
       defaultValue: false,
-      description: 'Don\'t hit the network'
+      description: 'Don\'t hit the network when installing Bower dependencies'
     },
   ];
 
-  async run(options: CommandOptions, _config: ProjectConfig): Promise<void> {
+  async run(options: CommandOptions, config: ProjectConfig): Promise<void> {
     // Defer dependency loading until this specific command is run
     const install =
         require('../install/install').install as typeof installTypeOnly;
+
+    // Use `npm` from the config, if available and not passed as a CLI arg.
+    if (options.npm === undefined && config.npm !== undefined) {
+      options.npm = config.npm;
+    }
+
     await install(options);
   }
 }

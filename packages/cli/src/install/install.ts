@@ -14,6 +14,7 @@
 
 import * as bower from 'bower';
 import {read as readBowerJson} from 'bower-json';
+import * as child_process from 'child_process';
 import * as path from 'path';
 import * as logging from 'plylog';
 
@@ -23,6 +24,14 @@ import StandardRenderer = require('bower/lib/renderers/StandardRenderer');
 import BowerProject = require('bower/lib/core/Project');
 
 const logger = logging.getLogger('cli.install');
+
+async function exec(command: string, opts: child_process.ExecOptions) {
+  return new Promise<[string, string]>((resolve, reject) => {
+    child_process.exec(command, opts, (err, stdout, stderr) => {
+      err ? reject(err) : resolve([stdout, stderr]);
+    });
+  });
+}
 
 type JsonValue = string|number|boolean|null|JsonObject|JsonArray;
 
@@ -35,25 +44,36 @@ interface JsonArray extends Array<JsonValue> {}
 export interface Options {
   variants?: boolean;
   offline?: boolean;
+  npm?: boolean;
 }
 
 export async function install(options?: Options): Promise<void> {
+  if (options && options.npm) {
+    return npmInstall();
+  }
+
   // default to false
   const offline = options == null ? false : options.offline === true;
   // default to false
   const variants = options == null ? false : options.variants === true;
 
   await Promise.all([
-    installDefault(offline),
-    variants ? installVariants(offline) : Promise.resolve(),
+    bowerInstallDefault(offline),
+    variants ? bowerInstallVariants(offline) : Promise.resolve(),
   ]);
+}
+
+async function npmInstall() {
+  logger.info('Installing npm dependencies...');
+  await exec('npm install', {cwd: process.cwd()});
+  logger.info('Finished installing npm dependencies.');
 }
 
 /**
  * Performs a Bower install, optionally with a specific JSON configuration and
  * output directory.
  */
-async function _install(
+async function _bowerInstall(
     offline: boolean,
     bowerJson?: JsonObject,
     componentDirectory?: string,
@@ -90,13 +110,13 @@ async function _install(
   await project.install([], {save: false, offline}, config);
 }
 
-async function installDefault(offline: boolean): Promise<void> {
+async function bowerInstallDefault(offline: boolean): Promise<void> {
   logger.info(`Installing default Bower components...`);
-  await _install(offline);
+  await _bowerInstall(offline);
   logger.info(`Finished installing default Bower components`);
 }
 
-async function installVariants(offline: boolean): Promise<void> {
+async function bowerInstallVariants(offline: boolean): Promise<void> {
   const bowerJson = await new Promise<any>((resolve, reject) => {
     const config = defaultBowerConfig({
       save: false,
@@ -120,7 +140,7 @@ async function installVariants(offline: boolean): Promise<void> {
       const variantDirectory = `bower_components-${variantName}`;
       logger.info(
           `Installing variant ${variantName} to ${variantDirectory}...`);
-      await _install(offline, variantBowerJson, variantDirectory, variantName);
+      await _bowerInstall(offline, variantBowerJson, variantDirectory, variantName);
       logger.info(`Finished installing variant ${variantName}`);
     }));
   }

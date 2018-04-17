@@ -16,7 +16,6 @@ import {createApplicationGenerator} from '../../init/application/application';
 import {runCommand} from './run-command';
 import {createElementGenerator} from '../../init/element/element';
 import {createGithubGenerator} from '../../init/github';
-import * as child_process from 'child_process';
 
 // A zero priveledge github token of a nonce account, used for quota.
 const githubToken = '8d8622bf09bb1d85cb411b5e475a35e742a7ce35';
@@ -25,14 +24,6 @@ const githubToken = '8d8622bf09bb1d85cb411b5e475a35e742a7ce35';
 //     windows.
 const isWindows = process.platform === 'win32';
 const skipOnWindows = isWindows ? test.skip : test;
-
-async function exec(command: string, opts: child_process.ExecOptions) {
-  return new Promise<[string, string]>((resolve, reject) => {
-    child_process.exec(command, opts, (err, stdout, stderr) => {
-      err ? reject(err) : resolve([stdout, stderr]);
-    });
-  });
-}
 
 suite('integration tests', function() {
 
@@ -48,9 +39,7 @@ suite('integration tests', function() {
           await runGenerator(createElementGenerator('polymer-3.x'))
               .withPrompts({name: 'my-element'})  // Mock the prompt answers
               .toPromise();
-      // TODO(#118): Use `polymer install` once it supports installing npm
-      // packages.
-      await exec('npm install', {cwd: dir});
+      await runCommand(binPath, ['install'], {cwd: dir});
 
       await runCommand(binPath, ['lint'], {cwd: dir});
 
