@@ -40,9 +40,7 @@ suite('integration tests', function() {
               .withPrompts({name: 'my-element'})  // Mock the prompt answers
               .toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
-
       await runCommand(binPath, ['lint'], {cwd: dir});
-
       // TODO(#113): Remove the `--module-resolution=node` argument once
       // `polymer test` passes them in correctly
       await runCommand(binPath, ['test', '--module-resolution=node'], {cwd: dir});
@@ -53,16 +51,11 @@ suite('integration tests', function() {
           await runGenerator(createApplicationGenerator('polymer-3.x'))
               .withPrompts({name: 'my-app'})  // Mock the prompt answers
               .toPromise();
-      // TODO(#118): Use `polymer install` once it supports installing npm
-      // packages.
-      await exec('npm install', {cwd: dir});
-
+      await runCommand(binPath, ['install'], {cwd: dir});
       await runCommand(binPath, ['lint'], {cwd: dir});
-
       // TODO(#113): Remove the `--module-resolution=node` argument once
       // `polymer test` passes them in correctly
       await runCommand(binPath, ['test', '--module-resolution=node'], {cwd: dir});
-
       await runCommand(binPath, ['build'], {cwd: dir});
     });
 
