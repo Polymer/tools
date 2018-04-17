@@ -98,7 +98,7 @@ export function scriptWasSplitByHtmlSplitter(script: dom5.Node): boolean {
 export type HtmlSplitterFile = File&{
   fromHtmlSplitter?: true;
   moduleScriptIdx?: number
-}
+};
 
 /**
  * Return whether the given Vinyl file was created by the HtmlSplitter from an
