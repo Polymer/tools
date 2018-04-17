@@ -66,7 +66,8 @@ export interface ForkOptions { urlLoader?: UrlLoader; }
 
 export class NoKnownParserError extends Error {};
 
-export type ScannerTable = Map<string, Scanner<ParsedDocument, {}, {}>[]>;
+export type ScannerTable =
+    Map<string, Scanner<ParsedDocument, {}|null|undefined, {}>[]>;
 export type LazyEdgeMap = Map<ResolvedUrl, PackageRelativeUrl[]>;
 
 /**
