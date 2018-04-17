@@ -23,7 +23,7 @@ import Generator = require('yeoman-generator');
  */
 export function createApplicationGenerator(templateName: string):
     (typeof Generator) {
-  return class ApplicationGenerator extends Generator {
+  class ApplicationGenerator extends Generator {
     props: any;
 
     constructor(args: string|string[], options: any) {
@@ -116,4 +116,65 @@ export function createApplicationGenerator(templateName: string):
           'Check out your new project README for information about what to do next.\n');
     }
   };
+
+  class Polymer3ApplicationGenerator extends ApplicationGenerator {
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
+    initializing() {
+      return super.initializing();
+    }
+
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
+    async prompting() {
+      return super.prompting();
+    }
+
+    writing() {
+      const elementName = this.props.elementName;
+
+      this.fs.copyTpl(
+          `${this.templatePath()}/**/?(.)!(_)*`,
+          this.destinationPath(),
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('src/_element/_element.js'),
+          `src/${elementName}/${elementName}.js`,
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('test/_element/_element_test.html'),
+          `test/${elementName}/${elementName}_test.html`,
+          this.props);
+
+      this.fs.copyTpl(
+          this.templatePath('.gitignore'), '.gitignore', this.props);
+    }
+
+    install() {
+      this.log(chalk.bold('\nProject generated!'));
+      this.log('Installing dependencies...');
+      this.installDependencies({
+        bower: false,
+        npm: true,
+      });
+    }
+
+    // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only
+    // checks the object's prototype's own properties for generator task
+    // methods. http://yeoman.io/authoring/running-context.html
+    end() {
+      return super.end();
+    }
+  }
+
+  switch (templateName) {
+    case 'polymer-3.x':
+      return Polymer3ApplicationGenerator;
+    default:
+      return ApplicationGenerator;
+  }
 }

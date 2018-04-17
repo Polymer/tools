@@ -1,0 +1,12 @@
+{
+  "name": "<%= name %>",
+<% if (description) { -%>  "description": "<%= description %>",
+<% } -%>
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0-pre.12"
+  },
+  "devDependencies": {
+    "@webcomponents/webcomponentsjs": "^1.0.0",
+    "wct-browser-legacy": "^0.0.1-pre.11"
+  }
+}

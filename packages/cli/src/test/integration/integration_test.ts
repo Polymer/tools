@@ -40,12 +40,23 @@ suite('integration tests', function() {
               .withPrompts({name: 'my-element'})  // Mock the prompt answers
               .toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
-
       await runCommand(binPath, ['lint'], {cwd: dir});
-
       // TODO(#113): Remove the `--module-resolution=node` argument once
       // `polymer test` passes them in correctly
       await runCommand(binPath, ['test', '--module-resolution=node'], {cwd: dir});
+    });
+
+    skipOnWindows('test the Polymer 3.x application template', async () => {
+      const dir =
+          await runGenerator(createApplicationGenerator('polymer-3.x'))
+              .withPrompts({name: 'my-app'})  // Mock the prompt answers
+              .toPromise();
+      await runCommand(binPath, ['install'], {cwd: dir});
+      await runCommand(binPath, ['lint'], {cwd: dir});
+      // TODO(#113): Remove the `--module-resolution=node` argument once
+      // `polymer test` passes them in correctly
+      await runCommand(binPath, ['test', '--module-resolution=node'], {cwd: dir});
+      await runCommand(binPath, ['build'], {cwd: dir});
     });
 
     skipOnWindows('test the Polymer 1.x application template', async () => {
