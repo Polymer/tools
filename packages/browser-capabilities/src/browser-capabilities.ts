@@ -103,7 +103,7 @@ export function browserCapabilities(userAgent: string): Set<BrowserCapability> {
     if (predicates[capability](ua)) {
       capabilities.add(capability);
     }
-  };
+  }
   return capabilities;
 }
 
