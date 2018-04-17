@@ -53,7 +53,7 @@ export async function runCommand(
   if (options.failureExpected) {
     // Throw the output string as our error if failure is expected.
     throw out;
-  };
+  }
 
   console.log(
       `Output of failed command 'node ${path} ${args.join(' ')}' ` +
