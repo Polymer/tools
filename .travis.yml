@@ -14,7 +14,7 @@ env:
   - secure: grvHX6c0ReQwRsuQZferI+uyGsKlubujURKuJB8coNdA9lgZcvf+nmCkNBpSML83hSjQkJUTt8XnucNNgL/1VxUhgy0O/wkTUEmcDAU1b80As8NJkbreJcc3HFASA68wou4HoJsFmJV2cpBYoAJJSX+HyT6mYd6pBh09tPfOeBg=
   matrix:
   - TEST_COMMAND="run test:unit"
-  - TEST_COMMAND="run test:integration" MOCHA_TIMEOUT=300000
+  - TEST_COMMAND="run test:integration" MOCHA_TIMEOUT=300000 SKIP_REMOTE_BROWSERS=true
 language: node_js
 node_js:
 - '6'
