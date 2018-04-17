@@ -11,13 +11,13 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {Analyzer, Document, FsUrlLoader, InMemoryOverlayUrlLoader, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
+import {Analyzer, Document, FsUrlLoader, InMemoryOverlayUrlLoader, ResolvedUrl} from 'polymer-analyzer';
 
 import {getAnalysisDocument} from './analyzer-utils';
 import * as bundleManifestLib from './bundle-manifest';
 import {Bundle, BundleManifest, BundleStrategy, BundleUrlMapper} from './bundle-manifest';
 import * as depsIndexLib from './deps-index';
-import {BundledDocument, DocumentCollection} from './document-collection';
+import {DocumentCollection} from './document-collection';
 import {bundle as bundleEs6Module} from './es6-module-bundler';
 import {reserveBundleModuleExportNames} from './es6-module-utils';
 import {bundle as bundleHtmlFragment} from './html-bundler';
@@ -121,7 +121,7 @@ export class Bundler {
       // in-memory overlay will not be purged of the contents.  This toggle lets
       // us use the Analyzer to process documents in intermediate stages without
       // committing to them.
-      permanent?: boolean): Promise<Document<ParsedHtmlDocument>> {
+      permanent?: boolean): Promise<Document> {
     this._overlayUrlLoader.urlContentsMap.set(url, contents);
     await this.analyzer.filesChanged([url]);
     const analysis = await this.analyzer.analyze([url]);
@@ -145,8 +145,7 @@ export class Bundler {
    * @param manifest - The manifest that describes the bundles to be produced.
    */
   async bundle(manifest: BundleManifest): Promise<BundleResult> {
-    const documents: DocumentCollection =
-        new Map<ResolvedUrl, BundledDocument>();
+    const documents = new DocumentCollection();
     manifest = manifest.fork();
 
     // Ensure exports of modules sharing the URL of their bundle have priority

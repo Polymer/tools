@@ -22,7 +22,6 @@ import {Analyzer, FsUrlLoader, FsUrlResolver} from 'polymer-analyzer';
 
 import {Bundle, generateShellMergeStrategy} from '../bundle-manifest';
 import {Bundler, Options as BundlerOptions} from '../bundler';
-import {BundledDocument} from '../document-collection';
 import * as matchers from '../matchers';
 import {resolvePath} from '../url-utils';
 
@@ -76,22 +75,21 @@ suite('Bundler', () => {
 
   const inputPath = 'default.html';
 
-  async function bundle(inputPath: string, opts?: BundlerOptions):
-      Promise<BundledDocument> {
-        // Don't modify options directly because test-isolation problems occur.
-        bundler = getBundler(opts);
-        const resolvedInputPath = resolve(inputPath)!;
-        const manifest = await bundler.generateManifest([resolvedInputPath]);
-        const bundleResult = await bundler.bundle(manifest);
-        const bundleForFile =
-            bundleResult.manifest.getBundleForFile(resolvedInputPath);
-        if (!bundleForFile) {
-          throw new Error(`Unable to find bundle for ${resolvedInputPath}`);
-        }
-        documentBundle = bundleForFile.bundle;
-        const {documents} = bundleResult;
-        return documents.get(resolvedInputPath)!;
-      }
+  async function bundle(inputPath: string, opts?: BundlerOptions) {
+    // Don't modify options directly because test-isolation problems occur.
+    bundler = getBundler(opts);
+    const resolvedInputPath = resolve(inputPath)!;
+    const manifest = await bundler.generateManifest([resolvedInputPath]);
+    const bundleResult = await bundler.bundle(manifest);
+    const bundleForFile =
+        bundleResult.manifest.getBundleForFile(resolvedInputPath);
+    if (!bundleForFile) {
+      throw new Error(`Unable to find bundle for ${resolvedInputPath}`);
+    }
+    documentBundle = bundleForFile.bundle;
+    const {documents} = bundleResult;
+    return documents.getHtmlDoc(resolvedInputPath)!;
+  }
 
   suite('Default Options', () => {
     test('URLs for inlined HTML imports are recorded in Bundle', async () => {
@@ -143,7 +141,7 @@ suite('Bundler', () => {
       const manifest =
           await bundler.generateManifest([resolve('default.html')]);
       const {documents} = await bundler.bundle(manifest);
-      const document = documents.get(resolve('default.html'))!;
+      const document = documents.getHtmlDoc(resolve('default.html'))!;
       assert(document);
 
       // Look for the script referenced in the external-script.html source.
@@ -185,7 +183,7 @@ suite('Bundler', () => {
           const manifest =
               await bundler.generateManifest([resolve('default.html')]);
           const {documents} = await bundler.bundle(manifest);
-          const document = documents.get(resolve('default.html'))!;
+          const document = documents.getHtmlDoc(resolve('default.html'))!;
           assert(document);
 
           // We've moved the 'imports/simple-import.html' into a shared bundle
@@ -199,7 +197,7 @@ suite('Bundler', () => {
           assert.equal(
               dom5.getAttribute(linkTag, 'href'), 'shared_bundle_1.html');
 
-          const shared = documents.get(resolve('shared_bundle_1.html'))!;
+          const shared = documents.getHtmlDoc(resolve('shared_bundle_1.html'))!;
           assert(shared);
           assert.isOk(dom5.query(
               shared.ast, dom5.predicates.hasAttrValue('id', 'my-element')));
@@ -250,7 +248,7 @@ suite('Bundler', () => {
     // document.  The first is eager and should be moved.  The remaining
     // one is lazy and should not be moved.
     const entrypointBundle =
-        documents.get(resolve('imports/lazy-imports.html'))!.ast;
+        documents.getHtmlDoc(resolve('imports/lazy-imports.html'))!.ast;
     const entrypointLazyImports = dom5.queryAll(
         entrypointBundle,
         preds.AND(preds.parentMatches(matchers.head), matchers.htmlImport));
@@ -260,7 +258,8 @@ suite('Bundler', () => {
     // The shared bundle has an inlined dom-module with an embedded
     // lazy-import via `shared-eager-import-2.html` that we are verifying
     // is preserved.
-    const sharedBundle = documents.get(resolve('shared_bundle_1.html'))!.ast;
+    const sharedBundle =
+        documents.getHtmlDoc(resolve('shared_bundle_1.html'))!.ast;
     const sharedLazyImports = dom5.queryAll(
         sharedBundle,
         preds.AND(
@@ -923,7 +922,8 @@ suite('Bundler', () => {
       assert.equal(result.manifest.bundles.size, 4);
       const shell = parse5.serialize(
           result.documents
-              .get(resolve('imports/importing-fragments/shell.html'))!.ast);
+              .getHtmlDoc(
+                  resolve('imports/importing-fragments/shell.html'))!.ast);
       const fragmentAAt = shell.indexOf('rel="import" href="fragment-a.html"');
       const shellAt = shell.indexOf(`console.log('shell.html')`);
       const sharedUtilAt = shell.indexOf(`console.log('shared-util.html')`);

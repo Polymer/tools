@@ -17,11 +17,11 @@ import * as dom5 from 'dom5';
 import {ASTNode, parseFragment, serialize, treeAdapters} from 'parse5';
 import {Document, FileRelativeUrl, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
 
-import {getAnalysisDocument} from './analyzer-utils';
+import {assertIsHtmlDocument, getAnalysisDocument} from './analyzer-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
 import constants from './constants';
-import {BundledDocument} from './document-collection';
+import {BundledHtmlDocument} from './document-collection';
 import {Es6Rewriter} from './es6-rewriter';
 import * as matchers from './matchers';
 import {findAncestor, insertAfter, insertAllBefore, inSourceOrder, isSameNode, prepend, removeElementAndNewline, siblingsAfter, stripComments} from './parse5-utils';
@@ -36,7 +36,7 @@ import {find, rewriteObject} from './utils';
  */
 export async function bundle(
     bundler: Bundler, manifest: BundleManifest, url: ResolvedUrl):
-    Promise<BundledDocument> {
+    Promise<BundledHtmlDocument> {
   const bundle = manifest.bundles.get(url);
   if (!bundle) {
     throw new Error(`No bundle found in manifest for url ${url}.`);
@@ -61,7 +61,7 @@ export class HtmlBundler {
       public manifest: BundleManifest) {
   }
 
-  async bundle(): Promise<BundledDocument> {
+  async bundle(): Promise<BundledHtmlDocument> {
     this.document = await this._prepareBundleDocument();
     let ast = clone(this.document.parsedDocument.ast);
     dom5.removeFakeRootElements(ast);
@@ -93,7 +93,7 @@ export class HtmlBundler {
     }
     const content = serialize(ast);
     const files = [...this.assignedBundle.bundle.files];
-    return {ast, content, files};
+    return {language: 'html', ast, content, files};
   }
 
   /**
@@ -735,7 +735,8 @@ export class HtmlBundler {
     }
     const analysis =
         await this.bundler.analyzer.analyze([this.assignedBundle.url]);
-    const document = getAnalysisDocument(analysis, this.assignedBundle.url);
+    const document = assertIsHtmlDocument(
+        getAnalysisDocument(analysis, this.assignedBundle.url));
     const ast = clone(document.parsedDocument.ast);
     this._moveOrderedImperativesFromHeadIntoHiddenDiv(ast);
     this._moveUnhiddenHtmlImportsIntoHiddenDiv(ast);
@@ -749,7 +750,8 @@ export class HtmlBundler {
    */
   private async _reanalyze(code: string):
       Promise<Document<ParsedHtmlDocument>> {
-    return this.bundler.analyzeContents(this.assignedBundle.url, code);
+    return assertIsHtmlDocument(
+        await this.bundler.analyzeContents(this.assignedBundle.url, code));
   }
 
   /**

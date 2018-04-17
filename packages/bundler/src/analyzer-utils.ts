@@ -13,11 +13,10 @@
  */
 import {Analysis, Document, ParsedHtmlDocument, ParsedJavaScriptDocument} from 'polymer-analyzer';
 
-export function getAnalysisDocument(
-    analysis: Analysis, url: string): Document<ParsedHtmlDocument> {
+export function getAnalysisDocument(analysis: Analysis, url: string): Document {
   const result = analysis.getDocument(url);
   if (result.successful) {
-    return assertIsHtmlDocument(result.value);
+    return result.value;
   }
   if (result.error) {
     const message = `Unable to get document ${url}: ${result.error.message}`;
