@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## 4.0.0-pre.5 - 2018-04-16
+- Update for breaking Analyzer change.
+
 ## 4.0.0-pre.4 - 2018-04-02
 - Fix issue where external script tags referencing bundled ES modules were not updated.
 

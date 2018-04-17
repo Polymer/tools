@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 
+## [3.0.0-pre.7] - 2018-04-16
+- Update for breaking Analyzer change.
+
 ## [3.0.0-pre.6] - 2018-04-11
 - Bump dependencies.
 
