@@ -19,7 +19,7 @@ import * as semver from 'semver';
 
 import request = require('request');
 import rimraf = require('rimraf');
-import GitHubApi = require('github');
+import Octokit = require('@octokit/rest');
 
 const gunzip = require('gunzip-maybe');
 const tar = require('tar-fs');
@@ -52,14 +52,14 @@ export interface GithubOpts {
   owner: string;
   repo: string;
   githubToken?: string;
-  githubApi?: GitHubApi;
+  githubApi?: Octokit;
   requestApi?: request
       .RequestAPI<request.Request, request.CoreOptions, request.RequiredUriUrl>;
 }
 
 export class Github {
   private _token: string|null;
-  private _github: GitHubApi;
+  private _github: Octokit;
   private _request: request
       .RequestAPI<request.Request, request.CoreOptions, request.RequiredUriUrl>;
   private _owner: string;
@@ -77,9 +77,7 @@ export class Github {
     this._token = opts.githubToken || Github.tokenFromFile('token');
     this._owner = opts.owner;
     this._repo = opts.repo;
-    this._github = opts.githubApi || new GitHubApi({
-                     protocol: 'https',
-                   });
+    this._github = opts.githubApi || new Octokit();
     if (this._token != null) {
       this._github.authenticate({
         type: 'oauth',
@@ -156,21 +154,22 @@ export class Github {
    * Get all Github releases and match their tag names against the given semver
    * range. Return the release with the latest possible match.
    */
-  async getSemverRelease(semverRange: string): Promise<GitHubApi.Release> {
+  async getSemverRelease(semverRange: string): Promise<any> {
     // Note that we only see the 100 most recent releases. If we ever release
     // enough versions that this becomes a concern, we'll need to improve this
     // call to request multiple pages of results.
-    const releases: GitHubApi.Release[] = await this._github.repos.getReleases({
+    const response: Octokit.AnyResponse = await this._github.repos.getReleases({
       owner: this._owner,
       repo: this._repo,
       per_page: 100,
     });
+    const releases = response.data;
     const validReleaseVersions =
-        releases.filter((r) => semver.valid(r.tag_name)).map((r) => r.tag_name);
+        releases.filter((r: any) => semver.valid(r.tag_name)).map((r: any) => r.tag_name);
     const maxSatisfyingReleaseVersion =
         semver.maxSatisfying(validReleaseVersions, semverRange);
     const maxSatisfyingRelease =
-        releases.find((r) => r.tag_name === maxSatisfyingReleaseVersion);
+        releases.find((r: any) => r.tag_name === maxSatisfyingReleaseVersion);
     if (!maxSatisfyingRelease) {
       throw new Error(`${this._owner}/${this._repo} has no releases matching ${
           semverRange}.`);
