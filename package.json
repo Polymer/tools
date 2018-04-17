@@ -11,12 +11,12 @@
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "build": "lerna run build",
-    "test": "lerna run build && lerna run test:unit",
-    "test:integration": "lerna run test:integration",
-    "test:integration:windows": "lerna run test:integration",
-    "test:unit": "lerna run test:unit",
-    "test:unit:windows": "lerna run test:unit --ignore polyserve"
+    "build": "lerna run build --stream",
+    "test": "npm run build && npm run test:unit",
+    "test:integration": "lerna run test:integration --stream",
+    "test:integration:windows": "lerna run test:integration --stream",
+    "test:unit": "lerna run test:unit --stream",
+    "test:unit:windows": "lerna run test:unit --stream --ignore polyserve"
   },
   "devDependencies": {
     "lerna": "^2.10.1"
