@@ -16,6 +16,7 @@
     "test:smoke": "gulp test",
     "test:smoke-lint": "gulp test lint",
     "test:integration": "gulp test:integration",
+    "test:unit": "gulp test:unit",
     "format": "find src gulpfile.js \\( -iname '*.ts' -o -iname '*.js' \\) -not -path '*fixtures*' | xargs clang-format --style=file -i",
     "test:watch": "tsc-then -- mocha -c --ui tdd lib/test/integration/*_test.js lib/test/unit/*_test.js lib/test/unit/*/*_test.js"
   },
