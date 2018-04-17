@@ -43,22 +43,22 @@ gulp.task('compile', () => {
 
 gulp.task('copy', () => gulp.src(['src/**/.gitignore']).pipe(gulp.dest('lib')));
 
-gulp.task(
-    'test',
-    ['build'],
-    () => gulp.src('lib/test/unit/**/*_test.js', {read: false}).pipe(mocha({
-      ui: 'tdd',
-      reporter: 'spec',
-    })));
+gulp.task('test', ['build', 'test:unit']);
 
 gulp.task(
     'test:integration',
-    ['build'],
     () => gulp.src(['lib/test/integration/**/*_test.js'], {read: false})
               .pipe(mocha({
                 ui: 'tdd',
                 reporter: 'spec',
               })));
+
+gulp.task(
+    'test:unit', 
+    () => gulp.src('lib/test/unit/**/*_test.js', {read: false}).pipe(mocha({
+      ui: 'tdd',
+      reporter: 'spec',
+    })));
 
 gulp.task(
     'tslint',
