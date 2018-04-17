@@ -43,7 +43,7 @@ gulp.task('compile', () => {
 
 gulp.task('copy', () => gulp.src(['src/**/.gitignore']).pipe(gulp.dest('lib')));
 
-gulp.task('test', ['build', 'test:unit']);
+gulp.task('test', (done) => runSeq('build', 'test:unit', done));
 
 gulp.task(
     'test:integration',
