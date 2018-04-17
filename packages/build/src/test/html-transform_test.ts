@@ -32,8 +32,10 @@ function replaceGiantScripts(html: string): string {
     const js = dom5.getTextContent(script);
     if (js.includes('var requirejs,require')) {
       dom5.setTextContent(script, '// amd loader');
-    } else if (js.includes('babelHelpers={}')) {
-      dom5.setTextContent(script, '// babel helpers');
+    } else if (js.includes('wrapNativeSuper=')) {
+      dom5.setTextContent(script, '// babel helpers full');
+    } else if (js.includes('interopRequireDefault=')) {
+      dom5.setTextContent(script, '// babel helpers amd');
     } else if (js.includes('window._wctCallback =')) {
       dom5.setTextContent(script, '// wct hack 1/2');
     } else if (js.includes('window._wctCallback()')) {
@@ -96,7 +98,7 @@ suite('htmlTransform', () => {
         htmlTransform(input, {js: {minify: true}}), expected);
   });
 
-  test('injects babel helpers', () => {
+  test('injects full babel helpers', () => {
     const input = `
       <html><head></head><body>
         <script>const foo = 3;</script>
@@ -104,11 +106,27 @@ suite('htmlTransform', () => {
 
     const expected = `
       <html><head></head><body>
-        <script>// babel helpers</script>
+        <script>// babel helpers full</script>
         <script>const foo = 3;</script>
       </body></html>`;
 
-    const result = htmlTransform(input, {injectBabelHelpers: true});
+    const result = htmlTransform(input, {injectBabelHelpers: 'full'});
+    assertEqualIgnoringWhitespace(replaceGiantScripts(result), expected);
+  });
+
+  test('injects AMD babel helpers', () => {
+    const input = `
+      <html><head></head><body>
+        <script>const foo = 3;</script>
+      </body></html>`;
+
+    const expected = `
+      <html><head></head><body>
+        <script>// babel helpers amd</script>
+        <script>const foo = 3;</script>
+      </body></html>`;
+
+    const result = htmlTransform(input, {injectBabelHelpers: 'amd'});
     assertEqualIgnoringWhitespace(replaceGiantScripts(result), expected);
   });
 

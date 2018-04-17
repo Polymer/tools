@@ -164,6 +164,15 @@ export class HtmlTransform extends GenericOptimizeTransform {
       const isEntryPoint =
           !!options.entrypointPath && file.path === options.entrypointPath;
 
+      let injectBabelHelpers: 'none'|'full'|'amd' = 'none';
+      if (isEntryPoint) {
+        if (anyJsCompiledToEs5) {
+          injectBabelHelpers = 'full';
+        } else if (transformModulesToAmd) {
+          injectBabelHelpers = 'amd';
+        }
+      }
+
       return htmlTransform(content, {
         js: {
           transformModulesToAmd,
@@ -174,7 +183,7 @@ export class HtmlTransform extends GenericOptimizeTransform {
           // scripts will be compiled in their own stream.
         },
         minifyHtml: shouldMinifyFile(file),
-        injectBabelHelpers: isEntryPoint && anyJsCompiledToEs5,
+        injectBabelHelpers,
         injectAmdLoader: isEntryPoint && transformModulesToAmd,
       });
     };
