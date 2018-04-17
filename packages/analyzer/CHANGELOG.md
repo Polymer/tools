@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## [3.0.0-pre.23] - 2018-04-16
+## [3.0.0-pre.23] - 2018-04-17
 * [BREAKING] `Feature.astNode` is now an `AstNodeWithLanguage` rather than
   being an unwrapped ast node (usually typed as `any`). This makes it easier
   and safer to handle features which could be declared in HTML or JS. Most

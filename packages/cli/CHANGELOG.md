@@ -3,7 +3,7 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
-## v1.7.0-pre.11 [04-16-2018]
+## v1.7.0-pre.11 [04-17-2018]
 * `build`
   * The Babel helpers script now includes all Babel helpers that could be used by the ES5 compilation and AMD transforms.
   * Inline JavaScript will now only be transformed to AMD modules if they have type=module.

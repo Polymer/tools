@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## [3.0.0-pre.12] - 2018-04-16
+## [3.0.0-pre.12] - 2018-04-17
 * The Babel helpers script now includes all Babel helpers that could be used by the ES5 compilation and AMD transforms.
 * The `jsTransform` function's `injectBabelHelpers` option now has 3 possible values: `none` (default), `full`, and `amd`.
 * Inline JavaScript will now only be transformed to AMD modules if they have type=module.

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## 4.0.0-pre.5 - 2018-04-16
+## 4.0.0-pre.5 - 2018-04-17
 - Update for breaking Analyzer change.
 
 ## 4.0.0-pre.4 - 2018-04-02
