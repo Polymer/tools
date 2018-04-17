@@ -11,11 +11,12 @@
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "build": "lerna run build",
-    "test": "lerna run test",
-    "test:windows": "lerna run test --ignore polyserve --ignore web-component-tester",
-    "test:integration": "lerna run test:integration",
-    "test:integration:windows": "lerna run test:integration --ignore polymer-linter --ignore web-component-tester"
+    "build": "lerna run build --stream",
+    "test": "npm run build && npm run test:unit",
+    "test:integration": "lerna run test:integration --stream",
+    "test:integration:windows": "lerna run test:integration --stream --ignore polymer-linter --ignore web-component-tester",
+    "test:unit": "lerna run test:unit --stream",
+    "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester"
   },
   "devDependencies": {
     "lerna": "^2.10.1"

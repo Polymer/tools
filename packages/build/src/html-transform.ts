@@ -50,11 +50,15 @@ export interface HtmlTransformOptions {
   minifyHtml?: boolean;
 
   /**
-   * Whether to inject Babel helpers as an inline script. This is typically
-   * needed if ES5 compilation is enabled and this is the entry point HTML
-   * document.
+   * Whether and which Babel helpers to inject as an inline script. This is
+   * typically needed when this is the entry point HTML document and ES5
+   * compilation or AMD transform is enabled.
+   *
+   * If "none" (the default), no helpers are injected. If "full", includes the
+   * helpers needed for both ES5 compilation and the AMD transform. If "amd",
+   * includes only the helpers needed for the AMD transform.
    */
-  injectBabelHelpers?: boolean;
+  injectBabelHelpers?: 'none'|'full'|'amd';
 
   /**
    * Whether to inject an AMD loader as an inline script. This might be
@@ -151,9 +155,25 @@ export function htmlTransform(
     }
   }
 
-  if (options.injectBabelHelpers) {
+  let babelHelpers;
+  switch (options.injectBabelHelpers) {
+    case undefined:
+    case 'none':
+      break;
+    case 'full':
+      babelHelpers = getMinfiedBabelHelpersFull();
+      break;
+    case 'amd':
+      babelHelpers = getMinifiedBabelHelpersAmd();
+      break;
+    default:
+      const never: never = options.injectBabelHelpers;
+      throw new Error(`Unknown injectBabelHelpers value: ${never}`);
+  }
+
+  if (babelHelpers !== undefined) {
     const fragment = parse5.parseFragment('<script></script>\n');
-    dom5.setTextContent(fragment.childNodes![0], getMinifiedBabelHelpers());
+    dom5.setTextContent(fragment.childNodes![0], babelHelpers);
 
     const firstJsScriptOrHtmlImport =
         dom5.query(document, isJsScriptOrHtmlImport);
@@ -285,13 +305,22 @@ function addWctTimingHack(wctScript: dom5.Node, requireJsScript: dom5.Node) {
 `));
 }
 
-let minifiedBabelHelpers: string;
-function getMinifiedBabelHelpers() {
-  if (minifiedBabelHelpers === undefined) {
-    minifiedBabelHelpers = fs.readFileSync(
-        pathlib.join(__dirname, 'babel-helpers.min.js'), 'utf-8');
+let minifiedBabelHelpersFull: string;
+function getMinfiedBabelHelpersFull() {
+  if (minifiedBabelHelpersFull === undefined) {
+    minifiedBabelHelpersFull = fs.readFileSync(
+        pathlib.join(__dirname, 'babel-helpers-full.min.js'), 'utf-8');
   }
-  return minifiedBabelHelpers;
+  return minifiedBabelHelpersFull;
+}
+
+let minifiedBabelHelpersAmd: string;
+function getMinifiedBabelHelpersAmd() {
+  if (minifiedBabelHelpersAmd === undefined) {
+    minifiedBabelHelpersAmd = fs.readFileSync(
+        pathlib.join(__dirname, 'babel-helpers-amd.min.js'), 'utf-8');
+  }
+  return minifiedBabelHelpersAmd;
 }
 
 let minifiedRequireJs: string;

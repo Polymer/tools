@@ -13,7 +13,7 @@ install:
 test_script:
   - node --version
   - npm --version
-  - npm run test:windows
+  - npm run test:unit:windows
   - npm run test:integration:windows
 
 # Don't actually build.

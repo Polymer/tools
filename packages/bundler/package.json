@@ -54,8 +54,9 @@
   },
   "scripts": {
     "build": "tsc",
+    "format": "find src | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i",
     "test": "npm run build && tslint -c tslint.json src/*.ts src/**/*.ts && mocha",
-    "format": "find src | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
+    "test:unit": "mocha"
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",

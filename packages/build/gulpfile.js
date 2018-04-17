@@ -40,7 +40,12 @@ gulp.task('clean', (done) => {
 });
 
 gulp.task('build', (done) => {
-  runSeq('clean', ['compile', 'gen-babel-helpers', 'minify-requirejs'], done);
+  runSeq('clean', [
+    'compile',
+    'gen-babel-helpers-full',
+    'gen-babel-helpers-amd',
+    'gen-requirejs',
+  ], done);
 });
 
 gulp.task('compile', () => {
@@ -52,7 +57,9 @@ gulp.task('compile', () => {
       .pipe(gulp.dest('lib'));
 });
 
-gulp.task('test', ['build'], function() {
+gulp.task('test', ['build', 'test:unit']);
+
+gulp.task('test:unit', function() {
   return gulp.src('lib/test/**/*_test.js', {read: false}).pipe(mocha({
     ui: 'tdd',
     reporter: 'spec',
@@ -109,7 +116,7 @@ gulp.task('depcheck', function() {
  * All helpers are listed here, with some commented out, so it's clear what
  * we've excluded.
  */
-const babelHelperWhitelist = [
+const mainHelpers = [
 
   // __proto__ assignment
   'defaults',
@@ -204,27 +211,34 @@ const babelHelperWhitelist = [
  * the require.js AMD module loader instead so that the AMD transform does not
  * depend on loading all Babel helpers.
  */
-const moduleHelpers = [
+const amdHelpers = [
   'interopRequireDefault',
   'interopRequireWildcard',
 ];
 
-gulp.task('gen-babel-helpers', () => {
-  const helpersCode = babelCore.buildExternalHelpers(babelHelperWhitelist);
-  const minified =
-      babelCore.transform(helpersCode, {presets: [babelPresetMinify]}).code;
-  fs.mkdirpSync('./lib/');
-  fs.writeFileSync('./lib/babel-helpers.min.js', minified, {encoding: 'utf-8'});
+gulp.task('gen-babel-helpers-full', () => {
+  minifyAndWriteJs(
+      babelCore.buildExternalHelpers([...mainHelpers, ...amdHelpers]),
+     'babel-helpers-full.min.js');
 });
 
-gulp.task('minify-requirejs', () => {
+gulp.task('gen-babel-helpers-amd', () => {
+  minifyAndWriteJs(
+      babelCore.buildExternalHelpers(amdHelpers),
+     'babel-helpers-amd.min.js');
+});
+
+gulp.task('gen-requirejs', () => {
   const requireJsPath =
       path.join(path.dirname(require.resolve('requirejs')), '..', 'require.js');
   const requireJsCode = fs.readFileSync(requireJsPath, 'utf-8');
-  const moduleBabelHelpers = babelCore.buildExternalHelpers(moduleHelpers);
-  const combined = requireJsCode + moduleBabelHelpers;
-  const minified =
-      babelCore.transform(combined, {presets: [babelPresetMinify]}).code;
-  fs.mkdirpSync('./lib/');
-  fs.writeFileSync('./lib/requirejs.min.js', minified, {encoding: 'utf-8'});
+  minifyAndWriteJs(requireJsCode, 'requirejs.min.js');
 });
+
+function minifyAndWriteJs(js, filename) {
+  const minified =
+      babelCore.transform(js, {presets: [babelPresetMinify]}).code;
+  const libDir = path.join(__dirname, 'lib');
+  fs.mkdirpSync(libDir);
+  fs.writeFileSync(path.join(libDir, filename), minified, {encoding: 'utf-8'});
+}

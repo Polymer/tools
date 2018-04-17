@@ -13,6 +13,7 @@
  */
 
 import * as babelCore from '@babel/core';
+import * as babylon from 'babylon';
 import {relative} from 'path';
 import {ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
@@ -113,11 +114,14 @@ export interface JsTransformOptions {
   rootDir?: string;
 
   // Whether to rewrite `import.meta` expressions to objects with inline URLs.
+  // This transform will always run if the AMD transform runs, regardless of
+  // this option.
   transformImportMeta?: boolean;
 
-  // Whether to replace ES modules with AMD modules. Implies
-  // `transformImportMeta`.
-  transformModulesToAmd?: boolean;
+  // Whether to replace ES modules with AMD modules. If `auto`, run the
+  // transform if the script contains any ES module import/export syntax.
+  // Implies `transformImportMeta`.
+  transformModulesToAmd?: boolean|'auto';
 
   // If transformModulesToAmd is true, setting this option will update the
   // generated AMD module to be 1) defined with an auto-generated name (instead
@@ -139,7 +143,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   // Even with no transform plugins, parsing and serializing with Babel will
   // make some minor formatting changes to the code. Skip Babel altogether
   // if we have no meaningful changes to make.
-  let doBabel = false;
+  let doBabelTransform = false;
 
   // Note that Babel plugins run in this order:
   // 1) plugins, first to last
@@ -151,12 +155,12 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     plugins.push(babelExternalHelpersPlugin);
   }
   if (options.minify) {
-    doBabel = true;
+    doBabelTransform = true;
     // Minify last, so push first.
     presets.push(babelPresetMinify);
   }
   if (options.compileToEs5) {
-    doBabel = true;
+    doBabelTransform = true;
     presets.push(babelPresetEs2015NoModules);
     plugins.push(...babelTransformPlugins);
   }
@@ -165,7 +169,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
       throw new Error(
           'Cannot perform node module resolution without filePath.');
     }
-    doBabel = true;
+    doBabelTransform = true;
     plugins.push(resolveBareSpecifiers(
         options.filePath,
         !!options.isComponentRequest,
@@ -173,35 +177,32 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
         options.componentDir,
         options.rootDir));
   }
-  if (options.transformImportMeta === true ||
-      (options.transformImportMeta === undefined &&
-       options.transformModulesToAmd === true)) {
-    if (!options.filePath) {
-      throw new Error('Cannot perform importMeta transform without filePath.');
-    }
-    if (!options.rootDir) {
-      throw new Error('Cannot perform importMeta transform without rootDir.');
-    }
-    doBabel = true;
-    let relativeURL = relative(options.rootDir, options.filePath);
-    if (isWindows()) {
-      // normalize path separators to URL format
-      relativeURL = relativeURL.replace(/\\/g, '/');
-    }
-    plugins.push(rewriteImportMeta(relativeURL));
-  }
-  if (options.transformModulesToAmd) {
-    if (options.transformImportMeta === false) {
-      throw new Error(
-          'Cannot use transformModulesToAmd without transformImportMeta.');
-    }
-    doBabel = true;
-    plugins.push(...babelTransformModulesAmd);
+
+  // When the AMD option is "auto", these options will change based on whether
+  // we have a module or not (unless they are already definitely true).
+  let transformModulesToAmd = options.transformModulesToAmd;
+  let transformImportMeta = options.transformImportMeta;
+  if (transformModulesToAmd === true || transformImportMeta === true) {
+    doBabelTransform = true;
   }
 
-  if (doBabel) {
+  const maybeDoBabelTransform =
+      doBabelTransform || transformModulesToAmd === 'auto';
+
+  if (maybeDoBabelTransform) {
+    let ast;
     try {
-      js = babelCore.transform(js, {presets, plugins}).code!;
+      ast = babylon.parse(js, {
+        // TODO(aomarks) Remove any when typings are updated for babylon 7.
+        sourceType: transformModulesToAmd === 'auto' ? 'unambiguous' as any :
+                                                       'module',
+        plugins: [
+          'asyncGenerators',
+          'dynamicImport',
+          'importMeta' as any,
+          'objectRestSpread',
+        ],
+      });
     } catch (e) {
       if (options.softSyntaxError && e.constructor.name === 'SyntaxError') {
         console.error(
@@ -213,9 +214,46 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
         throw e;
       }
     }
+
+    if (transformModulesToAmd === 'auto' &&
+        ast.program.sourceType === 'module') {
+      transformModulesToAmd = true;
+    }
+
+    if (transformModulesToAmd) {
+      doBabelTransform = true;
+      transformImportMeta = true;
+      plugins.push(...babelTransformModulesAmd);
+    }
+
+    if (transformImportMeta) {
+      if (!options.filePath) {
+        throw new Error(
+            'Cannot perform importMeta transform without filePath.');
+      }
+      if (!options.rootDir) {
+        throw new Error('Cannot perform importMeta transform without rootDir.');
+      }
+      doBabelTransform = true;
+      let relativeURL = relative(options.rootDir, options.filePath);
+      if (isWindows()) {
+        // normalize path separators to URL format
+        relativeURL = relativeURL.replace(/\\/g, '/');
+      }
+      plugins.push(rewriteImportMeta(relativeURL));
+    }
+
+    if (doBabelTransform) {
+      const result = babelCore.transformFromAst(ast, js, {presets, plugins});
+      if (result.code === undefined) {
+        throw new Error(
+            'Babel transform failed: resulting code was undefined.');
+      }
+      js = result.code;
+    }
   }
 
-  if (options.transformModulesToAmd && options.moduleScriptIdx !== undefined) {
+  if (transformModulesToAmd && options.moduleScriptIdx !== undefined) {
     const generatedModule = generateModuleName(options.moduleScriptIdx);
     const previousGeneratedModule = options.moduleScriptIdx === 0 ?
         undefined :
