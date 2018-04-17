@@ -31,7 +31,7 @@ export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
   private _visit(node: Json, visitors: Visitor[]) {
     for (const visitor of visitors) {
       visitor.visit(node);
-    };
+    }
     if (Array.isArray(node)) {
       for (const value of node) {
         this._visit(value, visitors);

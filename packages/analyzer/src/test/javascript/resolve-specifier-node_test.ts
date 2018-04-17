@@ -45,50 +45,49 @@ const scopedRootComponentInfo = {
   componentDir
 };
 
-suite('resolve', async() => {
-
-  test('non-component root to shallow dep', async() => {
+suite('resolve', async () => {
+  test('non-component root to shallow dep', async () => {
     assert.equal(
         resolve('shallow', rootMain), './node_modules/shallow/shallow.js');
   });
 
-  test('non-component root to scoped dep', async() => {
+  test('non-component root to scoped dep', async () => {
     assert.equal(
         resolve('@scope/scoped', rootMain),
         './node_modules/@scope/scoped/scoped.js');
   });
 
-  test('shallow dep to scoped dep', async() => {
+  test('shallow dep to scoped dep', async () => {
     assert.equal(
         resolve('@scope/scoped', shallowDepMain, shallowRootComponentInfo),
         '../@scope/scoped/scoped.js');
   });
 
-  test('scoped dep to shallow dep', async() => {
+  test('scoped dep to shallow dep', async () => {
     assert.equal(
         resolve('shallow', scopedDepMain, shallowRootComponentInfo),
         '../../shallow/shallow.js');
   });
 
-  test('component-root to shallow dep', async() => {
+  test('component-root to shallow dep', async () => {
     assert.equal(
         resolve('shallow', rootMain, shallowRootComponentInfo),
         '../shallow/shallow.js');
   });
 
-  test('component-root to scoped dep', async() => {
+  test('component-root to scoped dep', async () => {
     assert.equal(
         resolve('@scope/scoped', rootMain, shallowRootComponentInfo),
         '../@scope/scoped/scoped.js');
   });
 
-  test('scoped-component-root to shallow dep', async() => {
+  test('scoped-component-root to shallow dep', async () => {
     assert.equal(
         resolve('shallow', rootMain, scopedRootComponentInfo),
         '../../shallow/shallow.js');
   });
 
-  test('scoped-component-root to scoped dep', async() => {
+  test('scoped-component-root to scoped dep', async () => {
     assert.equal(
         resolve('@scope/scoped', rootMain, scopedRootComponentInfo),
         '../scoped/scoped.js');

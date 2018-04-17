@@ -32,7 +32,7 @@ suite('PolymerElement', async () => {
     const document = result.value;
     const elements = document.getFeatures({kind: 'polymer-element'});
     return elements;
-  };
+  }
 
   function getTestProps(element: PolymerElement): any {
     return {

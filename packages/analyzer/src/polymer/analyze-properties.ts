@@ -171,4 +171,4 @@ export function analyzeProperties(
     analyzedProps.push(prop);
   }
   return analyzedProps;
-};
+}

@@ -43,7 +43,7 @@ export interface HtmlAstNode {
   node: dom5.Node;
   containingDocument: ParsedHtmlDocument;
 }
-;
+
 
 export interface JsAstNode<N extends babel.Node = babel.Node> {
   language: 'js';

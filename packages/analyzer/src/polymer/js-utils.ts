@@ -71,4 +71,4 @@ export function toScannedPolymerProperty(
   };
 
   return result;
-};
+}

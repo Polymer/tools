@@ -28,12 +28,12 @@ suite('Polymer2MixinScanner with old jsdoc annotations', async () => {
     const {features} = await runScanner(analyzer, new ClassScanner(), filename);
     return <ScannedPolymerElementMixin[]>features.filter(
         (e) => e instanceof ScannedPolymerElementMixin);
-  };
+  }
 
   async function getMixins(filename: string) {
     const analysis = await analyzer.analyze([filename]);
     return Array.from(analysis.getFeatures({kind: 'polymer-element-mixin'}));
-  };
+  }
 
   async function getTestProps(mixin: ScannedPolymerElementMixin|
                               PolymerElementMixin) {

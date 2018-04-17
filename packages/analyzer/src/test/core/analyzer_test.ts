@@ -68,7 +68,7 @@ suite('Analyzer', () => {
       throw new Error(`Could not get document for url: ${url}`);
     }
     return result.value;
-  };
+  }
 
   setup(() => {
     const underlyingUrlLoader = new FsUrlLoader(testDir);
@@ -1366,4 +1366,4 @@ var DuplicateNamespace = {};
 
 async function getContext(analyzer: Analyzer) {
   return await analyzer['_analysisComplete'];
-};
+}

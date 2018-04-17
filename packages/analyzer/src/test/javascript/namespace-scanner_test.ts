@@ -34,7 +34,7 @@ suite('NamespaceScanner', async () => {
       }
     }
     return scannedNamespaces;
-  };
+  }
 
   function getProperties(namespace: ScannedNamespace) {
     return [...namespace.properties.values()].map((prop) => {
