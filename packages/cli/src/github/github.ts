@@ -163,7 +163,14 @@ export class Github {
       repo: this._repo,
       per_page: 100,
     });
+
+    const status = response.meta.status;
+    if (status !== '200 OK') {
+      throw new Error(`Failed to retrieve releases from GitHub. (${status})`);
+    }
+
     const releases = response.data;
+
     const validReleaseVersions =
         releases.filter((r: any) => semver.valid(r.tag_name)).map((r: any) => r.tag_name);
     const maxSatisfyingReleaseVersion =
