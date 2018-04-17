@@ -37,7 +37,7 @@ export class BabelHelpersInjector extends AsyncTransformStream<File, File> {
       return file;
     }
     const contents = await getFileContents(file);
-    const transformed = htmlTransform(contents, {injectBabelHelpers: true});
+    const transformed = htmlTransform(contents, {injectBabelHelpers: 'full'});
     const newFile = file.clone();
     newFile.contents = new Buffer(transformed, 'utf-8');
     return newFile;
