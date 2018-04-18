@@ -14,7 +14,7 @@
     "build": "lerna run build --stream",
     "test": "npm run build && npm run test:unit",
     "test:integration": "lerna run test:integration --stream",
-    "test:integration:windows": "lerna run test:integration --stream --ignore polymer-linter --ignore web-component-tester",
+    "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester",
     "test:unit": "lerna run test:unit --stream",
     "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester"
   },
