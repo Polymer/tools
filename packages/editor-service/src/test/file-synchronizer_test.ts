@@ -44,7 +44,7 @@ suite('FileSynchronizer', () => {
         'Filesystem content');
 
     // Open the document
-    let openParams: DidOpenTextDocumentParams = {
+    const openParams: DidOpenTextDocumentParams = {
       textDocument: {
         languageId: 'html',
         text: 'Initial text document content',
@@ -62,7 +62,7 @@ suite('FileSynchronizer', () => {
         'Initial text document content');
 
     // Change the file in memory
-    let changeParams: DidChangeTextDocumentParams = {
+    const changeParams: DidChangeTextDocumentParams = {
       textDocument: {uri: indexUri, version: 1},
       contentChanges: [{
         range: {start: {line: 0, character: 0}, end: {line: 0, character: 100}},
@@ -79,7 +79,7 @@ suite('FileSynchronizer', () => {
         'Changed text document content');
 
     // Close without saving
-    let closeParams:
+    const closeParams:
         DidCloseTextDocumentParams = {textDocument: {uri: indexUri}};
     clientConnection.sendNotification(
         DidCloseTextDocumentNotification.type, closeParams);

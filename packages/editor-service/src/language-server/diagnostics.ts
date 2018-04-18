@@ -107,7 +107,7 @@ export default class DiagnosticGenerator extends Handler {
       }
       // A fix can touch multiple files. We can only update this document
       // though, so skip any fixes that touch others.
-      if (warning.fix.some(repl => repl.range.file !== uri)) {
+      if (warning.fix.some((repl) => repl.range.file !== uri)) {
         continue;
       }
       edits.push(warning.fix);
@@ -148,7 +148,7 @@ export default class DiagnosticGenerator extends Handler {
       this.warningCodesToFilterOut = new Set(lintConfig.ignoreWarnings);
       this.fileGlobsToFilterOut =
           (lintConfig.filesToIgnore ||
-           []).map(glob => new minimatch.Minimatch(glob, {}));
+           []).map((glob) => new minimatch.Minimatch(glob, {}));
     }
 
     const polymerJsonDiagnostics = [];
@@ -181,16 +181,16 @@ export default class DiagnosticGenerator extends Handler {
   private async reportWarningsForOpenFiles() {
     const openURIs = this.documents.keys();
     const paths =
-        openURIs.map(uri => this.converter.getWorkspacePathToFile({uri}))
+        openURIs.map((uri) => this.converter.getWorkspacePathToFile({uri}))
             .filter(
-                path =>
-                    !this.fileGlobsToFilterOut.some(glob => glob.match(path)));
+                (path) =>
+                    !this.fileGlobsToFilterOut.some((glob) => glob.match(path)));
     const {warnings} = await this.linter.lint(paths);
     const diagnosticsByUri =
         new Map(openURIs.map((k): [string, Diagnostic[]] => [k, []]));
     for (const warning of this.filterWarnings(warnings)) {
       const diagnostic = this.converter.convertWarningToDiagnostic(warning);
-      let diagnostics = diagnosticsByUri.get(warning.sourceRange.file) || [];
+      const diagnostics = diagnosticsByUri.get(warning.sourceRange.file) || [];
       diagnostics.push(diagnostic);
       diagnosticsByUri.set(warning.sourceRange.file, diagnostics);
     }
@@ -204,10 +204,10 @@ export default class DiagnosticGenerator extends Handler {
   private filterWarnings(warnings: ReadonlyArray<Warning>):
       ReadonlyArray<Warning> {
     return warnings.filter(
-        w =>
+        (w) =>
             !(this.warningCodesToFilterOut.has(w.code) ||
               this.fileGlobsToFilterOut.some(
-                  glob => glob.match(this.converter.getWorkspacePathToFile(
+                  (glob) => glob.match(this.converter.getWorkspacePathToFile(
                       {uri: w.sourceRange.file})))));
   }
 

@@ -300,7 +300,7 @@ function copyDir(fromDir: string, toDir: string) {
       fs.writeFileSync(toInner, fs.readFileSync(fromInner));
     }
   }
-};
+}
 
 /** Simple class for reading up to a delimitor in an unending stream. */
 class StreamReader {

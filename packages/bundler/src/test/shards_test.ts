@@ -82,11 +82,11 @@ suite('Bundler', () => {
       doc: parse5.ASTNode,
       contains: dom5.Predicate[],
       excludes: dom5.Predicate[]) {
-    for (let test of contains) {
+    for (const test of contains) {
       const found = dom5.queryAll(doc, test);
       assert.equal(found.length, 1);
     }
-    for (let test of excludes) {
+    for (const test of excludes) {
       const found = dom5.queryAll(doc, test);
       assert.equal(found.length, 0);
     }

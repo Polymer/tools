@@ -60,7 +60,7 @@ suite('Bundler', () => {
     const consumer = new SourceMapConsumer(sourcemap!);
     let foundMapping = false;
     const mappings: MappingItem[] = [];
-    consumer.eachMapping(mapping => mappings.push(mapping));
+    consumer.eachMapping((mapping) => mappings.push(mapping));
     for (let j = 0; j < mappings.length; j++) {
       if (mappings[j].name === name) {
         foundMapping = true;

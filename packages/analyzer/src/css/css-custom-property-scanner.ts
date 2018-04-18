@@ -129,4 +129,4 @@ function* findAllMatchesInString(regex: RegExp, haystack: string) {
   while (match = regex.exec(haystack)) {
     yield {offset: match.index, matched: match[0]};
   }
-};
+}

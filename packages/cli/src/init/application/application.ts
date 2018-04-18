@@ -115,7 +115,7 @@ export function createApplicationGenerator(templateName: string):
       this.log(
           'Check out your new project README for information about what to do next.\n');
     }
-  };
+  }
 
   class Polymer3ApplicationGenerator extends ApplicationGenerator {
     // TODO(yeoman/generator#1065): This function is not a no-op: Yeoman only

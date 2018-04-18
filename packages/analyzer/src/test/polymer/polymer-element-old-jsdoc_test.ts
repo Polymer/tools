@@ -39,7 +39,7 @@ suite('PolymerElement with old jsdoc annotations', () => {
     }
     const elements = result.value.getFeatures({kind: 'polymer-element'});
     return elements;
-  };
+  }
 
   function getTestProps(element: PolymerElement): any {
     return {

@@ -36,7 +36,7 @@ suite('cli', () => {
     const originalArgv = process.argv;
     process.argv = ['node', 'polyserve'].concat(args);
     let stdout = '';
-    let unintercept = intercept((txt) => {
+    const unintercept = intercept((txt) => {
       stdout += txt;
       return '';
     });

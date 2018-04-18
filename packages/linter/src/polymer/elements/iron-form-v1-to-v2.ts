@@ -50,7 +50,7 @@ const propertiesToRename: ReadonlyMap<string, string> = new Map([
 class IronFormV1ToV2 extends HtmlRule {
   code = 'iron-form-v1-to-v2';
   description = stripIndentation(`
-      Warns when \`iron-form\` is used as type extension. 
+      Warns when \`iron-form\` is used as type extension.
 
       This:
 

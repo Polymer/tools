@@ -81,7 +81,7 @@ export default class FileSynchronizer extends AutoDisposable {
       // in-memory buffers, so we filter them out to avoid sending duplicate
       // events for those changes.
       const diskBackedChanges =
-          req.changes.filter(ch => !inMemoryURIs.has(ch.uri));
+          req.changes.filter((ch) => !inMemoryURIs.has(ch.uri));
       fire(diskBackedChanges);
     });
   }

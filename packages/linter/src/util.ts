@@ -32,7 +32,7 @@ import stripIndent = require('strip-indent');
  */
 export function stripWhitespace(str: string) {
   return str.trim().replace(/\s*\n\s*/g, ' ');
-};
+}
 
 /**
  * A utility for writing long multiline strings inline in code.

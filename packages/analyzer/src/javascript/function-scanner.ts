@@ -114,7 +114,7 @@ class FunctionVisitor implements Visitor {
       docNode?: babel.Node) {
     if (docNode === undefined) {
       docNode = node;
-    };
+    }
     const docs = jsdoc.parseJsdoc(getAttachedComment(docNode) || '');
 
     // The @function annotation can override the name.

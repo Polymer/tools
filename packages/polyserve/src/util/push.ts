@@ -21,7 +21,7 @@ import {ServerOptions} from '../start_server';
 
 
 /** h2 push manifest cache */
-let _pushManifest = {};
+const _pushManifest = {};
 
 /**
  * Asserts file existence for all specified files in a push-manifest

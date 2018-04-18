@@ -110,8 +110,8 @@ export class HtmlBundler {
       oldBaseUrl: ResolvedUrl) {
     const inlineScripts =
         dom5.queryAll(reparsedDoc.ast, matchers.inlineNonModuleScript);
-    const promises = inlineScripts.map(scriptAst => {
-      let content = dom5.getTextContent(scriptAst);
+    const promises = inlineScripts.map((scriptAst) => {
+      const content = dom5.getTextContent(scriptAst);
       const sourceRange = reparsedDoc.sourceRangeForStartTag(scriptAst)!;
       return addOrUpdateSourcemapComment(
                  this.bundler.analyzer,
@@ -121,7 +121,7 @@ export class HtmlBundler {
                  sourceRange.end.column,
                  -sourceRange.end.line + 1,
                  -sourceRange.end.column)
-          .then(updatedContent => {
+          .then((updatedContent) => {
             dom5.setTextContent(scriptAst, encodeString(updatedContent));
           });
     });
