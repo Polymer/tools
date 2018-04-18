@@ -185,7 +185,7 @@ export class UnparsableParsedDocument extends ParsedDocument {
   type: string = 'unparsable';
   constructor(url: ResolvedUrl, contents: string) {
     super({
-      ast: null as any,
+      ast: null,
       url,
       baseUrl: url,
       astNode: undefined,
