@@ -17,7 +17,7 @@ import {getAnalysisDocument} from './analyzer-utils';
 import * as bundleManifestLib from './bundle-manifest';
 import {Bundle, BundleManifest, BundleStrategy, BundleUrlMapper} from './bundle-manifest';
 import * as depsIndexLib from './deps-index';
-import {BundledDocument, DocumentCollection} from './document-collection';
+import {DocumentCollection} from './document-collection';
 import {bundle as bundleEs6Module} from './es6-module-bundler';
 import {reserveBundleModuleExportNames} from './es6-module-utils';
 import {bundle as bundleHtmlFragment} from './html-bundler';
@@ -109,8 +109,8 @@ export class Bundler {
   }
 
   /**
-   * Analyze a URL using the given contents in place of what would otherwise
-   * have been loaded.
+   * Analyze an HTML URL using the given contents in place of what would
+   * otherwise have been loaded.
    */
   async analyzeContents(
       url: ResolvedUrl,
@@ -145,8 +145,7 @@ export class Bundler {
    * @param manifest - The manifest that describes the bundles to be produced.
    */
   async bundle(manifest: BundleManifest): Promise<BundleResult> {
-    const documents: DocumentCollection =
-        new Map<ResolvedUrl, BundledDocument>();
+    const documents = new DocumentCollection();
     manifest = manifest.fork();
 
     // Ensure exports of modules sharing the URL of their bundle have priority

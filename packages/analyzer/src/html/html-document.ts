@@ -179,7 +179,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
 
     // We can modify these, as they don't escape this method.
     const mutableDocuments = clone(immutableDocuments);
-    const selfClone = mutableDocuments.shift()!;
+    const selfClone: this = mutableDocuments.shift()! as this;
 
     // We must handle documents that are inline to us but mutated here.
     // If they're not inline us, we'll pass them along to our child documents

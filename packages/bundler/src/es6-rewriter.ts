@@ -17,7 +17,7 @@ import * as clone from 'clone';
 import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {rollup} from 'rollup';
 
-import {getAnalysisDocument} from './analyzer-utils';
+import {assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
 import {serialize} from './babel-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
@@ -124,7 +124,7 @@ export class Es6Rewriter {
         appendUrlPath(url, '_inline_es6_module.js');
     const rolledUpDocument = await this.bundler.analyzeContents(
         rolledUpUrl as ResolvedUrl, rolledUpCode);
-    const babelFile = rolledUpDocument.parsedDocument.ast;
+    const babelFile = assertIsJsDocument(rolledUpDocument).parsedDocument.ast;
     this._rewriteImportStatements(url, babelFile);
     this._deduplicateImportStatements(babelFile);
     const {code: rewrittenCode} = serialize(babelFile);

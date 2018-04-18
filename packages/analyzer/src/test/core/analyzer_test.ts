@@ -655,10 +655,10 @@ suite('Analyzer', () => {
       const document = new HtmlParser().parse(
           contents, resolvedUrl`test.html`, new PackageUrlResolver());
       const context = await getContext(analyzer);
-      const features =
-          (await context['_getScannedFeatures'](document))
-              .features.filter((e) => e instanceof ScannedImport) as
-          ScannedImport[];
+      const features = (await context['_getScannedFeatures'](document))
+                           .features.filter(
+                               (e: ScannedFeature) => e instanceof
+                                   ScannedImport) as ScannedImport[];
       assert.equal(features.length, 1);
       assert.equal(features[0].type, 'css-import');
       assert.equal(features[0].url, 'bar.css' as FileRelativeUrl);
