@@ -457,7 +457,9 @@ export function getServerUrls(options: ServerOptions, server: http.Server) {
     port: String(address.port),
   };
   const componentUrl: url.Url = Object.assign({}, serverUrl);
-  componentUrl.pathname = `${options.componentUrl}/${options.packageName}/`;
+  if (options.moduleResolution !== 'node') {
+    componentUrl.pathname = `${options.componentUrl}/${options.packageName}/`;
+  }
   return {serverUrl, componentUrl};
 }
 
@@ -520,10 +522,7 @@ export async function startWithApp(
   const ports = options.port ? [options.port] : SAUCE_PORTS;
   const server = await startWithFirstAvailablePort(options, app, ports);
   const urls = getServerUrls(options, server);
-  openBrowser(
-      options,
-      urls.serverUrl,
-      options.npm ? urls.serverUrl : urls.componentUrl);
+  openBrowser(options, urls.serverUrl, urls.componentUrl);
 
   return server;
 }

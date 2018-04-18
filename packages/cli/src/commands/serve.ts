@@ -92,16 +92,23 @@ export class ServeCommand implements Command {
 
     if (serverInfos.kind === 'mainline') {
       const mainlineServer = serverInfos;
-      const urls = getServerUrls(options, mainlineServer.server);
-      logger.info(
-          `Files in this directory are available under the following URLs
-      applications: ${url.format(urls.serverUrl)}
-      reusable components: ${url.format(urls.componentUrl)}
-    `);
+      const urls = getServerUrls(serverOptions, mainlineServer.server);
+      const serverUrl = url.format(urls.serverUrl);
+      const componentUrl = url.format(urls.componentUrl);
+      if (serverUrl === componentUrl) {
+        logger.info(
+            `Files in this directory are available under the following URL:
+      ${serverUrl}`);
+      } else {
+        logger.info(
+            `Files in this directory are available under the following URLs:
+      applications: ${serverUrl}
+      reusable components: ${componentUrl}`);
+      }
     } else {
       // We started multiple servers, just tell the user about the control
       // server, it serves out human-readable info on how to access the others.
-      const urls = getServerUrls(options, serverInfos.control.server);
+      const urls = getServerUrls(serverOptions, serverInfos.control.server);
       logger.info(`Started multiple servers with different variants:
       View the Polyserve console here: ${url.format(urls.serverUrl)}`);
     }
