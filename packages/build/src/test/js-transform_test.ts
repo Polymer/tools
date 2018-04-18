@@ -17,6 +17,7 @@ import * as path from 'path';
 import stripIndent = require('strip-indent');
 
 import {jsTransform} from '../js-transform';
+import {interceptOutput} from './util';
 
 suite('jsTransform', () => {
   const rootDir =
@@ -66,10 +67,13 @@ suite('jsTransform', () => {
               invalidJs, {compileToEs5: true, softSyntaxError: false}));
     });
 
-    test('do not throw when softSyntaxError is true', () => {
-      assert.equal(
-          jsTransform(invalidJs, {compileToEs5: true, softSyntaxError: true}),
-          invalidJs);
+    test('do not throw when softSyntaxError is true', async () => {
+      const output = await interceptOutput(async () => {
+        assert.equal(
+            jsTransform(invalidJs, {compileToEs5: true, softSyntaxError: true}),
+            invalidJs);
+      });
+      assert.include(output, '[polymer-build]: failed to parse JavaScript:');
     });
   });
 
