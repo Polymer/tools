@@ -37,6 +37,14 @@ export const args: ArgDescriptor[] = [
     defaultValue: 'auto',
   },
   {
+    name: 'do-not-compile',
+    description: 'Disables compilation for file(s) matching given pattern. ' +
+        'Value given may contain glob-style wildcards such as *, **, and ?. ' +
+        'Use multiple --do-not-compile flag for multiple patterns.',
+    type: String,
+    multiple: true,
+  },
+  {
     name: 'module-resolution',
     description: 'Algorithm to use for resolving module specifiers in import ' +
         'and export statements when rewriting them to be web-compatible. ' +

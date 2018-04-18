@@ -50,6 +50,9 @@ export interface ServerOptions {
   /** Whether or not to compile JavaScript **/
   compile?: 'always'|'never'|'auto';
 
+  /** Disable compilation for these filename patterns **/
+  doNotCompile?: string[];
+
   /** Resolution algorithm to use for rewriting module specifiers */
   moduleResolution?: 'none'|'node';
 
@@ -118,6 +121,7 @@ function applyDefaultServerOptions(options: ServerOptions) {
     hostname: options.hostname || 'localhost',
     root: path.resolve(options.root || '.'),
     compile: options.compile || 'auto',
+    doNotCompile: options.doNotCompile || [],
     certPath: options.certPath || 'cert.pem',
     keyPath: options.keyPath || 'key.pem',
     componentDir: getComponentDir(options),
@@ -401,7 +405,8 @@ export function getApp(options: ServerOptions): express.Express {
           root,
           options.packageName,
           options.componentUrl,
-          options.componentDir));
+          options.componentDir,
+          options.doNotCompile));
 
 
   app.use(`/${componentUrl}/`, polyserve);

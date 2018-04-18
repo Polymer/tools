@@ -71,6 +71,7 @@ export interface Config {
   remote?: {};
   origSuites?: string[];
   compile?: 'auto'|'always'|'never';
+  doNotCompile?: string[];
   skipCleanup?: boolean;
   simpleOutput?: boolean;
   skipUpdateCheck?: boolean;
