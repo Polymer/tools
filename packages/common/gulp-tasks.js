@@ -154,7 +154,7 @@ module.exports.buildAll = function(options) {
 module.exports.test = function(options) {
   module.exports.buildAll(options);
 
-  task('test', ['build', 'test:unit', 'test:integration']);
+  task('test', (done) => runSeq('build', 'test:unit', 'test:integration', done));
   
   task('test:integration', () =>
     gulp.src(['lib/test/integration/**/*_test.js'], {read: false})
