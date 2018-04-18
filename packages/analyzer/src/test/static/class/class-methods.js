@@ -15,6 +15,14 @@ class Class {
     return 4;
   }
 
+  methodWithDefaultParam(x = 12) {
+    return 24;
+  }
+
+  methodWithComplexDefaultParam(a = [1, 2, 3]) {
+    return;
+  }
+
   /**
    * This is the description for customInstanceFunctionWithJSDoc.
    * @return {Number} - The number 5, always.

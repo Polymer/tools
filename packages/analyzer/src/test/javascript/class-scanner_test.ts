@@ -251,6 +251,17 @@ suite('Class', async () => {
               description: '',
             },
             {
+              name: 'methodWithDefaultParam',
+              description: '',
+              params: [{name: 'x', defaultValue: '12'}],
+            },
+            {
+              name: 'methodWithComplexDefaultParam',
+              description: '',
+              params: [{name: 'a', defaultValue: '[1, 2, 3]'}],
+              return: { type: 'void' }
+            },
+            {
               name: 'customInstanceFunctionWithJSDoc',
               description: 'This is the description for ' +
                   'customInstanceFunctionWithJSDoc.',
@@ -515,6 +526,17 @@ suite('Class', async () => {
               description: '',
             },
             {
+              name: 'methodWithDefaultParam',
+              description: '',
+              params: [{name: 'x', defaultValue: '12'}],
+            },
+            {
+              name: 'methodWithComplexDefaultParam',
+              description: '',
+              params: [{name: 'a', defaultValue: '[1, 2, 3]'}],
+              return: { type: 'void' }
+            },
+            {
               name: 'customInstanceFunctionWithJSDoc',
               description: 'This is the description for ' +
                   'customInstanceFunctionWithJSDoc.',
@@ -527,7 +549,6 @@ suite('Class', async () => {
               name: 'customInstanceFunctionWithParams',
               description: '',
               params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
-
             },
             {
               name: 'customInstanceFunctionWithParamsAndJSDoc',
