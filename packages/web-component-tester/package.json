@@ -126,7 +126,7 @@
     "rimraf": "^2.5.4",
     "rollup": "^0.25.1",
     "run-sequence": "^1.0.1",
-    "tslint": "^5.7.0",
+    "tslint": "^5.9.1",
     "typescript": "^2.1.4",
     "watch": "^0.18.0",
     "wct-local": "^2.1.0",
