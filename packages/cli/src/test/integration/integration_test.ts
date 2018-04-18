@@ -41,9 +41,7 @@ suite('integration tests', function() {
               .toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
       await runCommand(binPath, ['lint'], {cwd: dir});
-      // TODO(#113): Remove the `--module-resolution=node` argument once
-      // `polymer test` passes them in correctly
-      await runCommand(binPath, ['test', '--module-resolution=node'], {cwd: dir});
+      await runCommand(binPath, ['test'], {cwd: dir});
     });
 
     skipOnWindows('test the Polymer 3.x application template', async () => {
@@ -53,9 +51,7 @@ suite('integration tests', function() {
               .toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
       await runCommand(binPath, ['lint'], {cwd: dir});
-      // TODO(#113): Remove the `--module-resolution=node` argument once
-      // `polymer test` passes them in correctly
-      await runCommand(binPath, ['test', '--module-resolution=node'], {cwd: dir});
+      await runCommand(binPath, ['test'], {cwd: dir});
       await runCommand(binPath, ['build'], {cwd: dir});
     });
 
