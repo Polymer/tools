@@ -251,6 +251,16 @@ suite('Class', async () => {
               description: '',
             },
             {
+              name: 'methodWithDefaultParam',
+              description: '',
+              params: [{name: 'x', defaultValue: '12'}],
+            },
+            {
+              name: 'methodWithComplexDefaultParam',
+              description: '',
+              params: [{name: 'a', defaultValue: '[1, 2, 3]'}],
+            },
+            {
               name: 'customInstanceFunctionWithJSDoc',
               description: 'This is the description for ' +
                   'customInstanceFunctionWithJSDoc.',
@@ -263,16 +273,6 @@ suite('Class', async () => {
               name: 'customInstanceFunctionWithParams',
               description: '',
               params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
-            },
-            {
-              name: 'methodWithDefaultParam',
-              description: '',
-              params: [{name: 'x', defaultValue: '12'}],
-            },
-            {
-              name: 'methodWithComplexDefaultParam',
-              description: '',
-              params: [{name: 'a', defaultValue: '[1, 2, 3]'}],
             },
             {
               name: 'customInstanceFunctionWithParamsAndJSDoc',
@@ -525,6 +525,16 @@ suite('Class', async () => {
               description: '',
             },
             {
+              name: 'methodWithDefaultParam',
+              description: '',
+              params: [{name: 'x', defaultValue: '12'}],
+            },
+            {
+              name: 'methodWithComplexDefaultParam',
+              description: '',
+              params: [{name: 'a', defaultValue: '[1, 2, 3]'}],
+            },
+            {
               name: 'customInstanceFunctionWithJSDoc',
               description: 'This is the description for ' +
                   'customInstanceFunctionWithJSDoc.',
@@ -537,16 +547,6 @@ suite('Class', async () => {
               name: 'customInstanceFunctionWithParams',
               description: '',
               params: [{name: 'a'}, {name: 'b'}, {name: 'c'}],
-            },
-            {
-              name: 'methodWithDefaultParam',
-              description: '',
-              params: [{name: 'x', defaultValue: '12'}],
-            },
-            {
-              name: 'methodWithComplexDefaultParam',
-              description: '',
-              params: [{name: 'a', defaultValue: '[1, 2, 3]'}],
             },
             {
               name: 'customInstanceFunctionWithParamsAndJSDoc',
