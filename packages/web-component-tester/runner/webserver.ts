@@ -210,6 +210,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
           root: options.root,
           componentDir,
           compile: options.compile,
+          doNotCompile: options.doNotCompile,
           hostname: options.webserver.hostname,
           headers: DEFAULT_HEADERS,
           packageName,

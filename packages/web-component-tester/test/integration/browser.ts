@@ -205,6 +205,7 @@ function runsIntegrationSuite(
               name: 'web-component-tester',
               tags: ['org:Polymer', 'repo:web-component-tester'],
             },
+            doNotCompile: ['/components/web-component-tester/browser.js'],
           },
           options, suiteOptions);
       const context = new Context(allOptions);

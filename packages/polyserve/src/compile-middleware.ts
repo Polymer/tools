@@ -17,6 +17,7 @@ import {parse as parseContentType} from 'content-type';
 import {Request, RequestHandler, Response} from 'express';
 import * as fs from 'fs';
 import * as LRU from 'lru-cache';
+import * as minimatch from 'minimatch';
 import * as path from 'path';
 import {htmlTransform, jsTransform} from 'polymer-build';
 
@@ -60,13 +61,19 @@ export function babelCompile(
     rootDir: string,
     packageName: string,
     componentUrl: string,
-    componentDir: string): RequestHandler {
+    componentDir: string,
+    doNotCompile: string[] = []): RequestHandler {
   return transformResponse({
 
     shouldTransform(request: Request, response: Response) {
       // We must never compile the Custom Elements ES5 Adapter or other
       // polyfills/shims.
       if (isPolyfill.test(request.url)) {
+        return false;
+      }
+      if (doNotCompile.length > 0 &&
+          !!doNotCompile.find((p) => minimatch(request.url, p))) {
+            console.log('SKIPPY MA-DOO-DAH',request.url);
         return false;
       }
       if (!compileMimeTypes.includes(getContentType(response))) {
