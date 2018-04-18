@@ -28,7 +28,7 @@ async function main() {
   if (worstSeverity === Severity.ERROR) {
     process.exit(1);
   }
-};
+}
 
 async function getWarnings(
     analyzer: Analyzer, localPath: string): Promise<Warning[]> {

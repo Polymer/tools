@@ -82,11 +82,11 @@ suite('Bundler', () => {
       doc: parse5.ASTNode,
       contains: dom5.Predicate[],
       excludes: dom5.Predicate[]) {
-    for (let test of contains) {
+    for (const test of contains) {
       const found = dom5.queryAll(doc, test);
       assert.equal(found.length, 1);
     }
-    for (let test of excludes) {
+    for (const test of excludes) {
       const found = dom5.queryAll(doc, test);
       assert.equal(found.length, 0);
     }
@@ -98,13 +98,14 @@ suite('Bundler', () => {
           [common, entrypoint1, entrypoint2],
           {strategy: generateSharedDepsMergeStrategy(2)});
       assert.equal(documents.size, 4);
-      const commonDoc = documents.get(common)!.ast;
+      const commonDoc = documents.get(common)!.ast as dom5.Node;
       assert.isDefined(commonDoc);
-      const entrypoint1Doc = documents.get(entrypoint1)!.ast;
+      const entrypoint1Doc = documents.get(entrypoint1)!.ast as dom5.Node;
       assert.isDefined(entrypoint1Doc);
-      const entrypoint2Doc = documents.get(entrypoint2)!.ast;
+      const entrypoint2Doc = documents.get(entrypoint2)!.ast as dom5.Node;
       assert.isDefined(entrypoint2Doc);
-      const sharedDoc = documents.get(resolve('shared_bundle_1.html'))!.ast;
+      const sharedDoc =
+          documents.get(resolve('shared_bundle_1.html'))!.ast as dom5.Node;
       assert.isDefined(sharedDoc);
       const commonModule = domModulePredicate('common-module');
       const elOne = domModulePredicate('el-one');
@@ -129,11 +130,11 @@ suite('Bundler', () => {
             strategy: generateShellMergeStrategy(analyzer.resolveUrl(shell)!, 2)
           });
       assert.equal(documents.size, 3);
-      const shellDoc = documents.get(shell)!.ast;
+      const shellDoc = documents.get(shell)!.ast as dom5.Node;
       assert.isDefined(shellDoc);
-      const entrypoint1Doc = documents.get(entrypoint1)!.ast;
+      const entrypoint1Doc = documents.get(entrypoint1)!.ast as dom5.Node;
       assert.isDefined(entrypoint1Doc);
-      const entrypoint2Doc = documents.get(entrypoint2)!.ast;
+      const entrypoint2Doc = documents.get(entrypoint2)!.ast as dom5.Node;
       assert.isDefined(entrypoint2Doc);
       const shellDiv = dom5.predicates.hasAttrValue('id', 'shell');
       const shellImport = dom5.predicates.AND(

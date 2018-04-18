@@ -46,7 +46,7 @@ suite('applyEdits', () => {
       },
       replacementText
     };
-  };
+  }
 
   test('works in the trivial case', async () => {
     const contents = 'abc';

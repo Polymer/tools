@@ -69,7 +69,7 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
     // the Settings change stream here for it, in order to avoid doing duplicate
     // work.
     fileChangeEvents = fileChangeEvents.filter(
-        change =>
+        (change) =>
             this.converter.getWorkspacePathToFile(change) !== 'polymer.json');
     if (fileChangeEvents.length === 0) {
       return;  // no new information in this notification

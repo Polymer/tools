@@ -1,5 +1,3 @@
 {
-    "extends": [
-        "@polymer/tools-common/tslint.json"
-    ]
+    "extends": "../../tslint.json"
 }

@@ -15,10 +15,10 @@ import generate from 'babel-generator';
 import * as babel from 'babel-types';
 import {ResolvedUrl} from 'polymer-analyzer';
 
-import {getAnalysisDocument} from './analyzer-utils';
+import {assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
-import {BundledDocument} from './document-collection';
+import {BundledJsDocument} from './document-collection';
 import {getModuleExportNames, getOrSetBundleModuleExportName} from './es6-module-utils';
 import {Es6Rewriter} from './es6-rewriter';
 import {ensureLeadingDot, stripUrlFileSearchAndHash} from './url-utils';
@@ -28,7 +28,7 @@ import {ensureLeadingDot, stripUrlFileSearchAndHash} from './url-utils';
  */
 export async function bundle(
     bundler: Bundler, manifest: BundleManifest, url: ResolvedUrl):
-    Promise<BundledDocument> {
+    Promise<BundledJsDocument> {
   const bundle = manifest.bundles.get(url);
   if (!bundle) {
     throw new Error(`No bundle found in manifest for url ${url}.`);
@@ -38,9 +38,10 @@ export async function bundle(
       await prepareBundleModule(bundler, manifest, assignedBundle);
   const es6Rewriter = new Es6Rewriter(bundler, manifest, assignedBundle);
   const {code: rolledUpCode} = await es6Rewriter.rollup(url, generatedCode);
-  const document =
-      await bundler.analyzeContents(assignedBundle.url, rolledUpCode);
+  const document = assertIsJsDocument(
+      await bundler.analyzeContents(assignedBundle.url, rolledUpCode));
   return {
+    language: 'js',
     ast: document.parsedDocument.ast,
     content: document.parsedDocument.contents,
     files: [...assignedBundle.bundle.files]
@@ -64,7 +65,7 @@ export async function bundle(
 async function prepareBundleModule(
     bundler: Bundler, manifest: BundleManifest, assignedBundle: AssignedBundle):
     Promise<string> {
-      let bundleSource = babel.program([]);
+      const bundleSource = babel.program([]);
       const sourceAnalysis =
           await bundler.analyzer.analyze([...assignedBundle.bundle.files]);
       for (const sourceUrl of [...assignedBundle.bundle.files].sort()) {

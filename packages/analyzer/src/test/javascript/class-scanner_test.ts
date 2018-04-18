@@ -25,18 +25,18 @@ suite('Class', async () => {
   async function getScannedFeatures(filename: string) {
     const {features} = await runScanner(analyzer, new ClassScanner(), filename);
     return features;
-  };
+  }
 
   async function getScannedClasses(filename: string): Promise<ScannedClass[]> {
     const features = await getScannedFeatures(filename);
     return features.filter((e) => e instanceof ScannedClass) as ScannedClass[];
-  };
+  }
 
   async function getClasses(filename: string) {
     const analysis = await analyzer.analyze([filename]);
     const classes = Array.from(analysis.getFeatures({kind: 'class'}));
     return {classes, analysis};
-  };
+  }
 
   async function getTestProps(class_: ScannedClass|Class) {
     type TestPropsType = {
@@ -105,7 +105,7 @@ suite('Class', async () => {
       result.superClass = class_.superClass.identifier;
     }
     return result;
-  };
+  }
 
   suite('scanning', () => {
     test('finds classes and their names and comment blocks', async () => {

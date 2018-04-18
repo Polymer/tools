@@ -22,7 +22,7 @@ import {MappingItem, RawSourceMap, SourceMapConsumer} from 'source-map';
 
 import {Bundler} from '../bundler';
 import {Options as BundlerOptions} from '../bundler';
-import {BundledDocument} from '../document-collection';
+import {BundledHtmlDocument} from '../document-collection';
 import * as matchers from '../matchers';
 import {getExistingSourcemap} from '../source-map';
 import {resolvePath} from '../url-utils';
@@ -35,7 +35,7 @@ suite('Bundler', () => {
   let bundler: Bundler;
 
   async function bundle(inputPath: string, opts?: BundlerOptions):
-      Promise<BundledDocument> {
+      Promise<BundledHtmlDocument> {
         // Don't modify options directly because test-isolation problems occur.
         const bundlerOpts = Object.assign({}, opts || {});
         if (!bundlerOpts.analyzer) {
@@ -47,7 +47,8 @@ suite('Bundler', () => {
         const manifest = await bundler.generateManifest(
             [bundler.analyzer.resolveUrl(inputPath as PackageRelativeUrl)!]);
         const {documents} = await bundler.bundle(manifest);
-        return documents.get(bundler.analyzer.resolveUrl(inputPath)!)!;
+        return documents.get(bundler.analyzer.resolveUrl(inputPath)!)! as
+            BundledHtmlDocument;
       }
 
   function getLine(original: string, lineNum: number) {
@@ -60,7 +61,7 @@ suite('Bundler', () => {
     const consumer = new SourceMapConsumer(sourcemap!);
     let foundMapping = false;
     const mappings: MappingItem[] = [];
-    consumer.eachMapping(mapping => mappings.push(mapping));
+    consumer.eachMapping((mapping) => mappings.push(mapping));
     for (let j = 0; j < mappings.length; j++) {
       if (mappings[j].name === name) {
         foundMapping = true;

@@ -546,7 +546,7 @@ export class ProjectConfig {
       lintObj = {...this.lint};
       delete lintObj.ignoreWarnings;
     }
-    const isWindows = process.platform === "win32";
+    const isWindows = process.platform === 'win32';
     const normalizePath = isWindows ? (path: string) => path.replace(/\\/g, '/') : (path: string) => path;
     const obj = {
       entrypoint: globRelative(this.root, this.entrypoint),
@@ -583,7 +583,7 @@ const getSchema: () => jsonschema.Schema = (() => {
           fs.readFileSync(path.join(__dirname, 'schema.json'), 'utf-8'));
     }
     return schema;
-  }
+  };
 })();
 
 

@@ -78,7 +78,7 @@ suite('DependencyGraph', () => {
       assertStringSetsEqual(
           graph.getAllDependantsOf(analyzer.resolveUrl(path)!),
           expectedDependants.map((u) => analyzer.resolveUrl(u)!));
-    };
+    }
 
     test('works with a basic document with no dependencies', async () => {
       await analyzer.analyze(['dependencies/leaf.html']);

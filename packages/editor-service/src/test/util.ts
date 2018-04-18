@@ -140,7 +140,7 @@ export class Underliner extends BaseUnderliner {
       Promise<string[]> {
     const document = {uri: this.converter.getUriForLocalPath(path)};
     return this.underline(diagnostics.map(
-        d => this.converter.convertLRangeToP(d.range, document)));
+        (d) => this.converter.convertLRangeToP(d.range, document)));
   }
 }
 
@@ -201,7 +201,7 @@ export class TestClient {
         if (batch.length > 0) {
           throw new Error(
               `Found unconsumed diagnostics while cleaning up client. Path: ${path
-              } [${batch.map(d => d.code)
+              } [${batch.map((d) => d.code)
                   .join(', ')}]`);
         }
       }

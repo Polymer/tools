@@ -17,11 +17,11 @@ import * as dom5 from 'dom5';
 import {ASTNode, parseFragment, serialize, treeAdapters} from 'parse5';
 import {Document, FileRelativeUrl, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
 
-import {getAnalysisDocument} from './analyzer-utils';
+import {assertIsHtmlDocument, getAnalysisDocument} from './analyzer-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
 import constants from './constants';
-import {BundledDocument} from './document-collection';
+import {BundledHtmlDocument} from './document-collection';
 import {Es6Rewriter} from './es6-rewriter';
 import * as matchers from './matchers';
 import {findAncestor, insertAfter, insertAllBefore, inSourceOrder, isSameNode, prepend, removeElementAndNewline, siblingsAfter, stripComments} from './parse5-utils';
@@ -36,7 +36,7 @@ import {find, rewriteObject} from './utils';
  */
 export async function bundle(
     bundler: Bundler, manifest: BundleManifest, url: ResolvedUrl):
-    Promise<BundledDocument> {
+    Promise<BundledHtmlDocument> {
   const bundle = manifest.bundles.get(url);
   if (!bundle) {
     throw new Error(`No bundle found in manifest for url ${url}.`);
@@ -53,7 +53,7 @@ export async function bundle(
  * exported bundle function above.
  */
 export class HtmlBundler {
-  protected document: Document;
+  protected document: Document<ParsedHtmlDocument>;
 
   constructor(
       public bundler: Bundler,
@@ -61,7 +61,7 @@ export class HtmlBundler {
       public manifest: BundleManifest) {
   }
 
-  async bundle(): Promise<BundledDocument> {
+  async bundle(): Promise<BundledHtmlDocument> {
     this.document = await this._prepareBundleDocument();
     let ast = clone(this.document.parsedDocument.ast);
     dom5.removeFakeRootElements(ast);
@@ -93,7 +93,7 @@ export class HtmlBundler {
     }
     const content = serialize(ast);
     const files = [...this.assignedBundle.bundle.files];
-    return {ast, content, files};
+    return {language: 'html', ast, content, files};
   }
 
   /**
@@ -110,8 +110,8 @@ export class HtmlBundler {
       oldBaseUrl: ResolvedUrl) {
     const inlineScripts =
         dom5.queryAll(reparsedDoc.ast, matchers.inlineNonModuleScript);
-    const promises = inlineScripts.map(scriptAst => {
-      let content = dom5.getTextContent(scriptAst);
+    const promises = inlineScripts.map((scriptAst) => {
+      const content = dom5.getTextContent(scriptAst);
       const sourceRange = reparsedDoc.sourceRangeForStartTag(scriptAst)!;
       return addOrUpdateSourcemapComment(
                  this.bundler.analyzer,
@@ -121,7 +121,7 @@ export class HtmlBundler {
                  sourceRange.end.column,
                  -sourceRange.end.line + 1,
                  -sourceRange.end.column)
-          .then(updatedContent => {
+          .then((updatedContent) => {
             dom5.setTextContent(scriptAst, encodeString(updatedContent));
           });
     });
@@ -728,13 +728,15 @@ export class HtmlBundler {
    * prepare it as the bundle document, otherwise we'll create a clean/empty
    * HTML document.
    */
-  private async _prepareBundleDocument(): Promise<Document> {
+  private async _prepareBundleDocument():
+      Promise<Document<ParsedHtmlDocument>> {
     if (!this.assignedBundle.bundle.files.has(this.assignedBundle.url)) {
       return this._reanalyze('');
     }
     const analysis =
         await this.bundler.analyzer.analyze([this.assignedBundle.url]);
-    const document = getAnalysisDocument(analysis, this.assignedBundle.url);
+    const document = assertIsHtmlDocument(
+        getAnalysisDocument(analysis, this.assignedBundle.url));
     const ast = clone(document.parsedDocument.ast);
     this._moveOrderedImperativesFromHeadIntoHiddenDiv(ast);
     this._moveUnhiddenHtmlImportsIntoHiddenDiv(ast);
@@ -746,8 +748,10 @@ export class HtmlBundler {
    * Fetch a new copy of an analyzed document serializing an AST and analyzing
    * it.
    */
-  private async _reanalyze(code: string): Promise<Document> {
-    return this.bundler.analyzeContents(this.assignedBundle.url, code);
+  private async _reanalyze(code: string):
+      Promise<Document<ParsedHtmlDocument>> {
+    return assertIsHtmlDocument(
+        await this.bundler.analyzeContents(this.assignedBundle.url, code));
   }
 
   /**

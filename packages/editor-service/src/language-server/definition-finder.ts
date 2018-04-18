@@ -107,7 +107,7 @@ export default class DefinitionFinder extends Handler {
         id: feature.name,
         externalPackages: true
       });
-      return [...assignments].map(a => a.sourceRange);
+      return [...assignments].map((a) => a.sourceRange);
     }
     if (feature instanceof DatabindingFeature) {
       if (feature.property && feature.property.sourceRange) {
@@ -159,7 +159,7 @@ export default class DefinitionFinder extends Handler {
             kind: 'css-custom-property-use',
             id: featureResult.feature.name
           })];
-          locations.push(...propertyUses.map(f => {
+          locations.push(...propertyUses.map((f) => {
             return {
               uri: f.sourceRange.file,
               range: this.converter.convertPRangeToL(f.sourceRange)
@@ -172,8 +172,8 @@ export default class DefinitionFinder extends Handler {
                        kind: 'element-reference',
                        id: astResult.node.element.tagName!,
                        externalPackages: true,
-                     })].map(e => e.sourceRange);
-      locations.push(...ranges.map(r => {
+                     })].map((e) => e.sourceRange);
+      locations.push(...ranges.map((r) => {
         return {uri: r.file, range: this.converter.convertPRangeToL(r)};
       }));
     }

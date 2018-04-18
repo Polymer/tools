@@ -276,13 +276,13 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     await client.changeConfiguration({referencesCodeLens: false});
 
     assert.deepEqual(
-        (await client.getCodeLenses('lib.html'))!.map(c => c.command!.title),
+        (await client.getCodeLenses('lib.html'))!.map((c) => c.command!.title),
         []);
 
     await client.changeConfiguration({referencesCodeLens: true});
 
     assert.deepEqual(
-        (await client.getCodeLenses('lib.html'))!.map(c => c.command!.title),
+        (await client.getCodeLenses('lib.html'))!.map((c) => c.command!.title),
         [`Read 2 places.`, `Read 1 place.`, `Read 2 places.`]);
     await client.cleanup();
   });
@@ -308,13 +308,13 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     await client.changeConfiguration({referencesCodeLens: false});
 
     assert.deepEqual(
-        (await client.getCodeLenses('index.html'))!.map(c => c.command!.title),
+        (await client.getCodeLenses('index.html'))!.map((c) => c.command!.title),
         []);
 
     await client.changeConfiguration({referencesCodeLens: true});
 
     assert.deepEqual(
-        (await client.getCodeLenses('index.html'))!.map(c => c.command!.title),
+        (await client.getCodeLenses('index.html'))!.map((c) => c.command!.title),
         [`Referenced 3 places in HTML.`, `Referenced 1 place in HTML.`]);
     await client.cleanup();
   });

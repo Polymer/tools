@@ -31,7 +31,7 @@ suite('Polymer2ElementScanner with old jsdoc annotations', async () => {
     const {features} = await runScanner(analyzer, new ClassScanner(), filename);
     return features.filter((e) => e instanceof ScannedPolymerElement) as
         ScannedPolymerElement[];
-  };
+  }
 
   async function getTestProps(element: ScannedPolymerElement): Promise<any> {
     const props: any = {

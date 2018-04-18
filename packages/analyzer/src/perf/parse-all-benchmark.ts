@@ -126,7 +126,7 @@ async function measure() {
         `\n==========================================\n\n`);
     process.exit(1);
   }
-};
+}
 
 function printMeasurements(measurements: number[]) {
   console.log(`\n\n\n\n

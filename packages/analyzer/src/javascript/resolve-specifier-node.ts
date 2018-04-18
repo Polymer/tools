@@ -82,8 +82,9 @@ export const resolve =
         }
       }
 
-      let relativeSpecifierUrl = relative(
-          dirname(effectiveDocumentPath), resolvedSpecifier) as FileRelativeUrl;
+      let relativeSpecifierUrl =
+          relative(dirname(effectiveDocumentPath), resolvedSpecifier) as
+          FileRelativeUrl;
 
       if (isWindows()) {
         // normalize path separators to URL format

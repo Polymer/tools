@@ -33,7 +33,7 @@ suite('Polymer2ElementScanner', async () => {
 
     return features.filter((e) => e instanceof ScannedPolymerElement) as
         ScannedPolymerElement[];
-  };
+  }
 
   async function getTestProps(element: ScannedPolymerElement): Promise<any> {
     const props: any = {

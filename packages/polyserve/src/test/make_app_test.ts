@@ -25,27 +25,27 @@ const packageName = 'polyserve-test';
 suite('makeApp', () => {
 
   test('returns an app', () => {
-    let app = makeApp({root, componentDir, packageName});
+    const app = makeApp({root, componentDir, packageName});
     assert.isOk(app);
     assert.equal(app.packageName, 'polyserve-test');
   });
 
   test('serves package files', async () => {
-    let app = makeApp({root, componentDir, packageName});
+    const app = makeApp({root, componentDir, packageName});
     await supertest(app)
         .get('/polyserve-test/test-file.txt')
         .expect(200, 'PASS\n');
   });
 
   test('supports relative roots', async () => {
-    let app = makeApp({root: './test', componentDir, packageName});
+    const app = makeApp({root: './test', componentDir, packageName});
     await supertest(app)
         .get('/polyserve-test/test-file.txt')
         .expect(200, 'PASS\n');
   });
 
   test('serves component files', async () => {
-    let app = makeApp({
+    const app = makeApp({
       root,
       componentDir: path.join(root, 'bower_components'),
       packageName,
@@ -56,7 +56,7 @@ suite('makeApp', () => {
   });
 
   test('serves component indices', async () => {
-    let app = makeApp({
+    const app = makeApp({
       root,
       componentDir: path.join(root, 'bower_components'),
       packageName,
@@ -65,7 +65,7 @@ suite('makeApp', () => {
   });
 
   test('redirects directories without trailing slashes', async () => {
-    let app = makeApp({
+    const app = makeApp({
       root,
       componentDir: path.join(root, 'bower_components'),
       packageName,
@@ -77,7 +77,7 @@ suite('makeApp', () => {
   });
 
   test('serves scoped package files', async () => {
-    let app = makeApp({
+    const app = makeApp({
       root,
       componentDir,
       packageName: '@polymer/polyserve-test',
@@ -88,7 +88,7 @@ suite('makeApp', () => {
   });
 
   test('serves scoped component files', async () => {
-    let app = makeApp({
+    const app = makeApp({
       root,
       componentDir: path.join(root, 'npm-package/node_modules'),
       packageName: '@polymer/polyserve-test',

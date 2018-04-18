@@ -150,7 +150,7 @@ suite('getLocationInfoForPosition', () => {
   });
 
   test(`it can handle the contents of a template tag`, () => {
-    let allKindsSpaceSeparated =
+    const allKindsSpaceSeparated =
         getAllKindsSpaceSeparated('<template><t a=""> </t></template>');
     assert.match(
         allKindsSpaceSeparated,
@@ -169,7 +169,7 @@ suite('getLocationInfoForPosition', () => {
         text, 'uninteresting file name.html' as ResolvedUrl,
         new PackageUrlResolver());
     return getEveryPosition(text)
-        .map(pos => getHtmlAstLocationForPosition(doc, pos).kind)
+        .map((pos) => getHtmlAstLocationForPosition(doc, pos).kind)
         .join(' ');
   }
 });

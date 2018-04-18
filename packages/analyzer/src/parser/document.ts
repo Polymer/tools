@@ -22,7 +22,9 @@ import {ResolvedUrl} from '../model/url';
  * @template AstNode The AST type of the document.
  * @template Visitor The type of the visitors that can walk the document.
  */
-export abstract class ParsedDocument<AstNode = any, Visitor = any> {
+export abstract class ParsedDocument<
+    AstNode = {} | null | undefined,
+    Visitor = {}> {
   abstract type: string;
   url: ResolvedUrl;
   baseUrl: ResolvedUrl;

@@ -33,7 +33,7 @@ export function getOrSetBundleModuleExportName(
   let exportName = moduleExports.get(name);
   if (!exportName) {
     let trialName = name;
-    let moduleFileNameIdentifier =
+    const moduleFileNameIdentifier =
         '$' + camelCase(getFileName(moduleUrl).replace(/\.[a-z0-9_]+$/, ''));
     trialName =
         trialName.replace(/^default$/, `${moduleFileNameIdentifier}Default`)

@@ -69,7 +69,7 @@ scan<AstNode, Visitor, PDoc extends ParsedDocument<AstNode, Visitor>>(
       // Let `scan` continue after calls to visit().then()
       currentDoneCallback();
     }
-  };
+  }
 
   // The callback passed to `scan()`
   function visit(visitor: Visitor) {
@@ -81,7 +81,7 @@ scan<AstNode, Visitor, PDoc extends ParsedDocument<AstNode, Visitor>>(
       });
     }
     return visitorsPromise;
-  };
+  }
 
   // Ok, go!
   setup();
