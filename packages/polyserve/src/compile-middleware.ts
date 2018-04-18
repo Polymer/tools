@@ -71,9 +71,7 @@ export function babelCompile(
       if (isPolyfill.test(request.url)) {
         return false;
       }
-      if (doNotCompile.length > 0 &&
-          !!doNotCompile.find((p) => minimatch(request.url, p))) {
-            console.log('SKIPPY MA-DOO-DAH',request.url);
+      if (doNotCompile.find((p) => minimatch(request.url, p)) !== undefined) {
         return false;
       }
       if (!compileMimeTypes.includes(getContentType(response))) {

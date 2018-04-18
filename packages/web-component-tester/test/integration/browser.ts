@@ -205,11 +205,12 @@ function runsIntegrationSuite(
               name: 'web-component-tester',
               tags: ['org:Polymer', 'repo:web-component-tester'],
             },
-            doNotCompile: ['/components/web-component-tester/browser.js'],
+            // Because this is in the componentDir, the request.url has been
+            // transformed and will not contain the `/components` prefix.
+            doNotCompile: ['/web-component-tester/browser.js'],
           },
           options, suiteOptions);
       const context = new Context(allOptions);
-
       const addEventHandler = (name: string, handler: Function) => {
         context.on(name, function() {
           try {
