@@ -18,9 +18,10 @@ import * as path from 'path';
 
 import {ServerOptions} from './start_server';
 
-function readConfigSync(filename: string, root?: string): any {
+function readConfigSync(
+    filename: 'bower.json'|'package.json', root?: string): {name?: string} {
   const configPath = path.resolve(root || '', filename);
-  let config: any;
+  let config;
   try {
     config = fs.readFileSync(configPath, 'utf-8');
   } catch (e) {

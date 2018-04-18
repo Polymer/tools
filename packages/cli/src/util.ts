@@ -55,6 +55,7 @@ export async function prompt(
   };
 
   // TODO(justinfagnani): the typings for inquirer appear wrong
+  // tslint:disable-next-line: no-any
   const answers = await inquirer.prompt([rawQuestion] as any);
   return answers.foo;
 }

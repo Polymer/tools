@@ -37,6 +37,15 @@
         "applyTo": "allDocuments",
         "severity": "error"
       }
+    },
+    {
+      "type": "npm",
+      "script": "tslint",
+      "problemMatcher": [
+        {
+          "base": "$tslint5"
+        }
+      ]
     }
   ]
 }

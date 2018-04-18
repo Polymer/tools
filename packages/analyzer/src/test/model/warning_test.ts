@@ -23,7 +23,7 @@ import {resolvedUrl} from '../test-utils';
 
 suite('applyEdits', () => {
   let memoryMap: InMemoryOverlayUrlLoader;
-  let loader: (url: string) => Promise<ParsedDocument<any, any>>;
+  let loader: (url: string) => Promise<ParsedDocument>;
   let analyzer: Analyzer;
   setup(() => {
     memoryMap = new InMemoryOverlayUrlLoader();

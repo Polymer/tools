@@ -18,6 +18,7 @@ import {AnalysisCache} from '../../core/analysis-cache';
 import {ResolvedUrl} from '../../model/url';
 import {resolvedUrl} from '../test-utils';
 
+// tslint:disable: no-any This test is pretty hacky, uses a lot of any.
 suite('AnalysisCache', () => {
   test('it can be constructed', () => {
     new AnalysisCache();

@@ -35,7 +35,7 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
   return class GithubGenerator extends Generator {
     _github: Github;
 
-    constructor(args: string|string[], options: any) {
+    constructor(args: string|string[], options: {}|null|undefined) {
       super(args, options);
       this._github = new Github({owner, repo, githubToken});
     }

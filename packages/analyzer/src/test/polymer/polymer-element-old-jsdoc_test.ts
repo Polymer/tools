@@ -41,7 +41,7 @@ suite('PolymerElement with old jsdoc annotations', () => {
     return elements;
   }
 
-  function getTestProps(element: PolymerElement): any {
+  function getTestProps(element: PolymerElement) {
     return {
       className: element.className,
       superClass: element.superClass && element.superClass.identifier,

@@ -99,9 +99,9 @@ export class IndirectUrlResolver extends FsUrlResolver implements UrlResolver {
   private runtimeResolve(
       url: FileRelativeUrl|PackageRelativeUrl,
       runtimeBaseUrl: RuntimeUrl): RuntimeUrl {
-    const resolved: ResolvedUrl = this.simpleUrlResolve(
+    const resolved = this.simpleUrlResolve(
         this.brandAsResolved(runtimeBaseUrl), url, this.protocol);
-    return resolved as any as RuntimeUrl;
+    return brandAsRuntimeUrl(resolved);
   }
 
   relative(to: ResolvedUrl): PackageRelativeUrl;
@@ -122,4 +122,9 @@ export class IndirectUrlResolver extends FsUrlResolver implements UrlResolver {
     return this.simpleUrlRelative(
         this.brandAsResolved(fromWeb), this.brandAsResolved(toWeb));
   }
+}
+
+function brandAsRuntimeUrl(resolved: ResolvedUrl): RuntimeUrl {
+  const str: string = resolved;
+  return str as RuntimeUrl;
 }

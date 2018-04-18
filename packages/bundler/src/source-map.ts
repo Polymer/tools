@@ -17,7 +17,7 @@ import * as espree from 'espree';
 import * as parse5 from 'parse5';
 import {Analyzer, Document, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
 import {AnalysisContext} from 'polymer-analyzer/lib/core/analysis-context';
-import {RawSourceMap, SourceMapConsumer, SourceMapGenerator} from 'source-map';
+import {Mapping, RawSourceMap, SourceMapConsumer, SourceMapGenerator} from 'source-map';
 import * as urlLib from 'url';
 
 import * as matchers from './matchers';
@@ -56,7 +56,7 @@ function createJsIdentitySourcemap(
     if (!token.loc) {
       return null;
     }
-    const mapping: any = {
+    const mapping: Mapping = {
       original: {
         line: token.loc.start.line + lineOffset,
         column: token.loc.start.column +
@@ -82,22 +82,19 @@ function offsetSourceMap(
   const generator = new SourceMapGenerator();
 
   consumer.eachMapping((mapping) => {
-    const newMapping: any = {
+    if (typeof mapping.originalLine !== 'number' ||
+        typeof mapping.originalColumn !== 'number') {
+      return;
+    }
+    const newMapping: Mapping = {
       source: mapping.source,
       generated: {
         line: mapping.generatedLine + lineOffset,
         column: mapping.generatedColumn +
             (mapping.generatedLine === 1 ? firstLineCharOffset : 0)
-      }
+      },
+      original: {line: mapping.originalLine, column: mapping.originalColumn}
     };
-
-    if (typeof mapping.originalLine === 'number' &&
-        typeof mapping.originalColumn === 'number') {
-      newMapping.original = {
-        line: mapping.originalLine,
-        column: mapping.originalColumn
-      };
-    }
 
     if (mapping.name) {
       newMapping.name = mapping.name;

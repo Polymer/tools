@@ -122,7 +122,7 @@ suite('init/application', () => {
           fs.writeFileSync(path.join(tempDir, 'package.json'), '{}');
         })
         .on('error',
-            (_error: any) => {
+            (_error: {}) => {
               assert.fail();
               done();
             })

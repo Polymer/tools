@@ -13,6 +13,7 @@
  */
 
 import * as assert from 'assert';
+import * as express from 'express';
 import * as fs from 'fs';
 import * as mime from 'mime';
 import * as path from 'path';
@@ -28,7 +29,7 @@ const _pushManifest = {};
  * @param root path to root directory
  * @param manifest manifest object
  */
-function assertValidManifest(root: string, manifest: {[path: string]: any}) {
+function assertValidManifest(root: string, manifest: {[path: string]: string}) {
   function assertExists(filename: string) {
     const fname = path.join(root, filename);
     try {
@@ -57,7 +58,7 @@ function assertValidManifest(root: string, manifest: {[path: string]: any}) {
  * @returns the manifest
  */
 export function getPushManifest(
-    root: string, manifestPath: string): {[path: string]: any} {
+    root: string, manifestPath: string): {[path: string]: {}} {
   if (!_pushManifest[manifestPath]) {
     const data = fs.readFileSync(manifestPath);
     const manifest = JSON.parse(data.toString());
@@ -67,24 +68,25 @@ export function getPushManifest(
   return _pushManifest[manifestPath];
 }
 
+
 /**
  * Pushes any resources for the requested file
  * @param options server options
  * @param req HTTP request
  * @param res HTTP response
  */
-export function pushResources(options: ServerOptions, req: any, res: any) {
+export function pushResources(
+    options: ServerOptions, req: express.Request, res: Response) {
   if (res.push && options.protocol === 'h2' && options.pushManifestPath &&
       !req.get('x-is-push')) {
     // TODO: Handle preload link headers
-
     const pushManifest =
         getPushManifest(options.root, options.pushManifestPath);
     const resources = pushManifest[req.path];
     if (resources) {
       const root = options.root;
       for (const filename of Object.keys(resources)) {
-        const stream: NodeJS.WritableStream =
+        const stream =
             res.push(filename, {
                  request: {accept: '*/*'},
                  response: {
@@ -96,10 +98,17 @@ export function pushResources(options: ServerOptions, req: any, res: any) {
                  }
                })
                 .on('error',
-                    (err: any) =>
+                    (err: {}) =>
                         console.error('failed to push', filename, err));
         fs.createReadStream(path.join(root, filename)).pipe(stream);
       }
     }
   }
+}
+
+export interface Response extends express.Response {
+  push?(filname: string, pushedThing: {
+    request: {[key: string]: string},
+    response: {[key: string]: string}
+  }): NodeJS.WritableStream;
 }

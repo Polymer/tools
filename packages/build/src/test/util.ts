@@ -20,6 +20,7 @@ export function getFlowingState(stream: NodeJS.ReadableStream): boolean {
   // _readableState is undocumented in the Node.js TypeScript definition,
   // however it is the supported way to assert if a stream is flowing or not.
   // See: https://nodejs.org/api/stream.html#stream_three_states
+  // tslint:disable-next-line: no-any
   const privateReadableState = (<any>stream)._readableState;
   return privateReadableState.flowing;
 }

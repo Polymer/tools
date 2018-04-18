@@ -73,7 +73,7 @@ export class AnalysisContext {
     ['json', new JsonParser()],
   ]);
 
-  private readonly _languageAnalyzers = new Map<string, LanguageAnalyzer<any>>([
+  private readonly _languageAnalyzers = new Map<string, LanguageAnalyzer<{}>>([
     // TODO(rictic): add typescript language analyzer back after investigating
     //     https://github.com/Polymer/polymer-analyzer/issues/623
   ]);
@@ -100,7 +100,7 @@ export class AnalysisContext {
   private _analysisComplete: Promise<void>;
 
   static getDefaultScanners(options: Options) {
-    return new Map<string, Scanner<any, any, any>[]>([
+    return new Map<string, Scanner<ParsedDocument, {}|null|undefined, {}>[]>([
       [
         'html',
         [
@@ -240,7 +240,7 @@ export class AnalysisContext {
 
     const extension = path.extname(resolvedUrl).substring(1);
     const languageAnalyzer = this._languageAnalyzers.get(extension);
-    let analysisResult: any;
+    let analysisResult;
     if (languageAnalyzer) {
       analysisResult = languageAnalyzer.analyze(scannedDocument.url);
     }

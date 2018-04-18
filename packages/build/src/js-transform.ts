@@ -194,11 +194,13 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     try {
       ast = babylon.parse(js, {
         // TODO(aomarks) Remove any when typings are updated for babylon 7.
+        // tslint:disable-next-line: no-any
         sourceType: transformModulesToAmd === 'auto' ? 'unambiguous' as any :
                                                        'module',
         plugins: [
           'asyncGenerators',
           'dynamicImport',
+          // tslint:disable-next-line: no-any
           'importMeta' as any,
           'objectRestSpread',
         ],

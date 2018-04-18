@@ -313,6 +313,7 @@ export class Es6Rewriter {
                        babel.identifier(exportName),
                        babel.identifier(exportName),
                        undefined,
+                       // tslint:disable-next-line: no-any
                        true) as any]),
             ],
             babel.identifier(exportName))]);
@@ -359,6 +360,7 @@ export class Es6Rewriter {
     if (exportName === 'default') {
       return;
     }
+    // tslint:disable-next-line: no-any Look into NodePath.replace instead.
     const importSpecifier = specifier as any as babel.ImportSpecifier;
     Object.assign(
         importSpecifier,
@@ -386,6 +388,7 @@ export class Es6Rewriter {
     if (exportName === '*') {
       return;
     }
+    // tslint:disable-next-line: no-any Look into NodePath.replace instead.
     const importSpecifier = specifier as any as babel.ImportSpecifier;
     Object.assign(
         importSpecifier,

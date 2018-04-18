@@ -83,7 +83,7 @@ suite('PrefixedUrlLoader', () => {
           loader.load(resolvedUrl`path/to/other/file.html`));
       assert.instanceOf(error, Error);
       assert.deepEqual(
-          error.message,
+          error!.message,
           'Can not load "path/to/other/file.html", does not match prefix "path/to/stuff/".');
       // Delegate is not consulted.
       assert.deepEqual(delegate.loadUrls, []);
@@ -97,7 +97,7 @@ suite('PrefixedUrlLoader', () => {
               loader.load(resolvedUrl`path/to/stuff/file.html`));
           assert.instanceOf(error, Error);
           assert.deepEqual(
-              error.message,
+              error!.message,
               'Tried to load "file.html", and delegate can\'t load it.');
           // Delegate was asked.
           assert.deepEqual(delegate.loadUrls, ['file.html']);

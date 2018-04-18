@@ -13,9 +13,17 @@
  */
 
 import {resolve as resolveUrl} from 'url';
+
+
 import {UrlLoader} from './url-loader';
 
-declare const window: any;
+// TODO: use better declarations for this and/or a fetch polyfill.
+declare const window: {fetch(resolvedUrl: string): Promise<Response>};
+
+interface Response {
+  ok: boolean;
+  text(): Promise<string>;
+}
 
 /**
  * Resolves requests via the the DOM fetch API.
@@ -36,7 +44,7 @@ export class FetchUrlLoader implements UrlLoader {
   }
 
   load(url: string): Promise<string> {
-    return window.fetch(this._resolve(url)).then((response: any) => {
+    return window.fetch(this._resolve(url)).then((response) => {
       if (response.ok) {
         return response.text();
       } else {

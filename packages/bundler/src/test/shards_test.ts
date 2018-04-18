@@ -56,12 +56,9 @@ suite('Bundler', () => {
     return analyzer;
   }
 
-  function getBundler(opts?: any): Bundler {
-    if (!bundler) {
-      if (!opts || !opts.analyzer) {
-        opts = Object.assign({}, opts || {}, {analyzer: getAnalyzer()});
-      }
-      bundler = new Bundler(opts);
+  function getBundler(opts?: Partial<BundlerOptions>): Bundler {
+    if (bundler === undefined) {
+      bundler = new Bundler({analyzer: getAnalyzer(), ...opts});
     }
     return bundler;
   }

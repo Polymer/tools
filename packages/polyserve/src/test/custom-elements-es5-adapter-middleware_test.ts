@@ -24,9 +24,10 @@ suite('custom-elements-es5-adapter-middleware', () => {
 
   test('injects into entry point', async () => {
     const app = getApp({root, compile: 'always'});
-    await supertest(app).get('/').expect(200).expect((res: any) => {
-      expect(res.text).to.have.string(adapterScriptName);
-    });
+    await supertest(app).get('/').expect(200).expect(
+        (res: supertest.Response) => {
+          expect(res.text).to.have.string(adapterScriptName);
+        });
   });
 
   test('does not inject into non entry point', async () => {
@@ -34,7 +35,7 @@ suite('custom-elements-es5-adapter-middleware', () => {
     await supertest(app)
         .get('/components/test-component/test.html')
         .expect(200)
-        .expect((res: any) => {
+        .expect((res: supertest.Response) => {
           expect(res.text).to.not.have.string(adapterScriptName);
         });
   });
@@ -48,7 +49,7 @@ suite('custom-elements-es5-adapter-middleware', () => {
         .get('/')
         .set('User-Agent', chrome48)
         .expect(200)
-        .expect((res: any) => {
+        .expect((res: supertest.Response) => {
           expect(res.text).to.have.string(adapterScriptName);
         });
 
@@ -61,7 +62,7 @@ suite('custom-elements-es5-adapter-middleware', () => {
         .get('/')
         .set('User-Agent', chrome60)
         .expect(200)
-        .expect((res: any) => {
+        .expect((res: supertest.Response) => {
           expect(res.text).to.not.have.string(adapterScriptName);
         });
   });

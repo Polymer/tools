@@ -58,10 +58,12 @@ suite('WarningPrinter', () => {
     output = new memoryStreams.WritableStream();
     printer = new WarningPrinter(output, {color: false});
     originalChalkEnabled = chalk.enabled;
+    // tslint:disable-next-line: no-any - chalk typings need enhancement here
     (chalk as any).enabled = true;
   });
 
   teardown(() => {
+    // tslint:disable-next-line: no-any - chalk typings need enhancement here
     (chalk as any).enabled = originalChalkEnabled;
   });
 

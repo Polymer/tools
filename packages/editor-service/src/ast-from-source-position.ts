@@ -130,7 +130,7 @@ export function getCssAstLocationForPosition(
   return closest;
 }
 
-const emptyArray: ReadonlyArray<any> = [];
+const emptyArray: ReadonlyArray<shadyCssParser.Node> = [];
 function getChildren(node: shadyCssParser.Node):
     ReadonlyArray<shadyCssParser.Node> {
   const nodeType = shadyCssParser.nodeType;

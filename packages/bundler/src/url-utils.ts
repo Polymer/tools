@@ -37,11 +37,10 @@ export function appendUrlPath(url_: string, extension: string): string {
  * (like, you wouldn't want to change `file:///example.js` into
  * `./file:///example.js`)
  */
-export function ensureLeadingDot<T>(href: T): T {
-  const hrefString = href as any as string;
-  if (!Uri.parse(hrefString).scheme &&
-      !(hrefString.startsWith('./') || hrefString.startsWith('../'))) {
-    return './' + href as any as T;
+export function ensureLeadingDot<T extends string>(href: T): T {
+  if (!Uri.parse(href).scheme &&
+      !(href.startsWith('./') || href.startsWith('../'))) {
+    return './' + href as T;
   }
   return href;
 }
@@ -50,9 +49,8 @@ export function ensureLeadingDot<T>(href: T): T {
  * Given a string representing a URL or path of some form, append a `/`
  * character if it doesn't already end with one.
  */
-export function ensureTrailingSlash<T>(href: T): T {
-  const hrefString = href as any as string;
-  return hrefString.endsWith('/') ? href : (href + '/') as any as T;
+export function ensureTrailingSlash<T extends string>(href: T): T {
+  return href.endsWith('/') ? href : (href + '/') as T;
 }
 
 /**
@@ -81,8 +79,8 @@ export function getFileUrl(filename: string): ResolvedUrl {
  * Returns a URL with the basename removed from the pathname.  Strips the
  * search off of the URL as well, since it will not apply.
  */
-export function stripUrlFileSearchAndHash<T>(href: T): T {
-  const u = url.parse(href as any);
+export function stripUrlFileSearchAndHash<T extends string>(href: T): T {
+  const u = url.parse(href);
   // Using != so tests for null AND undefined
   if (u.pathname != null) {
     // Suffix path with `_` so that `/a/b/` is treated as `/a/b/_` and that
@@ -95,7 +93,7 @@ export function stripUrlFileSearchAndHash<T>(href: T): T {
   // `string | undefined` as opposed to `string | null`
   u.search = undefined;
   u.hash = undefined;
-  return url.format(u) as any as T;
+  return url.format(u) as T;
 }
 
 /**
@@ -142,13 +140,13 @@ export function resolvePath(...segments: string[]): string {
  * Modifies an href by the relative difference between the old base URL and
  * the new base URL.
  */
-export function rewriteHrefBaseUrl<T>(
+export function rewriteHrefBaseUrl<T extends string>(
     href: T, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl): T|
     FileRelativeUrl {
-  if (isAbsolutePath(href as any)) {
+  if (isAbsolutePath(href)) {
     return href;
   }
-  const relativeUrl = url.resolve(oldBaseUrl, href as any);
+  const relativeUrl = url.resolve(oldBaseUrl, href);
   const parsedFrom = url.parse(newBaseUrl);
   const parsedTo = url.parse(relativeUrl);
   if (parsedFrom.protocol === parsedTo.protocol &&

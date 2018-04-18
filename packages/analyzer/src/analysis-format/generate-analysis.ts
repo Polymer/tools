@@ -58,9 +58,9 @@ export function generateAnalysis(
 
   const allClasses = iFilter(input.getFeatures({kind: 'class'}), _filter);
   for (const class_ of allClasses) {
-    if (members.elements.has(class_ as any) ||
-        members.mixins.has(class_ as any) ||
-        members.polymerBehaviors.has(class_ as any)) {
+    if (members.elements.has(class_ as ResolvedElement) ||
+        members.mixins.has(class_ as ResolvedMixin) ||
+        members.polymerBehaviors.has(class_ as ResolvedPolymerBehavior)) {
       continue;
     }
     members.classes.add(class_);

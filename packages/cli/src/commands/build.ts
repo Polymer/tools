@@ -138,10 +138,13 @@ export class BuildCommand implements Command {
         const [prefix, ...rest] = buildOption.split('-');
         if (['css', 'html', 'js'].indexOf(prefix) !== -1) {
           const option = dashToCamelCase(rest.join('-'));
+          // tslint:disable-next-line: no-any Scary and unsafe!
           (<any>buildOptions)[prefix] = (<any>buildOptions)[prefix] || {};
+          // tslint:disable-next-line: no-any Scary and unsafe!
           (<any>buildOptions)[prefix][dashToCamelCase(option)] =
               options[buildOption];
         } else {
+          // tslint:disable-next-line: no-any Scary and unsafe!
           (<any>buildOptions)[dashToCamelCase(buildOption)] =
               options[buildOption];
         }

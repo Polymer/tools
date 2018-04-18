@@ -25,6 +25,7 @@
     "clang-format": "^1.0.53",
     "mocha": "^3.5.0",
     "source-map-support": "^0.4.15",
+    "tslint": "^5.9.1",
     "typescript": "^2.4.2",
     "watchy": "^0.7.0"
   },

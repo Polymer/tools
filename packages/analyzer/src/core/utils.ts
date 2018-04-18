@@ -82,7 +82,7 @@ export class Deferred<T> {
   }
 
   toNodeCallback() {
-    return (error: any, value: T) => {
+    return (error: {}|null|undefined, value: T) => {
       if (error) {
         this.reject(error);
       } else {

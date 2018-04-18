@@ -27,9 +27,7 @@ export type BrowserCapability =
     // JavaScript modules.
     'modules';
 
-// TODO: This should have type UAParser, but its typings are wrong so that
-// class can't be referenced as a type. Fix the typings.
-export type UserAgentPredicate = (ua: any) => boolean;
+export type UserAgentPredicate = (ua: InstanceType<typeof UAParser>) => boolean;
 
 const chrome = {
   es2015: since(49),
@@ -111,7 +109,10 @@ export function browserCapabilities(userAgent: string): Set<BrowserCapability> {
  * Parse a "x.y.z" version string of any length into integer parts. Returns -1
  * for a part that doesn't parse.
  */
-export function parseVersion(version: string): number[] {
+export function parseVersion(version: string|undefined): number[] {
+  if (version == null) {
+    return [];
+  }
   return version.split('.').map((part) => {
     const i = parseInt(part, 10);
     return isNaN(i) ? -1 : i;

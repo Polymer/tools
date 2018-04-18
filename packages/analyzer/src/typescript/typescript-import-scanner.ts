@@ -38,7 +38,9 @@ export class TypeScriptImportScanner implements
             'js-import',
             specifierUrl,
             // TODO(justinfagnani): make SourceRanges work
+            // tslint:disable-next-line: no-any
             null as any as SourceRange,
+            // tslint:disable-next-line: no-any
             null as any as SourceRange,
             // TODO(justinfagnani): add TypeScript to AstNodeWithLanguage
             undefined,

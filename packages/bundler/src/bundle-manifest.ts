@@ -498,13 +498,12 @@ function getBundleTypeForUrl(url: ResolvedUrl): BundleType {
  * Inverts a map of collections such that  `{a:[c,d], b:[c,e]}` would become
  * `{c:[a,b], d:[a], e:[b]}`.
  */
-function invertMultimap(multimap: Map<any, Set<any>>): Map<any, Set<any>> {
-  const inverted = new Map<any, Set<any>>();
+function invertMultimap<K>(multimap: Map<K, Set<K>>): Map<K, Set<K>> {
+  const inverted = new Map<K, Set<K>>();
 
-  for (const entry of multimap.entries()) {
-    const value = entry[0], keys = entry[1];
+  for (const [value, keys] of multimap.entries()) {
     for (const key of keys) {
-      const set = inverted.get(key) || new Set();
+      const set = inverted.get(key) || new Set<K>();
       set.add(value);
       inverted.set(key, set);
     }
@@ -517,7 +516,7 @@ function invertMultimap(multimap: Map<any, Set<any>>): Map<any, Set<any>> {
  * Returns true if both sets contain exactly the same items.  This check is
  * order-independent.
  */
-function setEquals(set1: Set<any>, set2: Set<any>): boolean {
+function setEquals<K>(set1: Set<K>, set2: Set<K>): boolean {
   if (set1.size !== set2.size) {
     return false;
   }

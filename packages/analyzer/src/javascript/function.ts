@@ -24,7 +24,7 @@ export class ScannedFunction implements Resolvable {
   sourceRange: SourceRange;
   astNode: JsAstNode;
   warnings: Warning[];
-  params?: {name: string, type?: string}[];
+  params?: {name: string, type?: string, desc: string}[];
   return?: {type?: string, desc?: string};
   privacy: Privacy;
   templateTypes?: string[];
@@ -37,7 +37,7 @@ export class ScannedFunction implements Resolvable {
       astNode: JsAstNode,
       jsdoc: JsDocAnnotation,
       sourceRange: SourceRange,
-      params?: {name: string, type?: string}[],
+      params?: {name: string, type?: string, desc: string}[],
       returnData?: {type?: string, desc?: string},
       templateTypes?: string[],
   ) {

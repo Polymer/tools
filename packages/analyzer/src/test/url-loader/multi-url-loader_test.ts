@@ -110,7 +110,7 @@ suite('MultiUrlLoader', () => {
       const loader = new MultiUrlLoader(loaders);
       const error = await invertPromise(loader.load(resolvedUrl`test.html`));
       assert.instanceOf(error, Error);
-      assert.include(error.message, 'Unable to load test.html');
+      assert.include(error!.message!, 'Unable to load test.html');
       // Verify load is not called on any loader
       assert.equal(loaders[0].loadCount, 0);
       assert.equal(loaders[1].loadCount, 0);

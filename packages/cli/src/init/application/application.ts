@@ -15,6 +15,13 @@ import * as chalk from 'chalk';
 import * as path from 'path';
 import Generator = require('yeoman-generator');
 
+export interface Props {
+  name: string;
+  elementName: string;
+  description: string;
+  elementClassName: string;
+}
+
 /**
  * Returns a Yeoman Generator constructor that can be passed to yeoman to be
  * run. A "template name" argument is required to choose the correct
@@ -24,9 +31,9 @@ import Generator = require('yeoman-generator');
 export function createApplicationGenerator(templateName: string):
     (typeof Generator) {
   class ApplicationGenerator extends Generator {
-    props: any;
+    props!: Props;
 
-    constructor(args: string|string[], options: any) {
+    constructor(args: string|string[], options: {}) {
       super(args, options);
       this.sourceRoot(path.join(__dirname, '../../../templates/application', templateName));
     }
@@ -56,7 +63,7 @@ export function createApplicationGenerator(templateName: string):
           type: 'input',
           name: 'elementName',
           message: `Main element name`,
-          default: (answers: any) => `${answers.name}-app`,
+          default: (answers: {}) => `${(answers as {name: string}).name}-app`,
           validate: (name: string) => {
             const nameContainsHyphen = name.includes('-');
             if (!nameContainsHyphen) {
@@ -74,7 +81,7 @@ export function createApplicationGenerator(templateName: string):
         },
       ];
 
-      this.props = await this.prompt(prompts);
+      this.props = (await this.prompt(prompts)) as Props;
       this.props.elementClassName = this.props.elementName.replace(
           /(^|-)(\w)/g,
           (_match: string, _p0: string, p1: string) => p1.toUpperCase());

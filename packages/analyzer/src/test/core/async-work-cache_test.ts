@@ -52,13 +52,14 @@ suite('AsyncWorkCache', () => {
       cache.getOrCompute(
           'badkey',
           async () => {
-            throw 'failed';
+            throw new Error('failed');
           }),
       cache.getOrCompute('badkey', async () => 'good'),
       cache.getOrCompute('badkey', async () => 'good'),
     ].map(invertPromise);
     assert.deepEqual(
-        await Promise.all(failurePromises), ['failed', 'failed', 'failed']);
+        (await Promise.all(failurePromises)).map((e) => e!.message!),
+        ['failed', 'failed', 'failed']);
   });
 
   test('it handles a cancellation followed by a new request', async () => {

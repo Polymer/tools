@@ -485,6 +485,7 @@ function assertNodeVersion(options: ServerOptions) {
  */
 async function createServer(
     app: express.Application, options: ServerOptions): Promise<http.Server> {
+  // tslint:disable-next-line: no-any bad typings
   const opt: any = {spdy: {protocols: [options.protocol]}};
 
   if (isHttps(options.protocol)) {
@@ -496,7 +497,7 @@ async function createServer(
     opt.spdy.ssl = false;
   }
 
-  return http.createServer(opt, app as any);
+  return http.createServer(opt, app);
 }
 
 // Sauce Labs compatible ports taken from
@@ -545,7 +546,7 @@ async function tryStartWithPort(
       resolve(server);
     });
 
-    server.on('error', (_err: any) => {
+    server.on('error', (_err: {}) => {
       resolve(null);
     });
   });

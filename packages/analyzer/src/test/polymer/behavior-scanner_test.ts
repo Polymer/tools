@@ -72,7 +72,7 @@ suite('BehaviorScanner', () => {
   });
 
   test('Supports property array on behaviors', () => {
-    let defaultValue: any;
+    let defaultValue;
     behaviors.get('AwesomeBehavior')!.properties.forEach((prop) => {
       if (prop.name === 'a') {
         defaultValue = prop.default;

@@ -72,6 +72,7 @@ function getPositiveGlob(glob: string): string {
  * Given a user-provided options object, check for deprecated options. When one
  * is found, warn the user and fix if possible.
  */
+// tslint:disable-next-line: no-any User input represented as any.
 function fixDeprecatedOptions(options: any): ProjectOptions {
   if (typeof options.sourceGlobs !== 'undefined') {
     logger.warn(
