@@ -49,6 +49,16 @@ const localGenerators: {[name: string]: GeneratorInfo} = {
     description: 'A simple Polymer 3.0 application',
     generator: createApplicationGenerator('polymer-3.x'),
   },
+  'polymer-3-starter-kit': {
+    id: 'polymer-init-polymer-3-starter-kit:app',
+    description:
+        'A Polymer 3.x starter application template, with navigation and "PRPL pattern" loading',
+    generator: createGithubGenerator({
+      owner: 'Polymer',
+      repo: 'polymer-starter-kit',
+      semverRange: '^4.0.0-pre.1',
+    }),
+  },
   'polymer-2-element': {
     id: 'polymer-init-polymer-2-element:app',
     description: 'A simple Polymer 2.0 element template',
