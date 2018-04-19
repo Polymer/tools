@@ -105,6 +105,7 @@ task('build-all', (done) => {
 
 task('test', ['build'], () => {
   return gulp.src('test/**/*_test.js').pipe(mocha({
+    colors: true,
     ui: 'tdd',
     reporter: 'spec',
     retries: 3,

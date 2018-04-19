@@ -49,6 +49,7 @@ gulp.task(
     'test:integration',
     () => gulp.src(['lib/test/integration/**/*_test.js'], {read: false})
               .pipe(mocha({
+                colors: true,
                 ui: 'tdd',
                 reporter: 'spec',
                 retries: 3,
@@ -57,6 +58,7 @@ gulp.task(
 gulp.task(
     'test:unit', 
     () => gulp.src('lib/test/unit/**/*_test.js', {read: false}).pipe(mocha({
+      colors: true,
       ui: 'tdd',
       reporter: 'spec',
       retries: 3,

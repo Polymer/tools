@@ -159,6 +159,7 @@ module.exports.test = function(options) {
   task('test:integration', () =>
     gulp.src(['lib/test/integration/**/*_test.js'], {read: false})
         .pipe(mocha({
+          colors: true,
           ui: 'tdd',
           reporter: 'spec',
           retries: 3,
@@ -167,6 +168,7 @@ module.exports.test = function(options) {
   task('test:unit', () =>
     gulp.src(['lib/test/unit/**/*_test.js'], {read: false})
         .pipe(mocha({
+          colors: true,
           ui: 'tdd',
           reporter: 'spec',
           retries: 3,
