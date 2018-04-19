@@ -25,3 +25,7 @@ install:
 - npm run build
 script:
 - xvfb-run npm $TEST_COMMAND
+cache:
+  directories:
+    - node_modules
+    - packages
