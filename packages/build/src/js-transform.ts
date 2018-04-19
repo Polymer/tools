@@ -69,8 +69,15 @@ const babelSyntaxPlugins = [
   require('@babel/plugin-syntax-import-meta'),
 ];
 
-const babelPresetMinify =
-    require('babel-preset-minify')({}, {simplifyComparisons: false});
+const babelPresetMinify = require('babel-preset-minify')({}, {
+  // Disable the minify-constant-folding plugin because it has a bug relating to
+  // invalid substitution of constant values into export specifiers:
+  // https://github.com/babel/minify/issues/820
+  evaluate: false,
+
+  // TODO(aomarks) Find out why we disabled this plugin.
+  simplifyComparisons: false,
+});
 
 /**
  * Options for jsTransform.
