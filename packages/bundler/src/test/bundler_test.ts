@@ -497,7 +497,6 @@ suite('Bundler', () => {
 
     test('Excluded imports are not listed as missing', async () => {
       const bundler = getBundler({
-        analyzer: analyzer,
         excludes: [
           resolve('this/does/not/exist.html'),
           resolve('this/does/not/exist.js'),
