@@ -46,6 +46,7 @@ function readTestFile(p: string) {
 }
 
 suite('compile-middleware', () => {
+  this.timeout(10000);
   let app: Express.Application;
 
   suite('babelCompileCache', () => {
