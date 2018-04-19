@@ -25,3 +25,6 @@ install:
 - npm run build
 script:
 - xvfb-run npm $TEST_COMMAND
+branches:
+  only:
+  - master
