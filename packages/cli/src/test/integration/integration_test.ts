@@ -111,7 +111,7 @@ suite('integration tests', function() {
       await runCommand(binPath, ['build'], {cwd: dir});
     });
 
-    test.only('test the 3.0 "shop" template', async function () {
+    test('test the 3.0 "shop" template', async function() {
       // Shop has a lot of build configurations, they take a long time.
       this.timeout(5 * 60 * 1000);
       const ShopGenerator = createGithubGenerator(
@@ -120,7 +120,6 @@ suite('integration tests', function() {
       // https://github.com/Polymer/tools/issues/137 for filling this out more.
       const dir = await runGenerator(ShopGenerator).toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
-      // See
       // await runCommand(
       //   binPath, ['lint', '--rules=polymer-3'],
       //   {cwd: dir})
