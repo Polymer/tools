@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.0.0-pre.13] - 2018-04-18
+* Fix node module resolution for the case where the root package is served from
+  the components/ directory and imports a module from its own package using a
+  path.
+
 ## [3.0.0-pre.12] - 2018-04-17
 * The Babel helpers script now includes all Babel helpers that could be used by the ES5 compilation and AMD transforms.
 * The `jsTransform` function's `injectBabelHelpers` option now has 3 possible values: `none` (default), `full`, and `amd`.
