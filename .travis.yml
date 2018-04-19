@@ -28,3 +28,7 @@ script:
 branches:
   only:
   - master
+cache:
+  directories:
+  - node_modules
+  - packages/*/node_modules
