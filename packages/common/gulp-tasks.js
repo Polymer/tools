@@ -161,6 +161,7 @@ module.exports.test = function(options) {
         .pipe(mocha({
           ui: 'tdd',
           reporter: 'spec',
+          retries: 3,
         })));
 
   task('test:unit', () =>
@@ -168,6 +169,7 @@ module.exports.test = function(options) {
         .pipe(mocha({
           ui: 'tdd',
           reporter: 'spec',
+          retries: 3,
         })));
 }
 
