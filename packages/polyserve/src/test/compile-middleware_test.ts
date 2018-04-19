@@ -45,7 +45,7 @@ function readTestFile(p: string) {
   return fs.readFileSync(path.join(root, p)).toString();
 }
 
-suite('compile-middleware', () => {
+suite('compile-middleware', function() {
   this.timeout(10000);
   let app: Express.Application;
 
