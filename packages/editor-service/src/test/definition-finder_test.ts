@@ -20,7 +20,9 @@ import {createTestEnvironment} from './util';
 
 const fixtureDir = path.join(__dirname, '..', '..', 'src', 'test', 'static');
 
-suite('DefinitionFinder', function() {
+// TODO(https://github.com/Polymer/tools/issues/170): these tests are slightly
+//     flaky, skip for now.
+suite.skip('DefinitionFinder', function() {
   const indexFile = path.join('editor-service', 'index.html');
   const tagPosition = {line: 7, column: 9};
   const localAttributePosition = {line: 7, column: 31};
@@ -308,13 +310,15 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     await client.changeConfiguration({referencesCodeLens: false});
 
     assert.deepEqual(
-        (await client.getCodeLenses('index.html'))!.map((c) => c.command!.title),
+        (await client.getCodeLenses('index.html'))!.map(
+            (c) => c.command!.title),
         []);
 
     await client.changeConfiguration({referencesCodeLens: true});
 
     assert.deepEqual(
-        (await client.getCodeLenses('index.html'))!.map((c) => c.command!.title),
+        (await client.getCodeLenses('index.html'))!.map(
+            (c) => c.command!.title),
         [`Referenced 3 places in HTML.`, `Referenced 1 place in HTML.`]);
     await client.cleanup();
   });

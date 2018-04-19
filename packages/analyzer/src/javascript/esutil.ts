@@ -409,7 +409,7 @@ export function toMethodParam(
 
   } else if (
       babel.isAssignmentPattern(nodeParam) &&
-      babel.isIdentifier(nodeParam.left) && babel.isLiteral(nodeParam.right)) {
+      babel.isIdentifier(nodeParam.left)) {
     // Parameter with a default: method(param = "default")
     name = nodeParam.left.name;
     defaultValue = generate(nodeParam.right).code;

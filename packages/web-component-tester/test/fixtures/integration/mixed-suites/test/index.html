@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script src="/components/web-component-tester/browser.js"></script>
+</head>
+
+<body>
+  <script>
+    WCT.loadSuites(['one.html', 'two.html', 'one.js', 'two.js']);
+
+    suite('inline suite', function () {
+      test('inline nested test', function () { });
+    });
+    test('inline test', function () { });
+  </script>
+</body>
+
+</html>
