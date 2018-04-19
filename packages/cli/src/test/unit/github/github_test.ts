@@ -129,16 +129,27 @@ suite('github/github', () => {
     let getReleasesStub: sinon.SinonStub;
     let github: Github;
 
-    const basicReleasesResponse = [
-      {tag_name: 'v1.0.0'},
-      {tag_name: 'v1.1.0'},
-      {tag_name: 'v1.2.1'},
-      {tag_name: 'v2.0.0'},
-      {tag_name: 'v2.0.0-pre.1'},
-      {tag_name: 'v2.0.1'},
-      {tag_name: 'v2.1.0'},
-      {tag_name: 'TAG_NAME_WITHOUT_VERSION'},
-    ];
+    const basicReleasesResponse = {
+      meta: {
+        status: '200 OK',
+      },
+      data: [
+        {tag_name: 'v1.0.0'},
+        {tag_name: 'v1.1.0'},
+        {tag_name: 'v1.2.1'},
+        {tag_name: 'v2.0.0'},
+        {tag_name: 'v2.0.0-pre.1'},
+        {tag_name: 'v2.0.1'},
+        {tag_name: 'v2.1.0'},
+        {tag_name: 'TAG_NAME_WITHOUT_VERSION'},
+      ],
+    };
+
+    const failedReleasesResponse = {
+      meta: {
+        status: '500 Internal Server Error',
+      },
+    };
 
     setup(() => {
       getReleasesStub = sinon.stub();
@@ -199,6 +210,16 @@ suite('github/github', () => {
       assert.equal(
           err.message,
           'TEST_OWNER/TEST_REPO has no releases matching ^v3.0.0.');
+    });
+
+    testName = 'rejects with an error if the status is not "200 OK"';
+    test(testName, async () => {
+      getReleasesStub.returns(Promise.resolve(failedReleasesResponse));
+
+      const err = await invertPromise(github.getSemverRelease('^v3.0.0'));
+      assert.equal(
+          err.message,
+          'Failed to retrieve releases from GitHub. (500 Internal Server Error)');
     });
   });
 
