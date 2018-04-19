@@ -1,7 +1,14 @@
 # Changelog
 
+
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
+
+## v1.7.0-pre.12 [04-18-2018]
+* `serve`
+  * Fix node module resolution for the case where the root package is served
+    from the components/ directory and imports a module from its own package
+    using a path.
 
 ## v1.7.0-pre.11 [04-17-2018]
 * `build`

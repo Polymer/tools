@@ -5,12 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.24] - 2018-04-18
 * Typings change: `ParsedDocument#astNode` had the type `any`. It now has a
   more strict type of `{} | null | undefined`. If this breaks downstream code,
   that code should probably use a more specific type of `ParsedDocument`, or
   `Document<MoreSpecificParsedDocType>`.
-<!-- Add new, unreleased changes here. -->
+* Fix node module resolution for the case where components/ directory URL
+  rewriting is happening (e.g. polyserve), and a root package is importing
+  something from its own package using a path.
 
 ## [3.0.0-pre.23] - 2018-04-17
 * [BREAKING] `Feature.astNode` is now an `AstNodeWithLanguage` rather than

@@ -1,6 +1,6 @@
 {
   "name": "polymer-cli",
-  "version": "1.7.0-pre.11",
+  "version": "1.7.0-pre.12",
   "description": "A commandline tool for Polymer projects",
   "main": "lib/polymer-cli.js",
   "engines": {
@@ -61,12 +61,12 @@
     "merge-stream": "^1.0.1",
     "mz": "^2.6.0",
     "plylog": "^0.5.0",
-    "polymer-analyzer": "=3.0.0-pre.23",
-    "polymer-build": "=3.0.0-pre.12",
+    "polymer-analyzer": "=3.0.0-pre.24",
+    "polymer-build": "=3.0.0-pre.13",
     "polymer-bundler": "=4.0.0-pre.5",
     "polymer-linter": "=3.0.0-pre.7",
     "polymer-project-config": "^3.13.0",
-    "polyserve": "^0.27.5",
+    "polyserve": "^0.27.6",
     "request": "^2.72.0",
     "rimraf": "^2.6.1",
     "semver": "^5.3.0",
@@ -76,7 +76,7 @@
     "validate-element-name": "^2.1.1",
     "vinyl": "^1.1.1",
     "vinyl-fs": "^2.4.3",
-    "web-component-tester": "^6.6.0-pre.5",
+    "web-component-tester": "=6.6.0-pre.5",
     "yeoman-environment": "^1.5.2",
     "yeoman-generator": "^1.0.1"
   },
