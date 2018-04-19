@@ -35,7 +35,6 @@
     "@types/resolve": "0.0.6",
     "@types/serve-static": "^1.7.31",
     "@types/spdy": "^3.4.1",
-    "@types/ua-parser-js": "^0.7.30",
     "bower-config": "^1.4.1",
     "browser-capabilities": "^0.2.2",
     "command-line-args": "^3.0.1",
