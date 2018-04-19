@@ -4,6 +4,11 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.0-pre.13 [04-19-2018]
+* `init`
+  * Added the `polymer-3-starter-kit` template; a (prerelease) version of
+    Polymer Starter Kit, ported to Polymer 3.
+
 ## v1.7.0-pre.12 [04-18-2018]
 * `serve`
   * Fix node module resolution for the case where the root package is served
