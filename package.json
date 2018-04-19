@@ -13,6 +13,8 @@
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build --stream",
     "test": "npm run build && npm run test:unit",
+    "test:all": "npm run test:unit && npm run test:integration",
+    "test:all:windows": "npm run test:unit:windows && npm run test:integration:windows",
     "test:integration": "lerna run test:integration --stream --parallel",
     "test:integration:windows": "lerna run test:integration --stream --parallel --ignore web-component-tester",
     "test:unit": "lerna run test:unit --stream --parallel",
