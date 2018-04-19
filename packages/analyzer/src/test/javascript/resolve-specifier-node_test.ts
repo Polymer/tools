@@ -46,6 +46,10 @@ const scopedRootComponentInfo = {
 };
 
 suite('resolve', async () => {
+  test('non-component root to path', async () => {
+    assert.equal(resolve('./root.js', rootMain), './root.js');
+  });
+
   test('non-component root to shallow dep', async () => {
     assert.equal(
         resolve('shallow', rootMain), './node_modules/shallow/shallow.js');
@@ -67,6 +71,11 @@ suite('resolve', async () => {
     assert.equal(
         resolve('shallow', scopedDepMain, shallowRootComponentInfo),
         '../../shallow/shallow.js');
+  });
+
+  test('component-root to path', async () => {
+    assert.equal(
+        resolve('./root.js', rootMain, shallowRootComponentInfo), './root.js');
   });
 
   test('component-root to shallow dep', async () => {

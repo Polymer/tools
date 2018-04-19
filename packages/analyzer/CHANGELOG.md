@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   more strict type of `{} | null | undefined`. If this breaks downstream code,
   that code should probably use a more specific type of `ParsedDocument`, or
   `Document<MoreSpecificParsedDocType>`.
+* Fix node module resolution for the case where components/ directory URL
+  rewriting is happening (e.g. polyserve), and a root package is importing
+  something from its own package using a path.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.23] - 2018-04-17

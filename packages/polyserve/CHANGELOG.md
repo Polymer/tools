@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Fix node module resolution for the case where the root package is served from
+  the components/ directory and imports a module from its own package using a
+  path.
 <!-- Add new, unreleased items here. -->
 
 ## [0.27.5] (2018-04-17)

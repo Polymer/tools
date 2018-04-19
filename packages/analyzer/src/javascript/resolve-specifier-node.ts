@@ -44,8 +44,10 @@ export const resolve =
         return specifier as FileRelativeUrl;
       }
 
-      const resolvedSpecifier = nodeResolve.sync(specifier, {
-        basedir: dirname(documentPath),
+      let importerFilepath = documentPath;
+
+      let dependencyFilepath = nodeResolve.sync(specifier, {
+        basedir: dirname(importerFilepath),
 
         // It's invalid to load a .json or .node file as a module on the web,
         // but this is what Node's resolution algorithm does
@@ -67,23 +69,31 @@ export const resolve =
             },
       });
 
-      let effectiveDocumentPath = documentPath;
       if (componentInfo !== undefined) {
+        // Special handling for servers like Polyserve which, when serving a
+        // package "foo", will map the URL "/components/foo" to the root
+        // package directory, so that "foo" can make correct relative path
+        // references to its dependencies.
         const {packageName, rootDir, componentDir} = componentInfo;
-        const isRootPackageRequest = !pathIsInside(documentPath, componentDir);
-        if (isRootPackageRequest) {
-          // Special handling for servers like Polyserve which, when serving a
-          // package "foo", will map the URL "/components/foo" to the root
-          // package directory, so that "foo" can make correct relative path
-          // references to its dependencies.
-          const rootRelativePath = relative(rootDir, documentPath);
-          effectiveDocumentPath =
-              join(componentDir, packageName, rootRelativePath);
+
+        const importerInRootPackage =
+            !pathIsInside(importerFilepath, componentDir);
+        if (importerInRootPackage) {
+          const rootRelativePath = relative(rootDir, importerFilepath);
+          importerFilepath = join(componentDir, packageName, rootRelativePath);
+
+          const dependencyInRootPackage =
+              !pathIsInside(dependencyFilepath, componentDir);
+          if (dependencyInRootPackage) {
+            const rootRelativePath = relative(rootDir, dependencyFilepath);
+            dependencyFilepath =
+                join(componentDir, packageName, rootRelativePath);
+          }
         }
       }
 
       let relativeSpecifierUrl =
-          relative(dirname(effectiveDocumentPath), resolvedSpecifier) as
+          relative(dirname(importerFilepath), dependencyFilepath) as
           FileRelativeUrl;
 
       if (isWindows()) {
