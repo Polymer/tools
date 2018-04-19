@@ -44,9 +44,9 @@ export const resolve =
         return specifier as FileRelativeUrl;
       }
 
-      let importerFilepath = documentPath;
+      const importerFilepath = documentPath;
 
-      let dependencyFilepath = nodeResolve.sync(specifier, {
+      const dependencyFilepath = nodeResolve.sync(specifier, {
         basedir: dirname(importerFilepath),
 
         // It's invalid to load a .json or .node file as a module on the web,
@@ -69,32 +69,44 @@ export const resolve =
             },
       });
 
+      let relativeSpecifierUrl =
+          relative(dirname(importerFilepath), dependencyFilepath) as
+          FileRelativeUrl;
+
       if (componentInfo !== undefined) {
         // Special handling for servers like Polyserve which, when serving a
-        // package "foo", will map the URL "/components/foo" to the root
-        // package directory, so that "foo" can make correct relative path
-        // references to its dependencies.
+        // package "foo", will map the URL "/components/foo" to the root package
+        // directory, so that "foo" can make correct relative path references to
+        // its dependencies.
+        //
+        // Note that Polyserve will only set componentInfo if the particular
+        // request was for a URL path in the components/ directory.
         const {packageName, rootDir, componentDir} = componentInfo;
 
         const importerInRootPackage =
             !pathIsInside(importerFilepath, componentDir);
-        if (importerInRootPackage) {
-          const rootRelativePath = relative(rootDir, importerFilepath);
-          importerFilepath = join(componentDir, packageName, rootRelativePath);
 
-          const dependencyInRootPackage =
-              !pathIsInside(dependencyFilepath, componentDir);
-          if (dependencyInRootPackage) {
-            const rootRelativePath = relative(rootDir, dependencyFilepath);
-            dependencyFilepath =
-                join(componentDir, packageName, rootRelativePath);
-          }
+        const dependencyInRootPackage =
+            !pathIsInside(dependencyFilepath, componentDir);
+
+        if (importerInRootPackage && !dependencyInRootPackage) {
+          // A module from the root package, served from a components/ URL, is
+          // importing a module from a different package. In this case we need
+          // to fix up our relative path specifier, because on disk the
+          // dependency resolves to e.g. "./node_modules/foo", but in URL space
+          // it must resolve to "../foo".
+          //
+          // Note that the case where both the importer and the dependency are
+          // in the root package does not need to be fixed up, since the
+          // relative path works out the same.
+          const rootRelativeImporterPath = relative(rootDir, importerFilepath);
+          const effectiveImporterFilepath =
+              join(componentDir, packageName, rootRelativeImporterPath);
+          relativeSpecifierUrl = relative(
+                                     dirname(effectiveImporterFilepath),
+                                     dependencyFilepath) as FileRelativeUrl;
         }
       }
-
-      let relativeSpecifierUrl =
-          relative(dirname(importerFilepath), dependencyFilepath) as
-          FileRelativeUrl;
 
       if (isWindows()) {
         // normalize path separators to URL format
