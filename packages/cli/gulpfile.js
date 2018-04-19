@@ -51,6 +51,7 @@ gulp.task(
               .pipe(mocha({
                 ui: 'tdd',
                 reporter: 'spec',
+                retries: 3,
               })));
 
 gulp.task(
@@ -58,6 +59,7 @@ gulp.task(
     () => gulp.src('lib/test/unit/**/*_test.js', {read: false}).pipe(mocha({
       ui: 'tdd',
       reporter: 'spec',
+      retries: 3,
     })));
 
 gulp.task(

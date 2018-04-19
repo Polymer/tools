@@ -1,1 +1,4 @@
--c --ui tdd lib/test/*.js lib/test/**/*.js
+-c 
+--ui tdd
+--retries 3
+lib/test/*.js lib/test/**/*.js
