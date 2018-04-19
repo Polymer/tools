@@ -1,4 +1,4 @@
--c 
+--colors 
 --ui tdd
 --retries 3
 lib/test/*.js lib/test/**/*.js
