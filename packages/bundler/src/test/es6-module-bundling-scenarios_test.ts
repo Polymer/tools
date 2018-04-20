@@ -199,9 +199,7 @@ suite('Es6 Module Bundling', () => {
           await bundler.bundle(await bundler.generateManifest([aUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
         async function go() {
-          const b = await import('./b.js').then(({
-            $b
-          }) => $b);
+          const b = await import('./b.js').then(bundle => bundle && bundle.$b);
           console.log(b.bee);
         }
 
@@ -225,9 +223,7 @@ suite('Es6 Module Bundling', () => {
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
-        import('./b.js').then(({
-          $b
-        }) => $b).then(b => console.log(b.bee));`);
+        import('./b.js').then(bundle => bundle && bundle.$b).then(b => console.log(b.bee));`);
     });
 
     test('updates external module script src', async () => {
