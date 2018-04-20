@@ -1,5 +1,3 @@
-[![Travis Build Status](https://travis-ci.org/Polymer/browser-capabilities.svg?branch=master)](https://travis-ci.org/Polymer/browser-capabilities)
-[![Build status](https://ci.appveyor.com/api/projects/status/gn1iuc8qgx8l86yf?svg=true)](https://ci.appveyor.com/project/aomarks/browser-capabilities)
 [![NPM version](http://img.shields.io/npm/v/browser-capabilities.svg)](https://www.npmjs.com/package/browser-capabilities)
 
 # browser-capabilities
@@ -13,5 +11,5 @@ The following keywords are supported. See [browser-capabilities.ts](https://gith
 | es2015        | [ECMAScript 2015 (aka ES6)](https://developers.google.com/web/shows/ttt/series-2/es2015)
 | push          | [HTTP/2 Server Push](https://developers.google.com/web/fundamentals/performance/http2/#server-push)
 | serviceworker | [Service Worker API](https://developers.google.com/web/fundamentals/getting-started/primers/service-workers)
-| modules       | [JavaScript Modules](https://www.chromestatus.com/feature/5365692190687232)
+| modules       | [JavaScript Modules](https://www.chromestatus.com/feature/5365692190687232) (including dynamic `import()` and `import.meta`)
 

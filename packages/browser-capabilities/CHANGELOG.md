@@ -1,6 +1,7 @@
 # Change Log
 
 ## [Unreleased]
+- Modules support now requires dynamic import and import.meta.
 
 ## [0.2.2] - 2018-01-01
 - Add Chrome Headless browser.

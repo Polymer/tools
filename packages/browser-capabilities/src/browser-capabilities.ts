@@ -24,7 +24,7 @@ export type BrowserCapability =
     'push'|
     // Service Worker API.
     'serviceworker'|
-    // JavaScript modules.
+    // JavaScript modules, including dynamic import and import.meta.
     'modules';
 
 // TODO: This should have type UAParser, but its typings are wrong so that
@@ -35,7 +35,7 @@ const chrome = {
   es2015: since(49),
   push: since(41),
   serviceworker: since(45),
-  modules: since(61),
+  modules: since(64),
 };
 
 const browserPredicates: {
@@ -54,13 +54,13 @@ const browserPredicates: {
     es2015: since(1),
     push: since(1),
     serviceworker: since(1),
-    modules: () => false,
+    modules: since(1, 14),
   },
   'Mobile Safari': {
     es2015: since(10),
     push: since(9, 2),
     serviceworker: () => false,
-    modules: since(10, 3),
+    modules: () => false,
   },
   'Safari': {
     es2015: since(10),
@@ -72,7 +72,7 @@ const browserPredicates: {
     },
     // https://webkit.org/status/#specification-service-workers
     serviceworker: () => false,
-    modules: since(10, 1),
+    modules: () => false,
   },
   'Edge': {
     // Edge versions before 15.15063 may contain a JIT bug affecting ES6
