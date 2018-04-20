@@ -46,15 +46,6 @@ suite('capabilities', function() {
         ['es2015', 'push']);
   });
 
-  test('safari push capability is predicated on macOS version', () => {
-    assertBrowserCapabilities(
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.1 Safari/603.1.30',
-        ['es2015']);
-    assertBrowserCapabilities(
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.1 Safari/603.1.30',
-        ['es2015', 'push']);
-  });
-
   test('parseVersion parses with fallback to -1', () => {
     assert.deepEqual(capabilities.parseVersion('37'), [37]);
     assert.deepEqual(capabilities.parseVersion('10.987.00.1'), [10, 987, 0, 1]);
