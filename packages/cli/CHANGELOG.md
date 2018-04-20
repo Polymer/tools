@@ -4,6 +4,7 @@
 ## Unreleased
 * `build`:
   * Disable Babel `minify-constant-folding` plugin when minifying. This plugin has a bug that breaks when a constant is exported from a module (https://github.com/babel/minify/issues/820).
+  * Added `--auto-base-path` flag. Sets the entrypoint `<base>` tag for all builds to match the name of that build. Unlike other flags, does not necessarily trigger a single one-off build.
 * `serve`, `test`:
   * Stricter requirements for determining when a browser supports modules, and
     hence when to automatically transform modules to AMD. We now require support
