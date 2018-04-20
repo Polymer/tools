@@ -29,14 +29,23 @@ suite('jsTransform', () => {
         jsTransform('const foo = 3;', {compileToEs5: true}), 'var foo = 3;');
   });
 
-  test('minifies', () => {
-    assert.equal(jsTransform('const foo = 3;', {minify: true}), 'const foo=3;');
-  });
+  suite('minifies', () => {
+    test('a simple expression', () => {
+      assert.equal(
+          jsTransform('const foo = 3;', {minify: true}), 'const foo=3;');
+    });
 
-  test('compiles and minifies', () => {
-    assert.equal(
-        jsTransform('const foo = 3;', {compileToEs5: true, minify: true}),
-        'var foo=3;');
+    test('an exported const', () => {
+      assert.equal(
+          jsTransform('const foo = "foo"; export { foo };', {minify: true}),
+          'const foo="foo";export{foo};');
+    });
+
+    test('and compiles', () => {
+      assert.equal(
+          jsTransform('const foo = 3;', {compileToEs5: true, minify: true}),
+          'var foo=3;');
+    });
   });
 
   test('does not unnecessarily reformat', () => {
@@ -81,7 +90,7 @@ suite('jsTransform', () => {
     const js = 'const foo = 2**2;';
 
     test('minifies', () => {
-      assert.equal(jsTransform(js, {minify: true}), 'const foo=4;');
+      assert.equal(jsTransform(js, {minify: true}), 'const foo=2**2;');
     });
 
     test('compiles to ES5', () => {
