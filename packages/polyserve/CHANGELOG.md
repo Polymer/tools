@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Stricter requirements for determining when a browser supports modules, and
+  hence when to automatically transform modules to AMD. We now require support
+  for dynamic import and import.meta.
 <!-- Add new, unreleased items here. -->
 
 ## [0.27.6] (2018-04-18)

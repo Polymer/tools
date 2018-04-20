@@ -4,6 +4,10 @@
 ## Unreleased
 * `build`:
   * Disable Babel `minify-constant-folding` plugin when minifying. This plugin has a bug that breaks when a constant is exported from a module (https://github.com/babel/minify/issues/820).
+* `serve`, `test`:
+  * Stricter requirements for determining when a browser supports modules, and
+    hence when to automatically transform modules to AMD. We now require support
+    for dynamic import and import.meta.
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.13 [04-19-2018]
