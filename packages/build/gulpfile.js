@@ -61,8 +61,10 @@ gulp.task('test', (done) => runSeq('build', 'test:unit', done));
 
 gulp.task('test:unit', function() {
   return gulp.src('lib/test/**/*_test.js', {read: false}).pipe(mocha({
+    colors: true,
     ui: 'tdd',
     reporter: 'spec',
+    retries: 3,
   }))
 });
 

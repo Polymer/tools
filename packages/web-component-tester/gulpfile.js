@@ -24,7 +24,7 @@ const rollup = require('rollup');
 const runSequence = require('run-sequence');
 const typescript = require('typescript');
 
-const mochaConfig = { reporter: 'spec' };
+const mochaConfig = { reporter: 'spec', retries: 3, colors: true };
 if (process.env.MOCHA_TIMEOUT) {
   mochaConfig.timeout = parseInt(process.env.MOCHA_TIMEOUT, 10);
 }

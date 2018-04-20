@@ -1,4 +1,6 @@
+--colors
 --ui tdd
 --require source-map-support/register
---timeout 10000
+--retries 3
+--timeout 20000
 lib/test
