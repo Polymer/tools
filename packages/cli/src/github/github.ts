@@ -96,13 +96,13 @@ export class Github {
   async extractReleaseTarball(tarballUrl: string, outDir: string):
       Promise<void> {
     const tarPipe = tar.extract(outDir, {
-      ignore: (_: any, header: any) => {
+      ignore: (_: {}, header: {name: string}) => {
         const splitPath = path.normalize(header.name).split(path.sep);
         // ignore the top directory in the tarfile to unpack directly to
         // the cwd
         return splitPath.length < 1 || splitPath[1] === '';
       },
-      map: (header: any) => {
+      map: (header: {name: string}) => {
         const splitPath = path.normalize(header.name).split(path.sep);
         const unprefixed = splitPath.slice(1).join(path.sep).trim();
         // A ./ prefix is needed to unpack top-level files in the tar,

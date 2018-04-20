@@ -33,7 +33,7 @@ class NoopStream extends Writable {
   constructor() {
     super({objectMode: true});
   }
-  _write(_chunk: any, _encoding?: string, callback?: Function): void {
+  _write(_chunk: {}, _encoding?: string, callback?: Function): void {
     callback!();
   }
 }
@@ -342,6 +342,7 @@ suite('Analyzer', () => {
     // We need to access these private streams directly because the public
     // `sources()` and `dependencies()` functions have intentional side effects
     // related to these streams that we are trying to test here.
+    // tslint:disable-next-line: no-any
     const analyzerWithPrivates: any = analyzer;
     assert.isUndefined(analyzerWithPrivates._sourcesStream);
     assert.isUndefined(analyzerWithPrivates._dependenciesStream);

@@ -17,6 +17,7 @@ import {UsageGroup} from 'command-line-usage';
 import {ProjectConfig} from 'polymer-project-config';
 
 export type CommandOptions = {
+  // tslint:disable-next-line: no-any Scary and unsafe!
   [name: string]: any
 };
 

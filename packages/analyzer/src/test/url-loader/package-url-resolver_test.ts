@@ -55,6 +55,7 @@ suite('PackageUrlResolver', function() {
           {componentDir: 'components', packageDir: '/1/2/'});
       assert.equal(
           configured.resolve(
+              // tslint:disable-next-line: no-any
               (rootedFileUrl`1/bar/bar.html`) as any as PackageRelativeUrl),
           rootedFileUrl`1/2/components/bar/bar.html`);
     });
@@ -64,7 +65,8 @@ suite('PackageUrlResolver', function() {
       const configured =
           new PackageUrlResolver({packageDir: '/repos/iron-icons'});
       assert.equal(
-          configured.resolve(
+        configured.resolve(
+              // tslint:disable-next-line: no-any
               rootedFileUrl`repos/iron-iconset-svg/foo.html` as any as
               PackageRelativeUrl),
           rootedFileUrl

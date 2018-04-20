@@ -20,10 +20,11 @@ import {scan} from '../../scanning/scan';
 import {Scanner} from '../../scanning/scanner';
 import {invertPromise} from '../test-utils';
 
+// tslint:disable: no-any This test is really hackety :/
 suite('scan()', () => {
   test('calls Scanner.scan', async () => {
     const feature = Symbol('feature') as any;
-    const scanner = new ScannerStub(<any>[feature]);
+    const scanner = new ScannerStub([feature]);
     const document = makeTestDocument({});
 
     const {features} = await scan(document, [scanner]);

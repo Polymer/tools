@@ -111,8 +111,8 @@ export class Linter {
   }
 
   private _getWarningFromError(
-      parsedDocument: ParsedDocument<any, any>, e: any, file: ResolvedUrl,
-      code: string, message: string) {
+      parsedDocument: ParsedDocument, e: {}, file: ResolvedUrl, code: string,
+      message: string) {
     if (e instanceof WarningCarryingException) {
       return e.warning;
     }

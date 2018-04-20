@@ -17,6 +17,7 @@ import * as babylon from 'babylon';
 
 import {correctSourceRange, InlineDocInfo, LocationOffset, Severity, SourceRange, Warning, WarningCarryingException} from '../model/model';
 import {ResolvedUrl} from '../model/url';
+import {UnparsableParsedDocument} from '../parser/document';
 import {Parser} from '../parser/parser';
 import {UrlResolver} from '../url-loader/url-resolver';
 
@@ -34,6 +35,7 @@ const baseParseOptions: babylon.BabylonOptions = {
   plugins: [
     'asyncGenerators',
     'dynamicImport',
+    // tslint:disable-next-line: no-any Remove this once typings updated.
     'importMeta' as any,
     'objectRestSpread',
   ],
@@ -41,6 +43,7 @@ const baseParseOptions: babylon.BabylonOptions = {
 
 // TODO(usergenic): Move this to regular baseParseOptions declaration once
 // @types/babylon has been updated to include `ranges`.
+// tslint:disable-next-line: no-any
 (baseParseOptions as any)['ranges'] = true;
 
 export class JavaScriptParser implements Parser<JavaScriptDocument> {
@@ -55,16 +58,7 @@ export class JavaScriptParser implements Parser<JavaScriptDocument> {
         contents, url, inlineInfo.locationOffset, undefined, this.sourceType);
     if (result.type === 'failure') {
       // TODO(rictic): define and return a ParseResult instead of throwing.
-      const minimalDocument = new JavaScriptDocument({
-        url,
-        contents,
-        baseUrl: inlineInfo.baseUrl,
-        ast: null as any,
-        locationOffset: inlineInfo.locationOffset,
-        astNode: inlineInfo.astNode,
-        isInline,
-        parsedAsSourceType: 'script',
-      });
+      const minimalDocument = new UnparsableParsedDocument(url, contents);
       throw new WarningCarryingException(
           new Warning({parsedDocument: minimalDocument, ...result.warningish}));
     }

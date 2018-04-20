@@ -106,7 +106,7 @@
     "source-map-support": "^0.5.4",
     "tmp": "0.0.31",
     "tsc-then": "^1.0.1",
-    "tslint": "^4.0.2",
+    "tslint": "^5.9.1",
     "typescript": "^2.2.0",
     "vinyl-fs-fake": "^1.1.0",
     "yeoman-assert": "^2.2.1",

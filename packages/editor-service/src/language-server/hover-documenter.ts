@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Property, ScannedProperty, SourcePosition} from 'polymer-analyzer';
+import {SourcePosition} from 'polymer-analyzer';
 import {CssCustomPropertyAssignment, CssCustomPropertyUse} from 'polymer-analyzer/lib/css/css-custom-property-scanner';
 import {ParsedHtmlDocument} from 'polymer-analyzer/lib/html/html-document';
 import {Hover, IConnection} from 'vscode-languageserver';
@@ -83,7 +83,7 @@ export default class HoverDocumenter extends Handler {
       return;
     }
     let description = feature.description;
-    if (isProperty(feature)) {
+    if ('type' in feature) {
       if (feature.type) {
         description = `{${feature.type}} ${feature.description}`;
       }
@@ -106,8 +106,4 @@ export default class HoverDocumenter extends Handler {
     }
     return {contents: description, range};
   }
-}
-
-function isProperty(d: any): d is(ScannedProperty | Property) {
-  return 'type' in d;
 }

@@ -32,6 +32,8 @@ import * as util from 'util';
 import {RemoteConsole} from 'vscode-languageserver';
 import * as winston from 'winston';
 
+// tslint:disable: no-any super hacky code that pokes at the insides of things.
+
 /**
  * Forwards logs through the LSP connection once it is set up.
  *

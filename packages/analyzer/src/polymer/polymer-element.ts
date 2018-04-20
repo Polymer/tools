@@ -298,6 +298,7 @@ export interface PolymerExtension extends ElementBase {
   behaviorAssignments: ImmutableArray<ScannedReference<'behavior'>>;
   localIds: ImmutableArray<LocalId>;
 
+  // tslint:disable-next-line: no-any TODO: define type for poperty metadata.
   emitPropertyMetadata(property: PolymerProperty): any;
 }
 

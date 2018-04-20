@@ -75,7 +75,7 @@ class DeprecatedCustomPropertySyntax extends CssRule {
   // Convert `var(--foo, --bar)` to `var(--foo, var(--bar))`
   private addVarSyntaxWarnings(
       node: shady.Node, parsedDocument: ParsedCssDocument,
-      warnings: Warning[]): any {
+      warnings: Warning[]) {
     if (node.type === shady.nodeType.expression) {
       const match = node.text.match(
           /var\s*\(\s*--[a-zA-Z0-9_-]+\s*,\s*(--[a-zA-Z0-9_-]+)\s*\)/);

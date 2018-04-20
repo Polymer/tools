@@ -28,7 +28,7 @@ import {Analyzer, InMemoryOverlayUrlLoader, PackageRelativeUrl, PackageUrlResolv
  * ```
  */
 export function heredoc(
-    strings: TemplateStringsArray, ...values: any[]): string {
+    strings: TemplateStringsArray, ...values: string[]): string {
   let buildAString = '';
   for (const s of strings) {
     buildAString += s;

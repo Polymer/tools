@@ -90,7 +90,8 @@ suite('service-worker', () => {
 
   suite('generateServiceWorker()', () => {
     test('should throw when options are not provided', () => {
-      return (<any>serviceWorker.generateServiceWorker)().then(
+      // tslint:disable-next-line: no-any testing type unsafe code
+      return (serviceWorker.generateServiceWorker as any)().then(
           () => {
             assert.fail(
                 'generateServiceWorker() resolved, expected rejection!');
@@ -103,8 +104,9 @@ suite('service-worker', () => {
     });
 
     test('should throw when options.project is not provided', () => {
-      return (<any>serviceWorker.generateServiceWorker)(
-                 {buildRoot: testBuildRoot})
+      // tslint:disable-next-line: no-any testing type unsafe code
+      const unsafeForm = (serviceWorker.generateServiceWorker as any);
+      return unsafeForm({buildRoot: testBuildRoot})
           .then(
               () => {
                 assert.fail(
@@ -117,8 +119,9 @@ suite('service-worker', () => {
     });
 
     test('should throw when options.buildRoot is not provided', () => {
-      return (<any>serviceWorker.generateServiceWorker)(
-                 {project: defaultProject})
+      // tslint:disable-next-line: no-any testing type unsafe code
+      const unsafeForm = (serviceWorker.generateServiceWorker as any);
+      return unsafeForm({project: defaultProject})
           .then(
               () => {
                 assert.fail(

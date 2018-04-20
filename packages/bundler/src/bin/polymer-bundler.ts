@@ -221,7 +221,7 @@ if (options.redirect) {
       options.redirect
           .map((redirect: string) => {
             const [prefix, path] = redirect.split('|');
-            const resolvedPrefix = urlResolver.resolve(prefix as any);
+            const resolvedPrefix = urlResolver.resolve(prefix as ResolvedUrl);
             return {prefix: resolvedPrefix, path};
           })
           .filter((r: Redirection) => r.prefix && r.path);

@@ -18,7 +18,7 @@ import * as chai from 'chai';
 import * as dom5 from 'dom5';
 import * as fs from 'fs';
 import * as parse5 from 'parse5';
-import {Analyzer, FsUrlLoader, FsUrlResolver} from 'polymer-analyzer';
+import {Analyzer, AnalyzerOptions, FsUrlLoader, FsUrlResolver} from 'polymer-analyzer';
 
 import {Bundle, generateShellMergeStrategy} from '../bundle-manifest';
 import {Bundler, Options as BundlerOptions} from '../bundler';
@@ -42,29 +42,20 @@ suite('Bundler', () => {
     bundler = undefined;
   });
 
-  function getAnalyzer(opts?: any): Analyzer {
-    if (!analyzer) {
-      if (!opts || !opts.urlResolver) {
-        const urlResolver = new FsUrlResolver(resolvePath('test/html'), );
-        opts = Object.assign({}, opts || {}, {urlResolver});
-      }
-      if (!opts || !opts.urlLoader) {
-        const urlLoader = new FsUrlLoader(resolvePath('test/html'));
-        opts = Object.assign({}, opts || {}, {urlLoader});
-      }
-      analyzer = new Analyzer(opts);
+  function getAnalyzer(opts: Partial<AnalyzerOptions> = {}): Analyzer {
+    if (analyzer === undefined) {
+      analyzer = new Analyzer({
+        urlResolver: new FsUrlResolver(resolvePath('test/html')),
+        urlLoader: new FsUrlLoader(resolvePath('test/html')),
+        ...opts
+      });
     }
     return analyzer;
   }
 
-  function getBundler(opts?: any): Bundler {
-    if (!bundler) {
-      if (!opts || !opts.analyzer) {
-        opts = Object.assign({}, opts || {}, {
-          analyzer: getAnalyzer(),
-        });
-      }
-      bundler = new Bundler(opts);
+  function getBundler(opts?: Partial<BundlerOptions>): Bundler {
+    if (bundler === undefined) {
+      bundler = new Bundler({analyzer: getAnalyzer(), ...opts});
     }
     return bundler;
   }
@@ -506,7 +497,6 @@ suite('Bundler', () => {
 
     test('Excluded imports are not listed as missing', async () => {
       const bundler = getBundler({
-        analyzer: analyzer,
         excludes: [
           resolve('this/does/not/exist.html'),
           resolve('this/does/not/exist.js'),

@@ -20,7 +20,8 @@ import File = require('vinyl');
 
 const multipipe = require('multipipe');
 
-if ((Symbol as any).asyncIterator === undefined) {
+if (Symbol.asyncIterator === undefined) {
+  // tslint:disable-next-line: no-any polyfilling.
   (Symbol as any).asyncIterator = Symbol('asyncIterator');
 }
 
@@ -120,7 +121,7 @@ class AsyncQueue<V> implements AsyncIterable<V> {
    */
   async close() {
     this._closed = true;
-    return this._write({done: true} as any);
+    return this._write({done: true} as IteratorResult<V>);
   }
 
   private async _write(value: IteratorResult<V>) {
@@ -224,7 +225,8 @@ export abstract class AsyncTransformStream<In extends {}, Out extends {}>
   _transform(
       input: In,
       _encoding: string,
-      callback: (error?: any, value?: Out) => void) {
+      callback:
+          (error?: null|undefined|string|Partial<Error>, value?: Out) => void) {
     this._initializeOnce();
     this._inputs.write(input).then(() => {
       callback();
@@ -237,7 +239,8 @@ export abstract class AsyncTransformStream<In extends {}, Out extends {}>
    *
    * Finish writing out the outputs.
    */
-  protected async _flush(callback: (err?: any) => void) {
+  protected async _flush(
+      callback: (err?: null|undefined|string|Partial<Error>) => void) {
     try {
       // We won't get any more inputs. Wait for them all to be processed.
       await this._inputs.close();

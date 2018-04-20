@@ -108,7 +108,7 @@ export class PolymerProject {
    * prefetch link hrefs.  In all other cases, link hrefs will be relative urls.
    */
   addPrefetchLinks(): NodeJS.ReadWriteStream {
-    return new AddPrefetchLinks(this.config) as any;
+    return new AddPrefetchLinks(this.config);
   }
 
   /**

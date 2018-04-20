@@ -34,6 +34,7 @@ export async function run(): Promise<StartServerResult> {
     type: Boolean,
   });
 
+  // tslint:disable-next-line: no-any We should declare/infer a type for this.
   let cliOptions: any;
 
   try {
@@ -101,7 +102,7 @@ export async function run(): Promise<StartServerResult> {
   return serverInfos;
 }
 
-function printUsage(options: any): void {
+function printUsage(options: commandLineUsage.ArgDescriptor[]): void {
   const usage = commandLineUsage([{
     header: 'A development server for Polymer projects',
     title: 'polyserve',

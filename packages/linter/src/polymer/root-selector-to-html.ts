@@ -13,6 +13,7 @@
  */
 
 import * as dom5 from 'dom5/lib/index-next';
+import * as parse5 from 'parse5';
 import {Document, isPositionInsideRange, ParsedCssDocument, ParsedHtmlDocument, Replacement, Severity, Warning} from 'polymer-analyzer';
 import * as shady from 'shady-css-parser';
 
@@ -48,8 +49,9 @@ class RootSelectorToHtml extends HtmlRule {
     if (domModules.size > 0) {
       for (const domModule of domModules) {
         const moduleChildren = domModule.astNode.node.childNodes || [];
-        const template: any =
-            moduleChildren.find((m) => m.tagName === 'template');
+        type TemplateElement = parse5.ASTNode&{content: parse5.ASTNode};
+        const template = moduleChildren.find(
+            (m) => m.tagName === 'template') as TemplateElement;
         if (template === undefined ||
             template.content.childNodes === undefined ||
             template.content.childNodes.length === 0) {

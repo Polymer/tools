@@ -127,7 +127,7 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
    */
   _analysisContext: AnalysisContext;
   warnings: Warning[];
-  languageAnalysis?: any;
+  languageAnalysis?: {};
 
   private readonly _localFeatures = new Set<Feature>();
   private readonly _scannedDocument: ScannedDocument;
@@ -148,8 +148,7 @@ export class Document<ParsedType extends ParsedDocument = ParsedDocument>
   private _doneResolving = false;
 
   constructor(
-      base: ScannedDocument, analyzer: AnalysisContext,
-      languageAnalysis?: any) {
+      base: ScannedDocument, analyzer: AnalysisContext, languageAnalysis?: {}) {
     if (base == null) {
       throw new Error('base is null');
     }

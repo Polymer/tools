@@ -106,6 +106,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
         onError('not found');
       }
     }
+    // tslint:disable-next-line: no-any
     return null as any as ts.SourceFile;
   }
 
@@ -159,6 +160,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
       return fs.readFileSync(libPath, {encoding: 'utf-8'});
     }
     const document = this.context._getScannedDocument(resolvedUrl);
+    // tslint:disable-next-line: no-any
     return (document) ? document.document.contents : null as any as string;
   }
 
@@ -168,6 +170,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
       // We only support path resolution, not node resolution
       if (!(moduleName.startsWith('./') || moduleName.startsWith('../') ||
             moduleName.startsWith('/'))) {
+        // tslint:disable-next-line: no-any
         return {resolvedFileName: null as any as string};
       }
       // since we have a path, we can simply resolve it
@@ -186,6 +189,7 @@ class AnalyzerCompilerHost implements ts.CompilerHost {
    */
   private _failSafeResolveUrl(url: string): ResolvedUrl {
     const resolved = this.context.resolver.resolve(url as PackageRelativeUrl);
+    // tslint:disable-next-line: no-any
     return resolved === undefined ? url as any as ResolvedUrl : resolved;
   }
 }

@@ -145,7 +145,9 @@ export abstract class ElementBase extends Class implements Feature {
     // Initialization of these attributes is kinda awkward, as they're part
     // of the inheritance system. See `inheritFrom` below which *may* be
     // called by our superclass, but may not be.
+    // tslint:disable-next-line: no-any
     this.attributes = (this as any).attributes || new Map();
+    // tslint:disable-next-line: no-any
     this.events = (this as any).events || new Map();
 
     if (attributes !== undefined) {

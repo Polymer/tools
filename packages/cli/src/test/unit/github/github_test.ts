@@ -40,7 +40,7 @@ suite('github/github', () => {
     test('extracts a tarball from a github tarball url', async () => {
       const tarballUrl = 'http://foo.com/bar.tar';
       let requestedUrl;
-      const mockRequestApi = (options: any) => {
+      const mockRequestApi = (options: {url: string}) => {
         requestedUrl = options.url;
         return fs.createReadStream(
             path.join(__dirname, 'github-test-data/test_tarball.tgz'));
@@ -48,6 +48,7 @@ suite('github/github', () => {
       const github = new Github({
         owner: 'TEST_OWNER',
         repo: 'TEST_REPO',
+        // tslint:disable-next-line: no-any
         requestApi: mockRequestApi as any,
       });
       const tmpDir = temp.mkdirSync();
@@ -57,7 +58,7 @@ suite('github/github', () => {
     });
 
     test('rejects when Github returns a 404 response status code', async () => {
-      const mockRequestApi = (_options: any) => {
+      const mockRequestApi = () => {
         const readStream = new PassThrough();
         setTimeout(() => {
           readStream.emit('response', {
@@ -70,13 +71,14 @@ suite('github/github', () => {
       const github = new Github({
         owner: 'TEST_OWNER',
         repo: 'TEST_REPO',
+        // tslint:disable-next-line: no-any
         requestApi: mockRequestApi as any,
       });
       const tmpDir = temp.mkdirSync();
       const err = await invertPromise(
           github.extractReleaseTarball('http://foo.com/bar.tar', tmpDir));
       assert.instanceOf(err, GithubResponseError);
-      assert.equal(err.message, 'unexpected response: 404 TEST MESSAGE - 404');
+      assert.equal(err!.message, 'unexpected response: 404 TEST MESSAGE - 404');
 
     });
 
@@ -150,6 +152,7 @@ suite('github/github', () => {
             getReleases: getReleasesStub,
           },
         },
+        // tslint:disable-next-line: no-any
       } as any);
     });
 
@@ -197,7 +200,7 @@ suite('github/github', () => {
 
       const err = await invertPromise(github.getSemverRelease('^v3.0.0'));
       assert.equal(
-          err.message,
+          err!.message,
           'TEST_OWNER/TEST_REPO has no releases matching ^v3.0.0.');
     });
   });

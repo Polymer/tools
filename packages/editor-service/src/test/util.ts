@@ -119,6 +119,7 @@ export class Underliner extends BaseUnderliner {
   underline(location: Location|Array<Location>|undefined|
             null): Promise<string|Array<string>>;
   underline(location: undefined|null): Promise<string>;
+  // tslint:disable-next-line: no-any Crazily overloaded function.
   async underline(location: any): Promise<string|string[]> {
     if (location == null) {
       return `Got nullish value instead of location.`;
@@ -216,6 +217,7 @@ export class TestClient {
       // If we specify a process id the server will call
       // process.exit after a timeout if the given process id
       // does not exist!! It handles `null` just fine though.
+      // tslint:disable-next-line: no-any
       processId: null as any as number,
       initializationOptions: {},
       // It looks like the typechecker is messing up here?
@@ -498,7 +500,7 @@ export function copyDir(fromDir: string, toDir: string) {
 
 /** Fails if the given promise either resolves or rejects within the timeout. */
 export async function assertDoesNotSettle(
-    promise: Promise<any>, timeoutMs = 100) {
+    promise: Promise<{}|null|undefined>, timeoutMs = 100) {
   return new Promise((resolve, reject) => {
     promise.then(
         () =>

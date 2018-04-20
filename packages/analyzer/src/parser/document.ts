@@ -194,10 +194,10 @@ export class UnparsableParsedDocument extends ParsedDocument {
       locationOffset: undefined
     });
   }
-  visit(_visitors: any[]): void {
+  visit(_visitors: {}[]): void {
     return;
   }
-  protected _sourceRangeForNode(_node: any): undefined {
+  protected _sourceRangeForNode(_node: {}): undefined {
     return undefined;
   }
   stringify(): string {
