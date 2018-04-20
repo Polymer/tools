@@ -80,7 +80,7 @@ gulp.task('depcheck', ['build'], () => {
              'vinyl',
              'babel-plugin-external-helpers',
              'polymer-bundler',
-            ],
+           ],
            ignoreDirs: [
              'templates',
            ],
