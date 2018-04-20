@@ -347,6 +347,7 @@ suite('ExpressionScanner', () => {
       const javascriptDocument = new JavaScriptParser().parse(
           contents, resolvedUrl`test.html`, new PackageUrlResolver());
       const literals: babel.Literal[] =
+          // tslint:disable-next-line: no-any
           (javascriptDocument.ast.program as any)
               .body[0]['declarations'][0]['init']['elements'];
 

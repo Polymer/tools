@@ -43,7 +43,7 @@ scan<AstNode, Visitor, PDoc extends ParsedDocument<AstNode, Visitor>>(
   // A Promise that runs the next batch of visitors in a microtask
   let runner: Promise<void>|null = null;
 
-  let visitError: any;
+  let visitError: {}|null|undefined;
   let visitErrorFound = false;
 
   // Initializes the current batch running state

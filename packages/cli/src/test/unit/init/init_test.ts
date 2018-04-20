@@ -81,7 +81,7 @@ suite('init', () => {
           polymerInit.runGenerator(UNKNOWN_GENERATOR_NAME, {env: yeomanEnv}));
 
       assert.equal(
-          error.message, `Template ${UNKNOWN_GENERATOR_NAME} not found`);
+          error!.message, `Template ${UNKNOWN_GENERATOR_NAME} not found`);
     });
 
     test('works with the default yeoman environment', async () => {
@@ -91,7 +91,7 @@ suite('init', () => {
       const error =
           await invertPromise(polymerInit.runGenerator(UNKNOWN_GENERATOR_NAME));
       assert.equal(
-          error.message, `Template ${UNKNOWN_GENERATOR_NAME} not found`);
+          error!.message, `Template ${UNKNOWN_GENERATOR_NAME} not found`);
     });
 
   });
@@ -184,9 +184,10 @@ suite('init', () => {
       sandbox.stub(inquirer, 'prompt').returns(Promise.resolve({
         foo: 'TEST',
       }));
+      // tslint:disable-next-line: no-any
       (polymerInit as any).runGenerator = function() {};
       const error = await invertPromise(polymerInit.promptGeneratorSelection());
-      assert.equal(error.message, 'Template TEST not found');
+      assert.equal(error!.message, 'Template TEST not found');
     });
 
     let testName =

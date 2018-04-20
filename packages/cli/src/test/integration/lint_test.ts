@@ -46,7 +46,7 @@ suite('polymer lint', function() {
   test('fails when lint errors are found', async () => {
     const cwd = path.join(fixturePath, 'lint-with-error');
     const result = runCommand(binPath, ['lint'], {cwd, failureExpected: true});
-    const output = await invertPromise(result);
+    const output = await invertPromise(result) as string;
     assert.include(
         output, 'Style tags should not be direct children of <dom-module>');
   });

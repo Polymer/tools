@@ -63,12 +63,16 @@ function unaryToValue(unary: babel.UnaryExpression): LiteralValue {
   const operand = expressionToValue(unary.argument);
   switch (unary.operator) {
     case '!':
+      // tslint:disable-next-line: no-any Aping JS semantics, this is ok.
       return !(operand as any);
     case '-':
+      // tslint:disable-next-line: no-any Aping JS semantics, this is ok.
       return -(operand as any);
     case '+':
+      // tslint:disable-next-line: no-any Aping JS semantics, this is ok.
       return +(operand as any);
     case '~':
+      // tslint:disable-next-line: no-any Aping JS semantics, this is ok.
       return ~(operand as any);
     case 'typeof':
       return typeof operand;
@@ -175,6 +179,7 @@ function binaryExpressionToValue(member: babel.BinaryExpression):
     // We need to cast to `any` here because, while it's usually not the right
     // thing to do to use '+' on two values of a mix of types because it's
     // unpredictable, that is what the original code we're evaluating does.
+    // tslint:disable-next-line: no-any Aping JS semantics, this is ok.
     return <any>left + right;
   }
   return;

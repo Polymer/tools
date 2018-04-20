@@ -37,7 +37,7 @@ suite('FunctionScanner', async () => {
   }
 
 
-  async function getTestProps(fn: ScannedFunction): Promise<any> {
+  async function getTestProps(fn: ScannedFunction) {
     return {
       name: fn.name,
       description: fn.description,

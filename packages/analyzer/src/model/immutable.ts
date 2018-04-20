@@ -36,6 +36,7 @@ export function asImmutable<V>(array: Array<V>): ImmutableArray<V>;
 export function asImmutable<V>(set: Set<V>): ImmutableSet<V>;
 export function asImmutable<K, V>(map: Map<K, V>): ImmutableMap<K, V>;
 export function asImmutable<O extends object>(object: O): Readonly<O>;
+// tslint:disable-next-line: no-any
 export function asImmutable(x: any) {
   return x;
 }
@@ -50,6 +51,7 @@ export function unsafeAsMutable<V>(array: ImmutableArray<V>): Array<V>;
 export function unsafeAsMutable<V>(set: ImmutableSet<V>): Set<V>;
 export function unsafeAsMutable<K, V>(map: ImmutableMap<K, V>): Map<K, V>;
 export function unsafeAsMutable<O extends object>(object: Readonly<O>): O;
+// tslint:disable-next-line: no-any
 export function unsafeAsMutable(x: any) {
   return x;
 }

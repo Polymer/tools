@@ -29,7 +29,9 @@ async function getTypeScriptAnalyzer(files: Map<PackageRelativeUrl, string>) {
   const urlResolver = new PackageUrlResolver();
   for (const [url, contents] of files) {
     urlLoader.urlContentsMap.set(
-        urlResolver.resolve('' as any, url as any)!, contents);
+        // tslint:disable-next-line: no-any
+        urlResolver.resolve('' as any, url as any)!,
+        contents);
   }
   const analysisContext = new AnalysisContext({
     parsers: new Map([['ts', new TypeScriptPreparser()]]),

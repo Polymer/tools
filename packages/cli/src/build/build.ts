@@ -64,6 +64,7 @@ export async function build(
         (resolve, _reject) =>
             bower.commands.list({}, {offline: true})
                 .on('end',
+                    // tslint:disable-next-line: no-any
                     (result: any) => {
                       if (result && result.dependencies &&
                           result.dependencies.polymer &&

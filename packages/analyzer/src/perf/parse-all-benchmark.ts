@@ -20,6 +20,7 @@ import {FsUrlLoader} from '../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../url-loader/overlay-loader';
 
 import now = require('performance-now');
+import {Analysis} from '..';
 
 const bowerDir = path.resolve(__dirname, `../../bower_components`);
 const inMemoryOverlay = new InMemoryOverlayUrlLoader(new FsUrlLoader(bowerDir));
@@ -29,7 +30,7 @@ const filesToAnalyze: string[] = [];
 
 for (const baseDir of fs.readdirSync(bowerDir)) {
   const bowerJsonPath = path.join(bowerDir, baseDir, 'bower.json');
-  let bowerJson: any;
+  let bowerJson: {main?: string|string[]};
   try {
     bowerJson = JSON.parse(fs.readFileSync(bowerJsonPath, 'utf-8'));
   } catch (e) {
@@ -82,7 +83,7 @@ async function measure() {
   const initialMemUse = process.memoryUsage().rss;
   console.log(`Initial rss: ${MiB(initialMemUse)}`);
   const start = now();
-  let document: any;
+  let document: Analysis;
   const measurements = [];
   for (let i = 0; i < 10; i++) {
     const before = now();
@@ -96,7 +97,7 @@ async function measure() {
 
   printMeasurements(measurements);
 
-  console.log(`\n\n\n${document.getFeatures().size} total features resolved.`);
+  console.log(`\n\n\n${document!.getFeatures().size} total features resolved.`);
   console.log(
       `${((now() - start) / 1000).toFixed(2)} seconds total elapsed time`);
 

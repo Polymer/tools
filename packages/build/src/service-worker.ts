@@ -38,6 +38,7 @@ export interface AddServiceWorkerOptions {
  * Given a user-provided AddServiceWorkerOptions object, check for deprecated
  * options. When one is found, warn the user and fix if possible.
  */
+// tslint:disable-next-line: no-any Turned off for user input.
 function fixDeprecatedOptions(options: any): AddServiceWorkerOptions {
   if (typeof options.serviceWorkerPath !== 'undefined') {
     logger.warn(

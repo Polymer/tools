@@ -35,7 +35,8 @@ suite('Polymer2ElementScanner', async () => {
         ScannedPolymerElement[];
   }
 
-  async function getTestProps(element: ScannedPolymerElement): Promise<any> {
+  async function getTestProps(element: ScannedPolymerElement) {
+    // tslint:disable-next-line: no-any Hacky test code
     const props: any = {
       className: element.className,
       superClass: element.superClass && element.superClass.identifier,
@@ -44,6 +45,7 @@ suite('Polymer2ElementScanner', async () => {
       summary: element.summary,
       properties: await Promise.all(
           Array.from(element.properties.values()).map(async (p) => {
+            // tslint:disable-next-line: no-any Hacky test code
             const result = {name: p.name, description: p.description} as any;
             if (p.type) {
               result.type = p.type;

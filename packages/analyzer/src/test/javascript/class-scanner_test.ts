@@ -19,6 +19,7 @@ import {ClassScanner} from '../../javascript/class-scanner';
 import {Class, Element, ElementMixin, Method, ScannedClass} from '../../model/model';
 import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
+// tslint:disable: no-any This test is pretty hacky, uses a lot of any.
 suite('Class', async () => {
   const {analyzer, underliner} = await createForDirectory(fixtureDir);
 

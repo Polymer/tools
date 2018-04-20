@@ -50,6 +50,7 @@ export interface Analysis {
    * Framework-specific metadata should be put into a sub-object with the name
    * of that framework.
    */
+  // tslint:disable-next-line: no-any
   metadata?: any;
 }
 
@@ -69,6 +70,7 @@ export interface Feature {
    * Framework-specific metadata should be put into a sub-object with the name
    * of that framework.
    */
+  // tslint:disable-next-line: no-any
   metadata?: any;
 }
 

@@ -51,7 +51,7 @@ export const babelCompileCache = LRU<string>(<LRU.Options<string>>{
 // TODO(justinfagnani): see if we can just use the request path as the key
 // See https://github.com/Polymer/polyserve/issues/248
 export const getCompileCacheKey =
-    (requestPath: string, body: string, options: any): string =>
+    (requestPath: string, body: string, options: {}): string =>
         JSON.stringify(options) + requestPath + body;
 
 export function babelCompile(

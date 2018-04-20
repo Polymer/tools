@@ -9,7 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-export async function invertPromise(p: Promise<any>): Promise<any> {
+export async function invertPromise(p: Promise<{}|null|undefined|void>): Promise<null|undefined|Partial<Error>> {
   let result;
   try {
     result = await p;
@@ -32,7 +32,7 @@ export async function interceptOutput(captured: () => Promise<void>):
   const originalError = console.error;
   const originalWarn = console.warn;
   const buffer: string[] = [];
-  const capture = (...args: any[]) => {
+  const capture = (...args: {}[]) => {
     buffer.push(args.join(' '));
   };
   console.log = capture;

@@ -29,16 +29,18 @@ import {PackageUrlResolver} from '../url-loader/package-url-resolver';
 import {UrlLoader} from '../url-loader/url-loader';
 import {underlineCode} from '../warning/code-printer';
 
-export class UnexpectedResolutionError extends Error {
-  resolvedValue: any;
-  constructor(message: string, resolvedValue: any) {
+export class UnexpectedResolutionError<V = {} | null | undefined> extends
+    Error {
+  resolvedValue: V;
+  constructor(message: string, resolvedValue: V) {
     super(message);
     this.resolvedValue = resolvedValue;
   }
 }
 
-export async function invertPromise(promise: Promise<any>): Promise<any> {
-  let value: any;
+export async function invertPromise(promise: Promise<{}|null|undefined>):
+    Promise<Partial<Error>|null|undefined> {
+  let value: {}|null|undefined;
   try {
     value = await promise;
   } catch (e) {
@@ -93,13 +95,14 @@ export class CodeUnderliner {
       Promise<ReadonlyArray<string>>;
   async underline(reference: Reference|ReadonlyArray<Reference>):
       Promise<string|ReadonlyArray<string>> {
-    if (isReadonlyArray(reference)) {
-      return Promise.all(reference.map((ref) => this.underline(ref)));
-    }
-
     if (reference === undefined) {
       return 'No source range given.';
     }
+
+    if ('length' in reference) {
+      return Promise.all(reference.map((ref) => this.underline(ref)));
+    }
+
     if (isWarning(reference)) {
       return '\n' + reference.toString({verbosity: 'code-only', color: false});
     }
@@ -107,10 +110,6 @@ export class CodeUnderliner {
     const parsedDocument = await this._parsedDocumentGetter(reference.file);
     return '\n' + underlineCode(reference, parsedDocument);
   }
-}
-
-function isReadonlyArray(maybeArr: any): maybeArr is ReadonlyArray<any> {
-  return Array.isArray(maybeArr);
 }
 
 function isWarning(wOrS: Warning|SourceRange): wOrS is Warning {
@@ -124,7 +123,7 @@ function isWarning(wOrS: Warning|SourceRange): wOrS is Warning {
  */
 export async function runScanner(
     analyzer: Analyzer,
-    scanner: Scanner<ParsedDocument, any, any>,
+    scanner: Scanner<ParsedDocument, {}|null|undefined, {}>,
     url: string): Promise<{features: ScannedFeature[], warnings: Warning[]}> {
   const context = await analyzer['_analysisComplete'];
   const resolvedUrl = analyzer.resolveUrl(url)!;
@@ -139,7 +138,9 @@ export async function runScanner(
  * the file is parsed.
  */
 export async function runScannerOnContents(
-    scanner: Scanner<ParsedDocument, any, any>, url: string, contents: string) {
+    scanner: Scanner<ParsedDocument, {}|null|undefined, {}>,
+    url: string,
+    contents: string) {
   const overlayLoader = new InMemoryOverlayUrlLoader();
   const analyzer = new Analyzer({urlLoader: overlayLoader});
   overlayLoader.urlContentsMap.set(analyzer.resolveUrl(url)!, contents);
@@ -148,21 +149,23 @@ export async function runScannerOnContents(
 }
 
 export const noOpTag =
-    (strings: TemplateStringsArray, ...values: any[]): string => values.reduce(
-        (r: string, v: any, i) => r + String(v) + strings[i + 1], strings[0]);
+    (strings: TemplateStringsArray, ...values: string[]): string =>
+        values.reduce(
+            (r: string, v: string, i) => r + String(v) + strings[i + 1],
+            strings[0]);
 
 export function fileRelativeUrl(
-    strings: TemplateStringsArray, ...values: any[]): FileRelativeUrl {
+    strings: TemplateStringsArray, ...values: string[]): FileRelativeUrl {
   return noOpTag(strings, ...values) as FileRelativeUrl;
 }
 
 export function packageRelativeUrl(
-    strings: TemplateStringsArray, ...values: any[]): PackageRelativeUrl {
+    strings: TemplateStringsArray, ...values: string[]): PackageRelativeUrl {
   return noOpTag(strings, ...values) as PackageRelativeUrl;
 }
 
 export function resolvedUrl(
-    strings: TemplateStringsArray, ...values: any[]): ResolvedUrl {
+    strings: TemplateStringsArray, ...values: string[]): ResolvedUrl {
   return noOpTag(strings, ...values) as ResolvedUrl;
 }
 
@@ -176,14 +179,15 @@ export function resolvedUrl(
  * url resolvers.
  */
 export function rootedFileUrl(
-    strings: TemplateStringsArray, ...values: any[]): ResolvedUrl {
+    strings: TemplateStringsArray, ...values: string[]): ResolvedUrl {
   const root = URI.file(path.resolve('/')).toString();
   const text = noOpTag(strings, ...values) as FileRelativeUrl;
   return (root + text) as ResolvedUrl;
 }
 
 export const fixtureDir = path.join(__dirname, '../../src/test/static');
-export async function assertIsCancelled(promise: Promise<any>): Promise<void> {
+export async function assertIsCancelled(promise: Promise<{}|null|undefined>):
+    Promise<void> {
   const rejection = await invertPromise(promise);
   assert.isTrue(isCancel(rejection), `Expected ${rejection} to be a Cancel.`);
 }

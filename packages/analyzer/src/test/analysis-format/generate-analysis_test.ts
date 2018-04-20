@@ -114,6 +114,8 @@ suite('generate-analysis', () => {
   suite('validateAnalysis', () => {
     test('throws when validating valid analysis.json', () => {
       try {
+        // Explicitly testing a type-unsafe thing.
+        // tslint:disable-next-line: no-any
         validateAnalysis({} as any);
       } catch (err) {
         assert.instanceOf(err, ValidationError);
@@ -133,20 +135,24 @@ suite('generate-analysis', () => {
     });
 
     test(`doesn't throw when validating a version from the future`, () => {
-      validateAnalysis(<any>{
+      // Explicitly testing a type-unsafe thing.
+      validateAnalysis({
         elements: [],
         schema_version: '1.0.1',
         new_field: 'stuff here'
-      });
+        // tslint:disable-next-line: no-any
+      } as any);
     });
 
     test(`throws when validating a bad version`, () => {
       try {
-        validateAnalysis(<any>{
+        // Explicitly testing a type-unsafe thing
+        validateAnalysis({
           elements: [],
           schema_version: '5.1.1',
           new_field: 'stuff here'
-        });
+          // tslint:disable-next-line: no-any
+        } as any);
       } catch (e) {
         assert.include(e.message, 'Invalid schema_version in AnalyzedPackage');
         return;

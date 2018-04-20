@@ -15,6 +15,6 @@ import {ProjectBuildOptions, ProjectConfig} from 'polymer-project-config';
 import {ServerOptions} from 'polyserve/lib/start_server';
 
 export interface Environment {
-  serve(options: ServerOptions): Promise<any>;
-  build(options: ProjectBuildOptions, config: ProjectConfig): Promise<any>;
+  serve(options: ServerOptions): Promise<void>;
+  build(options: ProjectBuildOptions, config: ProjectConfig): Promise<void>;
 }

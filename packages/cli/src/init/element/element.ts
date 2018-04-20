@@ -19,6 +19,11 @@ import validateElementName = require('validate-element-name');
 
 const logger = logging.getLogger('init');
 
+export interface Props {
+  name: string;
+  elementClassName: string;
+}
+
 /**
  * Returns a Yeoman Generator constructor that can be passed to yeoman to be
  * run. A "template name" argument is required to choose the correct
@@ -28,9 +33,9 @@ const logger = logging.getLogger('init');
 export function createElementGenerator(templateName: string):
     (typeof Generator) {
   class ElementGenerator extends Generator {
-    props: any;
+    props!: Props;
 
-    constructor(args: string|string[], options: any) {
+    constructor(args: string|string[], options: {}) {
       super(args, options);
       this.sourceRoot(path.join(__dirname, '../../../templates/element', templateName));
     }
@@ -76,7 +81,7 @@ export function createElementGenerator(templateName: string):
         },
       ];
 
-      this.props = await this.prompt(prompts);
+      this.props = (await this.prompt(prompts)) as Props;
       this.props.elementClassName = this.props.name.replace(
           /(^|-)(\w)/g,
           (_match: string, _p0: string, p1: string) => p1.toUpperCase());

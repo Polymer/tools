@@ -66,9 +66,10 @@ suite('startServer', () => {
 
     test('serves default entry point index.html instead of 404', async () => {
       const app = getApp({root});
-      await supertest(app).get('/foo').expect(200).expect((res: any) => {
-        expect(res.text).to.have.string('INDEX');
-      });
+      await supertest(app).get('/foo').expect(200).expect(
+          (res: supertest.Response) => {
+            expect(res.text).to.have.string('INDEX');
+          });
     });
 
     test('serves custom entry point from "/"', async () => {
@@ -76,9 +77,10 @@ suite('startServer', () => {
         root,
         entrypoint: path.join(root, 'custom-entry.html'),
       });
-      await supertest(app).get('/').expect(200).expect((res: any) => {
-        expect(res.text).to.have.string('CUSTOM-ENTRY');
-      });
+      await supertest(app).get('/').expect(200).expect(
+          (res: supertest.Response) => {
+            expect(res.text).to.have.string('CUSTOM-ENTRY');
+          });
     });
 
     test('serves custom entry point instead of 404', async () => {
@@ -86,9 +88,12 @@ suite('startServer', () => {
         root,
         entrypoint: path.join(root, 'custom-entry.html'),
       });
-      await supertest(app).get('/not/a/file').expect(200).expect((res: any) => {
-        expect(res.text).to.have.string('CUSTOM-ENTRY');
-      });
+      await supertest(app)
+          .get('/not/a/file')
+          .expect(200)
+          .expect((res: supertest.Response) => {
+            expect(res.text).to.have.string('CUSTOM-ENTRY');
+          });
     });
 
     ['html', 'js', 'json', 'css', 'png', 'jpg', 'jpeg', 'gif'].forEach(
@@ -106,7 +111,7 @@ suite('startServer', () => {
       await supertest(app)
           .get('/<script>alert("nasty")</script>.html')
           .expect(404)
-          .expect((res: any) => {
+          .expect((res: supertest.Response) => {
             expect(res.text).to.not.have.string('<script>');
             expect(res.text).to.have.string(
                 '&lt;script&gt;alert(&quot;nasty&quot;)&lt;/script&gt;');
@@ -240,8 +245,8 @@ suite('startServer', () => {
   });
 
   suite('proxy', () => {
-    let consoleError: (message?: any) => void;
-    let consoleWarn: (message?: any) => void;
+    let consoleError: () => void;
+    let consoleWarn: () => void;
     let proxyServer: http.Server;
     let app: http.Server;
     async function setUpProxy(path: string) {
@@ -307,7 +312,7 @@ suite('startServer', () => {
       await supertest(proxyServer)
           .get('/api/v1/')
           .expect(200)
-          .expect((res: any) => {
+          .expect((res: supertest.Response) => {
             expect(res.text).to.have.string('INDEX');
           });
     });
@@ -476,6 +481,7 @@ suite('startServer', () => {
       // depend on them, but sinon accesses them, which would trigger
       // deprecation warnings. Don't log them.
       _stubServer = ignoreNodeDeprecationWarnings(
+          // tslint:disable-next-line: no-any
           () => sinon.createStubInstance(http['Server']) as any as http.Server);
       createServerStub = sinon.stub(http, 'createServer').returns(_stubServer);
       _stubServer.close = (cb) => cb.call(_stubServer);
@@ -487,6 +493,7 @@ suite('startServer', () => {
 
     async function _startStubServer(options: ServerOptions) {
       return new Promise<http.server.Server>((resolve) => {
+        // tslint:disable-next-line: no-any Bad typings?
         _stubServer.listen = (() => resolve(_stubServer)) as any;
         startServer(options);
       });
@@ -497,7 +504,7 @@ suite('startServer', () => {
         if (!cert) {
           reject(new Error('invalid cert'));
         } else {
-          pem.readCertificateInfo(cert, (err: any) => {
+          pem.readCertificateInfo(cert, (err: {}) => {
             if (err) {
               reject(err);
             } else {
@@ -639,12 +646,14 @@ suite('startServers', () => {
               .get('/components/contents.txt')
               .expect(200, 'my-mainline\n');
 
-          const fooServer = servers.variants.find((s) => s.variantName === 'foo');
+          const fooServer =
+              servers.variants.find((s) => s.variantName === 'foo');
           await supertest(fooServer.server)
               .get('/components/contents.txt')
               .expect(200, 'my-foo\n');
 
-          const barServer = servers.variants.find((s) => s.variantName === 'bar');
+          const barServer =
+              servers.variants.find((s) => s.variantName === 'bar');
           await supertest(barServer.server)
               .get('/components/contents.txt')
               .expect(200, 'my-bar\n');

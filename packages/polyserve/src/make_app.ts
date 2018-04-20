@@ -80,7 +80,7 @@ export function makeApp(options: AppOptions): PolyserveApplication {
 
     if (headers) {
       for (const header in headers) {
-        (<any>res).setHeader(header, headers[header]);
+        res.setHeader(header, headers[header]);
       }
     }
     const _send = send(req, filePath);
@@ -100,7 +100,7 @@ export function makeApp(options: AppOptions): PolyserveApplication {
               res.end('Redirecting to ' + req.originalUrl + '/');
             })
         .on('error',
-            (err: any) => {
+            (err: {statusCode?: number, path: string, Error: string}) => {
               // A RequireJS found in the user's components directory will win
               // over our verison.
               if (err.statusCode === 404 &&
@@ -118,7 +118,7 @@ export function makeApp(options: AppOptions): PolyserveApplication {
   return app;
 }
 
-function arrayStartsWith(array: any[], prefix: any[]) {
+function arrayStartsWith<V>(array: V[], prefix: V[]) {
   for (let i = 0; i < prefix.length; i++) {
     if (i >= array.length || array[i] !== prefix[i]) {
       return false;

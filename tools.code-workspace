@@ -28,8 +28,12 @@
 			"path": "packages/project-config"
 		},
 		{
+			"path": "packages/web-component-tester"
+		},
+		{
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+	}
 }

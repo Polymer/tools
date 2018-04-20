@@ -34,16 +34,16 @@ import {ParsedCommand} from 'command-line-commands';
 
 const logger = logging.getLogger('cli.main');
 
-process.on('uncaughtException', (error: any) => {
+process.on('uncaughtException', (error: null|undefined|Partial<Error>) => {
   logger.error(`Uncaught exception: ${error}`);
-  if (error.stack)
+  if (error && error.stack)
     logger.error(error.stack);
   process.exit(1);
 });
 
-process.on('unhandledRejection', (error: any) => {
+process.on('unhandledRejection', (error: null|undefined|Partial<Error>) => {
   logger.error(`Promise rejection: ${error}`);
-  if (error.stack)
+  if (error && error.stack)
     logger.error(error.stack);
   process.exit(1);
 });
@@ -54,6 +54,7 @@ process.on('unhandledRejection', (error: any) => {
  * `command-line-args` data format (with its hyphen-case flags) to an easier to
  *  use options object with lowerCamelCase properties.
  */
+// tslint:disable-next-line: no-any Super hacky scary code.
 function parseCLIArgs(commandOptions: any): {[name: string]: string} {
   commandOptions = commandOptions && commandOptions['_all'];
   const parsedOptions = Object.assign({}, commandOptions);
@@ -71,8 +72,8 @@ function parseCLIArgs(commandOptions: any): {[name: string]: string} {
 /**
  * Shallowly copies an object, converting keys from dash-case to camelCase.
  */
-function objectDashToCamelCase(input: any): any {
-  const output: any = {};
+function objectDashToCamelCase<V>(input: {[key: string]: V})  {
+  const output: {[key: string]: V} = {};
   for (const key of Object.keys(input)) {
     output[dashToCamelCase(key)] = input[key];
   }

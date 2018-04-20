@@ -32,7 +32,8 @@ import File = require('vinyl');
 
 const logger = logging.getLogger('cli.build.optimize-streams');
 
-export type FileCB = (error?: any, file?: File) => void;
+export type FileCB =
+    (error?: null|undefined|string|Partial<Error>, file?: File) => void;
 export type CSSOptimizeOptions = {
   stripWhitespace?: boolean;
 };

@@ -24,7 +24,7 @@ import yeoGen = require('yeoman-generator');
 function createTestGenerator(
     generatorOptions: {owner: string, repo: string, semverRange?: string},
     generatorWillRun: (generator: yeoGen) => void) {
-  return function TestGenerator(args: string[]|string, options?: any) {
+  return function TestGenerator(args: string[]|string, options?: {}) {
     const GithubGenerator = createGithubGenerator(generatorOptions);
     const githubGenerator = new GithubGenerator(args, options);
     generatorWillRun(githubGenerator);
@@ -54,13 +54,16 @@ suite('init/github', () => {
           },
           function setupGeneratorStubs(generator) {
             getSemverReleaseStub =
+                // tslint:disable-next-line: no-any
                 sinon.stub((generator as any)._github, 'getSemverRelease')
                     .returns(Promise.resolve(semverMatchingRelease));
             extractReleaseTarballStub =
+                // tslint:disable-next-line: no-any
                 sinon.stub((generator as any)._github, 'extractReleaseTarball')
                     .returns(Promise.resolve());
           });
 
+          // tslint:disable-next-line: no-any
       helpers.run(TestGenerator as any).on('end', () => {
         assert.isOk(getSemverReleaseStub.calledWith('*'));
         assert.isOk(extractReleaseTarballStub.calledWith(
@@ -84,13 +87,16 @@ suite('init/github', () => {
           },
           function setupGeneratorStubs(generator) {
             getSemverReleaseStub =
+                // tslint:disable-next-line: no-any
                 sinon.stub((generator as any)._github, 'getSemverRelease')
                     .returns(Promise.resolve(semverMatchingRelease));
             extractReleaseTarballStub =
+                // tslint:disable-next-line: no-any
                 sinon.stub((generator as any)._github, 'extractReleaseTarball')
                     .returns(Promise.resolve());
           });
 
+      // tslint:disable-next-line: no-any
       helpers.run(TestGenerator as any).on('end', () => {
         assert.isOk(getSemverReleaseStub.calledWith(testSemverRange));
         assert.isOk(extractReleaseTarballStub.calledWith(

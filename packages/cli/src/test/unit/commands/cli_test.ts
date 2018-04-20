@@ -79,9 +79,11 @@ suite('The general CLI', () => {
   test(testName, () => {
     new PolymerCli(['help', '--verbose']);
     let logger = logging.getLogger('TEST_LOGGER');
+    // tslint:disable-next-line: no-any
     assert.equal((logger as any)['level'], 'debug');
     new PolymerCli(['help', '--quiet']);
     logger = logging.getLogger('TEST_LOGGER');
+    // tslint:disable-next-line: no-any
     assert.equal((logger as any)['level'], 'error');
   });
 

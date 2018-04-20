@@ -76,8 +76,8 @@ export function closestSpelling(word: string, options: Iterable<string>) {
 // namespace. We should remove this function and import it instead
 // once it has been exposed in a future analyzer release.
 export function getDocumentContaining(
-    sourceRange: SourceRange|undefined,
-    document: Document): ParsedDocument<any, any>|undefined {
+    sourceRange: SourceRange|undefined, document: Document): ParsedDocument|
+    undefined {
   if (!sourceRange) {
     return undefined;
   }

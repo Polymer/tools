@@ -77,7 +77,7 @@ suite('Deferred', () => {
   test('rejects', async () => {
     const deferred = new Deferred<string>();
     deferred.reject(new Error('foo'));
-    assert.deepEqual((await invertPromise(deferred.promise)).message, 'foo');
+    assert.deepEqual((await invertPromise(deferred.promise))!.message, 'foo');
   });
 
   test('resolves only once', async () => {

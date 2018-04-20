@@ -50,7 +50,8 @@ suite('Polymer2MixinScanner', async () => {
       let processedParams = undefined;
       if (params) {
         processedParams = params.map(({name, type, description}) => {
-          const result: any = {name};
+          const result:
+              {name: string, type?: string, description?: string} = {name};
           if (type != null) {
             result.type = type;
           }

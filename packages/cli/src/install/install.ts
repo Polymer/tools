@@ -69,6 +69,11 @@ async function npmInstall() {
   logger.info('Finished installing npm dependencies.');
 }
 
+interface ExtendedBowerProject extends BowerProject {
+  _json?: JsonObject;
+  _jsonFile?: string;
+}
+
 /**
  * Performs a Bower install, optionally with a specific JSON configuration and
  * output directory.
@@ -91,20 +96,20 @@ async function _bowerInstall(
     color: true,
   });
   bowerLogger.on('log', (log: bower.LogData) => renderer.log(log));
-  bowerLogger.on('end', (data: any) => renderer.end(data));
+  bowerLogger.on('end', (data: {}) => renderer.end(data));
   bowerLogger.on('error', (err: Error) => renderer.error(err));
 
-  const project = new BowerProject(config, bowerLogger);
+  const project: ExtendedBowerProject = new BowerProject(config, bowerLogger);
 
   // This is the only way I could find to provide a JSON object to the
   // Project. It's a hack, and might break in the future, but it works.
   if (bowerJson) {
-    (project as any)._json = bowerJson;
+    project._json = bowerJson;
     // Generate a new fake bower.json name because Bower is insting on
     // overwriting this file, even with the {save: false}.
     // TODO(justinfagnani): Figure this out
     const fileName = variantName ? `bower-${variantName}.json` : `bower.json`;
-    (project as any)._jsonFile = path.join(cwd, fileName);
+    project._jsonFile = path.join(cwd, fileName);
   }
 
   await project.install([], {save: false, offline}, config);
@@ -117,12 +122,12 @@ async function bowerInstallDefault(offline: boolean): Promise<void> {
 }
 
 async function bowerInstallVariants(offline: boolean): Promise<void> {
-  const bowerJson = await new Promise<any>((resolve, reject) => {
+  const bowerJson = await new Promise<JsonObject>((resolve, reject) => {
     const config = defaultBowerConfig({
       save: false,
     });
     const cwd = config.cwd || process.cwd();
-    readBowerJson(cwd, {}, (err: any, json: any) => {
+    readBowerJson(cwd, {}, (err: {}, json: {}) => {
       err ? reject(err) : resolve(json);
     });
   });
@@ -135,7 +140,7 @@ async function bowerInstallVariants(offline: boolean): Promise<void> {
   const variants = bowerJson['variants'];
   if (variants) {
     await Promise.all(Object.keys(variants).map(async (variantName) => {
-      const variant = variants[variantName];
+      const variant = (variants as JsonObject)[variantName];
       const variantBowerJson = _mergeJson(variant, bowerJson) as JsonObject;
       const variantDirectory = `bower_components-${variantName}`;
       logger.info(
@@ -170,7 +175,7 @@ export function _mergeJson(from: JsonValue, to: JsonValue): JsonValue {
   return merged;
 }
 
-function isPrimitiveOrArray(value: any) {
+function isPrimitiveOrArray(value: {}|null|undefined) {
   if (value == null)
     return true;
   if (Array.isArray(value))

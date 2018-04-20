@@ -219,6 +219,7 @@ function createSelectPrompt(env: YeomanEnvironment) {
  * error will be thrown.
  */
 export async function runGenerator(
+    // tslint:disable-next-line: no-any typings issues in yeoman
     generatorName: string, options: {[name: string]: any} = {}): Promise<void> {
   const templateName = options['templateName'] || generatorName;
 
@@ -236,7 +237,7 @@ export async function runGenerator(
   }
 
   return new Promise<void>((resolve, reject) => {
-    env.run(generatorName, {}, (error: any) => {
+    env.run(generatorName, {}, (error: {}) => {
       if (error) {
         reject(error);
         return;
@@ -250,6 +251,7 @@ export async function runGenerator(
  * Prompt the user to select a generator. When the user
  * selects a generator, run it.
  */
+// tslint:disable-next-line: no-any typings issues
 export async function promptGeneratorSelection(options?: {[name: string]: any}):
     Promise<void> {
   options = options || {};

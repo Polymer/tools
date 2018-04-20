@@ -33,6 +33,7 @@ export {Visitor} from './estree-visitor';
  * operator, and it doesn't need to be a real Node as all of this happens at
  * analysis time, and nothing happens at runtime.
  */
+// tslint:disable-next-line: no-any
 const __exampleNode: Node = null as any;
 type EstreeType = typeof __exampleNode.type;
 interface SkipRecord {
@@ -80,6 +81,7 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
               //     mapping between callback names and the types of the first
               //     arg?
               const result: VisitResult =
+                  // tslint:disable-next-line: no-any
                   (visitor as any)[callbackName](node, parent, path);
               if (result) {
                 handleVisitorResult(result, callbackName, visitor, node.type);
