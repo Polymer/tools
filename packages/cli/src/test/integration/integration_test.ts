@@ -45,10 +45,9 @@ suite('integration tests', function() {
     });
 
     skipOnWindows('test the Polymer 3.x application template', async () => {
-      const dir =
-          await runGenerator(createApplicationGenerator('polymer-3.x'))
-              .withPrompts({name: 'my-app'})  // Mock the prompt answers
-              .toPromise();
+      const dir = await runGenerator(createApplicationGenerator('polymer-3.x'))
+                      .withPrompts({name: 'my-app'})  // Mock the prompt answers
+                      .toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
       await runCommand(binPath, ['lint'], {cwd: dir});
       await runCommand(binPath, ['test'], {cwd: dir});
@@ -111,6 +110,23 @@ suite('integration tests', function() {
       // await runCommand(binPath, ['test'], {cwd: dir})
       await runCommand(binPath, ['build'], {cwd: dir});
     });
+
+    test('test the 3.0 "shop" template', async function() {
+      // Shop has a lot of build configurations, they take a long time.
+      this.timeout(5 * 60 * 1000);
+      const ShopGenerator = createGithubGenerator(
+          {owner: 'Polymer', repo: 'shop', githubToken, branch: '3.0'});
+
+      // https://github.com/Polymer/tools/issues/137 for filling this out more.
+      const dir = await runGenerator(ShopGenerator).toPromise();
+      await runCommand(binPath, ['install'], {cwd: dir});
+      // await runCommand(
+      //   binPath, ['lint', '--rules=polymer-3'],
+      //   {cwd: dir})
+      // await runCommand(binPath, ['test'], {cwd: dir})
+      await runCommand(binPath, ['build'], {cwd: dir});
+    });
+
 
     // TODO(justinfagnani): consider removing these integration tests
     // or checking in the contents so that we're not subject to the

@@ -3,5 +3,18 @@
   "packages": [
     "packages/*"
   ],
-  "version": "independent"
+  "version": "independent",
+  "command": {
+    "publish": {
+      "allowBranch": ["master"],
+      "ignoreChanges": [
+        ".clang-format",
+        ".gitignore",
+        ".travis.yml",
+        "README.md",
+        "appveyor.yml",
+        "tslint.json"
+      ]
+    }
+  }
 }

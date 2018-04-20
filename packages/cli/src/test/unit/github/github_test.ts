@@ -8,15 +8,18 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import {assert} from 'chai';
+import {assert, use} from 'chai';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as sinon from 'sinon';
 import {PassThrough} from 'stream';
 import * as tempMod from 'temp';
+import chaiSubset = require('chai-subset');
 
 import {Github, GithubResponseError} from '../../../github/github';
 import {invertPromise} from '../../util';
+
+use(chaiSubset);
 
 const temp = tempMod.track();
 
@@ -78,8 +81,9 @@ suite('github/github', () => {
       const err = await invertPromise(
           github.extractReleaseTarball('http://foo.com/bar.tar', tmpDir));
       assert.instanceOf(err, GithubResponseError);
-      assert.equal(err!.message, 'unexpected response: 404 TEST MESSAGE - 404');
-
+      assert.equal(
+          err!.message,
+          '404 fetching http://foo.com/bar.tar - TEST MESSAGE - 404');
     });
 
   });
@@ -173,7 +177,7 @@ suite('github/github', () => {
       getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('*');
-      assert.deepEqual(release, {tag_name: 'v2.1.0'});
+      assert.containSubset(release, {name: 'v2.1.0'});
     });
 
     testName =
@@ -182,7 +186,7 @@ suite('github/github', () => {
       getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('^v1.0.0');
-      assert.deepEqual(release, {tag_name: 'v1.2.1'});
+      assert.containSubset(release, {name: 'v1.2.1'});
     });
 
     testName =
@@ -191,7 +195,7 @@ suite('github/github', () => {
       getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('^v2.0.0');
-      assert.deepEqual(release, {tag_name: 'v2.1.0'});
+      assert.containSubset(release, {name: 'v2.1.0'});
     });
 
     testName = 'rejects with an error if no matching releases are found';
