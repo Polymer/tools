@@ -1,1 +1,3 @@
--c --ui tdd lib/test/*.js lib/test/**/*.js
+-c 
+--ui tdd
+lib/test/*.js lib/test/**/*.js

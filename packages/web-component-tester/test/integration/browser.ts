@@ -170,99 +170,118 @@ function runsIntegrationSuite(
     describer = describe.skip;
   }
   describer(suiteName, function() {
-    const log: string[] = [];
-    const testResults = new TestResults();
+    let log: string[] = [];
+    let testResults: TestResults = new TestResults();
 
     before(async function() {
-      const suiteRoot = await makeProperTestDir(dirName);
-      const suiteOptions = <any>loadOptionsFile(
-          path.join('test', 'fixtures', 'integration', dirName));
-      // Filter the list of browsers within the suite's options by the global
-      // overrides if they are present.
-      if (suiteOptions.plugins !== undefined) {
-        if (testLocalBrowsersList.length > 0 &&
-            !testLocalBrowsersList.includes('default') &&
-            suiteOptions.plugins.local !== undefined &&
-            suiteOptions.plugins.local.browsers !== undefined) {
-          suiteOptions.plugins.local.browsers =
-              suiteOptions.plugins.local.browsers.filter(
-                  (b: string) => testLocalBrowsersList.includes(b));
-        }
-        if (testRemoteBrowsersList.length > 0 &&
-            suiteOptions.plugins.sauce !== undefined &&
-            suiteOptions.plugins.sauce.browsers !== undefined) {
-          suiteOptions.plugins.sauce.browsers =
-              suiteOptions.plugins.sauce.browsers.filter(
-                  (b: string) => testRemoteBrowsersList.includes(b));
-        }
-      }
-      const allOptions: config.Config = Object.assign(
-          {
-            output: <any>{write: log.push.bind(log)},
-            ttyOutput: false,
-            root: suiteRoot,
-            browserOptions: <any>{
-              name: 'web-component-tester',
-              tags: ['org:Polymer', 'repo:web-component-tester'],
-            },
-          },
-          options, suiteOptions);
-      const context = new Context(allOptions);
-
-      const addEventHandler = (name: string, handler: Function) => {
-        context.on(name, function() {
-          try {
-            handler.apply(null, arguments);
-          } catch (error) {
-            console.error(`Error inside ${name} handler in integration tests:`);
-            console.error(error.stack);
+      const maxRetries = 3;
+      let tryNumber = 0;
+      let successful = false;
+      while (tryNumber < maxRetries && !successful) {
+        try {
+          if (tryNumber !== 0) {
+            log = []
+            testResults = new TestResults();
           }
-        });
-      };
-
-      addEventHandler(
-          'test-end',
-          (browserDef: BrowserDef, data: TestEndData, stats: Stats) => {
-            const variantResults =
-                testResults.getVariantResults(browserDef.variant || '');
-            const browserName = getBrowserName(browserDef);
-            variantResults.stats[browserName] = stats;
-
-            let testNode = <TestNode>(
-                variantResults.tests[browserName] =
-                    variantResults.tests[browserName] || {});
-            let errorNode = variantResults.testErrors[browserName] =
-                variantResults.testErrors[browserName] || {};
-            for (let i = 0; i < data.test.length; i++) {
-              const name = data.test[i];
-              testNode = <TestNode>(testNode[name] = testNode[name] || {});
-              if (i < data.test.length - 1) {
-                errorNode = errorNode[name] = errorNode[name] || {};
-              } else if (data.error) {
-                errorNode[name] = data.error;
-              }
+          const suiteRoot = await makeProperTestDir(dirName);
+          const suiteOptions = <any>loadOptionsFile(
+              path.join('test', 'fixtures', 'integration', dirName));
+          // Filter the list of browsers within the suite's options by the
+          // global overrides if they are present.
+          if (suiteOptions.plugins !== undefined) {
+            if (testLocalBrowsersList.length > 0 &&
+                !testLocalBrowsersList.includes('default') &&
+                suiteOptions.plugins.local !== undefined &&
+                suiteOptions.plugins.local.browsers !== undefined) {
+              suiteOptions.plugins.local.browsers =
+                  suiteOptions.plugins.local.browsers.filter(
+                      (b: string) => testLocalBrowsersList.includes(b));
             }
-            testNode.state = data.state;
+            if (testRemoteBrowsersList.length > 0 &&
+                suiteOptions.plugins.sauce !== undefined &&
+                suiteOptions.plugins.sauce.browsers !== undefined) {
+              suiteOptions.plugins.sauce.browsers =
+                  suiteOptions.plugins.sauce.browsers.filter(
+                      (b: string) => testRemoteBrowsersList.includes(b));
+            }
+          }
+          const allOptions: config.Config = Object.assign(
+              {
+                output: <any>{write: log.push.bind(log)},
+                ttyOutput: false,
+                root: suiteRoot,
+                browserOptions: <any>{
+                  name: 'web-component-tester',
+                  tags: ['org:Polymer', 'repo:web-component-tester'],
+                },
+              },
+              options, suiteOptions);
+          const context = new Context(allOptions);
+
+          const addEventHandler = (name: string, handler: Function) => {
+            context.on(name, function() {
+              try {
+                handler.apply(null, arguments);
+              } catch (error) {
+                console.error(
+                    `Error inside ${name} handler in integration tests:`);
+                console.error(error.stack);
+              }
+            });
+          };
+
+          addEventHandler(
+              'test-end',
+              (browserDef: BrowserDef, data: TestEndData, stats: Stats) => {
+                const variantResults =
+                    testResults.getVariantResults(browserDef.variant || '');
+                const browserName = getBrowserName(browserDef);
+                variantResults.stats[browserName] = stats;
+
+                let testNode = <TestNode>(
+                    variantResults.tests[browserName] =
+                        variantResults.tests[browserName] || {});
+                let errorNode = variantResults.testErrors[browserName] =
+                    variantResults.testErrors[browserName] || {};
+                for (let i = 0; i < data.test.length; i++) {
+                  const name = data.test[i];
+                  testNode = <TestNode>(testNode[name] = testNode[name] || {});
+                  if (i < data.test.length - 1) {
+                    errorNode = errorNode[name] = errorNode[name] || {};
+                  } else if (data.error) {
+                    errorNode[name] = data.error;
+                  }
+                }
+                testNode.state = data.state;
+              });
+
+          addEventHandler(
+              'browser-end',
+              (browserDef: BrowserDef, error: any, stats: Stats) => {
+                const variantResults =
+                    testResults.getVariantResults(browserDef.variant || '');
+                const browserName = getBrowserName(browserDef);
+                variantResults.stats[browserName] = stats;
+                variantResults.errors[browserName] = error || null;
+              });
+
+          addEventHandler('run-end', (error: any) => {
+            testResults.runError = error;
           });
 
-      addEventHandler(
-          'browser-end', (browserDef: BrowserDef, error: any, stats: Stats) => {
-            const variantResults =
-                testResults.getVariantResults(browserDef.variant || '');
-            const browserName = getBrowserName(browserDef);
-            variantResults.stats[browserName] = stats;
-            variantResults.errors[browserName] = error || null;
-          });
-
-      addEventHandler('run-end', (error: any) => {
-        testResults.runError = error;
-      });
-
-      // Don't fail the integration suite on test errors.
-      try {
-        await test(context);
-      } catch (error) {
-        testResults.testRunnerError = error.message;
+          // Don't fail the integration suite on test errors.
+          try {
+            await test(context);
+          } catch (error) {
+            testResults.testRunnerError = error.message;
+          }
+          successful = true;
+        } catch (error) {
+          ++tryNumber;
+          if (tryNumber === maxRetries) {
+            throw error;
+          }
+        }
       }
     });
 
