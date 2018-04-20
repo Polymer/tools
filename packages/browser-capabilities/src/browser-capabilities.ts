@@ -59,7 +59,7 @@ const browserPredicates: {
   'Mobile Safari': {
     es2015: since(10),
     push: since(9, 2),
-    serviceworker: () => false,
+    serviceworker: since(11, 3),
     modules: since(10, 3),
   },
   'Safari': {
@@ -70,8 +70,7 @@ const browserPredicates: {
           // caniuse.com.
           versionAtLeast([10, 11], parseVersion(ua.getOS().version));
     },
-    // https://webkit.org/status/#specification-service-workers
-    serviceworker: () => false,
+    serviceworker: since(11, 1),
     modules: since(10, 1),
   },
   'Edge': {
