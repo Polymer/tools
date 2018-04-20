@@ -2,6 +2,8 @@
 
 
 ## Unreleased
+* `init`:
+  * Fixed a bug which caused `.gitignore` to be excluded from published templates.
 * `build`:
   * Disable Babel `minify-constant-folding` plugin when minifying. This plugin has a bug that breaks when a constant is exported from a module (https://github.com/babel/minify/issues/820).
 <!-- Add new, unreleased items here. -->
