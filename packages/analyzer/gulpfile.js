@@ -107,7 +107,6 @@ task('test', ['build'], () => {
   return gulp.src('test/**/*_test.js').pipe(mocha({
     ui: 'tdd',
     reporter: 'spec',
-    retries: 3,
   }));
 });
 

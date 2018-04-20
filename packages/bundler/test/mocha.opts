@@ -1,5 +1,4 @@
 --ui tdd
 --require source-map-support/register
---retries 3
 --timeout 20000
 lib/test

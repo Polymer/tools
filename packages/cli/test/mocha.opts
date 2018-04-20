@@ -1,5 +1,4 @@
 --ui tdd
 --require source-map-support/register
---retries 3
 --timeout 5000
 
