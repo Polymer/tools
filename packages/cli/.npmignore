@@ -1,6 +1,7 @@
 .clang-format
 .github
-.gitignore
+/.gitignore
+!/templates/*/*/.gitignore
 .travis.yml
 appveyor.yml
 node_modules
