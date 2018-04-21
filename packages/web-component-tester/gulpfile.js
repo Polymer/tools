@@ -154,7 +154,7 @@ gulp.task('build:wct-browser-legacy', [
 
 
 gulp.task('test:unit', function () {
-  return gulp.src('test/unit/*.js', { read: false })
+  return gulp.src('test/unit/*.js', { read: false, timeout: 5000, })
     .pipe(mocha(mochaConfig));
 });
 

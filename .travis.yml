@@ -21,7 +21,7 @@ install:
 - npm run bootstrap
 - npm run build
 script:
-- xvfb-run npm run test:unit
+- xvfb-run npm run test:unit:parallel
 - xvfb-run npm run test:integration:parallel
 branches:
   only:
