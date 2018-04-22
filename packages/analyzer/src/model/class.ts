@@ -48,6 +48,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly properties: Map<string, ScannedProperty>;
   readonly staticMethods: ImmutableMap<string, ScannedMethod>;
   readonly methods: ImmutableMap<string, ScannedMethod>;
+  readonly constructorMethod?: ScannedMethod;
   readonly superClass: ScannedReference<'class'>|undefined;
   // TODO: add a 'mixin' type independent of elements, use that here.
   readonly mixins: ScannedReference<'element-mixin'>[];
@@ -61,6 +62,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
       jsdoc: jsdocLib.Annotation, description: string, sourceRange: SourceRange,
       properties: Map<string, ScannedProperty>,
       methods: Map<string, ScannedMethod>,
+      constructorMethod: ScannedMethod|undefined,
       staticMethods: Map<string, ScannedMethod>,
       superClass: ScannedReference<'class'>|undefined,
       mixins: Array<ScannedReference<'element-mixin'>>, privacy: Privacy,
@@ -74,6 +76,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
     this.sourceRange = sourceRange;
     this.properties = properties;
     this.methods = methods;
+    this.constructorMethod = constructorMethod;
     this.staticMethods = staticMethods;
     this.superClass = superClass;
     this.mixins = mixins;
@@ -128,6 +131,7 @@ export interface ClassInit {
   readonly properties?: ImmutableMap<string, Property>;
   readonly staticMethods: ImmutableMap<string, Method>;
   readonly methods?: ImmutableMap<string, Method>;
+  readonly constructorMethod?: Method;
   readonly superClass?: ScannedReference<'class'>|undefined;
   // TODO: add a 'mixin' type independent of elements, use that here.
   readonly mixins?: Array<ScannedReference<'element-mixin'>>;
@@ -155,6 +159,7 @@ export class Class implements Feature, DeclaredWithStatement {
   description: string;
   readonly properties = new Map<string, Property>();
   readonly methods = new Map<string, Method>();
+  readonly constructorMethod?: Method;
   readonly staticMethods = new Map<string, Method>();
   readonly superClass: ScannedReference<'class'>|undefined;
   /**
@@ -211,6 +216,7 @@ export class Class implements Feature, DeclaredWithStatement {
     if (init.methods !== undefined) {
       this._overwriteInherited(this.methods, init.methods, undefined, true);
     }
+    this.constructorMethod = init.constructorMethod;
     if (init.staticMethods !== undefined) {
       this._overwriteInherited(
           this.staticMethods, init.staticMethods, undefined, true);

@@ -1,4 +1,12 @@
 class Class {
+  /**
+   * This is the description of the constructor
+   * @param {number} num A number constructor parameter
+   * @param {boolean} truth Another constructor parameter
+  */
+  constructor(num, truth) {
+
+  }
   static get customClassGetter() {
     return 1;
   }

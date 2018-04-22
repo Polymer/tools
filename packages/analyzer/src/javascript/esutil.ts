@@ -502,6 +502,32 @@ export function getMethods(node: babel.Node, document: JavaScriptDocument):
   return methods;
 }
 
+export function getConstructorMethod(
+    astNode: babel.Node, document: JavaScriptDocument): ScannedMethod|
+    undefined {
+  if (!babel.isClass(astNode)) {
+    return;
+  }
+
+  const statement = getConstructorClassMethod(astNode);
+
+  if (statement) {
+    const method = toScannedMethod(
+        statement, document.sourceRangeForNode(statement)!, document);
+    if (astNode.id) {
+      method.return = {...method.return, type: astNode.id.name};
+    }
+    return method;
+  }
+}
+
+export function getConstructorClassMethod(astNode: babel.Class):
+    babel.ClassMethod|undefined {
+  return astNode.body.body.find(
+             (member) => babel.isClassMethod(member) &&
+                 member.kind === 'constructor') as babel.ClassMethod;
+}
+
 /**
  * Scan any static methods on the given node, if it's a class
  * expression/declaration.

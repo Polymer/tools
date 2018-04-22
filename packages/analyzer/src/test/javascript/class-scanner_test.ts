@@ -16,7 +16,7 @@
 import {assert} from 'chai';
 
 import {ClassScanner} from '../../javascript/class-scanner';
-import {Class, Element, ElementMixin, Method, ScannedClass} from '../../model/model';
+import {Class, Element, ElementMixin, Method, ScannedClass, ScannedMethod} from '../../model/model';
 import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
 // tslint:disable: no-any This test is pretty hacky, uses a lot of any.
@@ -39,11 +39,40 @@ suite('Class', async () => {
     return {classes, analysis};
   }
 
+  function getMethod(m: ScannedMethod|Method): any {
+    const method: any = {name: m.name, description: m.description};
+    if (m.params && m.params.length > 0) {
+      method.params = m.params.map((p) => {
+        const param: any = {name: p.name};
+        if (p.description != null) {
+          param.description = p.description;
+        }
+        if (p.type != null) {
+          param.type = p.type;
+        }
+        if (p.defaultValue != null) {
+          param.defaultValue = p.defaultValue;
+        }
+        if (p.rest != null) {
+          param.rest = p.rest;
+        }
+        return param;
+      });
+    }
+    if (m.return ) {
+      method.return = m.return;
+    }
+    const maybeMethod = m as Partial<Method>;
+    if (maybeMethod.inheritedFrom) {
+      method.inheritedFrom = maybeMethod.inheritedFrom;
+    }
+    return method;
+  }
+
   async function getTestProps(class_: ScannedClass|Class) {
     type TestPropsType = {
       name: string | undefined,
-      description: string,
-      privacy: string,
+      constructorMethod?: any, description: string, privacy: string,
       properties?: any[],
       methods?: any[],
       warnings?: ReadonlyArray<string>,
@@ -64,33 +93,7 @@ suite('Class', async () => {
     if (class_.methods.size > 0) {
       result.methods = [];
       for (const m of class_.methods.values()) {
-        const method: any = {name: m.name, description: m.description};
-        if (m.params && m.params.length > 0) {
-          method.params = m.params.map((p) => {
-            const param: any = {name: p.name};
-            if (p.description != null) {
-              param.description = p.description;
-            }
-            if (p.type != null) {
-              param.type = p.type;
-            }
-            if (p.defaultValue != null) {
-              param.defaultValue = p.defaultValue;
-            }
-            if (p.rest != null) {
-              param.rest = p.rest;
-            }
-            return param;
-          });
-        }
-        if (m.return ) {
-          method.return = m.return;
-        }
-        const maybeMethod = m as Partial<Method>;
-        if (maybeMethod.inheritedFrom) {
-          method.inheritedFrom = maybeMethod.inheritedFrom;
-        }
-        result.methods.push(method);
+        result.methods.push(getMethod(m));
       }
     }
     if (class_.mixins.length > 0) {
@@ -104,6 +107,9 @@ suite('Class', async () => {
     }
     if (class_.superClass) {
       result.superClass = class_.superClass.identifier;
+    }
+    if (class_.constructorMethod) {
+      result.constructorMethod = getMethod(class_.constructorMethod);
     }
     return result;
   }
@@ -220,6 +226,8 @@ suite('Class', async () => {
 
       assert.deepEqual(await getTestProps(cls), {
         name: 'Class',
+        constructorMethod:
+            {description: '', name: 'constructor', return: {type: 'Class'}},
         description: '',
         privacy: 'public',
         properties: [
@@ -246,6 +254,23 @@ suite('Class', async () => {
           description: '',
           privacy: 'public',
           properties: [{name: 'customInstanceGetter'}],
+          constructorMethod: {
+            description: 'This is the description of the constructor',
+            name: 'constructor',
+            params: [
+              {
+                name: 'num',
+                type: 'number',
+                description: 'A number constructor parameter'
+              },
+              {
+                name: 'truth',
+                type: 'boolean',
+                description: 'Another constructor parameter'
+              }
+            ],
+            return: {type: 'Class'}
+          },
           methods: [
             {
               name: 'customInstanceFunction',
@@ -260,7 +285,7 @@ suite('Class', async () => {
               name: 'methodWithComplexDefaultParam',
               description: '',
               params: [{name: 'a', defaultValue: '[1, 2, 3]'}],
-              return: { type: 'void' }
+              return: {type: 'void'}
             },
             {
               name: 'customInstanceFunctionWithJSDoc',
@@ -521,6 +546,23 @@ suite('Class', async () => {
           description: '',
           privacy: 'public',
           properties: [{name: 'customInstanceGetter'}],
+          constructorMethod: {
+            description: 'This is the description of the constructor',
+            name: 'constructor',
+            params: [
+              {
+                name: 'num',
+                type: 'number',
+                description: 'A number constructor parameter'
+              },
+              {
+                name: 'truth',
+                type: 'boolean',
+                description: 'Another constructor parameter'
+              }
+            ],
+            return: {type: 'Class'}
+          },
           methods: [
             {
               name: 'customInstanceFunction',
@@ -535,7 +577,7 @@ suite('Class', async () => {
               name: 'methodWithComplexDefaultParam',
               description: '',
               params: [{name: 'a', defaultValue: '[1, 2, 3]'}],
-              return: { type: 'void' }
+              return: {type: 'void'}
             },
             {
               name: 'customInstanceFunctionWithJSDoc',
