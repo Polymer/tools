@@ -292,7 +292,7 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
     parent = root;
 
   } else {
-    console.error('Could not find a name.');
+    console.error(`Could not find element name defined in ${feature.sourceRange}`);
     return;
   }
 
@@ -367,7 +367,7 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
  */
 function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
   if (!feature.className) {
-    console.error('Could not find a name for behavior.');
+    console.error(`Could not find a name for behavior defined in ${feature.sourceRange}`);
     return;
   }
 
@@ -488,7 +488,7 @@ function transitiveMixins(
  */
 function handleClass(feature: analyzer.Class, root: ts.Document) {
   if (!feature.className) {
-    console.error('Could not find a name for class.');
+    console.error(`Could not find a name for class defined in ${feature.sourceRange}`);
     return;
   }
   const [namespacePath, name] = splitReference(feature.className);
