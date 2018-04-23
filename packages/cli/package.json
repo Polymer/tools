@@ -15,10 +15,10 @@
     "test": "gulp test lint",
     "test:smoke": "gulp test",
     "test:smoke-lint": "gulp test lint",
-    "test:integration": "gulp test:integration",
-    "test:unit": "gulp test:unit",
+    "test:integration": "mocha lib/test/integration/*_test.js lib/test/integration/**/*_test.js",
+    "test:unit": "mocha lib/test/unit/*_test.js lib/test/unit/**/*_test.js",
     "format": "find src gulpfile.js \\( -iname '*.ts' -o -iname '*.js' \\) -not -path '*fixtures*' | xargs clang-format --style=file -i",
-    "test:watch": "tsc-then -- mocha -c --ui tdd lib/test/integration/*_test.js lib/test/unit/*_test.js lib/test/unit/*/*_test.js"
+    "test:watch": "tsc-then -- mocha lib/test/integration/*_test.js lib/test/unit/*_test.js lib/test/unit/*/*_test.js"
   },
   "repository": {
     "type": "git",
