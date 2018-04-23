@@ -12,9 +12,9 @@
     "start": "./bin/polyserve",
     "clean": "rimraf lib",
     "build": "npm run clean && tsc",
-    "test": "npm run build && mocha && tslint \"src/**/*.ts\"",
-    "test:unit": "mocha",
-    "test:watch": "tsc-then -- mocha -c",
+    "test": "npm run build && mocha lib/test/*_test.js lib/test/**/*_test.js && tslint \"src/**/*.ts\"",
+    "test:unit": "mocha lib/test/*_test.js lib/test/**/*_test.js",
+    "test:watch": "tsc-then -- mocha lib/test/*_test.js lib/test/**/*_test.js",
     "format": "find src test -iname '*.ts' | xargs clang-format --style=file -i"
   },
   "keywords": [
