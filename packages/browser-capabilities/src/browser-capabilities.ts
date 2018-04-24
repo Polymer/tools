@@ -58,7 +58,10 @@ const browserPredicates: {
     es2015: since(10),
     push: since(9, 2),
     serviceworker: since(11, 3),
-    modules: () => false,
+    modules: (ua) => {
+      return versionAtLeast([11], parseVersion(ua.getBrowser().version)) &&
+          versionAtLeast([11, 3], parseVersion(ua.getOS().version));
+    },
   },
   'Safari': {
     es2015: since(10),
@@ -70,7 +73,7 @@ const browserPredicates: {
     },
     // https://webkit.org/status/#specification-service-workers
     serviceworker: since(11, 1),
-    modules: () => false,
+    modules: since(11, 1),
   },
   'Edge': {
     // Edge versions before 15.15063 may contain a JIT bug affecting ES6
