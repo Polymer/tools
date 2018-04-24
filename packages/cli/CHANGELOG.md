@@ -1,7 +1,10 @@
 # Changelog
 
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased items here. -->
+
+## v1.7.0-pre.14 [04-23-2018]
 * `init`:
   * Fixed a bug which caused `.gitignore` to be excluded from published templates.
 * `build`:
@@ -11,7 +14,6 @@
   * Stricter requirements for determining when a browser supports modules, and
     hence when to automatically transform modules to AMD. We now require support
     for dynamic import and import.meta.
-<!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.13 [04-19-2018]
 * `init`
