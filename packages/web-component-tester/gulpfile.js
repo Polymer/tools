@@ -86,7 +86,7 @@ gulp.task('build-all', (done) => {
 });
 
 gulp.task('build',
-  ['build:typescript-server', 'build:browser', 'build:wct-browser-legacy']);
+  ['bower', 'build:typescript-server', 'build:browser', 'build:wct-browser-legacy']);
 
 const tsProject = ts.createProject('tsconfig.json', { typescript });
 gulp.task('build:typescript-server', function () {
