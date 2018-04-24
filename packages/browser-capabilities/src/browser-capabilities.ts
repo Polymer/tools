@@ -54,6 +54,11 @@ const browserPredicates: {
     serviceworker: since(1),
     modules: since(1, 14),
   },
+  // Note that Safari intends to stop changing their user agent strings
+  // (https://twitter.com/rmondello/status/943545865204989953). The details of
+  // this are not yet clear, since recent versions do seem to be changing (at
+  // least the OS bit). Be sure to actually test real user agents rather than
+  // making assumptions based on release notes.
   'Mobile Safari': {
     es2015: since(10),
     push: since(9, 2),
