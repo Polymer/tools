@@ -63,6 +63,7 @@ gulp.task('test:unit', function() {
   return gulp.src('lib/test/**/*_test.js', {read: false}).pipe(mocha({
     ui: 'tdd',
     reporter: 'spec',
+    timeout: 5000,
   }))
 });
 

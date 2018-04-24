@@ -24,10 +24,7 @@ const rollup = require('rollup');
 const runSequence = require('run-sequence');
 const typescript = require('typescript');
 
-const mochaConfig = { reporter: 'spec', retries: 3 };
-if (process.env.MOCHA_TIMEOUT) {
-  mochaConfig.timeout = parseInt(process.env.MOCHA_TIMEOUT, 10);
-}
+const mochaConfig = { reporter: 'spec', retries: 3, timeout: 90000 };
 
 // const commonTools = require('tools-common/gulpfile');
 const commonTools = {
@@ -157,7 +154,7 @@ gulp.task('build:wct-browser-legacy', [
 
 
 gulp.task('test:unit', function () {
-  return gulp.src('test/unit/*.js', { read: false })
+  return gulp.src('test/unit/*.js', { read: false, timeout: 5000, })
     .pipe(mocha(mochaConfig));
 });
 

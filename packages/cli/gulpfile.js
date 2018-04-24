@@ -52,6 +52,7 @@ gulp.task(
                 ui: 'tdd',
                 reporter: 'spec',
                 retries: '3',
+                timeout: 5000,
               })));
 
 gulp.task(
@@ -59,6 +60,7 @@ gulp.task(
     () => gulp.src('lib/test/unit/**/*_test.js', {read: false}).pipe(mocha({
       ui: 'tdd',
       reporter: 'spec',
+      timeout: 5000,
     })));
 
 gulp.task(

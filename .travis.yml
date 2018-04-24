@@ -12,9 +12,6 @@ env:
   global:
   - secure: IbrybaUaJDiwNh8VodFfTIAdSw2Nl4DGRh2oDIO2vL8SPgGilwxY0go5DWrxAG0aP+YIXFkK+SpblFppQqqxnAoLVYmd7kFSJoOZraNqmcJqUYSzrHrWArmuiGzY8gMgOWTsnbzVVNRldN8tpoSwpQB/+YhCtbYb9eqvw+u5Izk=
   - secure: grvHX6c0ReQwRsuQZferI+uyGsKlubujURKuJB8coNdA9lgZcvf+nmCkNBpSML83hSjQkJUTt8XnucNNgL/1VxUhgy0O/wkTUEmcDAU1b80As8NJkbreJcc3HFASA68wou4HoJsFmJV2cpBYoAJJSX+HyT6mYd6pBh09tPfOeBg=
-  matrix:
-  - TEST_COMMAND="run test:unit"
-  - TEST_COMMAND="run test:integration:parallel" MOCHA_TIMEOUT=120000
 language: node_js
 node_js:
 - '6'
@@ -24,7 +21,8 @@ install:
 - npm run bootstrap
 - npm run build
 script:
-- xvfb-run npm $TEST_COMMAND
+- xvfb-run npm run test:unit:parallel
+- xvfb-run npm run test:integration:parallel
 branches:
   only:
   - master

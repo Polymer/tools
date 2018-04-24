@@ -13,11 +13,13 @@
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build --stream",
     "test": "npm run build && npm run test:unit",
+    "test:all": "npm run test:unit && npm run test:integration",
+    "test:all:parallel": "npm run test:unit && npm run test:integration:parallel",
     "test:integration": "lerna run test:integration --stream",
     "test:integration:parallel": "lerna run test:integration --stream --parallel",
     "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester --parallel",
     "test:unit": "lerna run test:unit --stream",
-    "test:unit:paralle": "lerna run test:unit --stream --parallel",
+    "test:unit:parallel": "lerna run test:unit --stream --parallel",
     "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester"
   },
   "devDependencies": {
