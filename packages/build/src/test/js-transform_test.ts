@@ -351,6 +351,6 @@ suite('jsTransform', () => {
     `);
     const result = jsTransform(input, {compileToEs5: true});
 
-    assert.notInclude(result, "function Wrapper() {}");
+    assert.notInclude(result, "_wrapNativeSuper");
   });
 });
