@@ -250,7 +250,7 @@ export class Es6Rewriter {
    *
    * After:
    *     import('./bundle_1.js')
-   *         .then(bundle => bundle && bundle.$moduleA)
+   *         .then(bundle => bundle && bundle.$moduleA || {})
    *         .then((moduleA) => moduleA.doSomething());
    */
   private _rewriteDynamicImport(
@@ -309,11 +309,14 @@ export class Es6Rewriter {
         [babel.arrowFunctionExpression(
             [babel.identifier('bundle')],
             babel.logicalExpression(
-                '&&',
-                babel.identifier('bundle'),
-                babel.memberExpression(
+                '||',
+                babel.logicalExpression(
+                    '&&',
                     babel.identifier('bundle'),
-                    babel.identifier(exportName))))]);
+                    babel.memberExpression(
+                        babel.identifier('bundle'),
+                        babel.identifier(exportName))),
+                babel.objectExpression([])))]);
     rewriteObject(importCallExpression, thenifiedCallExpression);
   }
 
