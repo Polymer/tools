@@ -29,8 +29,30 @@ import isWindows = require('is-windows');
 // minifying but not compiling?
 
 // Syntax and transform plugins for ES2015.
-const babelPresetEs2015NoModules =
-    [require('@babel/preset-es2015'), {modules: false}];
+const customBabelPresetEs2015 = {
+  plugins: [
+    [require("@babel/plugin-transform-template-literals"), { loose: false, spec: false }],
+    require("@babel/plugin-transform-literals"),
+    require("@babel/plugin-transform-function-name"),
+    [require("@babel/plugin-transform-arrow-functions"), { spec: false }],
+    require("@babel/plugin-transform-block-scoped-functions"),
+    [require("@babel/plugin-transform-classes"), { loose: false }],
+    require("@babel/plugin-transform-object-super"),
+    require("@babel/plugin-transform-shorthand-properties"),
+    require("@babel/plugin-transform-duplicate-keys"),
+    [require("@babel/plugin-transform-computed-properties"), { loose: false }],
+    [require("@babel/plugin-transform-for-of"), { loose: false }],
+    require("@babel/plugin-transform-sticky-regex"),
+    require("@babel/plugin-transform-unicode-regex"),
+    [require("@babel/plugin-transform-spread"), { loose: false }],
+    [require("@babel/plugin-transform-parameters"), { loose: false }],
+    [require("@babel/plugin-transform-destructuring"), { loose: false }],
+    require("@babel/plugin-transform-block-scoping"),
+    require("@babel/plugin-transform-typeof-symbol"),
+    require("@babel/plugin-transform-instanceof"),
+    [require("@babel/plugin-transform-regenerator"), { async: false, asyncGenerators: false }],
+  ],
+};
 
 // The ES2016 and ES2017 presets do not inherit the plugins of previous years,
 // and there is no ES2018 preset yet. Since the additions in ES2016 and ES2017
@@ -168,7 +190,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   }
   if (options.compileToEs5) {
     doBabelTransform = true;
-    presets.push(babelPresetEs2015NoModules);
+    presets.push(customBabelPresetEs2015);
     plugins.push(...babelTransformPlugins);
   }
   if (options.moduleResolution === 'node') {
