@@ -336,4 +336,21 @@ suite('jsTransform', () => {
         result,
         `console.log(new Promise((res, rej) => _require.default(['./bar.js'], res, rej)));`);
   });
+
+  // https://github.com/babel/babel/issues/7506
+  test('does not include empty native constructor wrappers', () => {
+    const input = stripIndent(`
+      class TestElement extends HTMLElement {
+        constructor() {
+          super();
+          this.x = 1234;
+        }
+      }
+
+      window.customElements.define("test-element", TestElement);
+    `);
+    const result = jsTransform(input, {compileToEs5: true});
+
+    assert.notInclude(result, "function Wrapper() {}");
+  });
 });
