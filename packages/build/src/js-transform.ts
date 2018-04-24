@@ -28,7 +28,14 @@ import isWindows = require('is-windows');
 // plugins without turning on transformation, for the case where we are
 // minifying but not compiling?
 
-// Syntax and transform plugins for ES2015.
+// Syntax and transform plugins for ES2015. This is roughly equivalent to
+// @babel/preset-es2015, with modules removed and
+// @babel/plugin-transform-classes pinned to v7.0.0-beta.35 to avoid
+// https://github.com/babel/babel/issues/7506 . As mentioned in the bug, native
+// constructors are wrapped with a ES5 'class' which has a constructor that does
+// nothing; however, the custom elements polyfill needs the polyfilled
+// constructor to be called so that it can supply the element being upgraded as
+// the object to use for `this`.
 const customBabelPresetEs2015 = {
   plugins: [
     require("@babel/plugin-transform-template-literals"),
