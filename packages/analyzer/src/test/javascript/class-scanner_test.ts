@@ -91,10 +91,7 @@ suite('Class', async () => {
       }
     }
     if (class_.methods.size > 0) {
-      result.methods = [];
-      for (const m of class_.methods.values()) {
-        result.methods.push(getMethod(m));
-      }
+      result.methods = [...class_.methods.values()].map(getMethod);
     }
     if (class_.mixins.length > 0) {
       result.mixins = [];

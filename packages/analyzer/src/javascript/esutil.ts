@@ -514,18 +514,25 @@ export function getConstructorMethod(
   if (statement) {
     const method = toScannedMethod(
         statement, document.sourceRangeForNode(statement)!, document);
-    if (astNode.id) {
-      method.return = {...method.return, type: astNode.id.name};
+    const typeTag = jsdoc.getTag(jsdoc.parseJsdoc(getAttachedComment(statement) || ''), 'type');
+
+    if (typeTag) {
+      method.return = {...method.return, type: doctrine.type.stringify(typeTag.type!)};
+    } else {
+      method.return = undefined;
     }
+
     return method;
   }
 }
 
 export function getConstructorClassMethod(astNode: babel.Class):
     babel.ClassMethod|undefined {
-  return astNode.body.body.find(
-             (member) => babel.isClassMethod(member) &&
-                 member.kind === 'constructor') as babel.ClassMethod;
+  for (const member of astNode.body.body) {
+    if (babel.isClassMethod(member) && member.kind === 'constructor') {
+      return member;
+    }
+  }
 }
 
 /**
