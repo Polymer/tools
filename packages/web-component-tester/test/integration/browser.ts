@@ -145,10 +145,7 @@ function runIntegrationSuiteForDir(
     for (const variantName in variantsGolden.variants) {
       const run = () => assertVariantResultsConformToGolden(
           variantsGolden.variants[variantName],
-          testResults.getVariantResults(variantName));
-      if (variantName !== '') {
-        console.log(`the variant with bower_components-${variantName}`);
-      }
+          testResults.getVariantResults(variantName), `variant: ${variantName}`);
       run();
     }
   });
@@ -390,28 +387,28 @@ function assertTestErrors(
 }
 
 function assertVariantResultsConformToGolden(
-    golden: VariantResultGolden, variantResults: VariantResults) {
+    golden: VariantResultGolden, variantResults: VariantResults, message: string) {
   // const variantResults = testResults.getVariantResults('');
   try {
     assertStats(
         variantResults, golden.passing, golden.pending, golden.failing,
-        <any>golden.status, 'records the correct result stats');
+        <any>golden.status, message + ': records the correct result stats');
   } catch (_) {
     // mocha reports twice the failures because reasons
     // https://github.com/mochajs/mocha/issues/2083
     assertStats(
         variantResults, golden.passing, golden.pending, golden.failing * 2,
-        <any>golden.status, 'records the correct result stats');
+        <any>golden.status, message + ': records the correct result stats');
   }
 
   if (golden.passing + golden.pending + golden.failing === 0 && !golden.tests) {
     return;
   }
 
-  assertTests(variantResults, golden.tests, 'runs the correct tests');
+  assertTests(variantResults, golden.tests, message + ': runs the correct tests');
 
   if (golden.errors || golden.failing > 0) {
-    assertTestErrors(variantResults, golden.errors, 'emits well formed errors');
+    assertTestErrors(variantResults, golden.errors, message + ': emits well formed errors');
   }
   // it('passed the test', function() {
   //   assertPassed(testResults);
