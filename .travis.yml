@@ -15,7 +15,7 @@ env:
 language: node_js
 node_js:
 - '6'
-- node
+- '9'
 install:
 - npm install
 - npm run bootstrap
