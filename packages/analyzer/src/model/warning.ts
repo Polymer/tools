@@ -13,17 +13,16 @@
  */
 
 import * as chalk from 'chalk';
+import stable from 'stable';
 
 import {Analyzer} from '../core/analyzer';
+import {UrlResolver} from '../index';
 import {ParsedDocument} from '../parser/document';
 import {underlineCode} from '../warning/code-printer';
 
 import {Analysis} from './analysis';
 import {comparePositionAndRange, isPositionInsideRange, SourceRange} from './source-range';
-
-import stable = require('stable');
 import {ResolvedUrl} from './url';
-import {UrlResolver} from '../index';
 
 export interface WarningInit {
   readonly message: string;
