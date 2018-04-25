@@ -14,10 +14,15 @@
 
 import {assert} from 'chai';
 
-import {createForDirectory, fixtureDir} from '../test-utils';
+import {Analyzer} from '../../core/analyzer';
+import {CodeUnderliner, createForDirectory, fixtureDir} from '../test-utils';
 
-suite('CssCustomPropertyScanner', async () => {
-  const {analyzer, underliner} = await createForDirectory(fixtureDir);
+suite('CssCustomPropertyScanner', () => {
+  let analyzer: Analyzer;
+  let underliner: CodeUnderliner;
+  before(async () => {
+    ({analyzer, underliner} = await createForDirectory(fixtureDir));
+  });
 
   test('finds custom property assignments', async () => {
     const result = await analyzer.analyze(['some-styles.html']);

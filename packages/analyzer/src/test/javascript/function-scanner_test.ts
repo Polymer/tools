@@ -16,13 +16,18 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
+import {Analyzer} from '../../core/analyzer';
 import {ScannedFunction} from '../../javascript/function';
 import {FunctionScanner} from '../../javascript/function-scanner';
-import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
-suite('FunctionScanner', async () => {
-  const testFilesDir = path.resolve(fixtureDir, 'namespaces/');
-  const {analyzer, underliner} = await createForDirectory(testFilesDir);
+suite('FunctionScanner', () => {
+  let analyzer: Analyzer;
+  let underliner: CodeUnderliner;
+  before(async () => {
+    const testFilesDir = path.resolve(fixtureDir, 'namespaces/');
+    ({analyzer, underliner} = await createForDirectory(testFilesDir));
+  });
 
   async function getNamespaceFunctions(filename: string) {
     const {features} =
@@ -50,7 +55,7 @@ suite('FunctionScanner', async () => {
     };
   }
 
-  test('handles @memberof annotation', async () => {
+  test('recognizies functions', async () => {
     const namespaceFunctions =
         await getNamespaceFunctions('memberof-functions.js');
     const functionData =

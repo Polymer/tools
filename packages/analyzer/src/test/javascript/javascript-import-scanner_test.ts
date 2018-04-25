@@ -15,11 +15,15 @@
 
 import {assert} from 'chai';
 
+import {Analyzer} from '../../core/analyzer';
 import {JavaScriptImportScanner} from '../../javascript/javascript-import-scanner';
 import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
-suite('JavaScriptImportScanner', async () => {
-  const {analyzer} = await createForDirectory(fixtureDir);
+suite('JavaScriptImportScanner', () => {
+  let analyzer: Analyzer;
+  before(async () => {
+    ({analyzer} = await createForDirectory(fixtureDir));
+  });
 
   test('finds imports', async () => {
     const {features, warnings} = await runScanner(
