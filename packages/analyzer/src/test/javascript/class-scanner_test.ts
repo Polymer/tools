@@ -223,8 +223,7 @@ suite('Class', async () => {
 
       assert.deepEqual(await getTestProps(cls), {
         name: 'Class',
-        constructorMethod:
-            {description: '', name: 'constructor', return: {type: 'Class'}},
+        constructorMethod: {description: '', name: 'constructor'},
         description: '',
         privacy: 'public',
         properties: [
@@ -265,8 +264,7 @@ suite('Class', async () => {
                 type: 'boolean',
                 description: 'Another constructor parameter'
               }
-            ],
-            return: {type: 'Class'}
+            ]
           },
           methods: [
             {
@@ -409,6 +407,11 @@ suite('Class', async () => {
           name: 'Base',
           description: '',
           privacy: 'public',
+          constructorMethod: {
+            description: '',
+            name: 'constructor',
+            return: {type: 'Base'},
+          },
           methods: [
             {
               description: 'This is a base method.',
@@ -427,6 +430,11 @@ suite('Class', async () => {
           description: '',
           privacy: 'public',
           superClass: 'Base',
+          constructorMethod: {
+            description: '',
+            name: 'constructor',
+            return: {type: 'Subclass'},
+          },
           methods: [
             {
               description: 'Overrides the method on Base.',
@@ -557,8 +565,7 @@ suite('Class', async () => {
                 type: 'boolean',
                 description: 'Another constructor parameter'
               }
-            ],
-            return: {type: 'Class'}
+            ]
           },
           methods: [
             {
@@ -701,6 +708,11 @@ suite('Class', async () => {
           name: 'Base',
           description: '',
           privacy: 'public',
+          constructorMethod: {
+            description: '',
+            name: 'constructor',
+            return: {type: 'Base'},
+          },
           methods: [
             {
               description: 'This is a base method.',
@@ -719,6 +731,17 @@ suite('Class', async () => {
           description: '',
           privacy: 'public',
           superClass: 'Base',
+          constructorMethod: {
+            description: '',
+            name: 'constructor',
+            inheritedFrom: 'Base',
+            // TODO(timvdlippe): Overriding currently ignores the return type of
+            // a method. In this case, if the return type is covariant with the
+            // supertype, it should instead choose the stricter subtype. This
+            // needs patching in Class._overwriteSingleInherited and
+            // Class._overwriteInherited.
+            return: {type: 'Base'},
+          },
           methods: [
             {
               description: 'This is a base method.',

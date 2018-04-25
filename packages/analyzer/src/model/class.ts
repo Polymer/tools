@@ -204,6 +204,8 @@ export class Class implements Feature, DeclaredWithStatement {
     }
     this.mixins = (init.mixins || []);
 
+    this.constructorMethod = init.constructorMethod;
+
     const superClassLikes = this._getSuperclassAndMixins(document, init);
     for (const superClassLike of superClassLikes) {
       this.inheritFrom(superClassLike);
@@ -216,7 +218,6 @@ export class Class implements Feature, DeclaredWithStatement {
     if (init.methods !== undefined) {
       this._overwriteInherited(this.methods, init.methods, undefined, true);
     }
-    this.constructorMethod = init.constructorMethod;
     if (init.staticMethods !== undefined) {
       this._overwriteInherited(
           this.staticMethods, init.staticMethods, undefined, true);
@@ -229,7 +230,8 @@ export class Class implements Feature, DeclaredWithStatement {
     this._overwriteInherited(
         this.properties, superClass.properties, superClass.name);
     this._overwriteInherited(this.methods, superClass.methods, superClass.name);
-    this.constructorMethod = this._overwriteSingleInherited(this.constructorMethod, superClass.constructorMethod, superClass.name);
+    this.constructorMethod = this._overwriteSingleInherited(
+        this.constructorMethod, superClass.constructorMethod, superClass.name);
   }
 
   /**
@@ -295,9 +297,8 @@ export class Class implements Feature, DeclaredWithStatement {
    *   applying the class's own local members.
    */
   protected _overwriteSingleInherited<P extends PropertyLike>(
-    existing: P|undefined, overridingVal: P|undefined,
-    overridingClassName: string|undefined
-  ): P|undefined {
+      existing: P|undefined, overridingVal: P|undefined,
+      overridingClassName: string|undefined): P|undefined {
     if (!overridingVal) {
       return existing;
     }

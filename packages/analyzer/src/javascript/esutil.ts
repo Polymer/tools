@@ -514,10 +514,11 @@ export function getConstructorMethod(
   if (statement) {
     const method = toScannedMethod(
         statement, document.sourceRangeForNode(statement)!, document);
-    const typeTag = jsdoc.getTag(jsdoc.parseJsdoc(getAttachedComment(statement) || ''), 'type');
+    const typeTag = getReturnFromAnnotation(
+        jsdoc.parseJsdoc(getAttachedComment(statement) || ''));
 
     if (typeTag) {
-      method.return = {...method.return, type: doctrine.type.stringify(typeTag.type!)};
+      method.return = {...method.return, ...typeTag};
     } else {
       method.return = undefined;
     }
