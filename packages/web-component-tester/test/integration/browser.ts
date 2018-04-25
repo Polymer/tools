@@ -172,6 +172,39 @@ function runsIntegrationSuite(
   describer(suiteName, function() {
     let log: string[] = [];
     let testResults: TestResults = new TestResults();
+    const suiteRoot = await makeProperTestDir(dirName);
+    const suiteOptions = <any>loadOptionsFile(
+        path.join('test', 'fixtures', 'integration', dirName));
+    // Filter the list of browsers within the suite's options by the
+    // global overrides if they are present.
+    if (suiteOptions.plugins !== undefined) {
+      if (testLocalBrowsersList.length > 0 &&
+          !testLocalBrowsersList.includes('default') &&
+          suiteOptions.plugins.local !== undefined &&
+          suiteOptions.plugins.local.browsers !== undefined) {
+        suiteOptions.plugins.local.browsers =
+            suiteOptions.plugins.local.browsers.filter(
+                (b: string) => testLocalBrowsersList.includes(b));
+      }
+      if (testRemoteBrowsersList.length > 0 &&
+          suiteOptions.plugins.sauce !== undefined &&
+          suiteOptions.plugins.sauce.browsers !== undefined) {
+        suiteOptions.plugins.sauce.browsers =
+            suiteOptions.plugins.sauce.browsers.filter(
+                (b: string) => testRemoteBrowsersList.includes(b));
+      }
+    }
+    const allOptions: config.Config = Object.assign(
+        {
+          output: <any>{write: log.push.bind(log)},
+          ttyOutput: false,
+          root: suiteRoot,
+          browserOptions: <any>{
+            name: 'web-component-tester',
+            tags: ['org:Polymer', 'repo:web-component-tester'],
+          },
+        },
+        options, suiteOptions);
 
     before(async function() {
       const maxRetries = 3;
@@ -183,39 +216,7 @@ function runsIntegrationSuite(
             log = []
             testResults = new TestResults();
           }
-          const suiteRoot = await makeProperTestDir(dirName);
-          const suiteOptions = <any>loadOptionsFile(
-              path.join('test', 'fixtures', 'integration', dirName));
-          // Filter the list of browsers within the suite's options by the
-          // global overrides if they are present.
-          if (suiteOptions.plugins !== undefined) {
-            if (testLocalBrowsersList.length > 0 &&
-                !testLocalBrowsersList.includes('default') &&
-                suiteOptions.plugins.local !== undefined &&
-                suiteOptions.plugins.local.browsers !== undefined) {
-              suiteOptions.plugins.local.browsers =
-                  suiteOptions.plugins.local.browsers.filter(
-                      (b: string) => testLocalBrowsersList.includes(b));
-            }
-            if (testRemoteBrowsersList.length > 0 &&
-                suiteOptions.plugins.sauce !== undefined &&
-                suiteOptions.plugins.sauce.browsers !== undefined) {
-              suiteOptions.plugins.sauce.browsers =
-                  suiteOptions.plugins.sauce.browsers.filter(
-                      (b: string) => testRemoteBrowsersList.includes(b));
-            }
-          }
-          const allOptions: config.Config = Object.assign(
-              {
-                output: <any>{write: log.push.bind(log)},
-                ttyOutput: false,
-                root: suiteRoot,
-                browserOptions: <any>{
-                  name: 'web-component-tester',
-                  tags: ['org:Polymer', 'repo:web-component-tester'],
-                },
-              },
-              options, suiteOptions);
+
           const context = new Context(allOptions);
 
           const addEventHandler = (name: string, handler: Function) => {
@@ -278,6 +279,7 @@ function runsIntegrationSuite(
           successful = true;
         } catch (error) {
           ++tryNumber;
+          console.log(`Attempt #${tryNumber}, error occurred:`, error);
           if (tryNumber === maxRetries) {
             throw error;
           }
