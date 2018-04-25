@@ -401,7 +401,8 @@ suite('Class', async () => {
     test('deals with super classes correctly', async () => {
       const classes = await getScannedClasses('class/super-class.js');
 
-      assert.deepEqual(classes.map((f) => f.name), ['Base', 'Subclass']);
+      assert.deepEqual(
+          classes.map((f) => f.name), ['Base', 'Subclass', 'AnotherSubclass']);
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
         {
           name: 'Base',
@@ -447,7 +448,14 @@ suite('Class', async () => {
               return: {type: 'void'},
             }
           ]
+        },
+        {
+          name: 'AnotherSubclass',
+          description: 'Class that inherits all methods from base',
+          privacy: 'public',
+          superClass: 'Base'
         }
+
       ]);
     });
 
@@ -702,7 +710,8 @@ suite('Class', async () => {
     test('deals with super classes correctly', async () => {
       const {classes} = await getClasses('class/super-class.js');
 
-      assert.deepEqual(classes.map((f) => f.name), ['Base', 'Subclass']);
+      assert.deepEqual(
+          classes.map((f) => f.name), ['Base', 'Subclass', 'AnotherSubclass']);
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
         {
           name: 'Base',
@@ -734,13 +743,7 @@ suite('Class', async () => {
           constructorMethod: {
             description: '',
             name: 'constructor',
-            inheritedFrom: 'Base',
-            // TODO(timvdlippe): Overriding currently ignores the return type of
-            // a method. In this case, if the return type is covariant with the
-            // supertype, it should instead choose the stricter subtype. This
-            // needs patching in Class._overwriteSingleInherited and
-            // Class._overwriteInherited.
-            return: {type: 'Base'},
+            return: {type: 'Subclass'},
           },
           methods: [
             {
@@ -760,7 +763,34 @@ suite('Class', async () => {
               return: {type: 'void'},
             },
           ]
+        },
+        {
+          name: 'AnotherSubclass',
+          description: 'Class that inherits all methods from base',
+          privacy: 'public',
+          superClass: 'Base',
+          constructorMethod: {
+            description: '',
+            inheritedFrom: 'Base',
+            name: 'constructor',
+            return: {type: 'Base'}
+          },
+          methods: [
+            {
+              description: 'This is a base method.',
+              inheritedFrom: 'Base',
+              name: 'baseMethod',
+              return: {type: 'void'}
+            },
+            {
+              description: 'Will be overriden by Subclass.',
+              inheritedFrom: 'Base',
+              name: 'overriddenMethod',
+              return: {type: 'void'}
+            }
+          ]
         }
+
       ]);
     });
 

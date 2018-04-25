@@ -218,6 +218,10 @@ export class Class implements Feature, DeclaredWithStatement {
     if (init.methods !== undefined) {
       this._overwriteInherited(this.methods, init.methods, undefined, true);
     }
+    if (init.constructorMethod !== undefined) {
+      this.constructorMethod = this._overwriteSingleInherited(
+          this.constructorMethod, init.constructorMethod, undefined);
+    }
     if (init.staticMethods !== undefined) {
       this._overwriteInherited(
           this.staticMethods, init.staticMethods, undefined, true);
