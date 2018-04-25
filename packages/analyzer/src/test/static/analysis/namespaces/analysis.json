@@ -27,7 +27,7 @@
             },
             "file": "namespaces.html",
             "start": {
-              "column": 4,
+              "column": 9,
               "line": 19
             }
           },
@@ -65,13 +65,15 @@
             },
             "file": "namespaces.html",
             "start": {
-              "column": 2,
+              "column": 12,
               "line": 36
             }
           },
           "summary": "",
           "params": [],
-          "return": {"type": "void"}
+          "return": {
+            "type": "void"
+          }
         },
         {
           "description": "",
@@ -90,7 +92,9 @@
           },
           "summary": "",
           "params": [],
-          "return": {"type": "void"}
+          "return": {
+            "type": "void"
+          }
         }
       ]
     }

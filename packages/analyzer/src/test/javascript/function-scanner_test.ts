@@ -91,11 +91,11 @@ function aaa(a) {
         privacy: 'public',
         codeSnippet: `
 Polymer.bbb = function bbb() {
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+              ~~~~~~~~~~~~~~~~
 
 
 };
-~~`,
+~`,
       },
       {
         name: 'Polymer.ccc',
@@ -121,7 +121,7 @@ Polymer.bbb = function bbb() {
         return: {type: 'void'},
         codeSnippet: `
   _ddd: function() {
-  ~~~~~~~~~~~~~~~~~~
+        ~~~~~~~~~~~~
 
 
   },
@@ -137,7 +137,7 @@ Polymer.bbb = function bbb() {
         privacy: 'private',
         codeSnippet: `
   eee: () => {},
-  ~~~~~~~~~~~~~`,
+       ~~~~~~~~`,
       },
       {
         name: 'Polymer.fff',
@@ -201,11 +201,27 @@ Polymer.bbb = function bbb() {
         privacy: 'public',
         codeSnippet: `
 var jjj = function() {
-~~~~~~~~~~~~~~~~~~~~~~
+          ~~~~~~~~~~~~
 
 
 };
-~~`,
+~`,
+      },
+      {
+        name: 'lll',
+        description: 'lol\n ',
+        summary: '',
+        warnings: [],
+        params: [],
+        return: {type: 'void'},
+        privacy: 'public',
+        codeSnippet: `
+export function lll() {
+       ~~~~~~~~~~~~~~~~
+
+
+};
+~`,
       },
     ]);
   });
