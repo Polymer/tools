@@ -13,7 +13,7 @@
  */
 
 import * as chalk from 'chalk';
-import stable from 'stable';
+import * as stable from 'stable';
 
 import {Analyzer} from '../core/analyzer';
 import {UrlResolver} from '../index';
