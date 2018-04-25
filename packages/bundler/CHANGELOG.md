@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 - Bundled documents now have a `language` field. It will be `html` when the ast
   node is an HTML Parse5 node, and `js` when the ast node is a JS babel node.
+- Rewritten dynamic `import()` calls now test if a bundle has exports before
+  attempting to destructure bundle.
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.0-pre.5 - 2018-04-17
