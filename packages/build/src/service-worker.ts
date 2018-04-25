@@ -14,6 +14,7 @@
 
 /// <reference path="../custom_typings/sw-precache.d.ts" />
 
+import * as assert from 'assert';
 import {writeFile} from 'fs';
 import * as path from 'path';
 import * as logging from 'plylog';
@@ -91,9 +92,9 @@ export const hasNoFileExtension = /\/[^\/\.]*(\?|$)/;
  */
 export async function generateServiceWorkerConfig(
     options: AddServiceWorkerOptions): Promise<SWConfig> {
-  console.assert(!!options, '`project` & `buildRoot` options are required');
-  console.assert(!!options.project, '`project` option is required');
-  console.assert(!!options.buildRoot, '`buildRoot` option is required');
+  assert(!!options, '`project` & `buildRoot` options are required');
+  assert(!!options.project, '`project` option is required');
+  assert(!!options.buildRoot, '`buildRoot` option is required');
   options = fixDeprecatedOptions(options);
 
   options = Object.assign({}, options);

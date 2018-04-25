@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as assert from 'assert';
 import generate from '@babel/generator';
 import babelTraverse from '@babel/traverse';
 import {NodePath} from '@babel/traverse';
@@ -48,7 +49,7 @@ export function matchesCallExpression(
   if (!expression.property || !expression.object) {
     return false;
   }
-  console.assert(path.length >= 2);
+  assert(path.length >= 2);
 
   if (!babel.isIdentifier(expression.property)) {
     return false;
