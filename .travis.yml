@@ -24,7 +24,7 @@ install:
 - npm run bootstrap
 - npm run build
 script:
-- echo $TRAVIS_NODE_VERSION
+- test $TRAVIS_NODE_VERSION = 6 && export SKIP_REMOTE_BROWSERS=true
 - xvfb-run $TEST_COMMAND
 branches:
   only:
