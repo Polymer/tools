@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## [0.27.8] (2018-04-25)
+* `@babel/preset-es2015` has been replaced with a manually-created version so that `@babel/plugin-transform-classes` can be pinned to v7.0.0-beta.35 to avoid a bug where the polyfilled HTMLElement constructor is not called. (https://github.com/babel/babel/issues/7506)
+
+
 ## [0.27.7] (2018-04-23)
 * Stricter requirements for determining when a browser supports modules, and
   hence when to automatically transform modules to AMD. We now require support
