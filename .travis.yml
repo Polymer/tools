@@ -19,9 +19,9 @@ env:
 matrix:
   exclude:
   - env: TEST_COMMAND="npm run test:integration" RUN_SAUCE_TESTS=true
-    node_js: 6
+    node_js: '6'
   - env: TEST_COMMAND="npm run test:integration" SKIP_REMOTE_BROWSERS=true
-    node_js: 9
+    node_js: '9'
 language: node_js
 node_js:
 - '6'
