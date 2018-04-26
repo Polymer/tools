@@ -180,7 +180,7 @@ function runsIntegrationSuite(
       while (tryNumber < maxRetries && !successful) {
         try {
           if (tryNumber !== 0) {
-            log = []
+            log = [];
             testResults = new TestResults();
           }
           const suiteRoot = await makeProperTestDir(dirName);
