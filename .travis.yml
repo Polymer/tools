@@ -24,6 +24,7 @@ install:
 - npm run bootstrap
 - npm run build
 script:
+- echo $TRAVIS_NODE_VERSION
 - xvfb-run $TEST_COMMAND
 branches:
   only:
