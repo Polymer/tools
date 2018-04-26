@@ -63,7 +63,7 @@ suite('init/github', () => {
                     .returns(Promise.resolve());
           });
 
-          // tslint:disable-next-line: no-any
+      // tslint:disable-next-line: no-any
       helpers.run(TestGenerator as any).on('end', () => {
         assert.isOk(getSemverReleaseStub.calledWith('*'));
         assert.isOk(extractReleaseTarballStub.calledWith(

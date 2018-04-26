@@ -145,7 +145,8 @@ async function bowerInstallVariants(offline: boolean): Promise<void> {
       const variantDirectory = `bower_components-${variantName}`;
       logger.info(
           `Installing variant ${variantName} to ${variantDirectory}...`);
-      await _bowerInstall(offline, variantBowerJson, variantDirectory, variantName);
+      await _bowerInstall(
+          offline, variantBowerJson, variantDirectory, variantName);
       logger.info(`Finished installing variant ${variantName}`);
     }));
   }

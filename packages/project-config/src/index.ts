@@ -548,7 +548,9 @@ export class ProjectConfig {
       delete lintObj.ignoreWarnings;
     }
     const isWindows = process.platform === 'win32';
-    const normalizePath = isWindows ? (path: string) => path.replace(/\\/g, '/') : (path: string) => path;
+    const normalizePath = isWindows ?
+        (path: string) => path.replace(/\\/g, '/') :
+        (path: string) => path;
     const obj = {
       entrypoint: globRelative(this.root, this.entrypoint),
       shell: this.shell ? globRelative(this.root, this.shell) : undefined,

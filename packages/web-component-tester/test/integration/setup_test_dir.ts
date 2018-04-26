@@ -1,7 +1,7 @@
+import * as bowerConfig from 'bower-config';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as rimraf from 'rimraf';
-import * as bowerConfig from 'bower-config';
 
 const baseDir = path.join(__dirname, '..', 'fixtures', 'integration');
 

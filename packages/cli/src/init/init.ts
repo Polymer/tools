@@ -220,7 +220,8 @@ function createSelectPrompt(env: YeomanEnvironment) {
  */
 export async function runGenerator(
     // tslint:disable-next-line: no-any typings issues in yeoman
-    generatorName: string, options: {[name: string]: any} = {}): Promise<void> {
+    generatorName: string,
+    options: {[name: string]: any} = {}): Promise<void> {
   const templateName = options['templateName'] || generatorName;
 
   const env: YeomanEnvironment =
