@@ -130,17 +130,17 @@ Module.prototype.loadOnce = function() {
   this.loadStartedOrDone = true;
 
   var script = document.createElement('script');
-  var url = this.url;
-  script.src = url;
+  script.src = this.url;
 
+  var module = this;
   script.onload = function() {
     if (registry.pendingDefine !== undefined) {
-      registry.pendingDefine(url);
+      registry.pendingDefine(module);
     } else {
       // The script did not make a call to define(), otherwise the global
       // callback would have been set. That's fine, we can resolve it
       // immediately, because it doesn't have any dependencies.
-      registry.get(url).resolve();
+      module.resolve();
     }
   };
 
@@ -164,12 +164,12 @@ window.define = window.require = function(deps, factory) {
   // document.currentScript is not supported by IE, we communicate the URL via a
   // global callback. When finished executing, the "onload" event will be fired
   // by this <script>, which will be handled by the loading script, which will
-  // invoke the callback with the URL.
+  // invoke the callback with our module object.
   var pendingDefineCalled = false;
-  registry.pendingDefine = function(url) {
+  registry.pendingDefine = function(module) {
     pendingDefineCalled = true;
     registry.pendingDefine = undefined;
-    registry.get(url).init(deps, factory);
+    module.init(deps, factory);
   };
 
   // Case #2: We are a top-level script in the HTML document. Our URL is the
