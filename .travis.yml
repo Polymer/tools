@@ -14,7 +14,14 @@ env:
   - secure: grvHX6c0ReQwRsuQZferI+uyGsKlubujURKuJB8coNdA9lgZcvf+nmCkNBpSML83hSjQkJUTt8XnucNNgL/1VxUhgy0O/wkTUEmcDAU1b80As8NJkbreJcc3HFASA68wou4HoJsFmJV2cpBYoAJJSX+HyT6mYd6pBh09tPfOeBg=
   matrix:
   - TEST_COMMAND="npm run test:unit"
-  - TEST_COMMAND="npm run test:integration"
+  - TEST_COMMAND="npm run test:integration" SKIP_REMOTE_BROWSERS=true
+  - TEST_COMMAND="npm run test:integration" RUN_SAUCE_TESTS=true
+matrix:
+  exclude:
+  - env: TEST_COMMAND="npm run test:integration" RUN_SAUCE_TESTS=true
+    node_js: '6'
+  - env: TEST_COMMAND="npm run test:integration" SKIP_REMOTE_BROWSERS=true
+    node_js: '9'
 language: node_js
 node_js:
 - '6'
