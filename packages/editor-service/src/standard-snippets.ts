@@ -13,22 +13,19 @@
 
 import {CompletionItemKind, InsertTextFormat} from 'vscode-languageserver';
 
-export const standardJavaScriptSnippets = [
-  {
-    label: `custom-element`,
-    documentation: 'Snippet for definition of a custom-element.',
-    insertText:
-`class $1 extends HTMLElement {
+export const standardJavaScriptSnippets = [{
+  label: `custom-element`,
+  documentation: 'Snippet for definition of a custom-element.',
+  insertText: `class $1 extends HTMLElement {
   constructor() {
     super();
     $0
   }
 }
 customElements.define('$2', $1)`,
-    insertTextFormat: InsertTextFormat.Snippet,
-    kind: CompletionItemKind.Class,
-    filterText: 'customelement',
-  }
-];
+  insertTextFormat: InsertTextFormat.Snippet,
+  kind: CompletionItemKind.Class,
+  filterText: 'customelement',
+}];
 
 export default standardJavaScriptSnippets;

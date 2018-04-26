@@ -183,8 +183,8 @@ export default class DiagnosticGenerator extends Handler {
     const paths =
         openURIs.map((uri) => this.converter.getWorkspacePathToFile({uri}))
             .filter(
-                (path) =>
-                    !this.fileGlobsToFilterOut.some((glob) => glob.match(path)));
+                (path) => !this.fileGlobsToFilterOut.some(
+                    (glob) => glob.match(path)));
     const {warnings} = await this.linter.lint(paths);
     const diagnosticsByUri =
         new Map(openURIs.map((k): [string, Diagnostic[]] => [k, []]));

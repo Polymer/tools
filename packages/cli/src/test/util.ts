@@ -9,7 +9,8 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-export async function invertPromise(p: Promise<{}|null|undefined|void>): Promise<null|undefined|Partial<Error>> {
+export async function invertPromise(p: Promise<{}|null|undefined|void>):
+    Promise<null|undefined|Partial<Error>> {
   let result;
   try {
     result = await p;

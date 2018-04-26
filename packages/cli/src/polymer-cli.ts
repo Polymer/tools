@@ -72,7 +72,7 @@ function parseCLIArgs(commandOptions: any): {[name: string]: string} {
 /**
  * Shallowly copies an object, converting keys from dash-case to camelCase.
  */
-function objectDashToCamelCase<V>(input: {[key: string]: V})  {
+function objectDashToCamelCase<V>(input: {[key: string]: V}) {
   const output: {[key: string]: V} = {};
   for (const key of Object.keys(input)) {
     output[dashToCamelCase(key)] = input[key];
