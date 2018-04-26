@@ -160,7 +160,7 @@ window.define = window.require = function(deps, factory) {
   // executing this define() call could have been loaded:
 
   // Case #1: We are a dependency of another module. A <script> was injected to
-  // loadOnce us, but we don't yet know the URL that was used. Because
+  // load us, but we don't yet know the URL that was used. Because
   // document.currentScript is not supported by IE, we communicate the URL via a
   // global callback. When finished executing, the "onload" event will be fired
   // by this <script>, which will be handled by the loading script, which will
