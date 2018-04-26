@@ -10,6 +10,9 @@
     different compilation/transformation options. We've turned off most
     browser-side caching. As a reminder: do not use `polymser serve` as a
     production webserver, it is designed for development.
+* `serve`, `build`:
+  * Add "webcomponents-bundle.js" to the heuristic used to determine when to
+    inject the Custom Elements ES5 Adapter.
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.15 [04-25-2018]

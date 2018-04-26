@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 * Disable the `simplify` babel plugin when minifying javascript. See
   https://github.com/babel/minify/issues/824
+* Add "webcomponents-bundle.js" to the heuristic used to determine when to
+  inject the Custom Elements ES5 Adapter.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.15] - 2018-04-25
