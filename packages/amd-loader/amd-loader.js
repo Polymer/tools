@@ -60,7 +60,7 @@ Module.prototype.init = function(deps, factory) {
     }
   }
 
-  for (var i = 0; i < (deps || []).length; i++) {
+  for (var i = 0; i < deps.length; i++) {
     var depSpec = deps[i];
 
     if (depSpec === 'exports') {
@@ -154,7 +154,10 @@ Module.prototype.loadOnce = function() {
 /**
  * Define a module and execute it when all dependencies are resolved.
  */
-window.define = window.require = function(deps, factory) {
+window.define = function(deps, factory) {
+  deps = deps || [];
+  factory = factory || function() {};
+
   // We don't yet know our own module URL. We need to discover it so that we can
   // resolve our relative dependency specifiers. There are two ways the script
   // executing this define() call could have been loaded:

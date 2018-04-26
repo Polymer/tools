@@ -19,7 +19,7 @@ import * as parse5 from 'parse5';
 import * as pathlib from 'path';
 
 import {scriptWasSplitByHtmlSplitter} from './html-splitter';
-import {generateModuleName, jsTransform, JsTransformOptions} from './js-transform';
+import {jsTransform, JsTransformOptions} from './js-transform';
 
 const p = dom5.predicates;
 
@@ -61,10 +61,9 @@ export interface HtmlTransformOptions {
   injectBabelHelpers?: 'none'|'full'|'amd';
 
   /**
-   * Whether to inject an AMD loader as an inline script. This might be
-   * RequireJS, or something else in the future. This is typically needed if ES
-   * to AMD module transformation is enabled and this is the entry point HTML
-   * document.
+   * Whether to inject an AMD loader as an inline script. This is typically
+   * needed if ES to AMD module transformation is enabled and this is the entry
+   * point HTML document.
    */
   injectAmdLoader?: boolean;
 }
@@ -93,7 +92,7 @@ export function htmlTransform(
       // TODO(aomarks) Check this for HtmlSplitter case too.
       !allScripts.some((node) => dom5.hasAttribute(node, 'nomodule'));
 
-  let wctScript, firstModuleScript, finalModuleScript;
+  let wctScript, firstModuleScript;
   let moduleScriptIdx = 0;
 
   for (const script of allScripts) {
@@ -102,7 +101,6 @@ export function htmlTransform(
       if (firstModuleScript === undefined) {
         firstModuleScript = script;
       }
-      finalModuleScript = script;
       if (shouldTransformEsModuleToAmd) {
         transformEsModuleToAmd(script, moduleScriptIdx++, options.js);
         continue;  // Bypass the standard jsTransform below.
@@ -127,31 +125,22 @@ export function htmlTransform(
     }
   }
 
-  if (shouldTransformEsModuleToAmd && finalModuleScript !== undefined) {
-    // We've defined a bunch of modules and chained them together. Now we need
-    // to initiate loading the chain by requiring the final one.
-    const finalModuleName = generateModuleName(moduleScriptIdx - 1);
-    const fragment = parse5.parseFragment(
-        `<script>require(['${finalModuleName}']);</script>`);
-    dom5.insertAfter(
-        finalModuleScript.parentNode!, finalModuleScript, fragment);
-  }
-
   if (options.injectAmdLoader && shouldTransformEsModuleToAmd &&
       firstModuleScript !== undefined) {
     const fragment = parse5.parseFragment('<script></script>\n');
-    dom5.setTextContent(fragment.childNodes![0], getMinifiedRequireJs());
-    const requireJsScript = fragment.childNodes![0];
+    dom5.setTextContent(fragment.childNodes![0], getMinifiedAmdLoaderJs());
+    const amdLoaderScript = fragment.childNodes![0];
 
     // Inject as late as possible (just before the first module is declared, if
     // there is one) because there may be some UMD dependencies that we want to
     // continue to load in global mode instead of AMD mode (which is detected by
     // the presence of the `require` global).
+    // TODO(aomarks) If we don't define require, we can inject earlier.
     dom5.insertBefore(
         firstModuleScript.parentNode!, firstModuleScript, fragment);
 
     if (wctScript !== undefined) {
-      addWctTimingHack(wctScript, requireJsScript);
+      addWctTimingHack(wctScript, amdLoaderScript);
     }
   }
 
@@ -213,24 +202,11 @@ function transformEsModuleToAmd(
     return;
   }
 
-  // Module scripts execute in order. AMD modules don't necessarily preserve
-  // this ordering. To emulate the ordering, we construct an artificial
-  // dependency chain between all module scripts on the page.
-  const generatedModule = generateModuleName(idx);
-  const previousGeneratedModule =
-      idx === 0 ? undefined : generateModuleName(idx - 1);
-
   const isExternal = dom5.hasAttribute(script, 'src');
   if (isExternal) {
-    const deps = [];
-    const externalSrc = dom5.getAttribute(script, 'src');
-    deps.push(externalSrc);
-    if (previousGeneratedModule !== undefined) {
-      deps.push(previousGeneratedModule);
-    }
-    const depsStr = deps.map((dep) => `'${dep}'`).join(', ');
+    const src = dom5.getAttribute(script, 'src');
     dom5.removeAttribute(script, 'src');
-    dom5.setTextContent(script, `define('${generatedModule}', [${depsStr}]);`);
+    dom5.setTextContent(script, `define(['${src}']);`);
 
   } else {
     // Transform inline scripts with the AMD Babel plugin transformer.
@@ -243,11 +219,11 @@ function transformEsModuleToAmd(
   }
 }
 
-function addWctTimingHack(wctScript: dom5.Node, requireJsScript: dom5.Node) {
+function addWctTimingHack(wctScript: dom5.Node, amdLoaderScript: dom5.Node) {
   // This looks like a Web Component Tester script, and we have converted ES
   // modules to AMD. Converting a module to AMD means that `DOMContentLoaded`
-  // will fire before RequireJS resolves and executes the modules. Since WCT
-  // listens for `DOMContentLoaded`, this means test suites in modules will
+  // will fire before the AMD loader resolves and executes the modules. Since
+  // WCT listens for `DOMContentLoaded`, this means test suites in modules will
   // not have been registered by the time WCT starts running tests.
   //
   // To address this, we inject a block of JS that uses WCT's `waitFor` hook
@@ -277,20 +253,20 @@ function addWctTimingHack(wctScript: dom5.Node, requireJsScript: dom5.Node) {
 </script>
 `));
 
-  // Monkey patch `require` to keep track of loaded AMD modules. Note this
+  // Monkey patch `define` to keep track of loaded AMD modules. Note this
   // assumes that all modules are registered before `DOMContentLoaded`, but
-  // that's an assumption WCT normally makes anyway. Do this right after
-  // RequireJS is loaded, and hence before the first module is registered.
+  // that's an assumption WCT normally makes anyway. Do this right after the AMD
+  // loader is loaded, and hence before the first module is registered.
   dom5.insertAfter(
-      requireJsScript.parentNode!, requireJsScript, parse5.parseFragment(`
+      amdLoaderScript.parentNode!, amdLoaderScript, parse5.parseFragment(`
 <script>
   // Injected by polymer-build to defer WCT until all AMD modules are loaded.
   (function() {
-    var originalRequire = window.require;
+    var originalDefine = window.define;
     var moduleCount = 0;
-    window.require = function(deps, factory) {
+    window.define = function(deps, factory) {
       moduleCount++;
-      originalRequire(deps, function() {
+      originalDefine(deps, function() {
         if (factory) {
           factory.apply(undefined, arguments);
         }
@@ -323,13 +299,13 @@ function getMinifiedBabelHelpersAmd() {
   return minifiedBabelHelpersAmd;
 }
 
-let minifiedRequireJs: string;
-function getMinifiedRequireJs() {
-  if (minifiedRequireJs === undefined) {
-    minifiedRequireJs =
-        fs.readFileSync(pathlib.join(__dirname, 'requirejs.min.js'), 'utf-8');
+let minifiedAmdLoaderJs: string;
+function getMinifiedAmdLoaderJs() {
+  if (minifiedAmdLoaderJs === undefined) {
+    minifiedAmdLoaderJs =
+        fs.readFileSync(pathlib.join(__dirname, 'amd-loader.min.js'), 'utf-8');
   }
-  return minifiedRequireJs;
+  return minifiedAmdLoaderJs;
 }
 
 /**
