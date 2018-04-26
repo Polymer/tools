@@ -1,0 +1,16 @@
+{
+  "name": "@polymer/amd-loader",
+  "version": "0.1.0",
+  "description": "Minimal AMD style loader for Polymer build.",
+  "repository": "git+https://github.com/Polymer/tools.git",
+  "main": "amd-loader.js",
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "scripts": {
+    "format": "clang-format --style=file -i amd-loader.js",
+    "test": "echo 'no tests yet'"
+  },
+  "devDependencies": {
+    "clang-format": "^1.2.3"
+  }
+}
