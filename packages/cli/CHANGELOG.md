@@ -4,6 +4,9 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.0-pre.15 [04-25-2018]
+* `@babel/preset-es2015` has been replaced with a manually-created version so that `@babel/plugin-transform-classes` can be pinned to v7.0.0-beta.35 to avoid a bug where the polyfilled HTMLElement constructor is not called. (https://github.com/babel/babel/issues/7506)
+
 ## v1.7.0-pre.14 [04-23-2018]
 * `init`:
   * Fixed a bug which caused `.gitignore` to be excluded from published templates.
