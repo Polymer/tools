@@ -104,6 +104,18 @@ export function* getSimpleObjectProperties(node: babel.ObjectExpression) {
   }
 }
 
+/** Like getSimpleObjectProperties but deals with paths. */
+export function*
+    getSimpleObjectPropPaths(nodePath: NodePath<babel.ObjectExpression>) {
+  // tslint:disable-next-line: no-any typings are wrong here
+  const props = nodePath.get('properties') as any as Array<NodePath>;
+  for (const propPath of props) {
+    if (propPath.isObjectProperty() || propPath.isObjectMethod()) {
+      yield propPath;
+    }
+  }
+}
+
 export const CLOSURE_CONSTRUCTOR_MAP = new Map(
     [['Boolean', 'boolean'], ['Number', 'number'], ['String', 'string']]);
 
@@ -185,6 +197,11 @@ export function getBestComment(nodePath: NodePath): string|undefined {
       parent.node.declarations.length !== 1) {
     // The parent node is multiple declarations. We can't be sure its
     // comment applies to us.
+    return undefined;
+  }
+
+  if (parent.isClassBody() || nodePath.isObjectMember()) {
+    // don't go above an object or class member.
     return undefined;
   }
 

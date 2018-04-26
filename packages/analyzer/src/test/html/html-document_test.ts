@@ -18,16 +18,21 @@ import * as fs from 'fs';
 import * as parse5 from 'parse5';
 import * as path from 'path';
 
+import {Analyzer} from '../../core/analyzer';
 import {ParsedHtmlDocument} from '../../html/html-document';
 import {HtmlParser} from '../../html/html-parser';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
-import {createForDirectory, fixtureDir} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir} from '../test-utils';
 
-suite('ParsedHtmlDocument', async () => {
+suite('ParsedHtmlDocument', () => {
   const parser: HtmlParser = new HtmlParser();
   const url = `./source-ranges/html-complicated.html`;
   const file = fs.readFileSync(path.join(fixtureDir, url), 'utf8');
-  const {analyzer, underliner} = await createForDirectory(fixtureDir);
+  let analyzer: Analyzer;
+  let underliner: CodeUnderliner;
+  before(async () => {
+    ({analyzer, underliner} = await createForDirectory(fixtureDir));
+  });
 
   let document: ParsedHtmlDocument;
   setup(() => {
@@ -379,7 +384,7 @@ suite('ParsedHtmlDocument', async () => {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`);
         });
 
-    suite('for a void element', async () => {
+    suite('for a void element', () => {
       test('works for a string attribute', async () => {
         const linkTags = [...dom5.queryAll(
             document.ast, dom5.predicates.hasTagName('link'))];
@@ -448,7 +453,7 @@ suite('ParsedHtmlDocument', async () => {
                 ~~~~~~~~~~~~~~~~~~~~~~~~`);
         });
 
-    suite('for a void element', async () => {
+    suite('for a void element', () => {
       test('works for a string attribute', async () => {
         const linkTags = [...dom5.queryAll(
             document.ast, dom5.predicates.hasTagName('link'))];
@@ -522,7 +527,7 @@ suite('ParsedHtmlDocument', async () => {
                 ~~~~~~~~~~~~~~~~~~~`);
         });
 
-    suite('for a void element', async () => {
+    suite('for a void element', () => {
       test('works for a string attribute', async () => {
         const linkTags = [...dom5.queryAll(
             document.ast, dom5.predicates.hasTagName('link'))];

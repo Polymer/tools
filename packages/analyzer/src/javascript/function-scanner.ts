@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {NodePath} from '@babel/traverse';
 import * as babel from '@babel/types';
 import * as doctrine from 'doctrine';
 
@@ -20,7 +21,7 @@ import {comparePosition} from '../model/source-range';
 
 import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
 import {Visitor} from './estree-visitor';
-import {getAttachedComment, getOrInferPrivacy, getPropertyName, getReturnFromAnnotation, getSimpleObjectProperties, inferReturnFromBody} from './esutil';
+import {getAttachedComment, getBestComment, getOrInferPrivacy, getPropertyName, getReturnFromAnnotation, getSimpleObjectProperties, getSimpleObjectPropPaths, inferReturnFromBody} from './esutil';
 import {ScannedFunction} from './function';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
@@ -40,9 +41,9 @@ export class FunctionScanner implements JavaScriptScanner {
 }
 
 class FunctionVisitor implements Visitor {
-  functions = new Set<ScannedFunction>();
-  document: JavaScriptDocument;
-  warnings: Warning[] = [];
+  readonly functions = new Set<ScannedFunction>();
+  private readonly document: JavaScriptDocument;
+  readonly warnings: Warning[] = [];
 
   constructor(document: JavaScriptDocument) {
     this.document = document;
@@ -52,30 +53,31 @@ class FunctionVisitor implements Visitor {
    * Scan standalone function declarations.
    */
   enterFunctionDeclaration(
-      node: babel.FunctionDeclaration, _parent: babel.Node) {
-    this._initFunction(node, getIdentifierName(node.id));
+      node: babel.FunctionDeclaration, _parent: babel.Node, path: NodePath) {
+    this.initFunction(node, path, getIdentifierName(node.id));
   }
 
   /**
    * Scan object method declarations.
    */
-  enterObjectMethod(node: babel.ObjectMethod, _parent: babel.Node) {
-    this._initFunction(node, getIdentifierName(node.key));
+  enterObjectMethod(
+      node: babel.ObjectMethod, _parent: babel.Node, path: NodePath) {
+    this.initFunction(node, path, getIdentifierName(node.key));
   }
 
   /**
    * Scan functions assigned to newly declared variables.
    */
   enterVariableDeclaration(
-      node: babel.VariableDeclaration, _parent: babel.Node) {
+      node: babel.VariableDeclaration, _parent: babel.Node, path: NodePath) {
     if (node.declarations.length !== 1) {
       return;  // Ambiguous.
     }
     const declaration = node.declarations[0];
     const declarationValue = declaration.init;
     if (declarationValue && babel.isFunction(declarationValue)) {
-      this._initFunction(
-          declarationValue, getIdentifierName(declaration.id), node);
+      this.initFunction(
+          declarationValue, path, getIdentifierName(declaration.id));
     }
   }
 
@@ -83,39 +85,40 @@ class FunctionVisitor implements Visitor {
    * Scan functions assigned to variables and object properties.
    */
   enterAssignmentExpression(
-      node: babel.AssignmentExpression, parent: babel.Node) {
+      node: babel.AssignmentExpression, _parent: babel.Node, path: NodePath) {
     if (babel.isFunction(node.right)) {
-      this._initFunction(node.right, getIdentifierName(node.left), parent);
+      this.initFunction(node.right, path, getIdentifierName(node.left));
     }
   }
 
   /**
    * Scan functions defined inside of object literals.
    */
-  enterObjectExpression(node: babel.ObjectExpression, _parent: babel.Node) {
-    for (const prop of getSimpleObjectProperties(node)) {
+  enterObjectExpression(
+      _node: babel.ObjectExpression, _parent: babel.Node,
+      path: NodePath<babel.ObjectExpression>) {
+    for (const propPath of getSimpleObjectPropPaths(path)) {
+      const prop = propPath.node;
       const propValue = prop.value;
       const name = getPropertyName(prop);
       if (babel.isFunction(propValue)) {
-        this._initFunction(propValue, name, prop);
+        this.initFunction(propValue, propPath, name);
         continue;
       }
-      const comment = getAttachedComment(prop) || '';
+      const comment = getBestComment(propPath) || '';
       const docs = jsdoc.parseJsdoc(comment);
       if (jsdoc.getTag(docs, 'function')) {
-        this._initFunction(prop, name);
+        this.initFunction(prop, propPath, name);
         continue;
       }
     }
   }
 
-  private _initFunction(
-      node: babel.Function|babel.ObjectProperty, analyzedName?: string,
-      docNode?: babel.Node) {
-    if (docNode === undefined) {
-      docNode = node;
-    }
-    const docs = jsdoc.parseJsdoc(getAttachedComment(docNode) || '');
+  private initFunction(
+      node: babel.Function|babel.ObjectProperty, path: NodePath,
+      analyzedName?: string) {
+    const docs = jsdoc.parseJsdoc(getBestComment(path) || '');
+
 
     // The @function annotation can override the name.
     const functionTag = jsdoc.getTag(docs, 'function');
@@ -128,7 +131,8 @@ class FunctionVisitor implements Visitor {
       return;
     }
 
-    if (!jsdoc.hasTag(docs, 'global') && !jsdoc.hasTag(docs, 'memberof')) {
+    if (!jsdoc.hasTag(docs, 'global') && !jsdoc.hasTag(docs, 'memberof') &&
+        !this.isExported(path)) {
       // Without this check we would emit a lot of functions not worthy of
       // inclusion. Since we don't do scope analysis, we can't tell when a
       // function is actually part of an exposed API. Only include functions
@@ -145,7 +149,7 @@ class FunctionVisitor implements Visitor {
     }
 
     const functionName = getNamespacedIdentifier(analyzedName, docs);
-    const sourceRange = this.document.sourceRangeForNode(docNode)!;
+    const sourceRange = this.document.sourceRangeForNode(node)!;
     const summaryTag = jsdoc.getTag(docs, 'summary');
     const summary = (summaryTag && summaryTag.description) || '';
     const description = docs.description;
@@ -189,5 +193,22 @@ class FunctionVisitor implements Visitor {
         functionParams,
         functionReturn,
         templateTypes));
+  }
+
+  private isExported(path: NodePath): boolean {
+    const node = path.node;
+    if (babel.isStatement(node)) {
+      const parent = path.parent;
+      if (parent && babel.isExportDefaultDeclaration(parent) ||
+          babel.isExportNamedDeclaration(parent)) {
+        return true;
+      }
+      return false;
+    }
+    const parentPath = path.parentPath;
+    if (parentPath == null) {
+      return false;
+    }
+    return this.isExported(parentPath);
   }
 }

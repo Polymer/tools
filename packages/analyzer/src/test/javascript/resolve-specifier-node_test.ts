@@ -45,7 +45,7 @@ const scopedRootComponentInfo = {
   componentDir
 };
 
-suite('resolve', async () => {
+suite('resolve', () => {
   test('non-component root to path', async () => {
     assert.equal(resolve('./root.js', rootMain), './root.js');
   });

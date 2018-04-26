@@ -16,13 +16,19 @@
 import {assert} from 'chai';
 import * as path from 'path';
 
+import {Analyzer} from '../../core/analyzer';
 import {ScannedNamespace} from '../../javascript/namespace';
 import {NamespaceScanner} from '../../javascript/namespace-scanner';
-import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
-suite('NamespaceScanner', async () => {
-  const testFilesDir = path.resolve(fixtureDir, 'namespaces/');
-  const {analyzer, underliner} = await createForDirectory(testFilesDir);
+suite('NamespaceScanner', () => {
+  let analyzer: Analyzer;
+  let underliner: CodeUnderliner;
+
+  before(async () => {
+    const testFilesDir = path.resolve(fixtureDir, 'namespaces/');
+    ({analyzer, underliner} = await createForDirectory(testFilesDir));
+  });
 
   async function getNamespaces(filename: string) {
     const {features} =

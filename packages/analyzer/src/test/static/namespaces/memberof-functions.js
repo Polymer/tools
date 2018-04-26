@@ -90,3 +90,10 @@ var jjj = function() {
 
 };
 Polymer.jjj = jjj;
+
+/**
+ * lol
+ */
+export function lll() {
+
+};

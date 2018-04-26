@@ -16,15 +16,20 @@
 import {assert, use as chaiUse} from 'chai';
 import * as path from 'path';
 
+import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
-import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
 chaiUse(require('chai-subset'));
 
-suite('Polymer2ElementScanner with old jsdoc annotations', async () => {
-  const testFilesDir = path.resolve(fixtureDir, 'polymer2-old-jsdoc/');
-  const {analyzer, underliner} = await createForDirectory(testFilesDir);
+suite('Polymer2ElementScanner with old jsdoc annotations', () => {
+  let analyzer: Analyzer;
+  let underliner: CodeUnderliner;
+  before(async () => {
+    const testFilesDir = path.resolve(fixtureDir, 'polymer2-old-jsdoc/');
+    ({analyzer, underliner} = await createForDirectory(testFilesDir));
+  });
 
   async function getElements(filename: string):
       Promise<ScannedPolymerElement[]> {
