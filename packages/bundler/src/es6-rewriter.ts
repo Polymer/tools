@@ -49,6 +49,7 @@ export class Es6Rewriter {
         external.push(...[...bundle.files, url]);
       }
     }
+    external.push(...this.bundler.excludes);
     // For each document loaded from the analyzer, we build a map of the
     // original specifiers to the resolved URLs since we want to use analyzer
     // resolutions for such things as bare module specifiers.
@@ -125,6 +126,7 @@ export class Es6Rewriter {
     const rolledUpDocument = await this.bundler.analyzeContents(
         rolledUpUrl as ResolvedUrl, rolledUpCode);
     const babelFile = assertIsJsDocument(rolledUpDocument).parsedDocument.ast;
+    this._rewriteExportStatements(url, babelFile);
     this._rewriteImportStatements(url, babelFile);
     this._deduplicateImportStatements(babelFile);
     const {code: rewrittenCode} = serialize(babelFile);
@@ -179,7 +181,43 @@ export class Es6Rewriter {
   }
 
   /**
-   * Rewrite import declarations source URLs reference the bundle URL for
+   * Rewrite export declarations source URLs to reference the bundle URL for
+   * bundled files.
+   */
+  private _rewriteExportStatements(baseUrl: ResolvedUrl, node: babel.Node) {
+    const this_ = this;
+    traverse(node, {
+      noScope: true,
+      ExportNamedDeclaration: {
+        enter(path: NodePath) {
+          const exportNamedDeclaration =
+              path.node as babel.ExportNamedDeclaration;
+          if (!exportNamedDeclaration.source ||
+              !babel.isStringLiteral(exportNamedDeclaration.source)) {
+            // We can't rewrite a source if there isn't one or if it isn't a
+            // string literal in the first place.
+            return;
+          }
+          const source = exportNamedDeclaration.source.value as ResolvedUrl;
+          const sourceBundle = this_.manifest.getBundleForFile(source);
+          // If there is no bundle associated with the export from statement
+          // then the URL is not bundled (perhaps it was excluded) so we will
+          // just ensure the URL is converted back to a relative URL.
+          if (!sourceBundle) {
+            exportNamedDeclaration.source.value = ensureLeadingDot(
+                this_.bundler.analyzer.urlResolver.relative(baseUrl, source));
+            return;
+          }
+          exportNamedDeclaration.source.value =
+              ensureLeadingDot(this_.bundler.analyzer.urlResolver.relative(
+                  baseUrl, sourceBundle.url));
+        }
+      }
+    });
+  }
+
+  /**
+   * Rewrite import declarations source URLs to reference the bundle URL for
    * bundled files and import names to correspond to names as exported by
    * bundles.
    */
@@ -214,8 +252,8 @@ export class Es6Rewriter {
           // excluded or something) so we should just ensure the URL is
           // converted back to a relative URL.
           if (!sourceBundle) {
-            importDeclaration.source.value =
-                this_.bundler.analyzer.urlResolver.relative(baseUrl, source);
+            importDeclaration.source.value = ensureLeadingDot(
+                this_.bundler.analyzer.urlResolver.relative(baseUrl, source));
             return;
           }
           for (const specifier of importDeclaration.specifiers) {

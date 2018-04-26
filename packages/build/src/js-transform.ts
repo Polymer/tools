@@ -28,9 +28,38 @@ import isWindows = require('is-windows');
 // plugins without turning on transformation, for the case where we are
 // minifying but not compiling?
 
-// Syntax and transform plugins for ES2015.
-const babelPresetEs2015NoModules =
-    [require('@babel/preset-es2015'), {modules: false}];
+// Syntax and transform plugins for ES2015. This is roughly equivalent to
+// @babel/preset-es2015, with modules removed and
+// @babel/plugin-transform-classes pinned to v7.0.0-beta.35 to avoid
+// https://github.com/babel/babel/issues/7506 . As mentioned in the bug, native
+// constructors are wrapped with a ES5 'class' which has a constructor that does
+// nothing; however, the custom elements polyfill needs the polyfilled
+// constructor to be called so that it can supply the element being upgraded as
+// the object to use for `this`.
+const customBabelPresetEs2015 = {
+  plugins: [
+    require("@babel/plugin-transform-template-literals"),
+    require("@babel/plugin-transform-literals"),
+    require("@babel/plugin-transform-function-name"),
+    require("@babel/plugin-transform-arrow-functions"),
+    require("@babel/plugin-transform-block-scoped-functions"),
+    require("@babel/plugin-transform-classes"),
+    require("@babel/plugin-transform-object-super"),
+    require("@babel/plugin-transform-shorthand-properties"),
+    require("@babel/plugin-transform-duplicate-keys"),
+    require("@babel/plugin-transform-computed-properties"),
+    require("@babel/plugin-transform-for-of"),
+    require("@babel/plugin-transform-sticky-regex"),
+    require("@babel/plugin-transform-unicode-regex"),
+    require("@babel/plugin-transform-spread"),
+    require("@babel/plugin-transform-parameters"),
+    require("@babel/plugin-transform-destructuring"),
+    require("@babel/plugin-transform-block-scoping"),
+    require("@babel/plugin-transform-typeof-symbol"),
+    require("@babel/plugin-transform-instanceof"),
+    [require("@babel/plugin-transform-regenerator"), { async: false, asyncGenerators: false }],
+  ],
+};
 
 // The ES2016 and ES2017 presets do not inherit the plugins of previous years,
 // and there is no ES2018 preset yet. Since the additions in ES2016 and ES2017
@@ -168,7 +197,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   }
   if (options.compileToEs5) {
     doBabelTransform = true;
-    presets.push(babelPresetEs2015NoModules);
+    presets.push(customBabelPresetEs2015);
     plugins.push(...babelTransformPlugins);
   }
   if (options.moduleResolution === 'node') {

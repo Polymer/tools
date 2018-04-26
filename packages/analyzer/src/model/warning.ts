@@ -15,15 +15,15 @@
 import * as chalk from 'chalk';
 
 import {Analyzer} from '../core/analyzer';
+import {UrlResolver} from '../index';
 import {ParsedDocument} from '../parser/document';
 import {underlineCode} from '../warning/code-printer';
 
 import {Analysis} from './analysis';
 import {comparePositionAndRange, isPositionInsideRange, SourceRange} from './source-range';
-
-import stable = require('stable');
 import {ResolvedUrl} from './url';
-import {UrlResolver} from '../index';
+
+const stable = require('stable');
 
 export interface WarningInit {
   readonly message: string;
@@ -283,7 +283,7 @@ export async function applyEdits(
      * To preserve ordering of insertions to the same position, we use a stable
      * sort.
      */
-    stable.inplace(replacements, (a, b) => {
+    stable.inplace(replacements, (a: Replacement, b: Replacement) => {
       const leftEdgeComp =
           comparePositionAndRange(b.range.start, a.range, true);
       if (leftEdgeComp !== 0) {
