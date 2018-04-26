@@ -1,7 +1,12 @@
 # Changelog
 
 
-<!-- ## Unreleased -->
+## Unreleased
+* `serve`:
+  * Fixed issue where resources would be cached after restarting with
+    different compilation/transformation options. We've turned off most
+    browser-side caching. As a reminder: do not use `polymser serve` as a
+    production webserver, it is designed for development.
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.15 [04-25-2018]
@@ -18,6 +23,8 @@
   * Stricter requirements for determining when a browser supports modules, and
     hence when to automatically transform modules to AMD. We now require support
     for dynamic import and import.meta.
+
+<!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.13 [04-19-2018]
 * `init`

@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Fixed issue where resources would be cached after restarting polyserve with
+  different compilation/transformation options. We've turned off most
+  browser-side caching. As a reminder: do not use polyserve in production,
+  it is designed for development.
 <!-- Add new, unreleased items here. -->
 
 ## [0.27.8] (2018-04-25)

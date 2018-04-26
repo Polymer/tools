@@ -415,7 +415,10 @@ export function getApp(options: ServerOptions): express.Express {
   app.get('/*', (req, res) => {
     pushResources(options, req, res);
     const filePath = req.path;
-    send(req, filePath, {root: root, index: entrypoint})
+    send(
+        req,
+        filePath,
+        {root: root, index: entrypoint, etag: false, lastModified: false})
         .on('error',
             (error: send.SendError) => {
               if (error.status === 404 && !filePathRegex.test(filePath)) {
