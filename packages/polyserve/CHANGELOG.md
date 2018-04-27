@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   different compilation/transformation options. We've turned off most
   browser-side caching. As a reminder: do not use polyserve in production,
   it is designed for development.
+* Add "webcomponents-bundle.js" to the heuristic used to determine when to
+  inject the Custom Elements ES5 Adapter.
 <!-- Add new, unreleased items here. -->
 
 ## [0.27.8] (2018-04-25)
