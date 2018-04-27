@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## 2.0.1 - 2018-04-27
+
+- Update dependency on `request` to lastest version due to reported security vulnerability in earlier version.
 
 ## 2.0.0 - 2018-01-09
 
