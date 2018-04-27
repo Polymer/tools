@@ -2,6 +2,9 @@
 
 
 ## Unreleased
+* `build`:
+  * Disable the `simplify` babel plugin when minifying javascript. See
+    https://github.com/babel/minify/issues/824
 * `serve`:
   * Fixed issue where resources would be cached after restarting with
     different compilation/transformation options. We've turned off most

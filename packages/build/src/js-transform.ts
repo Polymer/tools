@@ -109,6 +109,10 @@ const babelPresetMinify = require('babel-preset-minify')({}, {
 
   // TODO(aomarks) Find out why we disabled this plugin.
   simplifyComparisons: false,
+
+  // Disable the simplify plugin because it can eat some statements preceeding
+  // loops. https://github.com/babel/minify/issues/824
+  simplify: false,
 });
 
 /**

@@ -353,4 +353,16 @@ suite('jsTransform', () => {
 
     assert.notInclude(result, '_wrapNativeSuper');
   });
+
+  // https://github.com/babel/minify/issues/824
+  test('does not remove statements preceding certain loops', () => {
+    const input = stripIndent(`
+        let foo = 'bar';
+        while (0);
+        console.log(foo);
+    `);
+    const result = jsTransform(input, {compileToEs5: true, minify: true});
+
+    assert.include(result, 'bar');
+  });
 });

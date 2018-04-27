@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Disable the `simplify` babel plugin when minifying javascript. See
+  https://github.com/babel/minify/issues/824
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.15] - 2018-04-25
