@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as assert from 'assert';
 import * as clone from 'clone';
 import {PackageRelativeUrl, ResolvedUrl, UrlResolver} from 'polymer-analyzer';
 
@@ -115,7 +116,7 @@ export class BundleManifest {
       const bundleUrl = bundleMapEntry[0];
       const bundle = bundleMapEntry[1];
       for (const fileUrl of bundle.files) {
-        console.assert(!this._bundleUrlForFile.has(fileUrl));
+        assert(!this._bundleUrlForFile.has(fileUrl));
         this._bundleUrlForFile.set(fileUrl, bundleUrl);
       }
     }
