@@ -21,7 +21,7 @@ import {comparePosition} from '../model/source-range';
 
 import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
 import {Visitor} from './estree-visitor';
-import {getAttachedComment, getBestComment, getOrInferPrivacy, getPropertyName, getReturnFromAnnotation, getSimpleObjectProperties, getSimpleObjectPropPaths, inferReturnFromBody} from './esutil';
+import {getBestComment, getOrInferPrivacy, getPropertyName, getReturnFromAnnotation, getSimpleObjectPropPaths, inferReturnFromBody} from './esutil';
 import {ScannedFunction} from './function';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
