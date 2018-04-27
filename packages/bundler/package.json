@@ -56,9 +56,15 @@
   "scripts": {
     "build": "tsc",
     "format": "find src | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i",
+<<<<<<< HEAD
     "test": "npm run build && tslint -c tslint.json 'src/**/*.ts' && mocha 'lib/test/**/*_test.js'",
     "test:unit": "mocha 'lib/test/**/*_test.js'",
     "test:watch": "tsc-then -- mocha 'lib/test/**/*_test.js'"
+=======
+    "test": "npm run build && tslint -c tslint.json src/*.ts src/**/*.ts && mocha lib/test/*_test.js lib/test/**/*_test.js",
+    "test:unit": "mocha lib/test/*_test.js lib/test/**/*_test.js",
+    "test:watch": "tsc-then -- mocha lib/test/*_test.js lib/test/**/*_test.js"
+>>>>>>> d1e1a3a33181b6326e1e9cf49674f7ed46b70ec9
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
