@@ -113,6 +113,9 @@ const babelPresetMinify = require('babel-preset-minify')({}, {
   // Disable the simplify plugin because it can eat some statements preceeding
   // loops. https://github.com/babel/minify/issues/824
   simplify: false,
+
+  // This is breaking ES6 output. https://github.com/Polymer/tools/issues/261
+  mangle: false,
 });
 
 /**
