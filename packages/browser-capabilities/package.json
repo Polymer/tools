@@ -13,9 +13,9 @@
   "scripts": {
     "build": "rm -Rf lib/ && tsc",
     "build:watch": "tsc --watch",
-    "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
-    "test": "npm run build && mocha 'lib/test/**/*_test.js'",
-    "test:unit": "mocha 'lib/test/**/*_test.js'",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "test": "npm run build && mocha \"lib/test/**/*_test.js\"",
+    "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "watchy -w src -- npm run test"
   },
   "devDependencies": {
