@@ -3,18 +3,20 @@
   "version": "0.1.0",
   "description": "Minimal AMD style loader for Polymer build.",
   "repository": "git+https://github.com/Polymer/tools.git",
-  "main": "lib/amd-loader.js",
+  "main": "lib/amd-loader.min.js",
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
   "scripts": {
     "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i",
     "clean": "rm -rf lib/",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsc && npm run minify",
+    "minify": "babel-minify lib/amd-loader.js --outFile=lib/amd-loader.min.js",
     "test": "echo 'no tests yet'",
     "prepack": "npm run build",
     "prepublishOnly": "npm run test"
   },
   "devDependencies": {
+    "babel-minify": "^0.4.0",
     "clang-format": "^1.2.3",
     "typescript": "^2.8.3"
   }
