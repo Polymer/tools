@@ -46,9 +46,9 @@
     "clean": "touch lib && rm -rf lib && mkdir lib",
     "format": "find src | grep \"\\.[jt]s$\" | xargs clang-format --style=file -i",
     "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
-    "test": "npm run build && mocha 'lib/test/**/*_test.js' && npm run lint",
-    "test:unit": "mocha 'lib/test/**/*_test.js'",
-    "test:watch": "tsc-then -- mocha 'lib/test/**/*_test.js'",
+    "test": "npm run build && mocha \"lib/test/**/*_test.js\" && npm run lint",
+    "test:unit": "mocha \"lib/test/**/*_test.js\"",
+    "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
     "run-on-polymer": "npm run build && (cd test/integration && bower install --silent) && INTEGRATION_TEST=true mocha lib/test/integration_test.js"
   },
   "repository": {
