@@ -51,7 +51,7 @@
     "prepublishOnly": "gulp prepublish",
     "test:unit": "mocha \"test/unit/**/*.js\"",
     "test:integration": "gulp bower && mocha \"test/integration/**/*.js\" --timeout 90000",
-    "test:watch": "watch \"mocha \"test/unit/**/*.js\"\" runner/ browser/ bin/ test/ tasks/",
+    "test:watch": "watch \"mocha \\\"test/unit/**/*.js\\\"\" runner/ browser/ bin/ test/ tasks/",
     "format": "find runner test | grep \"\\.js$\\|\\.ts$\" | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "dependencies": {
