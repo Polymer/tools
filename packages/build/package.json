@@ -8,8 +8,8 @@
     "lint": "gulp lint",
     "build": "gulp build",
     "test": "gulp lint test",
-    "test:unit": "gulp test:unit",
-    "test:watch": "tsc-then -- mocha -c",
+    "test:unit": "mocha 'lib/test/**/*_test.js'",
+    "test:watch": "tsc-then -- mocha 'lib/test/**/*_test.js'",
     "prepublishOnly": "npm test",
     "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
   },
