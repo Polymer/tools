@@ -1,4 +1,3 @@
--c 
 --ui tdd
+--colors 
 --timeout 5000
-lib/test/*.js lib/test/**/*.js
