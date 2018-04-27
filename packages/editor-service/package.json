@@ -17,9 +17,9 @@
     "build": "tsc",
     "prepublishOnly": "npm run clean && npm run build",
     "lint": "tslint --project ./tsconfig.json",
-    "test": "npm run clean && npm run build && mocha lib/test/*_test.js lib/test/**/*_test.js && npm run lint",
-    "test:unit": "mocha lib/test/*_test.js lib/test/**/*_test.js",
-    "test:watch": "tsc-then -- mocha lib/test/*_test.js lib/test/**/*_test.js",
+    "test": "npm run clean && npm run build && mocha 'lib/test/**/*_test.js' && npm run lint",
+    "test:unit": "mocha 'lib/test/**/*_test.js'",
+    "test:watch": "tsc-then -- mocha 'lib/test/**/*_test.js'",
     "format": "find src test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "devDependencies": {

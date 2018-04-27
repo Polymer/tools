@@ -16,8 +16,8 @@
   "homepage": "https://github.com/Polymer/polymer-project-config#readme",
   "scripts": {
     "build": "tsc && typescript-json-schema src/index.ts ProjectOptions --ignoreErrors -o lib/schema.json",
-    "test": "npm run build && mocha test/*_test.js test/**/*_test.js",
-    "test:unit": "mocha test/*_test.js test/**/*_test.js",
+    "test": "npm run build && mocha 'test/**/*_test.js'",
+    "test:unit": "mocha 'test/**/*_test.js'",
     "format": "find src test \\( -iname '*.ts' -o -iname '*.js' \\) | xargs clang-format --style=file -i"
   },
   "dependencies": {
