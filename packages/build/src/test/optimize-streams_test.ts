@@ -272,7 +272,7 @@ suite('optimize-streams', () => {
     ]);
     const op =
         pipeStreams([sourceStream, getOptimizeStreams({js: {minify: true}})]);
-    assert.equal(await getOnlyFile(op), '[1,2,3].map(a=>a+1);');
+    assert.equal(await getOnlyFile(op), '[1,2,3].map(n=>n+1);');
   });
 
   test('js exclude permutations', async () => {
