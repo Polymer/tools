@@ -28,13 +28,29 @@ suite('capabilities', function() {
   test('chrome has all the capabilities', () => {
     assertBrowserCapabilities(
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36',
-        ['es2015', 'push', 'serviceworker', 'modules']);
+        [
+          'es2015',
+          'es2016',
+          'es2017',
+          'es2018',
+          'push',
+          'serviceworker',
+          'modules'
+        ]);
   });
 
   test('chrome headless has all the capabilities', () => {
     assertBrowserCapabilities(
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/66.0.3359.117 Safari/537.36',
-        ['es2015', 'push', 'serviceworker', 'modules']);
+        [
+          'es2015',
+          'es2016',
+          'es2017',
+          'es2018',
+          'push',
+          'serviceworker',
+          'modules'
+        ]);
   });
 
   test('edge es2015 support is predicated on minor browser version', () => {
@@ -43,25 +59,29 @@ suite('capabilities', function() {
         ['push']);
     assertBrowserCapabilities(
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063',
-        ['es2015', 'push']);
+        ['es2015', 'es2016', 'es2017', 'push']);
   });
 
   test('safari push capability is predicated on macOS version', () => {
     assertBrowserCapabilities(
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.1 Safari/603.1.30',
-        ['es2015']);
+        [
+          'es2015',
+          'es2016',
+          'es2017',
+        ]);
     assertBrowserCapabilities(
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.1 Safari/603.1.30',
-        ['es2015', 'push']);
+        ['es2015', 'es2016', 'es2017', 'push']);
   });
 
   test('safari mobile modules capability is predicated on iOS version', () => {
     assertBrowserCapabilities(
         'Mozilla/5.0 (iPhone; CPU iPhone OS 11_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1',
-        ['es2015', 'push']);
+        ['es2015', 'es2016', 'es2017', 'push']);
     assertBrowserCapabilities(
         'Mozilla/5.0 (iPhone; CPU iPhone OS 11_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1',
-        ['es2015', 'push', 'modules']);
+        ['es2015', 'es2016', 'es2017', 'push', 'modules']);
   });
 
   test('parseVersion parses with fallback to -1', () => {

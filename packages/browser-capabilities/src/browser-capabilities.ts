@@ -20,6 +20,12 @@ import {UAParser} from 'ua-parser-js';
 export type BrowserCapability =
     // ECMAScript 2015 (aka ES6).
     'es2015'|
+    // ECMAScript 2016.
+    'es2016'|
+    // ECMAScript 2017.
+    'es2017'|
+    // ECMAScript 2018.
+    'es2018'|
     // HTTP/2 Server Push.
     'push'|
     // Service Worker API.
@@ -31,6 +37,9 @@ export type UserAgentPredicate = (ua: InstanceType<typeof UAParser>) => boolean;
 
 const chrome = {
   es2015: since(49),
+  es2016: since(58),
+  es2017: since(58),
+  es2018: since(64),
   push: since(41),
   serviceworker: since(45),
   modules: since(64),
@@ -44,12 +53,18 @@ const browserPredicates: {
   'Chrome Headless': chrome,
   'OPR': {
     es2015: since(36),
+    es2016: since(45),
+    es2017: since(45),
+    es2018: since(51),
     push: since(28),
     serviceworker: since(32),
     modules: since(48),
   },
   'Vivaldi': {
     es2015: since(1),
+    es2016: since(1, 14),
+    es2017: since(1, 14),
+    es2018: since(1, 14),
     push: since(1),
     serviceworker: since(1),
     modules: since(1, 14),
@@ -61,6 +76,9 @@ const browserPredicates: {
   // making assumptions based on release notes.
   'Mobile Safari': {
     es2015: since(10),
+    es2016: since(10, 3),
+    es2017: since(10, 3),
+    es2018: () => false,  // No async iterators
     push: since(9, 2),
     serviceworker: since(11, 3),
     modules: (ua) => {
@@ -70,6 +88,9 @@ const browserPredicates: {
   },
   'Safari': {
     es2015: since(10),
+    es2016: since(10, 1),
+    es2017: since(10, 1),
+    es2018: () => false,  // No async iterators
     push: (ua) => {
       return versionAtLeast([9], parseVersion(ua.getBrowser().version)) &&
           // HTTP/2 on desktop Safari requires macOS 10.11 according to
@@ -83,7 +104,12 @@ const browserPredicates: {
   'Edge': {
     // Edge versions before 15.15063 may contain a JIT bug affecting ES6
     // constructors (https://github.com/Microsoft/ChakraCore/issues/1496).
+    // Since this bug was fixed after es2016 and 2017 support, all these
+    // versions are the same.
     es2015: since(15, 15063),
+    es2016: since(15, 15063),
+    es2017: since(15, 15063),
+    es2018: () => false,
     push: since(12),
     // https://developer.microsoft.com/en-us/microsoft-edge/platform/status/serviceworker/
     serviceworker: () => false,
@@ -91,6 +117,9 @@ const browserPredicates: {
   },
   'Firefox': {
     es2015: since(51),
+    es2016: since(52),
+    es2017: since(52),
+    es2018: since(58),  // Except RegEx additions
     // Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1409570
     push: () => false,
     serviceworker: since(44),
