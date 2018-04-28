@@ -9,10 +9,9 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
-const assert = require('chai').assert;
-const path = require('path');
-const {applyBuildPreset, isValidPreset} = require('../lib/builds');
+import {assert} from 'chai';
+
+import {applyBuildPreset, isValidPreset, ProjectBuildOptions} from '../builds';
 
 suite('builds', () => {
   suite('isValidPreset()', () => {
@@ -28,20 +27,23 @@ suite('builds', () => {
       assert.equal(isValidPreset('es6'), false);
       assert.equal(isValidPreset('js-compile'), false);
       assert.equal(isValidPreset(''), false);
-      assert.equal(isValidPreset(null), false);
-      assert.equal(isValidPreset(undefined), false);
-      assert.equal(isValidPreset(0), false);
-      assert.equal(isValidPreset(1), false);
+      assert.equal(isValidPreset(null as any), false);
+      assert.equal(isValidPreset(undefined as any), false);
+      assert.equal(isValidPreset(0 as any), false);
+      assert.equal(isValidPreset(1 as any), false);
     });
   });
 
   suite('applyBuildPreset()', () => {
     test('applies es5-bundled preset', () => {
       const givenBuildConfig = {preset: 'es5-bundled'};
-      const expectedBuildConfig = {
+      const expectedBuildConfig: ProjectBuildOptions = {
         name: 'es5-bundled',
         preset: 'es5-bundled',
-        js: {minify: true, compile: true},
+        js: {
+          minify: true,
+          compile: true,
+        },
         css: {minify: true},
         html: {minify: true},
         bundle: true,
@@ -53,11 +55,14 @@ suite('builds', () => {
 
     test('applies es6-bundled preset', () => {
       const givenBuildConfig = {preset: 'es6-bundled'};
-      const expectedBuildConfig = {
+      const expectedBuildConfig: ProjectBuildOptions = {
         name: 'es6-bundled',
         preset: 'es6-bundled',
         browserCapabilities: ['es2015'],
-        js: {minify: true, compile: false},
+        js: {
+          minify: true,
+          compile: false,
+        },
         css: {minify: true},
         html: {minify: true},
         bundle: true,
@@ -69,11 +74,14 @@ suite('builds', () => {
 
     test('applies es6-unbundled preset', () => {
       const givenBuildConfig = {preset: 'es6-unbundled'};
-      const expectedBuildConfig = {
+      const expectedBuildConfig: ProjectBuildOptions = {
         name: 'es6-unbundled',
         preset: 'es6-unbundled',
         browserCapabilities: ['es2015', 'push'],
-        js: {minify: true, compile: false},
+        js: {
+          minify: true,
+          compile: false,
+        },
         css: {minify: true},
         html: {minify: true},
         bundle: false,
@@ -84,20 +92,26 @@ suite('builds', () => {
     });
 
     test('applies provided config options as overrides to preset', () => {
-      const givenBuildConfig = {
+      const givenBuildConfig: ProjectBuildOptions = {
         preset: 'es5-bundled',
         name: 'name-override',
-        js: {minify: false, compile: false},
+        js: {
+          minify: false,
+          compile: false,
+        },
         css: {minify: false},
         html: {minify: false},
         bundle: false,
         addServiceWorker: false,
         addPushManifest: false,
       };
-      const expectedBuildConfig = {
+      const expectedBuildConfig: ProjectBuildOptions = {
         preset: 'es5-bundled',
         name: 'name-override',
-        js: {minify: false, compile: false},
+        js: {
+          minify: false,
+          compile: false,
+        },
         css: {minify: false},
         html: {minify: false},
         bundle: false,
@@ -108,7 +122,7 @@ suite('builds', () => {
     });
 
     test('returns the same config if no preset is provided', () => {
-      const givenBuildConfig = {
+      const givenBuildConfig: ProjectBuildOptions = {
         name: 'no-preset',
         js: {minify: true, compile: false},
         css: {minify: true},
@@ -118,7 +132,7 @@ suite('builds', () => {
     });
 
     test('returns the same config if preset is provided but not found', () => {
-      const givenBuildConfig = {
+      const givenBuildConfig: ProjectBuildOptions = {
         preset: 'not-a-real-preset-name',
         js: {minify: false, compile: true},
         css: {minify: true},

@@ -21,7 +21,7 @@ import {applyBuildPreset, isValidPreset, ProjectBuildOptions} from './builds';
 import minimatchAll = require('minimatch-all');
 import {FsUrlLoader, PackageUrlResolver, WarningFilter, Analyzer, Severity} from 'polymer-analyzer';
 
-export {ProjectBuildOptions, applyBuildPreset} from './builds';
+export {ProjectBuildOptions, JsCompileTarget, applyBuildPreset} from './builds';
 
 const logger = logging.getLogger('polymer-project-config');
 
@@ -30,7 +30,7 @@ const logger = logging.getLogger('polymer-project-config');
  */
 export const defaultSourceGlobs = ['src/**/*'];
 
-export type ModuleResolutionStrategy = 'none' | 'node';
+export type ModuleResolutionStrategy = 'none'|'node';
 const moduleResolutionStrategies =
     new Set<ModuleResolutionStrategy>(['none', 'node']);
 

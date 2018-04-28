@@ -231,7 +231,6 @@ suite('Project Config', () => {
       test(
           'builds property is unset when `build` option is not provided',
           () => {
-            const absoluteRoot = process.cwd();
             const config = new ProjectConfig();
             config.validate();
 
@@ -241,7 +240,6 @@ suite('Project Config', () => {
       test(
           'sets builds property to an array when `build` option is an array',
           () => {
-            const absoluteRoot = process.cwd();
             const config = new ProjectConfig({
               builds: [
                 {
@@ -389,7 +387,6 @@ suite('Project Config', () => {
     suite('validate()', () => {
       test('returns true for valid configuration', () => {
         const relativeRoot = 'public';
-        const absoluteRoot = path.resolve(relativeRoot);
         const config = new ProjectConfig({
           root: relativeRoot,
           entrypoint: 'foo.html',
@@ -407,7 +404,6 @@ suite('Project Config', () => {
 
       test('returns true for negative globs that resolve within root', () => {
         const relativeRoot = 'public';
-        const absoluteRoot = path.resolve(relativeRoot);
         const config = new ProjectConfig({
           root: relativeRoot,
           sources: [
@@ -427,7 +423,6 @@ suite('Project Config', () => {
 
       test('throws an exception when a fragment does not resolve within root', () => {
         const relativeRoot = 'public';
-        const absoluteRoot = path.resolve(relativeRoot);
         const config = new ProjectConfig({
           root: relativeRoot,
           fragments: ['../bar.html'],
@@ -440,7 +435,6 @@ suite('Project Config', () => {
 
       test('throws an exception when entrypoint does not resolve within root', () => {
         const relativeRoot = 'public';
-        const absoluteRoot = path.resolve(relativeRoot);
         const config = new ProjectConfig({
           root: relativeRoot,
           entrypoint: '../bar.html',
@@ -453,7 +447,6 @@ suite('Project Config', () => {
 
       test('throws an exception when shell does not resolve within root', () => {
         const relativeRoot = 'public';
-        const absoluteRoot = path.resolve(relativeRoot);
         const config = new ProjectConfig({
           root: relativeRoot,
           shell: '/some/absolute/path/bar.html',
@@ -466,7 +459,6 @@ suite('Project Config', () => {
 
       test('returns true when a single, unnamed build is defined', () => {
         const relativeRoot = 'public';
-        const absoluteRoot = path.resolve(relativeRoot);
         const config = new ProjectConfig({
           root: relativeRoot,
           builds: [{
@@ -480,7 +472,6 @@ suite('Project Config', () => {
       });
 
       test('throws an exception when builds property was not an array', () => {
-        const absoluteRoot = process.cwd();
         const config = new ProjectConfig({
           builds: {
             name: 'bundled',
@@ -494,7 +485,6 @@ suite('Project Config', () => {
       });
 
       test('throws an exception when builds array contains duplicate names', () => {
-        const absoluteRoot = process.cwd();
         const config = new ProjectConfig({
           builds: [
             {
@@ -513,7 +503,6 @@ suite('Project Config', () => {
       });
 
       test('throws an exception when builds array contains an unnamed build', () => {
-        const absoluteRoot = process.cwd();
         const config = new ProjectConfig({
           builds: [
             {
@@ -531,7 +520,6 @@ suite('Project Config', () => {
       });
 
       test('throws an exception when builds array contains an invalid preset', () => {
-        const absoluteRoot = process.cwd();
         const config = new ProjectConfig({
           builds: [
             {
@@ -551,23 +539,23 @@ suite('Project Config', () => {
 
   suite('loadOptionsFromFile()', () => {
     test('throws an exception for polymer.json with invalid syntax', () => {
-      const filepath = path.join(__dirname, 'polymer-invalid-syntax.json');
+      const filepath = path.resolve('test/polymer-invalid-syntax.json');
       assert.throws(() => ProjectConfig.loadOptionsFromFile(filepath));
     });
 
     test('throws an exception for polymer.json with invalid data', () => {
-      const filepath = path.join(__dirname, 'polymer-invalid-type.json');
+      const filepath = path.resolve('test/polymer-invalid-type.json');
       assert.throws(() => ProjectConfig.loadOptionsFromFile(filepath));
     });
 
     test('returns null if file is missing', () => {
-      const filepath = path.join(__dirname, 'this-file-does-not-exist.json');
+      const filepath = path.resolve('test/this-file-does-not-exist.json');
       assert.equal(ProjectConfig.loadOptionsFromFile(filepath), null);
     });
 
     test('reads options from config file', () => {
-      const options = ProjectConfig.loadOptionsFromFile(
-          path.join(__dirname, 'polymer.json'));
+      const filepath = path.resolve('test/polymer.json');
+      const options = ProjectConfig.loadOptionsFromFile(filepath);
       assert.deepEqual(options, {
         root: 'public',
         entrypoint: 'foo.html',
@@ -578,31 +566,31 @@ suite('Project Config', () => {
     });
 
     test('reads options from a file with just {} in it', () => {
-      const options = ProjectConfig.loadOptionsFromFile(
-          path.join(__dirname, 'polymer-minimal.json'));
+      const filepath = path.resolve('test/polymer-minimal.json');
+      const options = ProjectConfig.loadOptionsFromFile(filepath);
       assert.deepEqual(options, {});
     });
   });
 
   suite('loadConfigFromFile()', () => {
     test('throws an exception for polymer.json with invalid syntax', () => {
-      const filepath = path.join(__dirname, 'polymer-invalid-syntax.json');
+      const filepath = path.resolve('test/polymer-invalid-syntax.json');
       assert.throws(() => ProjectConfig.loadConfigFromFile(filepath));
     });
 
     test('throws an exception for polymer.json with invalid data', () => {
-      const filepath = path.join(__dirname, 'polymer-invalid-type.json');
+      const filepath = path.resolve('test/polymer-invalid-type.json');
       assert.throws(() => ProjectConfig.loadConfigFromFile(filepath));
     });
 
     test('returns null if file is missing', () => {
-      const filepath = path.join(__dirname, 'this-file-does-not-exist.json');
+      const filepath = path.resolve('test/this-file-does-not-exist.json');
       assert.equal(ProjectConfig.loadConfigFromFile(filepath), null);
     });
 
     test('creates config instance from config file options', () => {
       const config = ProjectConfig.loadConfigFromFile(
-          path.join(__dirname, 'polymer.json'));
+          path.resolve('test/polymer.json'));
       config.validate();
 
       const relativeRoot = 'public';
@@ -627,7 +615,7 @@ suite('Project Config', () => {
 
     test('reads a valid config from a file with just {} in it', () => {
       const config = ProjectConfig.loadConfigFromFile(
-          path.join(__dirname, 'polymer-minimal.json'));
+          path.resolve('test/polymer-minimal.json'));
       config.validate();
     });
   });
@@ -648,7 +636,7 @@ suite('Project Config', () => {
   suite('toJSON()', () => {
     test('with minimal config', () => {
       const config = ProjectConfig.loadConfigFromFile(
-          path.join(__dirname, 'polymer-minimal.json'));
+          path.resolve('test/polymer-minimal.json'));
       assert.deepEqual(JSON.parse(config.toJSON()), {
         entrypoint: 'index.html',
         fragments: [],
@@ -663,7 +651,7 @@ suite('Project Config', () => {
 
     test('with full config', () => {
       const config = ProjectConfig.loadConfigFromFile(
-          path.join(__dirname, 'polymer-full.json'));
+          path.resolve('test/polymer-full.json'));
       assert.deepEqual(JSON.parse(config.toJSON()), {
         entrypoint: 'entrypoint.html',
         shell: 'shell.html',
