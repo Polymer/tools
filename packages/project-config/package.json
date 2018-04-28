@@ -27,6 +27,8 @@
     "plylog": "^0.5.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.0.2",
+    "@types/mocha": "^2.2.41",
     "chai": "^3.5.0",
     "clang-format": "1.0.49",
     "mocha": "^3.0.2",
