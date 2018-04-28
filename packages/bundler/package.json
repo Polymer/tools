@@ -55,10 +55,10 @@
   },
   "scripts": {
     "build": "tsc",
-    "format": "find src | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i",
-    "test": "npm run build && tslint -c tslint.json src/*.ts src/**/*.ts && mocha",
-    "test:unit": "mocha",
-    "test:watch": "tsc-then -- mocha"
+    "format": "find src | grep \"\\.js$\\|\\.ts$\" | xargs ./node_modules/.bin/clang-format --style=file -i",
+    "test": "npm run build && tslint -c tslint.json \"src/**/*.ts\" && mocha \"lib/test/**/*_test.js\"",
+    "test:unit": "mocha \"lib/test/**/*_test.js\"",
+    "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\""
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
