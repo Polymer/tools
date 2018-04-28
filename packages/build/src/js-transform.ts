@@ -15,7 +15,7 @@
 import * as babelCore from '@babel/core';
 import * as babylon from 'babylon';
 import {relative} from 'path';
-import {ModuleResolutionStrategy} from 'polymer-project-config';
+import {JsCompileTarget, ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
 
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
@@ -36,44 +36,41 @@ import isWindows = require('is-windows');
 // nothing; however, the custom elements polyfill needs the polyfilled
 // constructor to be called so that it can supply the element being upgraded as
 // the object to use for `this`.
-const customBabelPresetEs2015 = {
-  plugins: [
-    require('@babel/plugin-transform-template-literals'),
-    require('@babel/plugin-transform-literals'),
-    require('@babel/plugin-transform-function-name'),
-    require('@babel/plugin-transform-arrow-functions'),
-    require('@babel/plugin-transform-block-scoped-functions'),
-    require('@babel/plugin-transform-classes'),
-    require('@babel/plugin-transform-object-super'),
-    require('@babel/plugin-transform-shorthand-properties'),
-    require('@babel/plugin-transform-duplicate-keys'),
-    require('@babel/plugin-transform-computed-properties'),
-    require('@babel/plugin-transform-for-of'),
-    require('@babel/plugin-transform-sticky-regex'),
-    require('@babel/plugin-transform-unicode-regex'),
-    require('@babel/plugin-transform-spread'),
-    require('@babel/plugin-transform-parameters'),
-    require('@babel/plugin-transform-destructuring'),
-    require('@babel/plugin-transform-block-scoping'),
-    require('@babel/plugin-transform-typeof-symbol'),
-    require('@babel/plugin-transform-instanceof'),
-    [
-      require('@babel/plugin-transform-regenerator'),
-      {async: false, asyncGenerators: false}
-    ],
+const babelTransformEs2015 = [
+  require('@babel/plugin-transform-template-literals'),
+  require('@babel/plugin-transform-literals'),
+  require('@babel/plugin-transform-function-name'),
+  require('@babel/plugin-transform-arrow-functions'),
+  require('@babel/plugin-transform-block-scoped-functions'),
+  require('@babel/plugin-transform-classes'),
+  require('@babel/plugin-transform-object-super'),
+  require('@babel/plugin-transform-shorthand-properties'),
+  require('@babel/plugin-transform-duplicate-keys'),
+  require('@babel/plugin-transform-computed-properties'),
+  require('@babel/plugin-transform-for-of'),
+  require('@babel/plugin-transform-sticky-regex'),
+  require('@babel/plugin-transform-unicode-regex'),
+  require('@babel/plugin-transform-spread'),
+  require('@babel/plugin-transform-parameters'),
+  require('@babel/plugin-transform-destructuring'),
+  require('@babel/plugin-transform-block-scoping'),
+  require('@babel/plugin-transform-typeof-symbol'),
+  require('@babel/plugin-transform-instanceof'),
+  [
+    require('@babel/plugin-transform-regenerator'),
+    {async: false, asyncGenerators: false}
   ],
-};
+];
 
-// The ES2016 and ES2017 presets do not inherit the plugins of previous years,
-// and there is no ES2018 preset yet. Since the additions in ES2016 and ES2017
-// are small, and we have to list syntax plugins separately anyway (see below),
-// just enumerate the transform plugins here instead of merging the 3 presets.
-const babelTransformPlugins = [
-  // ES2016
+const babelTransformEs2016 = [
   require('@babel/plugin-transform-exponentiation-operator'),
-  // ES2017
+];
+
+const babelTransformEs2017 = [
   require('@babel/plugin-transform-async-to-generator'),
-  // ES2018 (partial)
+];
+
+const babelTransformEs2018 = [
   require('@babel/plugin-proposal-object-rest-spread'),
   require('@babel/plugin-proposal-async-generator-functions'),
 ];
@@ -123,7 +120,7 @@ const babelPresetMinify = require('babel-preset-minify')({}, {
  */
 export interface JsTransformOptions {
   // Whether to compile JavaScript to ES5.
-  compileToEs5?: boolean;
+  compile?: boolean|JsCompileTarget;
 
   // If true, do not include Babel helper functions in the output. Otherwise,
   // any Babel helper functions that were required by this transform (e.g. ES5
@@ -205,10 +202,24 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     // Minify last, so push first.
     presets.push(babelPresetMinify);
   }
-  if (options.compileToEs5) {
+  if (options.compile === true || options.compile === 'es5') {
     doBabelTransform = true;
-    presets.push(customBabelPresetEs2015);
-    plugins.push(...babelTransformPlugins);
+    plugins.push(...babelTransformEs2015);
+    plugins.push(...babelTransformEs2016);
+    plugins.push(...babelTransformEs2017);
+    plugins.push(...babelTransformEs2018);
+  } else if (options.compile === 'es2015') {
+    doBabelTransform = true;
+    plugins.push(...babelTransformEs2016);
+    plugins.push(...babelTransformEs2017);
+    plugins.push(...babelTransformEs2018);
+  } else if (options.compile === 'es2016') {
+    doBabelTransform = true;
+    plugins.push(...babelTransformEs2017);
+    plugins.push(...babelTransformEs2018);
+  } else if (options.compile === 'es2017') {
+    doBabelTransform = true;
+    plugins.push(...babelTransformEs2018);
   }
   if (options.moduleResolution === 'node') {
     if (!options.filePath) {

@@ -85,7 +85,7 @@ export function babelCompile(
     transform(request: Request, response: Response, body: string): string {
       const capabilities = browserCapabilities(request.get('user-agent'));
       const options = {
-        transformES2015: compile === 'always' || !capabilities.has('es2015'),
+        compile: compile === 'always' || !capabilities.has('es2015'),
         transformModules: compile === 'always' || !capabilities.has('modules'),
       };
 
@@ -132,7 +132,7 @@ export function babelCompile(
       if (contentType === htmlMimeType) {
         transformed = htmlTransform(body, {
           js: {
-            compileToEs5: options.transformES2015,
+            compile: options.compile,
             moduleResolution,
             filePath,
             packageName,
@@ -147,7 +147,7 @@ export function babelCompile(
 
       } else if (javaScriptMimeTypes.includes(contentType)) {
         transformed = jsTransform(body, {
-          compileToEs5: options.transformES2015,
+          compile: options.compile,
           transformModulesToAmd: options.transformModules ? 'auto' : false,
           moduleResolution,
           filePath: filePath,

@@ -15,7 +15,7 @@
 import * as cssSlam from 'css-slam';
 import * as gulpif from 'gulp-if';
 import * as logging from 'plylog';
-import {ModuleResolutionStrategy} from 'polymer-project-config';
+import {JsCompileTarget, ModuleResolutionStrategy} from 'polymer-project-config';
 import {Transform} from 'stream';
 import * as vinyl from 'vinyl';
 
@@ -49,9 +49,14 @@ export interface OptimizeOptions {
   rootDir?: string;
 }
 
+export type JsCompileOptions = boolean|JsCompileTarget|{
+  target?: JsCompileTarget;
+  exclude?: string[];
+};
+
 export interface JsOptimizeOptions {
   minify?: boolean|{exclude?: string[]};
-  compile?: boolean|{exclude?: string[]};
+  compile?: JsCompileOptions;
   moduleResolution?: ModuleResolutionStrategy;
   transformModulesToAmd?: boolean;
   transformImportMeta?: boolean;
@@ -132,7 +137,7 @@ export class JsTransform extends GenericOptimizeTransform {
       }
 
       return jsTransform(content, {
-        compileToEs5: shouldCompileFile(file),
+        compile: shouldCompileFile(file),
         externalHelpers: true,
         minify: shouldMinifyFile(file),
         moduleResolution: jsOptions.moduleResolution,
@@ -255,13 +260,12 @@ export function matchesExt(extension: string) {
   return (fs: vinyl) => !!fs.path && fs.relative.endsWith(extension);
 }
 
-function notExcluded(option: boolean|{exclude?: string[]}) {
+function notExcluded(option: JsCompileOptions) {
   const exclude = typeof option === 'object' && option.exclude || [];
   return (fs: vinyl) => !exclude.some(
              (pattern: string) => matcher.isMatch(fs.relative, pattern));
 }
-function matchesExtAndNotExcluded(
-    extension: string, option: boolean|{exclude?: string[]}) {
+function matchesExtAndNotExcluded(extension: string, option: JsCompileOptions) {
   const a = matchesExt(extension);
   const b = notExcluded(option);
   return (fs: vinyl) => a(fs) && b(fs);
