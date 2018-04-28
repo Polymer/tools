@@ -5,7 +5,7 @@
     "target": "es5",
     "downlevelIteration": false,
     "lib": [
-      "ES5",
+      "ES2015",
       "DOM"
     ]
   },

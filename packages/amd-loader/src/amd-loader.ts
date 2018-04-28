@@ -69,8 +69,8 @@ function normalizeUrl(url: string): normalizedUrl {
  *  - http://example.com/foo/?qu/ery#fr/ag => http://example.com/foo/
  */
 function getUrlBase(url: normalizedUrl): normalizedUrl {
-  url = url.substring(0, url.indexOf('?')) as normalizedUrl;
-  url = url.substring(0, url.indexOf('#')) as normalizedUrl;
+  url = url.split('?')[0] as normalizedUrl;
+  url = url.split('#')[0] as normalizedUrl;
   // Normalization ensures we always have a trailing slash after a bare domain,
   // so this will always return with a trailing slash.
   return url.substring(0, url.lastIndexOf('/') + 1) as normalizedUrl;
@@ -105,7 +105,8 @@ function define(mod: Module, deps: string[], factory?: modCallback) {
 }
 
 /**
- * Execute the given callback after all module dependencies are resolved.
+ * Execute the given callback when all module dependencies are resolved with the
+ * exports from each of those dependencies.
  */
 function require(mod: Module, deps: string[], callback?: modCallback) {
   const args: {}[] = [];
@@ -113,43 +114,40 @@ function require(mod: Module, deps: string[], callback?: modCallback) {
 
   function onDepResolved() {
     numUnresolvedDeps--;
-    checkDeps();
+    checkIfAllDepsResolved();
   }
 
-  function checkDeps() {
-    if (numUnresolvedDeps === 0) {
-      if (callback !== undefined) {
-        callback.apply(null, args);
-      }
+  function checkIfAllDepsResolved() {
+    if (numUnresolvedDeps === 0 && callback !== undefined) {
+      callback.apply(null, args);
     }
   }
 
-  for (let i = 0; i < deps.length; i++) {
-    const depSpec = deps[i];
-
+  for (const depSpec of deps) {
     if (depSpec === 'exports') {
-      args[i] = mod.exports;
+      args.push(mod.exports);
 
     } else if (depSpec === 'require') {
-      args[i] = (deps: string[], callback: modCallback) =>
-          require(mod, deps, callback);
+      args.push((deps: string[], callback: modCallback) => {
+        require(mod, deps, callback);
+      });
 
     } else if (depSpec === 'meta') {
-      args[i] = {url: mod.url};
+      args.push({url: mod.url});
 
     } else {
       const depMod = getModule(resolveUrl(mod.urlBase, depSpec));
-      args[i] = depMod.exports;
+      args.push(depMod.exports);
 
       if (depMod.resolved === false) {
         numUnresolvedDeps++;
         depMod.notify.push(onDepResolved);
-        loadIfNeeded(mod);
+        loadIfNeeded(depMod);
       }
     }
   }
 
-  checkDeps();
+  checkIfAllDepsResolved();
 }
 
 let pendingDefine: ((mod: Module) => void)|undefined = undefined;
@@ -160,7 +158,7 @@ let pendingDefine: ((mod: Module) => void)|undefined = undefined;
  * scripts).
  */
 function loadIfNeeded(mod: Module) {
-  if (mod.needsLoad === true) {
+  if (mod.needsLoad === false) {
     return;
   }
   mod.needsLoad = false;
@@ -177,10 +175,6 @@ function loadIfNeeded(mod: Module) {
       // because we don't have any dependencies, by definition.
       define(mod, []);
     }
-  };
-
-  script.onerror = () => {
-    throw new Error('error loading module ' + mod.url);
   };
 
   document.head.appendChild(script);
@@ -220,6 +214,7 @@ window.define = function(deps: string[], factory?: modCallback) {
   // then this must be case #2.
   setTimeout(() => {
     if (defined === false) {
+      pendingDefine = undefined;
       const url = document.baseURI + '#' + topLevelScriptIdx++ as normalizedUrl;
       const mod = getModule(url);
 

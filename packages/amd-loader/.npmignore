@@ -1,0 +1,7 @@
+/src/
+/test/
+/lib/test/
+/.clang-format
+/wct.conf.json
+/tsconfig.json
+/tslint.json

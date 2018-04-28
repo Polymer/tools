@@ -1,0 +1,7 @@
+{
+  "npm": true,
+  "moduleResolution": "node",
+  "suites": [
+    "test/**/*.html"
+  ]
+}
