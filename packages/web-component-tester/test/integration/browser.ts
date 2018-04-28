@@ -176,7 +176,7 @@ function runsIntegrationSuite(
 
     it('runs the tests in browser(s)', async () => {
       log = [];
-      testResults = new TestResults
+      testResults = new TestResults();
       const suiteRoot = await makeProperTestDir(dirName);
       const suiteOptions = <any>loadOptionsFile(
           path.join('test', 'fixtures', 'integration', dirName));
