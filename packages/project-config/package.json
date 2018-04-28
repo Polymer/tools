@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@types/node": "^9.6.4",
+    "browser-capabilities": "^1.0.0",
     "jsonschema": "^1.1.1",
     "minimatch-all": "^1.1.0",
     "plylog": "^0.5.0"
