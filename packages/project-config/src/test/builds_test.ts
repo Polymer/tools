@@ -42,7 +42,9 @@ suite('builds', () => {
         preset: 'es5-bundled',
         js: {
           minify: true,
-          compile: true,
+          compile: 'es5',
+          transformModulesToAmd: true,
+          transformImportMeta: true,
         },
         css: {minify: true},
         html: {minify: true},
@@ -61,7 +63,9 @@ suite('builds', () => {
         browserCapabilities: ['es2015'],
         js: {
           minify: true,
-          compile: false,
+          compile: 'es2015',
+          transformModulesToAmd: true,
+          transformImportMeta: true,
         },
         css: {minify: true},
         html: {minify: true},
@@ -80,7 +84,9 @@ suite('builds', () => {
         browserCapabilities: ['es2015', 'push'],
         js: {
           minify: true,
-          compile: false,
+          compile: 'es2015',
+          transformModulesToAmd: true,
+          transformImportMeta: true,
         },
         css: {minify: true},
         html: {minify: true},
@@ -98,6 +104,8 @@ suite('builds', () => {
         js: {
           minify: false,
           compile: false,
+          transformModulesToAmd: false,
+          transformImportMeta: false,
         },
         css: {minify: false},
         html: {minify: false},
@@ -111,6 +119,8 @@ suite('builds', () => {
         js: {
           minify: false,
           compile: false,
+          transformModulesToAmd: false,
+          transformImportMeta: false,
         },
         css: {minify: false},
         html: {minify: false},

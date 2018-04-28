@@ -12,6 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {BrowserCapability} from 'browser-capabilities';
+
+export type JsCompileTarget = 'es5'|'es2015'|'es2016'|'es2017'|'es2018';
+
 export interface ProjectBuildOptions {
   /**
    * The name of this build, used to determine the output directory name.
@@ -107,7 +111,7 @@ export interface ProjectBuildOptions {
   /** Options for processing HTML. */
   html?: {
     /** Minify HTMl by removing comments and whitespace. */
-    minify?: boolean | {
+    minify?: boolean|{
       /** HTML files listed here will not be minified. */
       exclude?: string[],
     },
@@ -116,7 +120,7 @@ export interface ProjectBuildOptions {
   /** Options for processing CSS. */
   css?: {
     /** Minify inlined and external CSS. */
-    minify?: boolean | {
+    minify?: boolean|{
       /** CSS files listed here will not be minified. */
       exclude?: string[],
     },
@@ -125,16 +129,18 @@ export interface ProjectBuildOptions {
   /** Options for processing JavaScript. */
   js?: {
     /** Minify inlined and external JavaScript. */
-    minify?: boolean | {
+    minify?: boolean|{
       /** JavaScript files listed here will not be minified. */
       exclude?: string[],
     },
 
     /** Use babel to compile all ES6 JS down to ES5 for older browsers. */
-    compile?: boolean|{
-      /** JavaScript files listed here will not be compiled. */
-      exclude?: string[],
-    },
+    compile?:
+               boolean|JsCompileTarget|{
+                 target?: JsCompileTarget;
+                 /** JavaScript files listed here will not be compiled. */
+                 exclude?: string[],
+               },
 
     /** Transform ES modules to AMD modules. */
     transformModulesToAmd?: boolean,
@@ -153,7 +159,7 @@ export interface ProjectBuildOptions {
    * serving (e.g. prpl-server) can use this field to help decide which build
    * to serve to a given user agent.
    */
-  browserCapabilities?: string[];
+  browserCapabilities?: BrowserCapability[];
 
   /**
    * Update the entrypoint's `<base>` tag, to support serving this build from a
@@ -173,7 +179,12 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
     'es5-bundled',
     {
       name: 'es5-bundled',
-      js: {minify: true, compile: true},
+      js: {
+        minify: true,
+        compile: 'es5',
+        transformModulesToAmd: true,
+        transformImportMeta: true,
+      },
       css: {minify: true},
       html: {minify: true},
       bundle: true,
@@ -186,7 +197,12 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
     {
       name: 'es6-bundled',
       browserCapabilities: ['es2015'],
-      js: {minify: true, compile: false},
+      js: {
+        minify: true,
+        compile: 'es2015',
+        transformModulesToAmd: true,
+        transformImportMeta: true,
+      },
       css: {minify: true},
       html: {minify: true},
       bundle: true,
@@ -199,7 +215,38 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
     {
       name: 'es6-unbundled',
       browserCapabilities: ['es2015', 'push'],
-      js: {minify: true, compile: false},
+      js: {
+        minify: true,
+        compile: 'es2015',
+        transformModulesToAmd: true,
+        transformImportMeta: true,
+      },
+      css: {minify: true},
+      html: {minify: true},
+      bundle: false,
+      addServiceWorker: true,
+      addPushManifest: true,
+    }
+  ],
+  [
+    'uncompiled-bundled',
+    {
+      name: 'es6-bundled',
+      browserCapabilities: ['es2018'],
+      js: {minify: true},
+      css: {minify: true},
+      html: {minify: true},
+      bundle: true,
+      addServiceWorker: true,
+      addPushManifest: false,
+    }
+  ],
+  [
+    'uncompiled-unbundled',
+    {
+      name: 'es6-unbundled',
+      browserCapabilities: ['es2018', 'push'],
+      js: {minify: true},
       css: {minify: true},
       html: {minify: true},
       bundle: false,

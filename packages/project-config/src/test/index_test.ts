@@ -676,7 +676,9 @@ suite('Project Config', () => {
             css: {minify: true},
             js: {
               minify: true,
-              compile: false,
+              compile: 'es2015',
+              transformImportMeta: true,
+              transformModulesToAmd: true,
             },
             browserCapabilities: ['es2015']
           },
