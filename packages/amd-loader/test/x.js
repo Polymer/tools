@@ -1,7 +1,4 @@
-if (window.executedX) {
-  throw new Error('module "x" was already executed');
-}
-window.executedX = true;
+window.checkExecuted('x');
 
 define(['exports'], function(exports) {
   exports.x = 'x';

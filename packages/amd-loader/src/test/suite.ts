@@ -1,8 +1,5 @@
 /* tslint:disable no-any exports are untyped */
 
-const {assert} = chai;
-const define = window.define;
-
 // Test data is laid out as follows:
 //
 // .
@@ -18,6 +15,26 @@ const define = window.define;
 //
 // All of the test module scripts will throw if they are executed more than
 // once.
+
+const {assert} = chai;
+const define = window.define;
+
+interface Window {
+  executed: {[url: string]: true};
+  checkExecuted: (key: string) => void;
+}
+
+window.checkExecuted = (key) => {
+  if (window.executed[key] === true) {
+    throw new Error('already executed: ' + key);
+  }
+  window.executed[key] = true;
+};
+
+setup(() => {
+  define.reset!();
+  window.executed = {};
+});
 
 test('define an empty module', (done) => {
   define([], () => done());

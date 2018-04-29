@@ -1,14 +1,16 @@
-type modCallback = (...args: {}[]) => void;
-
 interface Window {
-  define: (deps: string[], factory: modCallback) => void;
+  define: ((deps: string[], factory: ModCallback) => void)&{
+    reset?: () => void;
+  };
 }
 
-(function() {
+type Registry = {
+  [url: string]: Module
+};
 
 interface Module {
-  url: normalizedUrl;
-  urlBase: normalizedUrl;
+  url: NormalizedUrl;
+  urlBase: NormalizedUrl;
   exports: {[id: string]: {}};
   /** This module hasn't started loading its script yet. */
   needsLoad: boolean;
@@ -17,6 +19,12 @@ interface Module {
   /** Callbacks from dependents waiting for this module to resolve. */
   notify: Array<() => void>;
 }
+
+type ModCallback = (...args: {}[]) => void;
+
+type NormalizedUrl = string&{_normalized: never};
+
+(function() {
 
 /**
  * A global map from a fully qualified module URLs to module objects.
@@ -27,7 +35,7 @@ const registry: {[url: string]: Module} = Object.create(null);
  * Return a module object from the registry for the given URL, creating one if
  * it doesn't exist yet.
  */
-function getModule(url: normalizedUrl): Module {
+function getModule(url: NormalizedUrl): Module {
   let mod = registry[url];
   if (mod === undefined) {
     mod = registry[url] = {
@@ -42,8 +50,6 @@ function getModule(url: normalizedUrl): Module {
   return mod;
 }
 
-type normalizedUrl = string&{_normalized: never};
-
 const anchor = document.createElement('a');
 
 /**
@@ -55,9 +61,9 @@ const anchor = document.createElement('a');
  *  - http://example.com => http://example.com/
  *  - http://example.com/foo/bar/../baz => http://example.com/foo/baz
  */
-function normalizeUrl(url: string): normalizedUrl {
+function normalizeUrl(url: string): NormalizedUrl {
   anchor.href = url;
-  return anchor.href as normalizedUrl;
+  return anchor.href as NormalizedUrl;
 }
 
 /**
@@ -68,21 +74,21 @@ function normalizeUrl(url: string): normalizedUrl {
  *  - http://example.com/foo/ => http://example.com/foo/
  *  - http://example.com/foo/?qu/ery#fr/ag => http://example.com/foo/
  */
-function getUrlBase(url: normalizedUrl): normalizedUrl {
-  url = url.split('?')[0] as normalizedUrl;
-  url = url.split('#')[0] as normalizedUrl;
+function getUrlBase(url: NormalizedUrl): NormalizedUrl {
+  url = url.split('?')[0] as NormalizedUrl;
+  url = url.split('#')[0] as NormalizedUrl;
   // Normalization ensures we always have a trailing slash after a bare domain,
   // so this will always return with a trailing slash.
-  return url.substring(0, url.lastIndexOf('/') + 1) as normalizedUrl;
+  return url.substring(0, url.lastIndexOf('/') + 1) as NormalizedUrl;
 }
 
 /**
  * Resolve a URL relative to a normalized base URL.
  */
-function resolveUrl(urlBase: normalizedUrl, url: string): normalizedUrl {
+function resolveUrl(urlBase: NormalizedUrl, url: string): NormalizedUrl {
   if (url.indexOf('://') !== -1) {
     // Already a fully qualified URL.
-    return url as normalizedUrl;
+    return url as NormalizedUrl;
   }
   return normalizeUrl(urlBase + url);
 }
@@ -92,7 +98,7 @@ function resolveUrl(urlBase: normalizedUrl, url: string): normalizedUrl {
  * Module objects are created and registered before they are loaded, which is
  * why this is not simply part of creation.
  */
-function define(mod: Module, deps: string[], factory?: modCallback) {
+function define(mod: Module, deps: string[], factory?: ModCallback) {
   require(mod, deps, function(...args: {}[]) {
     if (factory !== undefined) {
       factory.apply(null, args);
@@ -108,7 +114,7 @@ function define(mod: Module, deps: string[], factory?: modCallback) {
  * Execute the given callback when all module dependencies are resolved with the
  * exports from each of those dependencies.
  */
-function require(mod: Module, deps: string[], callback?: modCallback) {
+function require(mod: Module, deps: string[], callback?: ModCallback) {
   const args: {}[] = [];
   let numUnresolvedDeps = 0;
 
@@ -128,7 +134,7 @@ function require(mod: Module, deps: string[], callback?: modCallback) {
       args.push(mod.exports);
 
     } else if (depSpec === 'require') {
-      args.push((deps: string[], callback: modCallback) => {
+      args.push((deps: string[], callback: ModCallback) => {
         require(mod, deps, callback);
       });
 
@@ -190,7 +196,7 @@ let previousTopLevelUrl: string|undefined = undefined;
  * Dependencies must be specified as URLs, either relative or fully qualified
  * (e.g. "../foo.js" or "http://example.com/bar.js" but not "my-module-name").
  */
-window.define = function(deps: string[], factory?: modCallback) {
+window.define = function(deps: string[], factory?: ModCallback) {
   // We don't yet know our own module URL. We need to discover it so that we
   // can resolve our relative dependency specifiers. There are two ways the
   // script executing this define() call could have been loaded:
@@ -215,7 +221,7 @@ window.define = function(deps: string[], factory?: modCallback) {
   setTimeout(() => {
     if (defined === false) {
       pendingDefine = undefined;
-      const url = document.baseURI + '#' + topLevelScriptIdx++ as normalizedUrl;
+      const url = document.baseURI + '#' + topLevelScriptIdx++ as NormalizedUrl;
       const mod = getModule(url);
 
       // Top-level scripts are already loaded.
@@ -233,5 +239,17 @@ window.define = function(deps: string[], factory?: modCallback) {
       define(mod, deps, factory);
     }
   }, 0);
+};
+
+/**
+ * Expose the registry for testing and debugging.
+ */
+window.define.reset = () => {
+  for (const url in registry) {
+    delete registry[url];
+  }
+  pendingDefine = undefined;
+  topLevelScriptIdx = 0;
+  previousTopLevelUrl = undefined;
 };
 })();
