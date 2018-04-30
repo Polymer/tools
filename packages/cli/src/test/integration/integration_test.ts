@@ -10,14 +10,18 @@
 
 'use strict';
 
+import {assert} from 'chai';
 import * as path from 'path';
 import {run as runGenerator} from 'yeoman-test';
 import {createApplicationGenerator} from '../../init/application/application';
 import {runCommand} from './run-command';
 import {createElementGenerator} from '../../init/element/element';
 import {createGithubGenerator} from '../../init/github';
+import * as puppeteer from 'puppeteer';
+import {startServers} from 'polyserve';
+import {ProjectConfig} from 'polymer-project-config';
 
-// A zero priveledge github token of a nonce account, used for quota.
+// A zero privilege github token of a nonce account, used for quota.
 const githubToken = '8d8622bf09bb1d85cb411b5e475a35e742a7ce35';
 
 // TODO(https://github.com/Polymer/tools/issues/74): some tests time out on
@@ -31,6 +35,18 @@ suite('integration tests', function() {
 
   // Extend timeout limit to 90 seconds for slower systems
   this.timeout(120000);
+  let browserPromise: Promise<puppeteer.Browser>;
+  const disposables: Array<() => void | Promise<void>> = [];
+  before(async () => {
+    browserPromise = puppeteer.launch();
+  });
+  after(async () => {
+    (await browserPromise).close();
+  });
+  afterEach(async () => {
+    await Promise.all(disposables.map((d) => d()));
+    disposables.length = 0;
+  });
 
   suite('init templates', () => {
 
@@ -117,14 +133,70 @@ suite('integration tests', function() {
       const ShopGenerator = createGithubGenerator(
           {owner: 'Polymer', repo: 'shop', githubToken, branch: '3.0'});
 
-      // https://github.com/Polymer/tools/issues/137 for filling this out more.
       const dir = await runGenerator(ShopGenerator).toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
-      // await runCommand(
-      //   binPath, ['lint', '--rules=polymer-3'],
-      //   {cwd: dir})
-      // await runCommand(binPath, ['test'], {cwd: dir})
-      await runCommand(binPath, ['build'], {cwd: dir});
+      await Promise.all([
+        // Does not lint clean at the moment.
+        // TODO: https://github.com/Polymer/tools/issues/274
+        // runCommand(binPath, ['lint', '--rules=polymer-3'], {cwd: dir}),
+        runCommand(binPath, ['build'], {cwd: dir}),
+      ]);
+      async function assertTrueInPage(
+          page: puppeteer.Page, expression: string) {
+        assert(
+            await page.evaluate(expression),
+            `Expected \`${expression}\` to evalutate to true in the browser.`);
+      }
+      async function assertThatShopWorks(dirToServe: string) {
+        const startResult = await startServers({root: dirToServe});
+        if (startResult.kind === 'MultipleServers') {
+          for (const server of startResult.servers) {
+            server.server.close();
+          }
+          throw new Error(`Unexpected startResult`);
+        }
+        disposables.push(() => {
+          startResult.server.close();
+        });
+        const address = startResult.server.address();
+        const baseUrl = `http://${address.address}:${address.port}`;
+        const page = await (await browserPromise).newPage();
+        disposables.push(() => page.close());
+        await page.goto(`${baseUrl}/`);
+        assert.deepEqual(`${baseUrl}/`, page.url());
+        // For the moment we don't type check in-browser expressions.
+        // tslint:disable-next-line: no-any
+        type Window = any;
+        await page.waitFor(function(this: Window) {
+          return this.document.querySelector('shop-app').shadowRoot != null;
+        });
+        // The app is defined, but the cart isn't.
+        await assertTrueInPage(
+            page, `customElements.get('shop-app') !== undefined`);
+        await assertTrueInPage(
+            page, `customElements.get('shop-cart') === undefined`);
+        // Click the shopping cart button.
+        await page.evaluate(`
+            document.querySelector('shop-app').shadowRoot
+                .querySelector('a[href="/cart"]')
+                .click()`);
+        // Url changes immediately
+        assert.deepEqual(`${baseUrl}/cart`, page.url());
+        // We'll lazy load the code for shop-cart. We'll know that it worked
+        // when the element is registered. If this resolves, it loaded
+        // successfully!
+        await page.waitFor(function(this: Window) {
+          return this.customElements.get('shop-cart') !== undefined;
+        });
+      }
+      const config =
+          ProjectConfig.loadConfigFromFile(path.join(dir, 'polymer.json'));
+      if (config == null) {
+        throw new Error('Failed to load shop\'s polymer.json');
+      }
+      await Promise.all(config.builds.map(
+          (b) => assertThatShopWorks(
+              path.join(dir, 'build', b.name || 'default'))));
     });
 
 
@@ -164,7 +236,6 @@ suite('integration tests', function() {
       // await runCommand(binPath, ['test'], {cwd: dir}));
       await runCommand(binPath, ['build'], {cwd: dir});
     });
-
 
   });
 
