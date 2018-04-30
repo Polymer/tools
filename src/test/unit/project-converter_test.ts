@@ -1694,16 +1694,16 @@ Polymer({
       assertSources(await convert(), {
         'test.js': `
 import './foo.js';
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<custom-style><style>foo{}</style></custom-style>\`;
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 `,
         'foo.js': `
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>hello world!</div>\`;
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 `
       });
     });
@@ -1930,10 +1930,10 @@ class BarElem extends Element {}
       assertSources(await convert(), {
         'test.js': `
 import { Element } from './polymer.js';
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Top</div><div>Middle</div><div>Bottom</div>\`;
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 class FooElem extends Element {}
 class BarElem extends Element {}
 `
@@ -1971,10 +1971,10 @@ class BarElem extends Element {}
       assertSources(await convert(), {
         'test.js': `
 import { Element } from './polymer.js';
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Random footer</div>\`;
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 customElements.define('foo-elem', class FooElem extends Element {
   static get template() {
     return Polymer.html\`
@@ -2549,7 +2549,7 @@ Polymer({
           }),
           {
             'test.js': `
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<dom-module>
@@ -2562,7 +2562,7 @@ $_documentContainer.innerHTML = \`<dom-module>
                 `
           </dom-module>\`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 `,
           });
     });
@@ -2683,27 +2683,27 @@ console.log(foo$4);
         See: https://github.com/Polymer/polymer-modulizer/issues/154
         -->
     <script type="module">
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<style>
             body { color: red; }
           </style>\`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 </script>
           <script type="module">
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<style is="custom-style" include="foo-bar">
             body { font-size: 10px; }
           </style>\`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 </script>
           <script type="module">
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = \`<custom-style>
             <style is="custom-style">
@@ -2711,12 +2711,12 @@ $_documentContainer.innerHTML = \`<custom-style>
             </style>
           </custom-style>\`;
 
-document.body.appendChild($_documentContainer);
+document.body.appendChild($_documentContainer.content);
 </script>
           <script type="module">
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = \`<foo-elem></foo-elem>\`;
-document.body.appendChild($_documentContainer);
+document.body.appendChild($_documentContainer.content);
 </script>
         `
       });
@@ -2941,7 +2941,7 @@ export const bar = (function() {
       });
       assertSources(await convert(), {
         'test.js': `
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<dom-module id="dom-module-attr" attr=""></dom-module><dom-module id="multiple-templates">
@@ -2949,7 +2949,7 @@ $_documentContainer.innerHTML = \`<dom-module id="dom-module-attr" attr=""></dom
             <template></template>
           </dom-module>\`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 customElements.define(
     'dom-module-attr', class extends HTMLElement{});
 customElements.define(

@@ -540,7 +540,7 @@ export function createDomNodeInsertStatements(
           jsc.callExpression(
               jsc.memberExpression(
                   jsc.identifier('document'), jsc.identifier('createElement')),
-              [jsc.literal('div')]))]);
+              [jsc.literal('template')]))]);
   const setDocumentContainerStatement =
       jsc.expressionStatement(jsc.assignmentExpression(
           '=',
@@ -556,23 +556,25 @@ export function createDomNodeInsertStatements(
               jsc.memberExpression(
                   jsc.identifier('document'), jsc.identifier('body')),
               jsc.identifier('appendChild')),
-          [jsc.identifier(varName)]))
+          [jsc.memberExpression(
+              jsc.identifier(varName), jsc.identifier('content'))]))
     ];
   }
-  const setDisplayNoneStatment = jsc.expressionStatement(jsc.callExpression(
+  const setDisplayNoneStatement = jsc.expressionStatement(jsc.callExpression(
       jsc.memberExpression(
           jsc.identifier(varName), jsc.identifier('setAttribute')),
       [jsc.literal('style'), jsc.literal('display: none;')]));
   return [
     createElementDiv,
-    setDisplayNoneStatment,
+    setDisplayNoneStatement,
     setDocumentContainerStatement,
     jsc.expressionStatement(jsc.callExpression(
         jsc.memberExpression(
             jsc.memberExpression(
                 jsc.identifier('document'), jsc.identifier('head')),
             jsc.identifier('appendChild')),
-        [jsc.identifier(varName)]))
+        [jsc.memberExpression(
+            jsc.identifier(varName), jsc.identifier('content'))]))
   ];
 }
 
