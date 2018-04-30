@@ -40,69 +40,155 @@ test('define an empty module', (done) => {
   define([], () => done());
 });
 
-test('load 1 dependency', (done) => {
-  define(['./y.js'], (y: any) => {
-    assert.equal(y.y, 'y');
-    done();
+suite('static dependencies', () => {
+  test('load 1 dependency', (done) => {
+    define(['./y.js'], (y: any) => {
+      assert.equal(y.y, 'y');
+      done();
+    });
+  }).timeout(30);
+
+  test('load 2 dependencies', (done) => {
+    define(['../x.js', './y.js'], (x: any, y: any) => {
+      assert.equal(x.x, 'x');
+      assert.equal(y.y, 'y');
+      done();
+    });
+  });
+
+  test('do not resolve when a static dependency 404s', (done) => {
+    define(['./not-found.js'], () => assert.fail());
+    setTimeout(done, 30);
+  });
+
+  test('dedupe dependencies', async () => {
+    // All these relative paths refer to the same module, so we should expect it
+    // runs only once, and we get the same exports object every time.
+    const paths = [
+      './y.js',
+      './y.js',
+      'y.js',
+      '../y/y.js',
+      'z/../y.js',
+    ];
+    const exports: any[] = [];
+    const promises = [];
+
+    for (const path of paths) {
+      promises.push(new Promise((resolve) => {
+        define([path], (a: any) => {
+          exports.push(a);
+          resolve();
+        });
+      }));
+    }
+
+    await Promise.all(promises);
+    assert.lengthOf(exports, paths.length);
+    exports.forEach((y) => assert.equal(y, exports[0]));
+  });
+
+  test('dedupe transitive dependencies', (done) => {
+    define(['../x.js', './z/z.js'], (x: any, z: any) => {
+      assert.equal(x.x, 'x');
+      assert.equal(z.zx, 'zx');
+      done();
+    });
+  });
+
+  test('module with no define call resolves to empty exports', (done) => {
+    define(['./no-define.js'], (noDefine: any) => {
+      assert.deepEqual(noDefine, {});
+      done();
+    });
   });
 });
 
-test('load 2 dependencies', (done) => {
-  define(['../x.js', './y.js'], (x: any, y: any) => {
-    assert.equal(x.x, 'x');
-    assert.equal(y.y, 'y');
-    done();
-  });
-});
+suite('top-level modules', () => {
+  test('execute in the order they are defined', async () => {
+    const promises = [];
+    const order: number[] = [];
 
-test('dedupe dependencies', async () => {
-  // All these relative paths refer to the same module, so we should expect it
-  // runs only once, and we get the same exports object every time.
-  const paths = [
-    './y.js',
-    './y.js',
-    'y.js',
-    '../y/y.js',
-    'z/../y.js',
-  ];
-  const exports: any[] = [];
-  const promises = [];
-
-  for (const path of paths) {
     promises.push(new Promise((resolve) => {
-      define([path], (a: any) => {
-        exports.push(a);
+      define(['../x.js', './y.js'], () => {
+        order.push(0);
         resolve();
       });
     }));
-  }
 
-  await Promise.all(promises);
-  assert.lengthOf(exports, paths.length);
-  exports.forEach((y) => assert.equal(y, exports[0]));
-});
+    // This define call has no dependencies, so it would resolve before the one
+    // above unless we were explicitly ordering top-level scripts.
+    promises.push(new Promise((resolve) => {
+      define([], () => {
+        order.push(1);
+        resolve();
+      });
+    }));
 
-test('dedupe transitive dependencies', (done) => {
-  define(['../x.js', './z/z.js'], (x: any, z: any) => {
-    assert.equal(x.x, 'x');
-    assert.equal(z.zx, 'zx');
-    done();
+    promises.push(new Promise((resolve) => {
+      define(['./y.js'], () => {
+        order.push(2);
+        resolve();
+      });
+    }));
+
+    await Promise.all(promises);
+    assert.deepEqual(order, [0, 1, 2]);
+  });
+
+  test('can fail without blocking the next one', (done) => {
+    // We order top-level modules by injecting dependencies between them.
+    // However, unlike normal dependencies, if module 1 fails, we should still
+    // execute module 2.
+    define(['./not-found.js'], () => assert.fail());
+    define([], () => done());
   });
 });
 
-test('module with no define call resolves to empty exports', (done) => {
-  define(['./no-define.js'], (noDefine: any) => {
-    assert.deepEqual(noDefine, {});
-    done();
-  });
-});
-
-test('dynamic require', (done) => {
-  define(['require'], (require: any) => {
-    require(['./y.js'], function(y: any) {
-      assert.deepEqual(y.y, 'y');
-      done();
+suite('dynamic require', () => {
+  test('load 1 dependency', (done) => {
+    define(['require'], (require: any) => {
+      require(['./y.js'], function(y: any) {
+        assert.equal(y.y, 'y');
+        done();
+      });
     });
+  });
+
+  test('load 2 dependencies', (done) => {
+    define(['require'], (require: any) => {
+      require(['../x.js', './y.js'], function(x: any, y: any) {
+        assert.equal(x.x, 'x');
+        assert.equal(y.y, 'y');
+        done();
+      });
+    });
+  });
+
+  test('calls error callback on 404', (done) => {
+    define(['require'], (require: any) => {
+      require(['./not-found.js'], () => assert.fail(), (error: Error) => {
+        assert.instanceOf(error, TypeError);
+        assert.include(error.message, 'not-found.js');
+        done();
+      });
+    });
+  });
+
+  test('calls error callback only once on multiple 404s', (done) => {
+    let numErrors = 0;
+
+    define(['require'], (require: any) => {
+      require(
+          ['./not-found-a.js', './not-found-b.js'],
+          () => assert.fail(),
+          () => numErrors++);
+    });
+
+    setTimeout(() => {
+      assert.equal(numErrors, 1);
+      done();
+    }, 30);
   });
 });
 
@@ -121,22 +207,6 @@ suite('meta.url', () => {
           document.baseURI!.split(/\/suite[^/]*\.html/)[0] +
               '/z/exports-meta.js');
       done();
-    });
-  });
-});
-
-suite('error handling', () => {
-  test('do not resolve when static dependency 404s', (done) => {
-    define(['./not-found.js'], () => assert.fail());
-    setTimeout(done, 30);
-  });
-
-  test.skip('invoke error callback when dynamic dependency 404s', (done) => {
-    define(['require'], (require: any) => {
-      require(['./not-found.js'], () => assert.fail(), (err: any) => {
-        assert.include(err.toString(), 'not-found.js');
-        done();
-      });
     });
   });
 });
