@@ -1,4 +1,4 @@
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = `<dom-module id="global-shared1">
@@ -25,7 +25,7 @@ $_documentContainer.innerHTML = `<dom-module id="global-shared1">
   
 </dom-module>`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 
 /**
 @license

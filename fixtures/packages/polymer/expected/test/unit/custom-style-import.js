@@ -1,5 +1,5 @@
 import './sub/style-import.js';
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 $_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = `<dom-module id="shared-style">
@@ -32,7 +32,7 @@ $_documentContainer.innerHTML = `<dom-module id="shared-style">
 </style>
 </custom-style>`;
 
-document.head.appendChild($_documentContainer);
+document.head.appendChild($_documentContainer.content);
 
 /**
 @license

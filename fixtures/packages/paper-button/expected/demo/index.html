@@ -34,7 +34,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         See: https://github.com/Polymer/polymer-modulizer/issues/154
         -->
     <script type="module">
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = `<custom-style>
     <style is="custom-style" include="demo-pages-shared-styles">
@@ -48,12 +48,12 @@ $_documentContainer.innerHTML = `<custom-style>
     </style>
   </custom-style>`;
 
-document.body.appendChild($_documentContainer);
+document.body.appendChild($_documentContainer.content);
 </script>
 </head>
 <body unresolved>
   <script type="module">
-const $_documentContainer = document.createElement('div');
+const $_documentContainer = document.createElement('template');
 
 $_documentContainer.innerHTML = `<div class="vertical-section-container centered">
     <h3>Buttons can be flat, raised, toggleable, or disabled</h3>
@@ -154,7 +154,7 @@ $_documentContainer.innerHTML = `<div class="vertical-section-container centered
     </demo-snippet>
   </div>`;
 
-document.body.appendChild($_documentContainer);
+document.body.appendChild($_documentContainer.content);
 </script>
 </body>
 </html>
