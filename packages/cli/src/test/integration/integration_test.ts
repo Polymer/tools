@@ -37,7 +37,7 @@ suite('integration tests', function() {
   this.timeout(120000);
   let browserPromise: Promise<puppeteer.Browser>;
   const disposables: Array<() => void | Promise<void>> = [];
-  before(async () => {
+  before(() => {
     browserPromise = puppeteer.launch();
   });
   after(async () => {
@@ -127,7 +127,63 @@ suite('integration tests', function() {
       await runCommand(binPath, ['build'], {cwd: dir});
     });
 
-    test('test the 3.0 "shop" template', async function() {
+    // Serves the given directory with polyserve, then opens a Chrome tab
+    // and pokes around to test that the site is serving a working Shop.
+    async function assertThatShopWorks(
+        dirToServe: string, configurationName: string) {
+      // Evaluate an expression as a string in the browser.
+      const assertTrueInPage =
+          async (page: puppeteer.Page, expression: string) => {
+        assert(
+            await page.evaluate(expression),
+            `Expected \`${
+                expression}\` to evaluate to true in the browser with build configuration ${
+                configurationName}`);
+      };
+
+      const startResult = await startServers({root: dirToServe});
+      if (startResult.kind === 'MultipleServers') {
+        for (const server of startResult.servers) {
+          server.server.close();
+        }
+        throw new Error(`Unexpected startResult`);
+      }
+      disposables.push(() => {
+        startResult.server.close();
+      });
+      const address = startResult.server.address();
+      const baseUrl = `http://${address.address}:${address.port}`;
+      const page = await (await browserPromise).newPage();
+      disposables.push(() => page.close());
+      await page.goto(`${baseUrl}/`);
+      assert.deepEqual(`${baseUrl}/`, page.url());
+      // For the moment we don't type check in-browser expressions.
+      // tslint:disable-next-line: no-any
+      type Window = any;
+      await page.waitFor(function(this: Window) {
+        return this.document.querySelector('shop-app').shadowRoot != null;
+      });
+      // The app is defined, but the cart isn't.
+      await assertTrueInPage(
+          page, `customElements.get('shop-app') !== undefined`);
+      await assertTrueInPage(
+          page, `customElements.get('shop-cart') === undefined`);
+      // Click the shopping cart button.
+      await page.evaluate(`
+          document.querySelector('shop-app').shadowRoot
+              .querySelector('a[href="/cart"]')
+              .click()`);
+      // Url changes immediately
+      assert.deepEqual(`${baseUrl}/cart`, page.url());
+      // We'll lazy load the code for shop-cart. We'll know that it worked
+      // when the element is registered. If this resolves, it loaded
+      // successfully!
+      await page.waitFor(function(this: Window) {
+        return this.customElements.get('shop-cart') !== undefined;
+      });
+    }
+
+    test.only('test the 3.0 "shop" template', async function() {
       // Shop has a lot of build configurations, they take a long time.
       this.timeout(5 * 60 * 1000);
       const ShopGenerator = createGithubGenerator(
@@ -141,64 +197,21 @@ suite('integration tests', function() {
         // runCommand(binPath, ['lint', '--rules=polymer-3'], {cwd: dir}),
         runCommand(binPath, ['build'], {cwd: dir}),
       ]);
-      async function assertTrueInPage(
-          page: puppeteer.Page, expression: string) {
-        assert(
-            await page.evaluate(expression),
-            `Expected \`${expression}\` to evalutate to true in the browser.`);
-      }
-      async function assertThatShopWorks(dirToServe: string) {
-        const startResult = await startServers({root: dirToServe});
-        if (startResult.kind === 'MultipleServers') {
-          for (const server of startResult.servers) {
-            server.server.close();
-          }
-          throw new Error(`Unexpected startResult`);
-        }
-        disposables.push(() => {
-          startResult.server.close();
-        });
-        const address = startResult.server.address();
-        const baseUrl = `http://${address.address}:${address.port}`;
-        const page = await (await browserPromise).newPage();
-        disposables.push(() => page.close());
-        await page.goto(`${baseUrl}/`);
-        assert.deepEqual(`${baseUrl}/`, page.url());
-        // For the moment we don't type check in-browser expressions.
-        // tslint:disable-next-line: no-any
-        type Window = any;
-        await page.waitFor(function(this: Window) {
-          return this.document.querySelector('shop-app').shadowRoot != null;
-        });
-        // The app is defined, but the cart isn't.
-        await assertTrueInPage(
-            page, `customElements.get('shop-app') !== undefined`);
-        await assertTrueInPage(
-            page, `customElements.get('shop-cart') === undefined`);
-        // Click the shopping cart button.
-        await page.evaluate(`
-            document.querySelector('shop-app').shadowRoot
-                .querySelector('a[href="/cart"]')
-                .click()`);
-        // Url changes immediately
-        assert.deepEqual(`${baseUrl}/cart`, page.url());
-        // We'll lazy load the code for shop-cart. We'll know that it worked
-        // when the element is registered. If this resolves, it loaded
-        // successfully!
-        await page.waitFor(function(this: Window) {
-          return this.customElements.get('shop-cart') !== undefined;
-        });
-      }
+
       const config =
           ProjectConfig.loadConfigFromFile(path.join(dir, 'polymer.json'));
       if (config == null) {
         throw new Error('Failed to load shop\'s polymer.json');
       }
-      await Promise.all(config.builds.map(
-          (b) => assertThatShopWorks(
-              path.join(dir, 'build', b.name || 'default'))));
-    });
 
+      // Ideally this would be multiple independent tests, but `polymer build`
+      // takes a really long time, and we can also get a bit better performance
+      // by running these browser tests in parallel.
+      await Promise.all(config.builds.map((b) => {
+        const name = b.name || 'default';
+        return assertThatShopWorks(path.join(dir, 'build', name), name);
+      }));
+    });
 
     // TODO(justinfagnani): consider removing these integration tests
     // or checking in the contents so that we're not subject to the
