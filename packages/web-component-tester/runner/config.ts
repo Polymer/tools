@@ -153,7 +153,7 @@ export function getPackageName(options: Config): string|undefined {
  */
 export function truncatePathToDir(directory: string, pathName: string): string|
     null {
-  const delimitedDir = `/${directory}/`;
+  const delimitedDir = path.sep + directory + path.sep;
   const lastDirOccurrence = pathName.lastIndexOf(delimitedDir);
   if (lastDirOccurrence === -1) {
     return null;
