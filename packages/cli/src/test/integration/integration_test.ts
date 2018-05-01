@@ -185,7 +185,7 @@ suite('integration tests', function() {
 
     test.only('test the 3.0 "shop" template', async function() {
       // Shop has a lot of build configurations, they take a long time.
-      this.timeout(5 * 60 * 1000);
+      this.timeout(10 * 60 * 1000);
       const ShopGenerator = createGithubGenerator(
           {owner: 'Polymer', repo: 'shop', githubToken, branch: '3.0'});
 
