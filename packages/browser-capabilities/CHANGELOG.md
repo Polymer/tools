@@ -2,7 +2,8 @@
 
 ## Unreleased
 * Dropped support for node v6. This is a soft break, as we aren't
-  making any changes that are known to break node v6, but we're no longer testing against it.
+  making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
+  for details.
 
 ## [1.0.0] - 2018-04-23
 - Modules support now requires dynamic import and import.meta.
