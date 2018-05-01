@@ -10,7 +10,7 @@
     "url": "https://github.com/Polymer/tools.git"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap",
+    "bootstrap": "lerna exec 'npm ci' --parallel && lerna bootstrap",
     "build": "lerna run build --stream",
     "test": "npm run build && npm run test:unit",
     "test:all": "npm run test:unit && npm run test:integration",
