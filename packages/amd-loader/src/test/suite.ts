@@ -32,7 +32,7 @@ window.checkExecuted = (key) => {
 };
 
 setup(() => {
-  define.reset!();
+  define._reset!();
   window.executed = {};
 });
 

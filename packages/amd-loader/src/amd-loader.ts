@@ -1,6 +1,6 @@
 interface Window {
   define: ((deps: string[], factory: ResolveCallback) => void)&{
-    reset?: () => void;
+    _reset?: () => void;
   };
 }
 
@@ -24,9 +24,8 @@ interface Module {
   onError: Array<ErrorCallback>;
 }
 
-type ResolveCallback = (...args: {}[]) => void;
+type ResolveCallback = (...args: Array<{}>) => void;
 type ErrorCallback = (error: Error) => void;
-
 type NormalizedUrl = string&{_normalized: never};
 
 (function() {
@@ -35,6 +34,75 @@ type NormalizedUrl = string&{_normalized: never};
  * A global map from a fully qualified module URLs to module objects.
  */
 const registry: {[url: string]: Module} = Object.create(null);
+
+let pendingDefine: ((mod: Module) => void)|undefined = undefined;
+let topLevelScriptIdx = 0;
+let previousTopLevelUrl: string|undefined = undefined;
+
+/**
+ * Define a module and execute its factory function when all dependencies are
+ * resolved.
+ *
+ * Dependencies must be specified as URLs, either relative or fully qualified
+ * (e.g. "../foo.js" or "http://example.com/bar.js" but not "my-module-name").
+ */
+window.define = function(deps: string[], factory?: ResolveCallback) {
+  // We don't yet know our own module URL. We need to discover it so that we
+  // can resolve our relative dependency specifiers. There are two ways the
+  // script executing this define() call could have been loaded:
+
+  // Case #1: We are a dependency of another module. A <script> was injected
+  // to load us, but we don't yet know the URL that was used. Because
+  // document.currentScript is not supported by IE, we communicate the URL via
+  // a global callback. When finished executing, the "onload" event will be
+  // fired by this <script>, which will be handled by the loading script,
+  // which will invoke the callback with our module object.
+  let defined = false;
+  pendingDefine = (mod) => {
+    defined = true;
+    pendingDefine = undefined;
+    define(mod, deps, factory);
+  };
+
+  // Case #2: We are a top-level script in the HTML document. Our URL is the
+  // document's base URL. We can discover this case by waiting a tick, and if
+  // we haven't already been defined by the "onload" handler from case #1,
+  // then this must be case #2.
+  setTimeout(() => {
+    if (defined === false) {
+      pendingDefine = undefined;
+      const url = document.baseURI + '#' + topLevelScriptIdx++ as NormalizedUrl;
+      const mod = getModule(url);
+
+      // Top-level scripts are already loaded.
+      mod.isTopLevel = true;
+      mod.needsLoad = false;
+
+      if (previousTopLevelUrl !== undefined) {
+        // type=module scripts execute in order (with the same timing as defer
+        // scripts). Because this is a top-level script, and we are trying to
+        // mirror type=module behavior as much as possible, inject a
+        // dependency on the previous top-level script to preserve the
+        // relative ordering.
+        deps.push(previousTopLevelUrl);
+      }
+      previousTopLevelUrl = url;
+      define(mod, deps, factory);
+    }
+  }, 0);
+};
+
+/**
+ * Reset all internal state for testing and debugging.
+ */
+window.define._reset = () => {
+  for (const url in registry) {
+    delete registry[url];
+  }
+  pendingDefine = undefined;
+  topLevelScriptIdx = 0;
+  previousTopLevelUrl = undefined;
+};
 
 /**
  * Return a module object from the registry for the given URL, creating one if
@@ -47,58 +115,15 @@ function getModule(url: NormalizedUrl): Module {
       url,
       urlBase: getUrlBase(url),
       exports: Object.create(null),
+      isTopLevel: false,
       resolved: false,
       needsLoad: true,
-      onResolve: [],
       error: undefined,
+      onResolve: [],
       onError: [],
-      isTopLevel: false,
     };
   }
   return mod;
-}
-
-const anchor = document.createElement('a');
-
-/**
- * Use the browser to resolve a URL to its canonical format.
- *
- * Examples:
- *
- *  - //example.com/ => http://example.com/
- *  - http://example.com => http://example.com/
- *  - http://example.com/foo/bar/../baz => http://example.com/foo/baz
- */
-function normalizeUrl(url: string): NormalizedUrl {
-  anchor.href = url;
-  return anchor.href as NormalizedUrl;
-}
-
-/**
- * Examples:
- *
- *  - http://example.com/ => http://example.com/
- *  - http://example.com/foo.js => http://example.com/
- *  - http://example.com/foo/ => http://example.com/foo/
- *  - http://example.com/foo/?qu/ery#fr/ag => http://example.com/foo/
- */
-function getUrlBase(url: NormalizedUrl): NormalizedUrl {
-  url = url.split('?')[0] as NormalizedUrl;
-  url = url.split('#')[0] as NormalizedUrl;
-  // Normalization ensures we always have a trailing slash after a bare domain,
-  // so this will always return with a trailing slash.
-  return url.substring(0, url.lastIndexOf('/') + 1) as NormalizedUrl;
-}
-
-/**
- * Resolve a URL relative to a normalized base URL.
- */
-function resolveUrl(urlBase: NormalizedUrl, url: string): NormalizedUrl {
-  if (url.indexOf('://') !== -1) {
-    // Already a fully qualified URL.
-    return url as NormalizedUrl;
-  }
-  return normalizeUrl(urlBase + url);
 }
 
 /**
@@ -107,7 +132,7 @@ function resolveUrl(urlBase: NormalizedUrl, url: string): NormalizedUrl {
  * why this is not simply part of creation.
  */
 function define(mod: Module, deps: string[], factory?: ResolveCallback) {
-  function onLoad(...args: {}[]) {
+  function onLoad(...args: Array<{}>) {
     if (factory !== undefined) {
       factory.apply(null, args);
     }
@@ -117,13 +142,14 @@ function define(mod: Module, deps: string[], factory?: ResolveCallback) {
     }
   }
 
-  require(mod, deps, onLoad, (error: Error) => setModError(mod, error));
+  require(mod, deps, onLoad, (error: Error) => modError(mod, error));
 }
 
 /**
- * Called when a module errors.
+ * Called when a module has failed to load, either becuase its script errored,
+ * or because one of its transitive dependencies errored.
  */
-function setModError(mod: Module, error: Error) {
+function modError(mod: Module, error: Error) {
   mod.error = error;
   for (const callback of mod.onError) {
     callback(error);
@@ -131,15 +157,15 @@ function setModError(mod: Module, error: Error) {
 }
 
 /**
- * Execute the given callback when all module dependencies are resolved with the
- * exports from each of those dependencies.
+ * Execute onResolve when all dependencies have resolved, or onError if any of
+ * the dependencies fail.
  */
 function require(
     mod: Module,
     deps: string[],
     onResolve?: ResolveCallback,
     onError?: ErrorCallback) {
-  const args: {}[] = [];
+  const args: Array<{}> = [];
   let numUnresolvedDeps = deps.length;
 
   function onDepResolved() {
@@ -206,8 +232,6 @@ function require(
   checkIfAllDepsResolved();
 }
 
-let pendingDefine: ((mod: Module) => void)|undefined = undefined;
-
 /**
  * Load a module by creating a <script> tag in the document <head>, unless we
  * have already started (or didn't need to, as in the case of top-level
@@ -234,76 +258,51 @@ function loadIfNeeded(mod: Module) {
   };
 
   script.onerror = () =>
-      setModError(mod, new TypeError('Failed to fetch ' + mod.url));
+      modError(mod, new TypeError('Failed to fetch ' + mod.url));
 
   document.head.appendChild(script);
 }
 
-let topLevelScriptIdx = 0;
-let previousTopLevelUrl: string|undefined = undefined;
+const anchor = document.createElement('a');
 
 /**
- * Define a module and execute its factory function when all dependencies are
- * resolved.
+ * Use the browser to resolve a URL to its canonical format.
  *
- * Dependencies must be specified as URLs, either relative or fully qualified
- * (e.g. "../foo.js" or "http://example.com/bar.js" but not "my-module-name").
+ * Examples:
+ *
+ *  - //example.com/ => http://example.com/
+ *  - http://example.com => http://example.com/
+ *  - http://example.com/foo/bar/../baz => http://example.com/foo/baz
  */
-window.define = function(deps: string[], factory?: ResolveCallback) {
-  // We don't yet know our own module URL. We need to discover it so that we
-  // can resolve our relative dependency specifiers. There are two ways the
-  // script executing this define() call could have been loaded:
-
-  // Case #1: We are a dependency of another module. A <script> was injected
-  // to load us, but we don't yet know the URL that was used. Because
-  // document.currentScript is not supported by IE, we communicate the URL via
-  // a global callback. When finished executing, the "onload" event will be
-  // fired by this <script>, which will be handled by the loading script,
-  // which will invoke the callback with our module object.
-  let defined = false;
-  pendingDefine = (mod) => {
-    defined = true;
-    pendingDefine = undefined;
-    define(mod, deps, factory);
-  };
-
-  // Case #2: We are a top-level script in the HTML document. Our URL is the
-  // document's base URL. We can discover this case by waiting a tick, and if
-  // we haven't already been defined by the "onload" handler from case #1,
-  // then this must be case #2.
-  setTimeout(() => {
-    if (defined === false) {
-      pendingDefine = undefined;
-      const url = document.baseURI + '#' + topLevelScriptIdx++ as NormalizedUrl;
-      const mod = getModule(url);
-
-      // Top-level scripts are already loaded.
-      mod.isTopLevel = true;
-      mod.needsLoad = false;
-
-      if (previousTopLevelUrl !== undefined) {
-        // type=module scripts execute in order (with the same timing as defer
-        // scripts). Because this is a top-level script, and we are trying to
-        // mirror type=module behavior as much as possible, inject a
-        // dependency on the previous top-level script to preserve the
-        // relative ordering.
-        deps.push(previousTopLevelUrl);
-      }
-      previousTopLevelUrl = url;
-      define(mod, deps, factory);
-    }
-  }, 0);
-};
+function normalizeUrl(url: string): NormalizedUrl {
+  anchor.href = url;
+  return anchor.href as NormalizedUrl;
+}
 
 /**
- * Expose the registry for testing and debugging.
+ * Examples:
+ *
+ *  - http://example.com/ => http://example.com/
+ *  - http://example.com/foo.js => http://example.com/
+ *  - http://example.com/foo/ => http://example.com/foo/
+ *  - http://example.com/foo/?qu/ery#fr/ag => http://example.com/foo/
  */
-window.define.reset = () => {
-  for (const url in registry) {
-    delete registry[url];
+function getUrlBase(url: NormalizedUrl): NormalizedUrl {
+  url = url.split('?')[0] as NormalizedUrl;
+  url = url.split('#')[0] as NormalizedUrl;
+  // Normalization ensures we always have a trailing slash after a bare domain,
+  // so this will always return with a trailing slash.
+  return url.substring(0, url.lastIndexOf('/') + 1) as NormalizedUrl;
+}
+
+/**
+ * Resolve a URL relative to a normalized base URL.
+ */
+function resolveUrl(urlBase: NormalizedUrl, url: string): NormalizedUrl {
+  if (url.indexOf('://') !== -1) {
+    // Already a fully qualified URL.
+    return url as NormalizedUrl;
   }
-  pendingDefine = undefined;
-  topLevelScriptIdx = 0;
-  previousTopLevelUrl = undefined;
-};
+  return normalizeUrl(urlBase + url);
+}
 })();
