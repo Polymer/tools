@@ -17,14 +17,14 @@
   "devDependencies": {
     "@polymer/gen-typescript-declarations": "^1.2.0",
     "bower": "^1.8.0",
-    "@polymer/iron-component-page": "3.0.0-pre.12",
-    "@polymer/iron-demo-helpers": "3.0.0-pre.12",
-    "@polymer/iron-icon": "3.0.0-pre.12",
-    "@polymer/iron-icons": "3.0.0-pre.12",
-    "@polymer/iron-test-helpers": "3.0.0-pre.12",
-    "@polymer/test-fixture": "3.0.0-pre.12",
+    "@polymer/iron-component-page": "^3.0.0-pre.13",
+    "@polymer/iron-demo-helpers": "^3.0.0-pre.13",
+    "@polymer/iron-icon": "^3.0.0-pre.13",
+    "@polymer/iron-icons": "^3.0.0-pre.13",
+    "@polymer/iron-test-helpers": "^3.0.0-pre.13",
+    "@polymer/test-fixture": "^3.0.0-pre.13",
     "wct-browser-legacy": "0.0.1-pre.11",
-    "@webcomponents/webcomponentsjs": "^1.0.0"
+    "@webcomponents/webcomponentsjs": "^2.0.0-0"
   },
   "scripts": {
     "update-types": "bower install && gen-typescript-declarations --deleteExisting --outDir ."
@@ -39,9 +39,9 @@
   "main": "paper-button.js",
   "author": "The Polymer Authors",
   "dependencies": {
-    "@polymer/polymer": "3.0.0-pre.12",
-    "@polymer/iron-flex-layout": "3.0.0-pre.12",
-    "@polymer/paper-behaviors": "3.0.0-pre.12",
-    "@polymer/paper-styles": "3.0.0-pre.12"
+    "@polymer/polymer": "^3.0.0-pre.13",
+    "@polymer/iron-flex-layout": "^3.0.0-pre.13",
+    "@polymer/paper-behaviors": "^3.0.0-pre.13",
+    "@polymer/paper-styles": "^3.0.0-pre.13"
   }
 }

@@ -38,8 +38,8 @@
     "through2": "^2.0.0",
     "web-component-tester": "^6.5.0",
     "wct-browser-legacy": "0.0.1-pre.11",
-    "@polymer/test-fixture": "3.0.0-pre.12",
-    "@polymer/iron-component-page": "3.0.0-pre.12"
+    "@polymer/test-fixture": "^3.0.0-pre.13",
+    "@polymer/iron-component-page": "^3.0.0-pre.13"
   },
   "scripts": {
     "build": "gulp",
@@ -64,6 +64,6 @@
   },
   "dependencies": {
     "@webcomponents/shadycss": "^1.0.0",
-    "@webcomponents/webcomponentsjs": "^1.0.0"
+    "@webcomponents/webcomponentsjs": "^2.0.0-0"
   }
 }
