@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as assert from 'assert';
 import generate from '@babel/generator';
 import babelTraverse from '@babel/traverse';
 import {NodePath} from '@babel/traverse';
@@ -48,7 +49,7 @@ export function matchesCallExpression(
   if (!expression.property || !expression.object) {
     return false;
   }
-  console.assert(path.length >= 2);
+  assert(path.length >= 2);
 
   if (!babel.isIdentifier(expression.property)) {
     return false;
@@ -100,6 +101,18 @@ export function* getSimpleObjectProperties(node: babel.ObjectExpression) {
   for (const property of node.properties) {
     if (babel.isObjectProperty(property) || babel.isObjectMethod(property)) {
       yield property;
+    }
+  }
+}
+
+/** Like getSimpleObjectProperties but deals with paths. */
+export function*
+    getSimpleObjectPropPaths(nodePath: NodePath<babel.ObjectExpression>) {
+  // tslint:disable-next-line: no-any typings are wrong here
+  const props = nodePath.get('properties') as any as Array<NodePath>;
+  for (const propPath of props) {
+    if (propPath.isObjectProperty() || propPath.isObjectMethod()) {
+      yield propPath;
     }
   }
 }
@@ -185,6 +198,11 @@ export function getBestComment(nodePath: NodePath): string|undefined {
       parent.node.declarations.length !== 1) {
     // The parent node is multiple declarations. We can't be sure its
     // comment applies to us.
+    return undefined;
+  }
+
+  if (parent.isClassBody() || nodePath.isObjectMember()) {
+    // don't go above an object or class member.
     return undefined;
   }
 

@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as assert from 'assert';
 import * as fs from 'fs';
 import * as jsonschema from 'jsonschema';
 import * as path from 'path';
@@ -469,36 +470,36 @@ export class ProjectConfig {
   validate(): boolean {
     const validateErrorPrefix = `Polymer Config Error`;
     if (this.entrypoint) {
-      console.assert(
+      assert(
           this.entrypoint.startsWith(this.root),
           `${validateErrorPrefix}: entrypoint (${this.entrypoint}) ` +
               `does not resolve within root (${this.root})`);
     }
     if (this.shell) {
-      console.assert(
+      assert(
           this.shell.startsWith(this.root),
           `${validateErrorPrefix}: shell (${this.shell}) ` +
               `does not resolve within root (${this.root})`);
     }
     this.fragments.forEach((f) => {
-      console.assert(
+      assert(
           f.startsWith(this.root),
           `${validateErrorPrefix}: a "fragments" path (${f}) ` +
               `does not resolve within root (${this.root})`);
     });
     this.sources.forEach((s) => {
-      console.assert(
+      assert(
           getPositiveGlob(s).startsWith(this.root),
           `${validateErrorPrefix}: a "sources" path (${s}) ` +
               `does not resolve within root (${this.root})`);
     });
     this.extraDependencies.forEach((d) => {
-      console.assert(
+      assert(
           getPositiveGlob(d).startsWith(this.root),
           `${validateErrorPrefix}: an "extraDependencies" path (${d}) ` +
               `does not resolve within root (${this.root})`);
     });
-    console.assert(
+    assert(
         moduleResolutionStrategies.has(this.moduleResolution),
         `${validateErrorPrefix}: "moduleResolution" must be one of: ` +
             `${[...moduleResolutionStrategies].join(', ')}.`);
@@ -507,7 +508,7 @@ export class ProjectConfig {
     // file system. Potentially become async function for this.
 
     if (this.builds) {
-      console.assert(
+      assert(
           Array.isArray(this.builds),
           `${validateErrorPrefix}: "builds" (${this.builds}) ` +
               `expected an array of build configurations.`);
@@ -517,15 +518,15 @@ export class ProjectConfig {
         for (const build of this.builds) {
           const buildName = build.name;
           const buildPreset = build.preset;
-          console.assert(
+          assert(
               !buildPreset || isValidPreset(buildPreset),
               `${validateErrorPrefix}: "${buildPreset}" is not a valid ` +
                   ` "builds" preset.`);
-          console.assert(
+          assert(
               buildName,
               `${validateErrorPrefix}: all "builds" require ` +
                   `a "name" property when there are multiple builds defined.`);
-          console.assert(
+          assert(
               !buildNames.has(buildName!),
               `${validateErrorPrefix}: "builds" duplicate build name ` +
                   `"${buildName}" found. Build names must be unique.`);
@@ -548,7 +549,9 @@ export class ProjectConfig {
       delete lintObj.ignoreWarnings;
     }
     const isWindows = process.platform === 'win32';
-    const normalizePath = isWindows ? (path: string) => path.replace(/\\/g, '/') : (path: string) => path;
+    const normalizePath = isWindows ?
+        (path: string) => path.replace(/\\/g, '/') :
+        (path: string) => path;
     const obj = {
       entrypoint: globRelative(this.root, this.entrypoint),
       shell: this.shell ? globRelative(this.root, this.shell) : undefined,

@@ -2,11 +2,36 @@
 
 
 ## Unreleased
+* `build`:
+  * Disable the `simplify` babel plugin when minifying javascript. See
+    https://github.com/babel/minify/issues/824
+  * Disable the `mangle` babel plugin as well. See
+    https://github.com/Polymer/tools/issues/261
+* `serve`:
+  * Fixed issue where resources would be cached after restarting with
+    different compilation/transformation options. We've turned off most
+    browser-side caching. As a reminder: do not use `polymser serve` as a
+    production webserver, it is designed for development.
+* `serve`, `build`:
+  * Add "webcomponents-bundle.js" to the heuristic used to determine when to
+    inject the Custom Elements ES5 Adapter.
+<!-- Add new, unreleased items here. -->
+
+## v1.7.0-pre.15 [04-25-2018]
+* `@babel/preset-es2015` has been replaced with a manually-created version so that `@babel/plugin-transform-classes` can be pinned to v7.0.0-beta.35 to avoid a bug where the polyfilled HTMLElement constructor is not called. (https://github.com/babel/babel/issues/7506)
+* Rewritten dynamic `import()` calls now test if a bundle has exports before attempting to destructure bundle.
+
+## v1.7.0-pre.14 [04-23-2018]
 * `init`:
   * Fixed a bug which caused `.gitignore` to be excluded from published templates.
 * `build`:
   * Disable Babel `minify-constant-folding` plugin when minifying. This plugin has a bug that breaks when a constant is exported from a module (https://github.com/babel/minify/issues/820).
   * Added `--auto-base-path` flag. Sets the entrypoint `<base>` tag for all builds to match the name of that build. Unlike other flags, does not necessarily trigger a single one-off build.
+* `serve`, `test`:
+  * Stricter requirements for determining when a browser supports modules, and
+    hence when to automatically transform modules to AMD. We now require support
+    for dynamic import and import.meta.
+
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.13 [04-19-2018]

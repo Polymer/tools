@@ -24,7 +24,7 @@ export type BrowserCapability =
     'push'|
     // Service Worker API.
     'serviceworker'|
-    // JavaScript modules.
+    // JavaScript modules, including dynamic import and import.meta.
     'modules';
 
 export type UserAgentPredicate = (ua: InstanceType<typeof UAParser>) => boolean;
@@ -33,7 +33,7 @@ const chrome = {
   es2015: since(49),
   push: since(41),
   serviceworker: since(45),
-  modules: since(61),
+  modules: since(64),
 };
 
 const browserPredicates: {
@@ -52,13 +52,21 @@ const browserPredicates: {
     es2015: since(1),
     push: since(1),
     serviceworker: since(1),
-    modules: () => false,
+    modules: since(1, 14),
   },
+  // Note that Safari intends to stop changing their user agent strings
+  // (https://twitter.com/rmondello/status/943545865204989953). The details of
+  // this are not yet clear, since recent versions do seem to be changing (at
+  // least the OS bit). Be sure to actually test real user agents rather than
+  // making assumptions based on release notes.
   'Mobile Safari': {
     es2015: since(10),
     push: since(9, 2),
     serviceworker: since(11, 3),
-    modules: since(10, 3),
+    modules: (ua) => {
+      return versionAtLeast([11], parseVersion(ua.getBrowser().version)) &&
+          versionAtLeast([11, 3], parseVersion(ua.getOS().version));
+    },
   },
   'Safari': {
     es2015: since(10),
@@ -68,8 +76,9 @@ const browserPredicates: {
           // caniuse.com.
           versionAtLeast([10, 11], parseVersion(ua.getOS().version));
     },
+    // https://webkit.org/status/#specification-service-workers
     serviceworker: since(11, 1),
-    modules: since(10, 1),
+    modules: since(11, 1),
   },
   'Edge': {
     // Edge versions before 15.15063 may contain a JIT bug affecting ES6

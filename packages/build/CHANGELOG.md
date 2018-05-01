@@ -6,8 +6,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-* Disable Babel `minify-constant-folding` plugin when minifying. This plugin has a bug that breaks when a constant is exported from a module (https://github.com/babel/minify/issues/820).
+* Disable the `simplify` babel plugin when minifying javascript. See
+  https://github.com/babel/minify/issues/824
+* Disable the `mangle` babel plugin as well. See
+  https://github.com/Polymer/tools/issues/261
+* Add "webcomponents-bundle.js" to the heuristic used to determine when to
+  inject the Custom Elements ES5 Adapter.
 <!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.15] - 2018-04-25
+* `@babel/preset-es2015` has been replaced with a manually-created version so that `@babel/plugin-transform-classes` can be pinned to v7.0.0-beta.35 to avoid a bug where the polyfilled HTMLElement constructor is not called. (https://github.com/babel/babel/issues/7506)
+
+## [3.0.0-pre.14] - 2018-04-23
+* Disable Babel `minify-constant-folding` plugin when minifying. This plugin has a bug that breaks when a constant is exported from a module (https://github.com/babel/minify/issues/820).
 
 ## [3.0.0-pre.13] - 2018-04-18
 * Fix node module resolution for the case where the root package is served from

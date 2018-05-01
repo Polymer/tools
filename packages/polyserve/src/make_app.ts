@@ -83,7 +83,7 @@ export function makeApp(options: AppOptions): PolyserveApplication {
         res.setHeader(header, headers[header]);
       }
     }
-    const _send = send(req, filePath);
+    const _send = send(req, filePath, {etag: false, lastModified: false});
     // Uncomment this to disable 304s from send(). This will make the
     // compileMiddleware used in startServer always compile. Useful for testing
     // and working on the compilation middleware.

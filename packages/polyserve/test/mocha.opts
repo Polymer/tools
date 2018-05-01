@@ -1,3 +1,4 @@
 --ui tdd
+--colors
 --require source-map-support/register
-lib/test/*_test.js lib/test/**/*_test.js
+--timeout 5000

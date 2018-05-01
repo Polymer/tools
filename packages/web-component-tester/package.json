@@ -49,10 +49,10 @@
     "build": "tsc && gulp build",
     "test": "tsc && gulp test",
     "prepublishOnly": "gulp prepublish",
-    "test:unit": "gulp test:unit",
-    "test:integration": "gulp test:integration",
-    "test:watch": "watch 'gulp test:unit' runner/ browser/ bin/ test/ tasks/",
-    "format": "find runner test | grep '\\.js$\\|\\.ts$' | xargs ./node_modules/.bin/clang-format --style=file -i"
+    "test:unit": "mocha \"test/unit/**/*.js\"",
+    "test:integration": "gulp bower && mocha \"test/integration/**/*.js\" --timeout 90000",
+    "test:watch": "watch \"mocha \\\"test/unit/**/*.js\\\"\" runner/ browser/ bin/ test/ tasks/",
+    "format": "find runner test | grep \"\\.js$\\|\\.ts$\" | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "dependencies": {
     "@polymer/sinonjs": "^1.14.1",
@@ -126,6 +126,7 @@
     "rimraf": "^2.5.4",
     "rollup": "^0.25.1",
     "run-sequence": "^1.0.1",
+    "source-map-support": "^0.5.4",
     "tslint": "^5.9.1",
     "typescript": "^2.1.4",
     "watch": "^0.18.0",

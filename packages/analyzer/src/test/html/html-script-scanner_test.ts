@@ -81,11 +81,12 @@ suite('HtmlScriptScanner', () => {
             !!w.message.match('does-not-exist-lol-dont-care.js')));
   });
 
-  suite('modules', async () => {
-    const {analyzer} = await createForDirectory(fixtureDir);
+  suite('modules', () => {
+    let analyzer: Analyzer;
     let analysis: Analysis;
 
     before(async () => {
+      ({analyzer} = await createForDirectory(fixtureDir));
       analysis = await analyzer.analyze(
           ['js-modules.html', 'base-href/imports-js-module-with-base.html']);
     });

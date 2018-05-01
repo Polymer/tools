@@ -5,10 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## 4.0.0-pre.6 - 2018-04-25
 - Bundled documents now have a `language` field. It will be `html` when the ast
   node is an HTML Parse5 node, and `js` when the ast node is a JS babel node.
-<!-- Add new, unreleased changes here. -->
+- Rewritten dynamic `import()` calls now test if a bundle has exports before
+  attempting to destructure bundle.
 
 ## 4.0.0-pre.5 - 2018-04-17
 - Update for breaking Analyzer change.

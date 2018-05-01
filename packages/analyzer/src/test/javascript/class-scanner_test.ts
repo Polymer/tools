@@ -15,13 +15,19 @@
 
 import {assert} from 'chai';
 
+import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
 import {Class, Element, ElementMixin, Method, ScannedClass, ScannedMethod} from '../../model/model';
-import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
 // tslint:disable: no-any This test is pretty hacky, uses a lot of any.
-suite('Class', async () => {
-  const {analyzer, underliner} = await createForDirectory(fixtureDir);
+suite('Class', () => {
+  let analyzer: Analyzer;
+  let underliner: CodeUnderliner;
+
+  before(async () => {
+    ({analyzer, underliner} = await createForDirectory(fixtureDir));
+  });
 
   async function getScannedFeatures(filename: string) {
     const {features} = await runScanner(analyzer, new ClassScanner(), filename);

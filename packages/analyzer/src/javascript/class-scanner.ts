@@ -572,28 +572,23 @@ class ClassFinder implements Visitor {
   }
 
   enterAssignmentExpression(
-      node: babel.AssignmentExpression, parent: babel.Node, path: NodePath) {
+      node: babel.AssignmentExpression, _parent: babel.Node, path: NodePath) {
     this.handleGeneralAssignment(
-        astValue.getIdentifierName(node.left), node.right, node, parent, path);
+        astValue.getIdentifierName(node.left), node.right, path);
   }
 
   enterVariableDeclarator(
-      node: babel.VariableDeclarator, parent: babel.Node, path: NodePath) {
+      node: babel.VariableDeclarator, _parent: babel.Node, path: NodePath) {
     if (node.init) {
       this.handleGeneralAssignment(
-          astValue.getIdentifierName(node.id), node.init, node, parent, path);
+          astValue.getIdentifierName(node.id), node.init, path);
     }
   }
 
   /** Generalizes over variable declarators and assignment expressions. */
   private handleGeneralAssignment(
-      assignedName: string|undefined, value: babel.Expression,
-      assignment: babel.VariableDeclarator|babel.AssignmentExpression,
-      statement: babel.Node, path: NodePath) {
-    const comment = esutil.getAttachedComment(value) ||
-        esutil.getAttachedComment(assignment) ||
-        esutil.getAttachedComment(statement) || '';
-    const doc = jsdoc.parseJsdoc(comment);
+      assignedName: string|undefined, value: babel.Expression, path: NodePath) {
+    const doc = jsdoc.parseJsdoc(esutil.getBestComment(path) || '');
     if (babel.isClassExpression(value)) {
       const name = assignedName ||
           value.id && astValue.getIdentifierName(value.id) || undefined;

@@ -33,12 +33,13 @@ const userAgentsThatDontSupportES2015OrModules = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.14986',
 ];
 
-const chrome61UA =
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.39 Safari/537.36';
+const chrome66UA =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36';
 
 const userAgentsThatSupportES2015AndModules = [
-  chrome61UA,
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.1.2 Safari/603.3.8',
+  chrome66UA,
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 11_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15',
 ];
 
 function readTestFile(p: string) {
@@ -255,7 +256,7 @@ suite('compile-middleware', () => {
   });
 
   suite('module specifier rewriting', () => {
-    const userAgent = chrome61UA;
+    const userAgent = chrome66UA;
 
     async function assertGolden(requestPath: string, goldenPath: string) {
       const golden = readTestFile(goldenPath);

@@ -1,0 +1,1 @@
+window.checkExecuted('no-define');

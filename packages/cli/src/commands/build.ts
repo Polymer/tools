@@ -144,7 +144,8 @@ export class BuildCommand implements Command {
     const buildOptions: ProjectBuildOptions = {};
     const validBuildOptions = new Set(this.args.map(({name}) => name));
 
-    // This flag is special. It affects the top-level config, not an individual build.
+    // This flag is special. It affects the top-level config, not an individual
+    // build.
     validBuildOptions.delete(autoBasePath);
 
     for (const buildOption of Object.keys(options)) {

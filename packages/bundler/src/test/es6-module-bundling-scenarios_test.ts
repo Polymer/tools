@@ -17,7 +17,7 @@
 import {assert} from 'chai';
 import {PackageRelativeUrl} from 'polymer-analyzer';
 
-import {generateShellMergeStrategy} from '../bundle-manifest';
+import {generateSharedDepsMergeStrategy, generateShellMergeStrategy} from '../bundle-manifest';
 import {Bundler} from '../bundler';
 
 import {heredoc, inMemoryAnalyzer} from './test-utils';
@@ -60,6 +60,58 @@ suite('Es6 Module Bundling', () => {
         C: C
       };
       export { a as $a, b as $b, c as $c, C, B, A, C as C$1, B as B$1, C as C$2, C as $cDefault };`);
+  });
+
+  suite('rewriting export specifiers', () => {
+
+    // TODO(usergenic): If we want to support `export x from './something.js'`
+    // then Rollup returns the following message: "This experimental syntax
+    // requires enabling the parser plugin: 'exportDefaultFrom' (1:7)"
+
+    // TODO(usergenic): If we want to support `export * from './something.js'`
+    // there's a parse error in the analyzer:
+    // "Unexpected token, expected "(" (7:6)"
+
+    const analyzer = inMemoryAnalyzer({
+      'a.js': `
+        export {b} from './b.js';
+      `,
+      'b.js': `
+        export const b = '🐝';
+      `,
+      'c.js': `
+        import {b} from './b.js';
+        export {b as bee};
+      `,
+    });
+    const aUrl = analyzer.resolveUrl('a.js')!;
+    const bUrl = analyzer.resolveUrl('b.js')!;
+    const cUrl = analyzer.resolveUrl('c.js')!;
+
+    test('export specifier is in a bundle', async () => {
+      const bundler =
+          new Bundler({analyzer, strategy: generateSharedDepsMergeStrategy(2)});
+      const {documents} =
+          await bundler.bundle(await bundler.generateManifest([aUrl, cUrl]));
+      assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        export { b } from './shared_bundle_1.js';
+        var a = {
+          b: b
+        };
+        export { a as $a };`);
+    });
+
+    test('export specifier is not in a bundle', async () => {
+      const bundler = new Bundler({analyzer, excludes: [bUrl]});
+      const {documents} =
+          await bundler.bundle(await bundler.generateManifest([aUrl]));
+      assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        export { b } from './b.js';
+        var a = {
+          b: b
+        };
+        export { a as $a };`);
+    });
   });
 
   suite('rewriting import specifiers', () => {
@@ -199,9 +251,7 @@ suite('Es6 Module Bundling', () => {
           await bundler.bundle(await bundler.generateManifest([aUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
         async function go() {
-          const b = await import('./b.js').then(({
-            $b
-          }) => $b);
+          const b = await import('./b.js').then(bundle => bundle && bundle.$b || {});
           console.log(b.bee);
         }
 
@@ -225,9 +275,7 @@ suite('Es6 Module Bundling', () => {
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
-        import('./b.js').then(({
-          $b
-        }) => $b).then(b => console.log(b.bee));`);
+        import('./b.js').then(bundle => bundle && bundle.$b || {}).then(b => console.log(b.bee));`);
     });
 
     test('updates external module script src', async () => {

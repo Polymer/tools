@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as assert from 'assert';
 import {NodePath} from '@babel/traverse';
 import * as babel from '@babel/types';
 
@@ -127,12 +128,12 @@ class BehaviorVisitor implements Visitor {
   }
 
   private _startBehavior(behavior: ScannedBehavior) {
-    console.assert(this.currentBehavior == null);
+    assert(this.currentBehavior == null);
     this.currentBehavior = behavior;
   }
 
   private _finishBehavior() {
-    console.assert(this.currentBehavior != null);
+    assert(this.currentBehavior != null);
     this.behaviors.add(this.currentBehavior!);
     this.currentBehavior = null;
   }
