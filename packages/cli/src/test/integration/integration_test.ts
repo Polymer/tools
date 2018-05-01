@@ -37,13 +37,13 @@ suite('integration tests', function() {
   this.timeout(120000);
   let browserPromise: Promise<puppeteer.Browser>;
   const disposables: Array<() => void | Promise<void>> = [];
-  before(() => {
+  suiteSetup(() => {
     browserPromise = puppeteer.launch();
   });
-  after(async () => {
+  suiteTeardown(async () => {
     (await browserPromise).close();
   });
-  afterEach(async () => {
+  teardown(async () => {
     await Promise.all(disposables.map((d) => d()));
     disposables.length = 0;
   });
