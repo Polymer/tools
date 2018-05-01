@@ -33,8 +33,16 @@ const userAgentsThatDontSupportES2015OrModules = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.14986',
 ];
 
+const chrome60UA =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3163.39 Safari/537.36';
+
 const chrome66UA =
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36';
+
+const ie11UA = 'Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko';
+
+const firefox51UA =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:51.0) Gecko/20100101 Firefox/51.0';
 
 const userAgentsThatSupportES2015AndModules = [
   chrome66UA,
@@ -49,12 +57,86 @@ function readTestFile(p: string) {
 suite('compile-middleware', () => {
   let app: Express.Application;
 
+  suite('compilation', () => {
+    setup(() => {
+      app = getApp({
+        root: root,
+        compile: 'auto',
+      });
+      // Ensure a fresh cache for each test.
+      babelCompileCache.reset();
+    });
+
+    test('compiles ES2015', async () => {
+      const response = await supertest(app).get('/compilation/class.js');
+      assert.notInclude(response.text, 'class A {}', 'Did not compile');
+    });
+
+    test('does not compile ES2015', async () => {
+      const response = await supertest(app)
+                           .get('/compilation/class.js')
+                           .set('User-Agent', chrome60UA);
+      assert.include(response.text, 'class A {}', 'compiled');
+    });
+
+    test('compiles ES2016', async () => {
+      const response = await supertest(app)
+                           .get('/compilation/exponentiation.js')
+                           .set('User-Agent', ie11UA);
+      assert.notInclude(response.text, '2 ** 5', 'compiled');
+    });
+
+    test('does not compiles ES2016', async () => {
+      const response = await supertest(app)
+                           .get('/compilation/exponentiation.js')
+                           .set('User-Agent', chrome60UA);
+      assert.include(response.text, '2 ** 5', 'Did not compile');
+    });
+
+    test('compiles ES2017 to ES5', async () => {
+      const response = await supertest(app)
+                           .get('/compilation/async.js')
+                           .set('User-Agent', ie11UA);
+      assert.notInclude(response.text, 'async function foo()', 'compiled');
+    });
+
+    test('compiles ES2017 to ES2015', async () => {
+      const response = await supertest(app)
+                           .get('/compilation/async.js')
+                           .set('User-Agent', firefox51UA);
+      assert.notInclude(
+          response.text, 'regeneratorRuntime', 'included regeneratorRuntime');
+      assert.notInclude(response.text, 'async function foo()', 'compiled');
+    });
+
+    test('does not compile ES2017', async () => {
+      const response = await supertest(app)
+                           .get('/compilation/async.js')
+                           .set('User-Agent', chrome60UA);
+      assert.include(response.text, 'async function foo()', 'Did not compile');
+    });
+
+    test('compiles ES2018', async () => {
+      const response = await supertest(app)
+                           .get('/compilation/object-spread.js')
+                           .set('User-Agent', ie11UA);
+      assert.notInclude(response.text, '...foo', 'compiled');
+    });
+
+    test('does not compile ES2018', async () => {
+      const response = await supertest(app)
+                           .get('/compilation/object-spread.js')
+                           .set('User-Agent', chrome66UA);
+      assert.include(response.text, '...foo', 'Did not compile');
+    });
+  });
+
   suite('babelCompileCache', () => {
     const uncompiledHtml =
         readTestFile('bower_components/test-component/test.html');
     const uncompiledJs =
         readTestFile('bower_components/test-component/test.js');
-    const options = {transformES2015: true, transformModules: true};
+    const options = {compileTarget: 'es5', transformModules: true};
 
     setup(() => {
       app = getApp({
@@ -205,10 +287,6 @@ suite('compile-middleware', () => {
   });
 
   suite('module transformations', () => {
-    // Chrome 60 supports ES2015 but not modules.
-    const userAgent =
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3163.39 Safari/537.36';
-
     setup(() => {
       app = getApp({
         root: root,
@@ -224,7 +302,8 @@ suite('compile-middleware', () => {
       const golden = readTestFile(goldenPath);
       const response = await supertest(app)
                            .get('/components/test-modules/' + filename)
-                           .set('User-Agent', userAgent);
+                           // Chrome 60 supports ES2015 but not modules.
+                           .set('User-Agent', chrome60UA);
       // uncomment to update the golden:
       /**
       fs.writeFileSync(path.join(root, goldenPath), response.text);

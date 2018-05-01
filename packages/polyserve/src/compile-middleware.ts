@@ -12,13 +12,14 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {browserCapabilities} from 'browser-capabilities';
+import {browserCapabilities, BrowserCapability} from 'browser-capabilities';
 import {parse as parseContentType} from 'content-type';
 import {Request, RequestHandler, Response} from 'express';
 import * as fs from 'fs';
 import * as LRU from 'lru-cache';
 import * as path from 'path';
 import {htmlTransform, jsTransform} from 'polymer-build';
+import {JsCompileTarget} from 'polymer-project-config';
 
 import {transformResponse} from './transform-middleware';
 
@@ -51,7 +52,9 @@ export const babelCompileCache = LRU<string>(<LRU.Options<string>>{
 // TODO(justinfagnani): see if we can just use the request path as the key
 // See https://github.com/Polymer/polyserve/issues/248
 export const getCompileCacheKey =
-    (requestPath: string, body: string, options: {}): string =>
+    (requestPath: string,
+     body: string,
+     options: {compileTarget: string, transformModules: boolean}): string =>
         JSON.stringify(options) + requestPath + body;
 
 export function babelCompile(
@@ -84,8 +87,19 @@ export function babelCompile(
 
     transform(request: Request, response: Response, body: string): string {
       const capabilities = browserCapabilities(request.get('user-agent'));
+      let compileTarget: JsCompileTarget = undefined;
+      if (compile === 'always') {
+        compileTarget = 'es5';
+      } else if (compile === 'auto') {
+        const jsLevels: Array<BrowserCapability&JsCompileTarget> =
+            ['es2018', 'es2017', 'es2016', 'es2015'];
+        compileTarget = jsLevels.find((c) => capabilities.has(c));
+        if (compileTarget === undefined) {
+          compileTarget = 'es5';
+        }
+      }
       const options = {
-        compile: compile === 'always' || !capabilities.has('es2015'),
+        compileTarget,
         transformModules: compile === 'always' || !capabilities.has('modules'),
       };
 
@@ -132,7 +146,7 @@ export function babelCompile(
       if (contentType === htmlMimeType) {
         transformed = htmlTransform(body, {
           js: {
-            compile: options.compile,
+            compile: options.compileTarget,
             moduleResolution,
             filePath,
             packageName,
@@ -147,7 +161,7 @@ export function babelCompile(
 
       } else if (javaScriptMimeTypes.includes(contentType)) {
         transformed = jsTransform(body, {
-          compile: options.compile,
+          compile: options.compileTarget,
           transformModulesToAmd: options.transformModules ? 'auto' : false,
           moduleResolution,
           filePath: filePath,
