@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   it is designed for development.
 * Add "webcomponents-bundle.js" to the heuristic used to determine when to
   inject the Custom Elements ES5 Adapter.
+* Replaced RequireJS AMD loader with
+  [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
+  which is smaller and better emulates the behavior of ES modules.
 <!-- Add new, unreleased items here. -->
 
 ## [0.27.8] (2018-04-25)

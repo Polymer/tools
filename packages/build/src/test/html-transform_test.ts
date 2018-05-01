@@ -30,7 +30,7 @@ function replaceGiantScripts(html: string): string {
   for (const script of dom5.queryAll(
            document, dom5.predicates.hasTagName('script'))) {
     const js = dom5.getTextContent(script);
-    if (js.includes('var requirejs,require')) {
+    if (js.includes('window.define=')) {
       dom5.setTextContent(script, '// amd loader');
     } else if (js.includes('wrapNativeSuper=')) {
       dom5.setTextContent(script, '// babel helpers full');
@@ -161,8 +161,7 @@ suite('htmlTransform', () => {
 
       const expected = `
         <html><head></head><body>
-          <script>define('polymer-build-generated-module-0', ['depA.js']);</script>
-          <script>require(['polymer-build-generated-module-0']);</script>
+          <script>define(['depA.js']);</script>
         </body></html>`;
 
       assertEqualIgnoringWhitespace(
@@ -186,13 +185,11 @@ suite('htmlTransform', () => {
       const expected = `
         <html><head></head><body>
           <script>
-            define('polymer-build-generated-module-0', ["./depA.js"], function (_depA) {
+            define(["./depA.js"], function (_depA) {
               "use strict";
               console.log(_depA.depA);
             });
           </script>
-
-          <script>require(['polymer-build-generated-module-0']);</script>
         </body></html>`;
 
       assertEqualIgnoringWhitespace(
@@ -218,12 +215,11 @@ suite('htmlTransform', () => {
 
       const expected = `
       <html><head></head><body>
-        <script>define('polymer-build-generated-module-0', ["./depA.js"], function (_depA) {"use strict";});</script>
-        <script>define('polymer-build-generated-module-1', ['./depB.js', 'polymer-build-generated-module-0']);</script>
-        <script>define('polymer-build-generated-module-2', ["./depC.js", 'polymer-build-generated-module-1'], function (_depC) {"use strict";});</script>
-        <script>define('polymer-build-generated-module-3', ['polymer-build-generated-module-2'], function () {"use strict";'no imports';});</script>
-        <script>define('polymer-build-generated-module-4', ['./depD.js', 'polymer-build-generated-module-3']);</script>
-        <script>require(['polymer-build-generated-module-4']);</script>
+        <script>define(["./depA.js"], function (_depA) {"use strict";});</script>
+        <script>define(['./depB.js']);</script>
+        <script>define(["./depC.js"], function (_depC) {"use strict";});</script>
+        <script>define([], function () {"use strict";'no imports';});</script>
+        <script>define(['./depD.js']);</script>
       </body></html>`;
 
       assertEqualIgnoringWhitespace(
@@ -245,8 +241,7 @@ suite('htmlTransform', () => {
 
       const expected = `
       <html><head></head><body>
-        <script>define('polymer-build-generated-module-0', ["./node_modules/dep1/index.js"], function (_index) {"use strict";});</script>
-        <script>require(['polymer-build-generated-module-0']);</script>
+        <script>define(["./node_modules/dep1/index.js"], function (_index) {"use strict";});</script>
       </body></html>`;
 
       assertEqualIgnoringWhitespace(
@@ -313,9 +308,7 @@ suite('htmlTransform', () => {
 
           <script>// amd loader</script>
 
-          <script>define('polymer-build-generated-module-0', ['depA.js']);</script>
-
-          <script>require(['polymer-build-generated-module-0']);</script>
+          <script>define(['depA.js']);</script>
         </body></html>`;
 
       const result = htmlTransform(input, {
@@ -361,9 +354,7 @@ suite('htmlTransform', () => {
 
           <script>// wct hack 2/2</script>
 
-          <script>define('polymer-build-generated-module-0', ['depA.js']);</script>
-
-          <script>require(['polymer-build-generated-module-0']);</script>
+          <script>define(['depA.js']);</script>
         </body></html>`;
 
       const result = htmlTransform(input, {

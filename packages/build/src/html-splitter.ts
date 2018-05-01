@@ -98,7 +98,7 @@ export function scriptWasSplitByHtmlSplitter(script: dom5.Node): boolean {
 
 export type HtmlSplitterFile = File&{
   fromHtmlSplitter?: true;
-  moduleScriptIdx?: number
+  isModule?: boolean
 };
 
 /**
@@ -170,7 +170,6 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
       const doc = parse5.parse(contents, {locationInfo: true});
       dom5.removeFakeRootElements(doc);
       const scriptTags = [...dom5.queryAll(doc, pred.hasTagName('script'))];
-      let moduleScriptIdx = 0;
       for (let i = 0; i < scriptTags.length; i++) {
         const scriptTag = scriptTags[i];
         const source = dom5.getTextContent(scriptTag);
@@ -183,7 +182,6 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
           continue;
         }
 
-        const isModule = typeAttribute === 'module';
         const isInline = !dom5.hasAttribute(scriptTag, 'src');
 
         if (isInline) {
@@ -201,18 +199,9 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
             contents: new Buffer(source),
           });
           scriptFile.fromHtmlSplitter = true;
+          scriptFile.isModule = typeAttribute === 'module';
           this._state.addSplitPath(filePath, childPath);
-          if (isModule) {
-            scriptFile.moduleScriptIdx = moduleScriptIdx;
-          }
           this.push(scriptFile);
-        }
-
-        if (isModule) {
-          // Note it is important to increment this counter even for external
-          // scripts, because the AMD Module dependency chain we generate
-          // applies across both inline and externals cripts.
-          moduleScriptIdx++;
         }
       }
 

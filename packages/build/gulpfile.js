@@ -44,7 +44,6 @@ gulp.task('build', (done) => {
     'compile',
     'gen-babel-helpers-full',
     'gen-babel-helpers-amd',
-    'gen-requirejs',
   ], done);
 });
 
@@ -91,6 +90,7 @@ gulp.task('depcheck', function() {
              '@babel/traverse',
              'stream',
              'html-minifier',
+             '@polymer/esm-amd-loader',
            ]
          })
       .then((result) => {
@@ -227,13 +227,6 @@ gulp.task('gen-babel-helpers-amd', () => {
   minifyAndWriteJs(
       babelCore.buildExternalHelpers(amdHelpers),
      'babel-helpers-amd.min.js');
-});
-
-gulp.task('gen-requirejs', () => {
-  const requireJsPath =
-      path.join(path.dirname(require.resolve('requirejs')), '..', 'require.js');
-  const requireJsCode = fs.readFileSync(requireJsPath, 'utf-8');
-  minifyAndWriteJs(requireJsCode, 'requirejs.min.js');
 });
 
 function minifyAndWriteJs(js, filename) {

@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Dropped support for node v6. This is a soft break, as we aren't
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
   for details.
+* Replaced RequireJS AMD loader with
+  [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
+  which is smaller and better emulates the behavior of ES modules.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.15] - 2018-04-25

@@ -16,6 +16,9 @@
     browser-side caching. As a reminder: do not use `polymser serve` as a
     production webserver, it is designed for development.
 * `serve`, `build`:
+  * Replaced RequireJS AMD loader with
+    [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
+    which is smaller and better emulates the behavior of ES modules.
   * Add "webcomponents-bundle.js" to the heuristic used to determine when to
     inject the Custom Elements ES5 Adapter.
 <!-- Add new, unreleased items here. -->

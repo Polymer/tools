@@ -219,11 +219,19 @@ suite('compile-middleware', () => {
     });
 
     async function assertGolden(filename: string) {
-      const golden = readTestFile(
-          path.join('bower_components', 'test-modules', 'golden', filename));
+      const goldenPath =
+          path.join('bower_components', 'test-modules', 'golden', filename);
+      const golden = readTestFile(goldenPath);
       const response = await supertest(app)
                            .get('/components/test-modules/' + filename)
                            .set('User-Agent', userAgent);
+      // uncomment to update the golden:
+      /**
+      fs.writeFileSync(path.join(root, goldenPath), response.text);
+      if (1 + 1 === 2) {
+        throw new Error('Goldens updated, test failing for your saftey.');
+      }
+      */
       assert.equal(response.text.trim(), golden.trim());
     }
 
@@ -246,13 +254,6 @@ suite('compile-middleware', () => {
     test('transforms non-module-looking JS', async () => {
       await assertGolden('lib-no-module.js');
     });
-
-    test('serves RequireJS library', async () => {
-      const response =
-          await supertest(app).get('/components/requirejs/require.js');
-      assert.equal(response.status, 200);
-      assert.include(response.text, 'requirejs');
-    });
   });
 
   suite('module specifier rewriting', () => {
@@ -262,6 +263,13 @@ suite('compile-middleware', () => {
       const golden = readTestFile(goldenPath);
       const response =
           await supertest(app).get(requestPath).set('User-Agent', userAgent);
+      // uncomment to update the golden:
+      /**
+      fs.writeFileSync(path.join(root, goldenPath), response.text);
+      if (1 + 1 === 2) {
+        throw new Error('Goldens updated, test failing for your saftey.');
+      }
+      */
       assert.equal(response.text.trim(), golden.trim());
     }
 
