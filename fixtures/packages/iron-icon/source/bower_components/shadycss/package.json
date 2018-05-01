@@ -50,7 +50,7 @@
     "run-sequence": "^2.2.1",
     "vinyl-buffer": "^1.0.1",
     "vinyl-source-stream": "^1.1.2",
-    "wct-browser-legacy": "0.0.1-pre.11",
+    "wct-browser-legacy": "^0.0.1-pre.11",
     "web-component-tester": "^6.5.0"
   },
   "publishConfig": {
