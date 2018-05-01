@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   https://github.com/Polymer/tools/issues/261
 * Add "webcomponents-bundle.js" to the heuristic used to determine when to
   inject the Custom Elements ES5 Adapter.
+* Dropped support for node v6. This is a soft break, as we aren't
+  making any changes that are known to break node v6, but we're no longer testing against it.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.15] - 2018-04-25

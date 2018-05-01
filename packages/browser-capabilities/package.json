@@ -6,7 +6,7 @@
   "main": "lib/browser-capabilities.js",
   "types": "lib/browser-capabilities.d.ts",
   "engines": {
-    "node": ">=6.0"
+    "node": ">=8.0"
   },
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",

@@ -38,7 +38,6 @@
     "@types/chokidar": "^1.7.5",
     "@types/clone": "^0.1.30",
     "@types/mocha": "^2.2.29",
-    "@types/node": "^6.0.33",
     "@types/parse5": "^2.2.33",
     "@types/source-map": "=0.5.2",
     "chai": "^3.5.0",

@@ -4,7 +4,7 @@
   "description": "A commandline tool for Polymer projects",
   "main": "lib/polymer-cli.js",
   "engines": {
-    "node": ">=6.0"
+    "node": ">=8.0"
   },
   "bin": {
     "polymer": "bin/polymer.js"

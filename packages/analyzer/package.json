@@ -106,6 +106,6 @@
     "whatwg-url": "^6.4.0"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=8"
   }
 }

@@ -67,6 +67,6 @@
   },
   "homepage": "https://github.com/Polymer/polymer-linter#readme",
   "engines": {
-    "node": ">=6"
+    "node": ">=8"
   }
 }

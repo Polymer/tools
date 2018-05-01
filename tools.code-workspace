@@ -16,6 +16,9 @@
 			"path": "packages/cli"
 		},
 		{
+			"path": "packages/common"
+		},
+		{
 			"path": "packages/editor-service"
 		},
 		{
@@ -37,6 +40,15 @@
 	"settings": {
 		"editor.formatOnSave": true,
 		"editor.formatOnType": true,
-		"clang-format.style": "file"
+		"clang-format.style": "file",
+		"search.exclude": {
+			"**/node_modules": true,
+			"**/bower_components": true,
+			"**/package-lock.json": true,
+			"**/npm-shrinkwrap.json": true,
+			"**/integration/fixtures": true,
+			"packages/web-component-tester/browser.js": true,
+			"packages/web-component-tester/browser.js.map": true
+		}
 	}
 }

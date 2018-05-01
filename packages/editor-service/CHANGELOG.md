@@ -11,7 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   appropriate.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+* Dropped support for node v6. This is a soft break, as we aren't
+  making any changes that are known to break node v6, but we're no longer testing against it.
 
 ## 2.2.0 - 2018-03-27
 

@@ -2,6 +2,8 @@
 
 
 ## Unreleased
+* Dropped support for node v6. This is a soft break, as we aren't
+  making any changes that are known to break node v6, but we're no longer testing against it.
 * `build`:
   * Disable the `simplify` babel plugin when minifying javascript. See
     https://github.com/babel/minify/issues/824

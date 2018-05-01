@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Dropped support for node v6. This is a soft break, as we aren't
+  making any changes that are known to break node v6, but we're no longer testing against it.
 <!-- Add new, unreleased items here. -->
 
 ## 6.6.0-pre.5 - 2018-04-12
