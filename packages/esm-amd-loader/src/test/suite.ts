@@ -46,7 +46,7 @@ suite('static dependencies', () => {
       assert.equal(y.y, 'y');
       done();
     });
-  }).timeout(30);
+  });
 
   test('load 2 dependencies', (done) => {
     define(['../x.js', './y.js'], (x: any, y: any) => {
@@ -58,7 +58,7 @@ suite('static dependencies', () => {
 
   test('do not resolve when a static dependency 404s', (done) => {
     define(['./not-found.js'], () => assert.fail());
-    setTimeout(done, 30);
+    setTimeout(done, 1000);
   });
 
   test('dedupe dependencies', async () => {
@@ -188,7 +188,7 @@ suite('dynamic require', () => {
     setTimeout(() => {
       assert.equal(numErrors, 1);
       done();
-    }, 30);
+    }, 1000);
   });
 });
 
