@@ -1,6 +1,6 @@
-[![NPM version](http://img.shields.io/npm/v/@polymer/amd-loader.svg)](https://www.npmjs.com/package/@polymer/amd-loader)
+[![NPM version](http://img.shields.io/npm/v/@polymer/esm-amd-loader.svg)](https://www.npmjs.com/package/@polymer/esm-amd-loader)
 
-# @polymer/amd-loader
+# @polymer/esm-amd-loader
 
 A JavaScript library which loads AMD-style modules in the browser in 0.9 KB.
 
@@ -22,7 +22,7 @@ document.
 For other use cases, this loader can be installed directly from NPM:
 
 ```bash
-$ npm install --save @polymer/amd-loader
+$ npm install --save @polymer/esm-amd-loader
 ```
 
 ## Example usage
@@ -35,7 +35,7 @@ directly for this API.
 
 #### index.html
 ```html
-<script src="./node_modules/@polymer/amd-loader/amd-loader.min.js"></script>
+<script src="./node_modules/@polymer/esm-amd-loader/esm-amd-loader.min.js"></script>
 
 <script>
   define(['./foo.js'], function(foo) {
@@ -62,8 +62,9 @@ define(['exports', 'require', 'meta'], function(exports, require, meta) {
 ## window.define
 
 ```ts
-window.define = function(dependencies: string[],
-                         factory?: (...args: Array<{}>) => void
+window.define = function(
+    dependencies: string[],
+    factory?: (...args: Array<{}>) => void
 ```
 
 ### `dependencies`
@@ -89,13 +90,14 @@ this is the object that will be received.
 ### `"require"`
 
 ```ts
-function require(dependencies: string[],
-                 onLoad?: (...args: Array<{}>),
-                 onError?: (error: Error)) => void
+function require(
+    dependencies: string[],
+    onResolve?: (...args: Array<{}>),
+    onError?: (error: Error)) => void
 ```
 
 A function which will load the given dependencies, with relative paths resolved
-relative to the current module. If successful, `onLoad` is called with the
+relative to the current module. If successful, `onResolve` is called with the
 resolved dependencies. If a dependency fails to load, `onError` is called with
 the error from the first dependency which failed.
 

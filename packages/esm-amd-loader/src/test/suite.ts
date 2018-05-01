@@ -6,7 +6,7 @@
 // ├── x.js (module with no dependencies)
 // └── y
 //     ├── suite.html (base HTML document)
-//     ├── suite.min.html (same as suite.html but uses minified amd-loader)
+//     ├── suite.min.html (same as suite.html but uses minified version)
 //     ├── y.js (module with no dependencies)
 //     ├── no-define.js (module which does not call define)
 //     └── z
