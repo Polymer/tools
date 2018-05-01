@@ -1,11 +1,9 @@
 {
-  "extends": "../../tsconfig-base.json",
+  "extends": "../../../tsconfig-base.json",
   "compilerOptions": {
     "outDir": "./lib",
-    "target": "es5",
-    "downlevelIteration": false,
     "lib": [
-      "ES5",
+      "ES2015",
       "DOM"
     ]
   },
