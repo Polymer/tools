@@ -2,6 +2,9 @@
 
 
 ## Unreleased
+* Dropped support for node v6. This is a soft break, as we aren't
+  making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
+  for details.
 * `build`:
   * Disable the `simplify` babel plugin when minifying javascript. See
     https://github.com/babel/minify/issues/824

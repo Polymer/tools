@@ -3,7 +3,7 @@
   "repository": "https://github.com/Polymer/tools-common",
   "version": "2.0.0",
   "engines": {
-    "node": ">=6.0"
+    "node": ">=8.0"
   },
   "scripts-to-copy": {
     "lint": "gulp lint",
