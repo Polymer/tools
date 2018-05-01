@@ -1,4 +1,3 @@
-Polymer/polymer
 PolymerElements/app-layout
 PolymerElements/app-localize-behavior
 PolymerElements/app-media

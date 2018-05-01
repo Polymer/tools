@@ -381,9 +381,6 @@ export function getCommentsBetween(
     document: parse5.ASTNode,
     from: parse5.ASTNode|undefined,
     until: parse5.ASTNode|undefined): string[] {
-  if (until === undefined) {
-    debugger;
-  }
   const nodesStart =
       from === undefined ? nodesInside(document) : nodesAfter(from);
   const nodesBetween =

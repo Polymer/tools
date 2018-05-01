@@ -756,6 +756,22 @@ export class DocumentConverter extends DocumentProcessor {
   }
 
   /**
+   * Checks if a path points to webcomponents-lite.js and will change it to
+   * webcomponents-bundle.js if it does.
+   *
+   * @param filePath path to transform.
+   */
+  private webcomponentsLiteToBundle(filePath: string) {
+    const pathObject = path.posix.parse(filePath);
+
+    if (pathObject.base === 'webcomponents-lite.js') {
+      pathObject.base = 'webcomponents-bundle.js';
+    }
+
+    return path.posix.format(pathObject);
+  }
+
+  /**
    * Format an import from the current document to the given JS URL. If an
    * original HTML import URL is given, attempt to match the format of that
    * import URL as much as possible. For example, if the original import URL was
@@ -770,7 +786,8 @@ export class DocumentConverter extends DocumentProcessor {
     // TODO(fks) 11-06-2017: Still return true absolute paths when using
     // bare/named imports?
     if (originalHtmlImportUrl && path.posix.isAbsolute(originalHtmlImportUrl)) {
-      return '/' + toUrl.slice('./'.length);
+      const formattedUrl = '/' + toUrl.slice('./'.length);
+      return this.webcomponentsLiteToBundle(formattedUrl);
     }
     // If the import is contained within a single package (internal), return
     // a path-based import.
@@ -779,9 +796,12 @@ export class DocumentConverter extends DocumentProcessor {
     }
     // Otherwise, return the external import URL formatted for names or paths.
     if (forcePath || this.conversionSettings.npmImportStyle === 'path') {
-      return this.urlHandler.getPathImportUrl(this.convertedUrl, toUrl);
+      const formattedUrl =
+          this.urlHandler.getPathImportUrl(this.convertedUrl, toUrl);
+      return this.webcomponentsLiteToBundle(formattedUrl);
     } else {
-      return this.urlHandler.getNameImportUrl(toUrl);
+      const formattedUrl = this.urlHandler.getNameImportUrl(toUrl);
+      return this.webcomponentsLiteToBundle(formattedUrl);
     }
   }
 
