@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import dyanamicImportSyntax from '@babel/plugin-syntax-dynamic-import';
+import dynamicImportSyntax from '@babel/plugin-syntax-dynamic-import';
 import {NodePath} from '@babel/traverse';
 import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration} from 'babel-types';
 import {resolve} from 'polymer-analyzer/lib/javascript/resolve-specifier-node';
@@ -32,7 +32,7 @@ export const resolveBareSpecifiers = (
     componentDir?: string,
     rootDir?: string,
     ) => ({
-  inherits: dyanamicImportSyntax,
+  inherits: dynamicImportSyntax,
 
   visitor: {
     CallExpression(path: NodePath<CallExpression>) {
