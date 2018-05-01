@@ -10,7 +10,7 @@
     "url": "https://github.com/Polymer/tools.git"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap",
+    "bootstrap": "lerna bootstrap --ci",
     "build": "lerna run build --stream",
     "test": "npm run build && npm run test:unit",
     "test:all": "npm run test:unit && npm run test:integration",
@@ -23,7 +23,7 @@
     "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester"
   },
   "devDependencies": {
-    "lerna": "^2.10.1"
+    "lerna": "^3.0.0-beta.18"
   },
   "engines": {
     "node": ">=8"

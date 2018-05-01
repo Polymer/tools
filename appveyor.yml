@@ -6,15 +6,11 @@ branches:
     - master
 
 install:
-  # a version of '' means "the latest one"
-  # ... for some reason.
-  # https://www.appveyor.com/docs/lang/nodejs-iojs/#selecting-nodejs-or-iojs-version
   - ps: Install-Product node $env:nodejs_version
-  - npm install
-  - rm packages/*/package-lock.json
+  - npm i -g npm@latest
+  - npm ci
   - npm run bootstrap
   - npm run build
-  - ls -l packages/polyserve/lib
 
 test_script:
   - node --version
