@@ -26,7 +26,7 @@ chaiUse(require('chai-subset'));
 suite('Polymer2ElementScanner', () => {
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
-  before(async () => {
+  suiteSetup(async () => {
     ({analyzer, underliner} =
          await createForDirectory(path.resolve(fixtureDir, 'polymer2/')));
   });

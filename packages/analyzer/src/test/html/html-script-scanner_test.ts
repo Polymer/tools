@@ -85,7 +85,7 @@ suite('HtmlScriptScanner', () => {
     let analyzer: Analyzer;
     let analysis: Analysis;
 
-    before(async () => {
+    suiteSetup(async () => {
       ({analyzer} = await createForDirectory(fixtureDir));
       analysis = await analyzer.analyze(
           ['js-modules.html', 'base-href/imports-js-module-with-base.html']);

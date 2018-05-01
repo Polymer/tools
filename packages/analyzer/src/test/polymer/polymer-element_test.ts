@@ -24,7 +24,7 @@ import {createForDirectory, fixtureDir} from '../test-utils';
 suite('PolymerElement', () => {
   let analyzer: Analyzer;
 
-  before(async () => {
+  suiteSetup(async () => {
     ({analyzer} =
          await createForDirectory(path.resolve(fixtureDir, 'polymer2/')));
   });

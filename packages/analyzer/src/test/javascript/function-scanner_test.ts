@@ -24,7 +24,7 @@ import {CodeUnderliner, createForDirectory, fixtureDir, runScanner} from '../tes
 suite('FunctionScanner', () => {
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
-  before(async () => {
+  suiteSetup(async () => {
     const testFilesDir = path.resolve(fixtureDir, 'namespaces/');
     ({analyzer, underliner} = await createForDirectory(testFilesDir));
   });

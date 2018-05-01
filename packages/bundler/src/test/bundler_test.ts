@@ -37,7 +37,7 @@ suite('Bundler', () => {
   let analyzer: Analyzer|undefined;
   let bundler: Bundler|undefined;
 
-  beforeEach(() => {
+  setup(() => {
     analyzer = undefined;
     bundler = undefined;
   });

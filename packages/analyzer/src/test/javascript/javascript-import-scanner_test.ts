@@ -21,7 +21,7 @@ import {createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
 suite('JavaScriptImportScanner', () => {
   let analyzer: Analyzer;
-  before(async () => {
+  suiteSetup(async () => {
     ({analyzer} = await createForDirectory(fixtureDir));
   });
 

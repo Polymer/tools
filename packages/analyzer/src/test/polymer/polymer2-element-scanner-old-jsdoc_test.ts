@@ -26,7 +26,7 @@ chaiUse(require('chai-subset'));
 suite('Polymer2ElementScanner with old jsdoc annotations', () => {
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
-  before(async () => {
+  suiteSetup(async () => {
     const testFilesDir = path.resolve(fixtureDir, 'polymer2-old-jsdoc/');
     ({analyzer, underliner} = await createForDirectory(testFilesDir));
   });

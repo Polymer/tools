@@ -24,7 +24,7 @@ import {CodeUnderliner, createForDirectory, fixtureDir, runScanner} from '../tes
 suite('Polymer2MixinScanner', () => {
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
-  before(async () => {
+  suiteSetup(async () => {
     const testFilesDir = path.resolve(fixtureDir, 'polymer2/');
     ({analyzer, underliner} = await createForDirectory(testFilesDir));
   });
