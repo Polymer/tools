@@ -12,6 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+// Be mindful of adding imports here, as this is on the hot path of all
+// commands.
+
 import * as logging from 'plylog';
 import * as updateNotifier from 'update-notifier';
 import {PolymerCli} from './polymer-cli';

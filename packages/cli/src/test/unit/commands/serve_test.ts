@@ -9,12 +9,10 @@
  */
 
 import {assert} from 'chai';
-import * as polyserveTypeOnly from 'polyserve';
+import * as polyserve from 'polyserve';
 import * as sinon from 'sinon';
 
 import {PolymerCli} from '../../../polymer-cli';
-
-const polyserve = require('polyserve') as typeof polyserveTypeOnly;
 
 suite('serve', () => {
 

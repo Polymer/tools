@@ -10,11 +10,9 @@
 
 import {assert} from 'chai';
 import * as sinon from 'sinon';
-import * as wctTypeOnly from 'web-component-tester';
+import * as wct from 'web-component-tester';
 
 import {PolymerCli} from '../../../polymer-cli';
-
-const wct = require('web-component-tester') as typeof wctTypeOnly;
 
 suite('test', () => {
   let sandbox: sinon.SinonSandbox;

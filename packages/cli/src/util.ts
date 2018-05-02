@@ -12,6 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+// Be mindful of adding imports here, as this is on the hot path of all
+// commands.
+
 import * as inquirer from 'inquirer';
 import {execSync} from 'mz/child_process';
 

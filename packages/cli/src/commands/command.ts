@@ -12,6 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+// Be mindful of adding imports here, as this is on the hot path of all
+// commands.
+
 import {ArgDescriptor} from 'command-line-args';
 import {UsageGroup} from 'command-line-usage';
 import {ProjectConfig} from 'polymer-project-config';
