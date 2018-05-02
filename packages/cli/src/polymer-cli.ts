@@ -12,6 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+// Be mindful of adding imports here, as this is on the hot path of all
+// commands.
+
 import * as commandLineArgs from 'command-line-args';
 import {sep as pathSeperator} from 'path';
 import * as logging from 'plylog';
