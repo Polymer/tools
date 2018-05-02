@@ -30,3 +30,5 @@ class Subclass extends Base {
 
   }
 }
+/** Class that inherits all methods from base */
+class AnotherSubclass extends Base {}
