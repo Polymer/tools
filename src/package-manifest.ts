@@ -155,6 +155,7 @@ export function generatePackageJson(
     'samsam': '1.1.3',
     'supports-color': '3.1.2',
     'type-detect': '1.0.0',
+    '@webcomponents/webcomponentsjs': '2.0.0-beta.2'
   };
 
   if (!packageJson.main) {

@@ -493,7 +493,7 @@
   },
   "webcomponentsjs": {
     "npm": "@webcomponents/webcomponentsjs",
-    "semver": "^2.0.0-0"
+    "semver": "^2.0.0-beta.2"
   },
   "polymer": {
     "npm": "@polymer/polymer",
