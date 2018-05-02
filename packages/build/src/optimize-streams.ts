@@ -122,7 +122,7 @@ export class JsTransform extends GenericOptimizeTransform {
         if (isHtmlSplitterFile(file)) {
           // This is a type=module script in an HTML file. Definitely AMD
           // transform.
-          transformModulesToAmd = file.moduleScriptIdx !== undefined;
+          transformModulesToAmd = file.isModule === true;
           moduleScriptIdx = file.moduleScriptIdx;
         } else {
           // This is an external script file. Only AMD transform it if it looks
