@@ -16,6 +16,8 @@
 // All of the test module scripts will throw if they are executed more than
 // once.
 
+/// <reference path="../node_modules/@polymer/esm-amd-loader/lib/esm-amd-loader.d.ts" />
+
 const {assert} = chai;
 const define = window.define;
 

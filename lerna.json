@@ -1,7 +1,8 @@
 {
   "lerna": "2.10.1",
   "packages": [
-    "packages/*"
+    "packages/*",
+    "packages/esm-amd-loader/test"
   ],
   "version": "independent",
   "command": {
