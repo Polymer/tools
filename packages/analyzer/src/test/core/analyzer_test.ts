@@ -803,6 +803,19 @@ var DuplicateNamespace = {};
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~`]);
   });
 
+  test('treats module script tags as normal imports', async () => {
+    const analysis =
+        await analyzer.analyze(['static/script-tags/modules/index.html']);
+    const warnings = analysis.getWarnings();
+    assert.deepEqual(
+        warnings.map((w) => w.code), ['could-not-resolve-reference']);
+    assert.deepEqual(await underliner.underline(analysis.getWarnings()), [
+      `
+class Bar extends Foo {
+                  ~~~`,
+    ]);
+  });
+
   suite('analyzePackage', () => {
     test('produces a package with the right documents', async () => {
       const {analyzer} =
