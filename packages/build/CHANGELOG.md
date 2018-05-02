@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.16] - 2018-05-01
 * Disable the `simplify` babel plugin when minifying javascript. See
   https://github.com/babel/minify/issues/824
 * Disable the `mangle` babel plugin as well. See
@@ -18,7 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Replaced RequireJS AMD loader with
   [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
   which is smaller and better emulates the behavior of ES modules.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.15] - 2018-04-25
 * `@babel/preset-es2015` has been replaced with a manually-created version so that `@babel/plugin-transform-classes` can be pinned to v7.0.0-beta.35 to avoid a bug where the polyfilled HTMLElement constructor is not called. (https://github.com/babel/babel/issues/7506)

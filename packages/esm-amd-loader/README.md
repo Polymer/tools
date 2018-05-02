@@ -35,7 +35,7 @@ directly for this API.
 
 #### index.html
 ```html
-<script src="./node_modules/@polymer/esm-amd-loader/esm-amd-loader.min.js"></script>
+<script src="./node_modules/@polymer/esm-amd-loader/lib/esm-amd-loader.min.js"></script>
 
 <script>
   define(['./foo.js'], function(foo) {

@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased items here. -->
+
+## [0.27.9] (2018-05-01)
 * Dropped support for node v6. This is a soft break, as we aren't
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
   for details.
@@ -18,7 +21,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Replaced RequireJS AMD loader with
   [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
   which is smaller and better emulates the behavior of ES modules.
-<!-- Add new, unreleased items here. -->
 
 ## [0.27.8] (2018-04-25)
 * `@babel/preset-es2015` has been replaced with a manually-created version so that `@babel/plugin-transform-classes` can be pinned to v7.0.0-beta.35 to avoid a bug where the polyfilled HTMLElement constructor is not called. (https://github.com/babel/babel/issues/7506)
