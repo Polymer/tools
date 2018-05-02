@@ -48,6 +48,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
   readonly properties: Map<string, ScannedProperty>;
   readonly staticMethods: ImmutableMap<string, ScannedMethod>;
   readonly methods: ImmutableMap<string, ScannedMethod>;
+  readonly constructorMethod?: ScannedMethod;
   readonly superClass: ScannedReference<'class'>|undefined;
   // TODO: add a 'mixin' type independent of elements, use that here.
   readonly mixins: ScannedReference<'element-mixin'>[];
@@ -61,6 +62,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
       jsdoc: jsdocLib.Annotation, description: string, sourceRange: SourceRange,
       properties: Map<string, ScannedProperty>,
       methods: Map<string, ScannedMethod>,
+      constructorMethod: ScannedMethod|undefined,
       staticMethods: Map<string, ScannedMethod>,
       superClass: ScannedReference<'class'>|undefined,
       mixins: Array<ScannedReference<'element-mixin'>>, privacy: Privacy,
@@ -74,6 +76,7 @@ export class ScannedClass implements ScannedFeature, Resolvable {
     this.sourceRange = sourceRange;
     this.properties = properties;
     this.methods = methods;
+    this.constructorMethod = constructorMethod;
     this.staticMethods = staticMethods;
     this.superClass = superClass;
     this.mixins = mixins;
@@ -128,6 +131,7 @@ export interface ClassInit {
   readonly properties?: ImmutableMap<string, Property>;
   readonly staticMethods: ImmutableMap<string, Method>;
   readonly methods?: ImmutableMap<string, Method>;
+  readonly constructorMethod?: Method;
   readonly superClass?: ScannedReference<'class'>|undefined;
   // TODO: add a 'mixin' type independent of elements, use that here.
   readonly mixins?: Array<ScannedReference<'element-mixin'>>;
@@ -155,6 +159,7 @@ export class Class implements Feature, DeclaredWithStatement {
   description: string;
   readonly properties = new Map<string, Property>();
   readonly methods = new Map<string, Method>();
+  constructorMethod?: Method;
   readonly staticMethods = new Map<string, Method>();
   readonly superClass: ScannedReference<'class'>|undefined;
   /**
@@ -199,6 +204,8 @@ export class Class implements Feature, DeclaredWithStatement {
     }
     this.mixins = (init.mixins || []);
 
+    this.constructorMethod = init.constructorMethod;
+
     const superClassLikes = this._getSuperclassAndMixins(document, init);
     for (const superClassLike of superClassLikes) {
       this.inheritFrom(superClassLike);
@@ -210,6 +217,10 @@ export class Class implements Feature, DeclaredWithStatement {
     }
     if (init.methods !== undefined) {
       this._overwriteInherited(this.methods, init.methods, undefined, true);
+    }
+    if (init.constructorMethod !== undefined) {
+      this.constructorMethod = this._overwriteSingleInherited(
+          this.constructorMethod, init.constructorMethod, undefined);
     }
     if (init.staticMethods !== undefined) {
       this._overwriteInherited(
@@ -223,6 +234,8 @@ export class Class implements Feature, DeclaredWithStatement {
     this._overwriteInherited(
         this.properties, superClass.properties, superClass.name);
     this._overwriteInherited(this.methods, superClass.methods, superClass.name);
+    this.constructorMethod = this._overwriteSingleInherited(
+        this.constructorMethod, superClass.constructorMethod, superClass.name);
   }
 
   /**
@@ -271,6 +284,32 @@ export class Class implements Feature, DeclaredWithStatement {
       }
       existing.set(key, newVal);
     }
+  }
+
+  /**
+   * This method is applied to a single member to overwrite members lower in
+   * the prototype graph (closer to Object) with members higher up (closer to
+   * the final class we're constructing).
+   *
+   * @param . existing The existin property on the class
+   * @param . overriding The array of members from this new, higher prototype in
+   *   the graph
+   * @param . overridingClassName The name of the prototype whose members are
+   *   being applied over the existing ones. Should be `undefined` when
+   *   applyingSelf is true
+   * @param . applyingSelf True on the last call to this method, when we're
+   *   applying the class's own local members.
+   */
+  protected _overwriteSingleInherited<P extends PropertyLike>(
+      existing: P|undefined, overridingVal: P|undefined,
+      overridingClassName: string|undefined): P|undefined {
+    if (!overridingVal) {
+      return existing;
+    }
+
+    return Object.assign({}, overridingVal, {
+      inheritedFrom: overridingVal['inheritedFrom'] || overridingClassName
+    });
   }
 
   /**

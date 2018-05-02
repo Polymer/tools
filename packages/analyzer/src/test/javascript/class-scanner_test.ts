@@ -17,7 +17,7 @@ import {assert} from 'chai';
 
 import {Analyzer} from '../../core/analyzer';
 import {ClassScanner} from '../../javascript/class-scanner';
-import {Class, Element, ElementMixin, Method, ScannedClass} from '../../model/model';
+import {Class, Element, ElementMixin, Method, ScannedClass, ScannedMethod} from '../../model/model';
 import {CodeUnderliner, createForDirectory, fixtureDir, runScanner} from '../test-utils';
 
 // tslint:disable: no-any This test is pretty hacky, uses a lot of any.
@@ -45,11 +45,40 @@ suite('Class', () => {
     return {classes, analysis};
   }
 
+  function getMethod(m: ScannedMethod|Method): any {
+    const method: any = {name: m.name, description: m.description};
+    if (m.params && m.params.length > 0) {
+      method.params = m.params.map((p) => {
+        const param: any = {name: p.name};
+        if (p.description != null) {
+          param.description = p.description;
+        }
+        if (p.type != null) {
+          param.type = p.type;
+        }
+        if (p.defaultValue != null) {
+          param.defaultValue = p.defaultValue;
+        }
+        if (p.rest != null) {
+          param.rest = p.rest;
+        }
+        return param;
+      });
+    }
+    if (m.return ) {
+      method.return = m.return;
+    }
+    const maybeMethod = m as Partial<Method>;
+    if (maybeMethod.inheritedFrom) {
+      method.inheritedFrom = maybeMethod.inheritedFrom;
+    }
+    return method;
+  }
+
   async function getTestProps(class_: ScannedClass|Class) {
     type TestPropsType = {
       name: string | undefined,
-      description: string,
-      privacy: string,
+      constructorMethod?: any, description: string, privacy: string,
       properties?: any[],
       methods?: any[],
       warnings?: ReadonlyArray<string>,
@@ -68,36 +97,7 @@ suite('Class', () => {
       }
     }
     if (class_.methods.size > 0) {
-      result.methods = [];
-      for (const m of class_.methods.values()) {
-        const method: any = {name: m.name, description: m.description};
-        if (m.params && m.params.length > 0) {
-          method.params = m.params.map((p) => {
-            const param: any = {name: p.name};
-            if (p.description != null) {
-              param.description = p.description;
-            }
-            if (p.type != null) {
-              param.type = p.type;
-            }
-            if (p.defaultValue != null) {
-              param.defaultValue = p.defaultValue;
-            }
-            if (p.rest != null) {
-              param.rest = p.rest;
-            }
-            return param;
-          });
-        }
-        if (m.return ) {
-          method.return = m.return;
-        }
-        const maybeMethod = m as Partial<Method>;
-        if (maybeMethod.inheritedFrom) {
-          method.inheritedFrom = maybeMethod.inheritedFrom;
-        }
-        result.methods.push(method);
-      }
+      result.methods = [...class_.methods.values()].map(getMethod);
     }
     if (class_.mixins.length > 0) {
       result.mixins = [];
@@ -110,6 +110,9 @@ suite('Class', () => {
     }
     if (class_.superClass) {
       result.superClass = class_.superClass.identifier;
+    }
+    if (class_.constructorMethod) {
+      result.constructorMethod = getMethod(class_.constructorMethod);
     }
     return result;
   }
@@ -226,6 +229,7 @@ suite('Class', () => {
 
       assert.deepEqual(await getTestProps(cls), {
         name: 'Class',
+        constructorMethod: {description: '', name: 'constructor'},
         description: '',
         privacy: 'public',
         properties: [
@@ -252,6 +256,22 @@ suite('Class', () => {
           description: '',
           privacy: 'public',
           properties: [{name: 'customInstanceGetter'}],
+          constructorMethod: {
+            description: 'This is the description of the constructor',
+            name: 'constructor',
+            params: [
+              {
+                name: 'num',
+                type: 'number',
+                description: 'A number constructor parameter'
+              },
+              {
+                name: 'truth',
+                type: 'boolean',
+                description: 'Another constructor parameter'
+              }
+            ]
+          },
           methods: [
             {
               name: 'customInstanceFunction',
@@ -387,12 +407,18 @@ suite('Class', () => {
     test('deals with super classes correctly', async () => {
       const classes = await getScannedClasses('class/super-class.js');
 
-      assert.deepEqual(classes.map((f) => f.name), ['Base', 'Subclass']);
+      assert.deepEqual(
+          classes.map((f) => f.name), ['Base', 'Subclass', 'AnotherSubclass']);
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
         {
           name: 'Base',
           description: '',
           privacy: 'public',
+          constructorMethod: {
+            description: '',
+            name: 'constructor',
+            return: {type: 'Base'},
+          },
           methods: [
             {
               description: 'This is a base method.',
@@ -411,6 +437,11 @@ suite('Class', () => {
           description: '',
           privacy: 'public',
           superClass: 'Base',
+          constructorMethod: {
+            description: '',
+            name: 'constructor',
+            return: {type: 'Subclass'},
+          },
           methods: [
             {
               description: 'Overrides the method on Base.',
@@ -423,7 +454,14 @@ suite('Class', () => {
               return: {type: 'void'},
             }
           ]
+        },
+        {
+          name: 'AnotherSubclass',
+          description: 'Class that inherits all methods from base',
+          privacy: 'public',
+          superClass: 'Base'
         }
+
       ]);
     });
 
@@ -527,6 +565,22 @@ suite('Class', () => {
           description: '',
           privacy: 'public',
           properties: [{name: 'customInstanceGetter'}],
+          constructorMethod: {
+            description: 'This is the description of the constructor',
+            name: 'constructor',
+            params: [
+              {
+                name: 'num',
+                type: 'number',
+                description: 'A number constructor parameter'
+              },
+              {
+                name: 'truth',
+                type: 'boolean',
+                description: 'Another constructor parameter'
+              }
+            ]
+          },
           methods: [
             {
               name: 'customInstanceFunction',
@@ -662,12 +716,18 @@ suite('Class', () => {
     test('deals with super classes correctly', async () => {
       const {classes} = await getClasses('class/super-class.js');
 
-      assert.deepEqual(classes.map((f) => f.name), ['Base', 'Subclass']);
+      assert.deepEqual(
+          classes.map((f) => f.name), ['Base', 'Subclass', 'AnotherSubclass']);
       assert.deepEqual(await Promise.all(classes.map((c) => getTestProps(c))), [
         {
           name: 'Base',
           description: '',
           privacy: 'public',
+          constructorMethod: {
+            description: '',
+            name: 'constructor',
+            return: {type: 'Base'},
+          },
           methods: [
             {
               description: 'This is a base method.',
@@ -686,6 +746,11 @@ suite('Class', () => {
           description: '',
           privacy: 'public',
           superClass: 'Base',
+          constructorMethod: {
+            description: '',
+            name: 'constructor',
+            return: {type: 'Subclass'},
+          },
           methods: [
             {
               description: 'This is a base method.',
@@ -704,7 +769,34 @@ suite('Class', () => {
               return: {type: 'void'},
             },
           ]
+        },
+        {
+          name: 'AnotherSubclass',
+          description: 'Class that inherits all methods from base',
+          privacy: 'public',
+          superClass: 'Base',
+          constructorMethod: {
+            description: '',
+            inheritedFrom: 'Base',
+            name: 'constructor',
+            return: {type: 'Base'}
+          },
+          methods: [
+            {
+              description: 'This is a base method.',
+              inheritedFrom: 'Base',
+              name: 'baseMethod',
+              return: {type: 'void'}
+            },
+            {
+              description: 'Will be overriden by Subclass.',
+              inheritedFrom: 'Base',
+              name: 'overriddenMethod',
+              return: {type: 'void'}
+            }
+          ]
         }
+
       ]);
     });
 

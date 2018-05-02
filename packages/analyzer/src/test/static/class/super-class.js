@@ -1,4 +1,10 @@
 class Base {
+  /**
+   * @returns {Base}
+   */
+  constructor() {
+
+  }
   /** This is a base method. */
   baseMethod() {
   }
@@ -8,6 +14,12 @@ class Base {
 }
 
 class Subclass extends Base {
+  /**
+   * @returns {Subclass}
+   */
+  constructor() {
+
+  }
   /** Overrides the method on Base. */
   overriddenMethod() {
 
@@ -18,3 +30,5 @@ class Subclass extends Base {
 
   }
 }
+/** Class that inherits all methods from base */
+class AnotherSubclass extends Base {}

@@ -29,7 +29,7 @@ import * as astValue from './ast-value';
 import {getIdentifierName, getNamespacedIdentifier} from './ast-value';
 import {Visitor} from './estree-visitor';
 import * as esutil from './esutil';
-import {getClosureType, getMethods, getOrInferPrivacy, getReturnFromAnnotation, getStaticMethods, inferReturnFromBody, toMethodParam} from './esutil';
+import {getClosureType, getConstructorClassMethod, getConstructorMethod, getMethods, getOrInferPrivacy, getReturnFromAnnotation, getStaticMethods, inferReturnFromBody, toMethodParam} from './esutil';
 import {JavaScriptDocument} from './javascript-document';
 import {JavaScriptScanner} from './javascript-scanner';
 import * as jsdoc from './jsdoc';
@@ -635,6 +635,7 @@ class ClassFinder implements Visitor {
     const warnings: Warning[] = [];
     const properties = extractPropertiesFromClass(astNode, this._document);
     const methods = getMethods(astNode, this._document);
+    const constructorMethod = getConstructorMethod(astNode, this._document);
 
     this.classes.push(new ScannedClass(
         namespacedName,
@@ -646,6 +647,7 @@ class ClassFinder implements Visitor {
         this._document.sourceRangeForNode(astNode)!,
         properties,
         methods,
+        constructorMethod,
         getStaticMethods(astNode, this._document),
         this._getExtends(astNode, doc, warnings, this._document, path),
         jsdoc.getMixinApplications(
@@ -829,9 +831,7 @@ export function extractPropertiesFromClass(
     return properties;
   }
 
-  const construct = astNode.body.body.find(
-                        (member) => babel.isClassMethod(member) &&
-                            member.kind === 'constructor') as babel.ClassMethod;
+  const construct = getConstructorClassMethod(astNode);
 
   if (construct) {
     const props = extractPropertiesFromConstructor(construct, document);
