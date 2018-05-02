@@ -30,7 +30,6 @@ const isWindows = process.platform === 'win32';
 const skipOnWindows = isWindows ? test.skip : test;
 
 suite('integration tests', function() {
-
   const binPath = path.join(__dirname, '../../../', 'bin', 'polymer.js');
 
   // Extend timeout limit to 90 seconds for slower systems
@@ -54,7 +53,6 @@ suite('integration tests', function() {
   });
 
   suite('init templates', () => {
-
     skipOnWindows('test the Polymer 3.x element template', async () => {
       const dir =
           await runGenerator(createElementGenerator('polymer-3.x'))
@@ -273,7 +271,7 @@ suite('integration tests', function() {
       }
       // Can remove this filter after https://github.com/Polymer/tools/pull/270
       // lands.
-      const builds = config.builds.filter((b) => b.name !== 'es5-bundled');
+      const builds = config.builds;
       // Ideally this would be multiple independent tests, but `polymer build`
       // takes a really long time, and we can also get a bit better performance
       // by running these browser tests in parallel.
@@ -319,14 +317,12 @@ suite('integration tests', function() {
       // await runCommand(binPath, ['test'], {cwd: dir}));
       await runCommand(binPath, ['build'], {cwd: dir});
     });
-
   });
 
   // TODO(justinfagnani): consider removing these integration tests
   // or checking in the contents so that we're not subject to the
   // other repo changing
   suite.skip('tools-sample-projects templates', () => {
-
     let tspDir: string;
 
     suiteSetup(async () => {
@@ -356,7 +352,5 @@ suite('integration tests', function() {
       // await runCommand(binPath, ['test'], {cwd: dir})
       await runCommand(binPath, ['build'], {cwd: dir});
     });
-
   });
-
 });
