@@ -144,9 +144,6 @@ export interface ProjectBuildOptions {
 
     /** Transform ES modules to AMD modules. */
     transformModulesToAmd?: boolean,
-
-    /** Rewrite `import.meta` expressions to objects with inline URLs. */
-    transformImportMeta?: boolean;
   };
 
   /**

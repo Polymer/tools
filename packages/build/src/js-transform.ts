@@ -14,15 +14,12 @@
 
 import * as babelCore from '@babel/core';
 import * as babylon from 'babylon';
-import {relative} from 'path';
 import {JsCompileTarget, ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
 
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 import {dynamicImportAmd} from './babel-plugin-dynamic-import-amd';
 import {rewriteImportMeta} from './babel-plugin-import-meta';
-
-import isWindows = require('is-windows');
 
 // TODO(aomarks) Switch to babel-preset-env. But how do we get just syntax
 // plugins without turning on transformation, for the case where we are
@@ -80,6 +77,7 @@ const babelExternalHelpersPlugin = require('@babel/plugin-external-helpers');
 
 const babelTransformModulesAmd = [
   dynamicImportAmd,
+  rewriteImportMeta,
   require('@babel/plugin-transform-modules-amd'),
 ];
 
@@ -156,14 +154,8 @@ export interface JsTransformOptions {
   // Must be an absolute filesystem path.
   rootDir?: string;
 
-  // Whether to rewrite `import.meta` expressions to objects with inline URLs.
-  // This transform will always run if the AMD transform runs, regardless of
-  // this option.
-  transformImportMeta?: boolean;
-
   // Whether to replace ES modules with AMD modules. If `auto`, run the
   // transform if the script contains any ES module import/export syntax.
-  // Implies `transformImportMeta`.
   transformModulesToAmd?: boolean|'auto';
 
   // If transformModulesToAmd is true, setting this option will update the
@@ -238,8 +230,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   // When the AMD option is "auto", these options will change based on whether
   // we have a module or not (unless they are already definitely true).
   let transformModulesToAmd = options.transformModulesToAmd;
-  let transformImportMeta = options.transformImportMeta;
-  if (transformModulesToAmd === true || transformImportMeta === true) {
+  if (transformModulesToAmd === true) {
     doBabelTransform = true;
   }
 
@@ -281,25 +272,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
 
     if (transformModulesToAmd) {
       doBabelTransform = true;
-      transformImportMeta = true;
       plugins.push(...babelTransformModulesAmd);
-    }
-
-    if (transformImportMeta) {
-      if (!options.filePath) {
-        throw new Error(
-            'Cannot perform importMeta transform without filePath.');
-      }
-      if (!options.rootDir) {
-        throw new Error('Cannot perform importMeta transform without rootDir.');
-      }
-      doBabelTransform = true;
-      let relativeURL = relative(options.rootDir, options.filePath);
-      if (isWindows()) {
-        // normalize path separators to URL format
-        relativeURL = relativeURL.replace(/\\/g, '/');
-      }
-      plugins.push(rewriteImportMeta(relativeURL));
     }
 
     if (doBabelTransform) {
