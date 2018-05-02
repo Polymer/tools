@@ -25,7 +25,7 @@ suite('Class', () => {
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
 
-  before(async () => {
+  suiteSetup(async () => {
     ({analyzer, underliner} = await createForDirectory(fixtureDir));
   });
 

@@ -30,7 +30,7 @@ suite('ParsedHtmlDocument', () => {
   const file = fs.readFileSync(path.join(fixtureDir, url), 'utf8');
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
-  before(async () => {
+  suiteSetup(async () => {
     ({analyzer, underliner} = await createForDirectory(fixtureDir));
   });
 

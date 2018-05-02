@@ -25,7 +25,7 @@ suite('NamespaceScanner', () => {
   let analyzer: Analyzer;
   let underliner: CodeUnderliner;
 
-  before(async () => {
+  suiteSetup(async () => {
     const testFilesDir = path.resolve(fixtureDir, 'namespaces/');
     ({analyzer, underliner} = await createForDirectory(testFilesDir));
   });

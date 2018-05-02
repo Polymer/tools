@@ -117,7 +117,7 @@ suite('HtmlBundler', () => {
     let manifest: BundleManifest;
     let bundle: AssignedBundle;
 
-    beforeEach(async () => {
+    setup(async () => {
       bundler = new Bundler();
       await bundler.analyzeContents(mainDocUrl, '', true);
       manifest = await bundler.generateManifest([mainDocUrl]);

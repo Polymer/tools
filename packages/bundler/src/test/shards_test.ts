@@ -41,7 +41,7 @@ suite('Bundler', () => {
   const entrypoint1 = resolve('shards/shop_style_project/entrypoint1.html');
   const entrypoint2 = resolve('shards/shop_style_project/entrypoint2.html');
 
-  beforeEach(() => {
+  setup(() => {
     analyzer = undefined;
     bundler = undefined;
   });
