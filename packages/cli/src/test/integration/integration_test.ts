@@ -50,7 +50,9 @@ suite('integration tests', function() {
 
   suite('init templates', () => {
 
-    skipOnWindows('test the Polymer 3.x element template', async () => {
+    // Temporarily disabled, see https://github.com/Polymer/tools/issues/287
+    // This should be skipOnWindows.
+    test.skip('test the Polymer 3.x element template', async () => {
       const dir =
           await runGenerator(createElementGenerator('polymer-3.x'))
               .withPrompts({name: 'my-element'})  // Mock the prompt answers

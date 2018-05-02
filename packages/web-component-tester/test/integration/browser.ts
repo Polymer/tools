@@ -116,7 +116,11 @@ function runsAllIntegrationSuites(options: config.Config = {}) {
 
   // TODO(#421): `missing` correctly fails, but currently it times out which
   //     takes ~2 minutes.
-  const suitesToSkip = new Set(['missing']);
+  const suitesToSkip = new Set([
+    'missing',
+    // https://github.com/Polymer/tools/issues/289
+    'multiple-component_dirs',
+  ]);
 
   for (const fn of integrationDirnames) {
     runIntegrationSuiteForDir(fn, options, suitesToSkip.has(fn));
