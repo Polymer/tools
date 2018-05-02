@@ -50,6 +50,8 @@ suite('integration tests', function() {
 
   suite('init templates', () => {
 
+    // Temporarily disabled, see https://github.com/Polymer/tools/issues/287
+    /**
     skipOnWindows('test the Polymer 3.x element template', async () => {
       const dir =
           await runGenerator(createElementGenerator('polymer-3.x'))
@@ -59,6 +61,7 @@ suite('integration tests', function() {
       await runCommand(binPath, ['lint'], {cwd: dir});
       await runCommand(binPath, ['test'], {cwd: dir});
     });
+     */
 
     skipOnWindows('test the Polymer 3.x application template', async () => {
       const dir = await runGenerator(createApplicationGenerator('polymer-3.x'))
