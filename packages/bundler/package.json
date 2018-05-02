@@ -17,6 +17,7 @@
     "@types/babel-generator": "^6.25.1",
     "@types/babel-traverse": "^6.25.3",
     "@types/rollup": "^0.54.0",
+    "acorn-import-meta": "^0.2.1",
     "babel-generator": "^6.26.1",
     "babel-traverse": "^6.26.0",
     "clone": "^2.1.0",

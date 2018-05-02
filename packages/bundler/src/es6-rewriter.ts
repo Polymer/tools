@@ -25,6 +25,8 @@ import {getOrSetBundleModuleExportName} from './es6-module-utils';
 import {appendUrlPath, ensureLeadingDot, getFileExtension} from './url-utils';
 import {rewriteObject} from './utils';
 
+const acornImportMetaInject = require('acorn-import-meta/inject');
+
 /**
  * Utility class to rollup/merge ES6 modules code using rollup and rewrite
  * import statements to point to appropriate bundles.
@@ -59,7 +61,15 @@ export class Es6Rewriter {
       input,
       external,
       onwarn: (warning: string) => {},
+      experimentalDynamicImport: true,
       treeshake: false,
+      acorn: {
+        plugins: {
+          dynamicImport: true,
+          importMeta: true,
+        },
+      },
+      acornInjectPlugins: [acornImportMetaInject],
       plugins: [
         {
           name: 'analyzerPlugin',
@@ -83,9 +93,13 @@ export class Es6Rewriter {
                        importee as PackageRelativeUrl)! as string;
           },
           load: (id: ResolvedUrl) => {
+            // When requesting the main document, just return it as-is.
             if (id === input) {
               return code;
             }
+
+            // When the requested document is part of the bundle, get it from
+            // the analysis.
             if (this.bundle.bundle.files.has(id)) {
               const document = getAnalysisDocument(analysis, id);
               if (!jsImportResolvedUrls.has(id)) {
@@ -106,20 +120,37 @@ export class Es6Rewriter {
                   }
                 }
               }
-              return document.parsedDocument.contents;
+
+              // If the URL of the requested document is the same as the bundle
+              // URL or the requested file doesn't use `import.meta` anywhere,
+              // we can return it as-is.
+              if (this.bundle.url === id ||
+                  !document.parsedDocument.contents.includes('import.meta')) {
+                return document.parsedDocument.contents;
+              }
+
+              // We need to rewrite instances of `import.meta` in the document
+              // to preserve its location because `import.meta` is used and the
+              // URL has changed as a result of bundling.
+              const relativeUrl =
+                  ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
+                      this.bundle.url, id as ResolvedUrl));
+              const newAst = this._rewriteImportMetaToBundleMeta(
+                  document.parsedDocument.ast as babel.File, relativeUrl);
+              const newCode = serialize(newAst).code;
+              return newCode;
             }
           },
         },
       ],
-      experimentalDynamicImport: true,
     });
     const {code: rolledUpCode} = await rollupBundle.generate({
       format: 'es',
       freeze: false,
     });
-    // We have to force the extension of the URL to analyze here because inline
-    // es6 module document url is going to end in `.html` and the file would be
-    // incorrectly analyzed as an HTML document.
+    // We have to force the extension of the URL to analyze here because
+    // inline es6 module document url is going to end in `.html` and the file
+    // would be incorrectly analyzed as an HTML document.
     const rolledUpUrl = getFileExtension(url) === '.js' ?
         url :
         appendUrlPath(url, '_inline_es6_module.js');
@@ -431,5 +462,53 @@ export class Es6Rewriter {
     Object.assign(
         importSpecifier,
         {type: 'ImportSpecifier', imported: babel.identifier(exportName)});
+  }
+
+  private _rewriteImportMetaToBundleMeta(
+      moduleFile: babel.File,
+      relativeUrl: FileRelativeUrl): babel.File {
+    // Generate a stand-in for any local references to import.meta...
+    // const __bundledImportMeta = {...__importMeta, url: __bundledImportURL};
+    const bundledImportMetaName = '__bundledImportMeta';
+    const bundledImportMetaDeclaration =
+        babel.variableDeclaration(  // leave this in for clang-format
+            'const',
+            [babel.variableDeclarator(
+                babel.identifier(bundledImportMetaName),
+                babel.objectExpression([
+                  babel.spreadProperty(babel.memberExpression(
+                      babel.identifier('import'), babel.identifier('meta'))),
+                  babel.objectProperty(
+                      babel.identifier('url'),
+                      babel.newExpression(
+                          babel.identifier('URL'),
+                          [
+                            babel.stringLiteral(relativeUrl),
+                            babel.memberExpression(
+                                babel.memberExpression(
+                                    babel.identifier('import'),
+                                    babel.identifier('meta')),
+                                babel.identifier('url'))
+                          ]))
+                ]))]);
+    const newModuleFile = clone(moduleFile);
+    traverse(newModuleFile, {
+      noScope: true,
+      MetaProperty: {
+        enter(path: NodePath) {
+          const metaProperty = path.node as babel.MetaProperty;
+          if (metaProperty.meta.name !== 'import' &&
+              metaProperty.property.name !== 'meta') {
+            // We're specifically looking for instances of `import.meta` so
+            // ignore any other meta properties.
+            return;
+          }
+          const bundledImportMeta = babel.identifier(bundledImportMetaName);
+          rewriteObject(metaProperty, bundledImportMeta);
+        },
+      },
+    });
+    newModuleFile.program.body.unshift(bundledImportMetaDeclaration);
+    return newModuleFile;
   }
 }
