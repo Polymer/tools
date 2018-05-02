@@ -17,14 +17,9 @@
 // unused code. Any imports that are only used as types will be removed from the
 // output JS and so not result in a require() statement.
 
-import * as delTypeOnly from 'del';
-import * as mzfsTypeOnly from 'mz/fs';
-import * as pathTypeOnly from 'path';
 import * as logging from 'plylog';
-import {PolymerProject} from 'polymer-build';
 import {applyBuildPreset, ProjectBuildOptions, ProjectConfig} from 'polymer-project-config';
 
-import * as buildLibTypeOnly from '../build/build';
 import {dashToCamelCase} from '../util';
 
 import {Command, CommandOptions} from './command';
@@ -173,9 +168,10 @@ export class BuildCommand implements Command {
 
   async run(options: CommandOptions, config: ProjectConfig) {
     // Defer dependency loading until this specific command is run
-    const del = require('del') as typeof delTypeOnly;
-    const buildLib = require('../build/build') as typeof buildLibTypeOnly;
-    const path = require('path') as typeof pathTypeOnly;
+    const del = await import('del');
+    const buildLib = await import('../build/build');
+    const polymerBuild = await import('polymer-build');
+    const path = await import('path');
     let build = buildLib.build;
     const mainBuildDirectoryName = buildLib.mainBuildDirectoryName;
 
@@ -192,10 +188,10 @@ export class BuildCommand implements Command {
     logger.info(`Clearing ${mainBuildDirectoryName}${path.sep} directory...`);
     await del([mainBuildDirectoryName]);
 
-    const mzfs = require('mz/fs') as typeof mzfsTypeOnly;
+    const mzfs = await import('mz/fs');
     await mzfs.mkdir(mainBuildDirectoryName);
 
-    const polymerProject = new PolymerProject(config);
+    const polymerProject = new polymerBuild.PolymerProject(config);
 
     // If any the build command flags were passed as CLI arguments, generate
     // a single build based on those flags alone.

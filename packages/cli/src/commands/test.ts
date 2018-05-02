@@ -18,7 +18,6 @@
 // output JS and so not result in a require() statement.
 
 import {ProjectConfig} from 'polymer-project-config';
-import * as wctTypeOnly from 'web-component-tester';
 
 import {Command, CommandOptions} from './command';
 
@@ -139,9 +138,8 @@ export class TestCommand implements Command {
     },
   ];
 
-  run(_options: CommandOptions, config: ProjectConfig): Promise<void> {
-    // Defer dependency loading until this specific command is run
-    const wct = require('web-component-tester') as typeof wctTypeOnly;
+  async run(_options: CommandOptions, config: ProjectConfig): Promise<void> {
+    const wct = await import('web-component-tester');
 
     const wctArgs = process.argv.slice(3);
 
