@@ -471,28 +471,36 @@ export class Es6Rewriter {
       relativeUrl: FileRelativeUrl): babel.File {
     // Generate a stand-in for any local references to import.meta...
     // const __bundledImportMeta = {...import.meta, url: __bundledImportURL};
+    // TODO(usergenic): Consider migrating this AST production mishmash into the
+    // `ast` tagged template literal available like this:
+    // https://github.com/Polymer/tools/blob/master/packages/build/src/babel-plugin-dynamic-import-amd.ts#L64
     const bundledImportMetaName = '__bundledImportMeta';
-    const bundledImportMetaDeclaration =
-        babel.variableDeclaration(  // leave this in for clang-format
-            'const',
-            [babel.variableDeclarator(
-                babel.identifier(bundledImportMetaName),
-                babel.objectExpression([
-                  babel.spreadProperty(babel.memberExpression(
-                      babel.identifier('import'), babel.identifier('meta'))),
-                  babel.objectProperty(
-                      babel.identifier('url'),
-                      babel.newExpression(
-                          babel.identifier('URL'),
-                          [
-                            babel.stringLiteral(relativeUrl),
-                            babel.memberExpression(
-                                babel.memberExpression(
-                                    babel.identifier('import'),
-                                    babel.identifier('meta')),
-                                babel.identifier('url'))
-                          ]))
-                ]))]);
+    const bundledImportMetaDeclaration = babel.variableDeclaration(
+        //
+        'const',
+        [
+          //
+          babel.variableDeclarator(
+              babel.identifier(bundledImportMetaName), babel.objectExpression([
+                babel.spreadProperty(babel.memberExpression(
+                    babel.identifier('import'), babel.identifier('meta'))),
+                babel.objectProperty(
+                    babel.identifier('url'),
+                    babel.memberExpression(
+                        babel.newExpression(
+                            babel.identifier('URL'),
+                            [
+                              //
+                              babel.stringLiteral(relativeUrl),
+                              babel.memberExpression(
+                                  babel.memberExpression(
+                                      babel.identifier('import'),
+                                      babel.identifier('meta')),
+                                  babel.identifier('url'))
+                            ]),
+                        babel.identifier('href')))
+              ]))
+        ]);
     const newModuleFile = clone(moduleFile);
     traverse(newModuleFile, {
       noScope: true,

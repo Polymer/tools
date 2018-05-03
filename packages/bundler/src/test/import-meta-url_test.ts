@@ -62,7 +62,7 @@ suite('import.meta.url', () => {
         await bundler.bundle(await bundler.generateManifest([bUrl]));
     assert.deepEqual(documents.get(bUrl)!.content, heredoc`
       const __bundledImportMeta = { ...import.meta,
-        url: new URL('../a.js', import.meta.url)
+        url: new URL('../a.js', import.meta.url).href
       };
       const myUrl = __bundledImportMeta.url;
       var a = {
@@ -82,14 +82,14 @@ suite('import.meta.url', () => {
         await bundler.bundle(await bundler.generateManifest([cUrl]));
     assert.deepEqual(documents.get(cUrl)!.content, heredoc`
       const __bundledImportMeta = { ...import.meta,
-        url: new URL('./a.js', import.meta.url)
+        url: new URL('./a.js', import.meta.url).href
       };
       const myUrl = __bundledImportMeta.url;
       var a = {
         myUrl: myUrl
       };
       const __bundledImportMeta$1 = { ...import.meta,
-        url: new URL('./subfolder/b.js', import.meta.url)
+        url: new URL('./subfolder/b.js', import.meta.url).href
       };
       const myUrl$1 = __bundledImportMeta$1.url;
       var b = {
