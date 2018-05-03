@@ -64,19 +64,7 @@ suite('integration tests', function() {
 
   // Extend timeout limit to 90 seconds for slower systems
   this.timeout(120000);
-  let browserPromise: Promise<puppeteer.Browser>;
   const disposables: Array<() => void | Promise<void>> = [];
-  suiteSetup(() => {
-    const debugging = !!process.env['DEBUG_CLI_TESTS'];
-    if (debugging) {
-      browserPromise = puppeteer.launch({headless: false, slowMo: 250});
-    } else {
-      browserPromise = puppeteer.launch();
-    }
-  });
-  suiteTeardown(async () => {
-    (await browserPromise).close();
-  });
   teardown(async () => {
     await Promise.all(disposables.map((d) => d()));
     disposables.length = 0;
@@ -176,7 +164,15 @@ suite('integration tests', function() {
       });
       const address = startResult.server.address();
       const baseUrl = `http://${address.address}:${address.port}`;
-      const page = await (await browserPromise).newPage();
+      const debugging = !!process.env['DEBUG_CLI_TESTS'];
+      let browser;
+      if (debugging) {
+        browser = await puppeteer.launch({headless: false, slowMo: 250});
+      } else {
+        browser = await puppeteer.launch();
+      }
+
+      const page = await browser.newPage();
       disposables.push(() => page.close());
 
       // Evaluate an expression as a string in the browser.
@@ -274,7 +270,7 @@ suite('integration tests', function() {
       }));
     });
 
-    test('test the lit-element "shop" template', async function() {
+    test.only('test the lit-element "shop" template', async function() {
       // Shop has a lot of build configurations, they take a long time.
       this.timeout(10 * 60 * 1000);
       const ShopGenerator = createGithubGenerator(
