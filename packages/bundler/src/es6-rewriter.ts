@@ -182,11 +182,8 @@ export class Es6Rewriter {
     traverse(node, {
       noScope: true,
       ImportDeclaration: {
-        enter(path: NodePath) {
+        enter(path: NodePath<babel.ImportDeclaration>) {
           const importDeclaration = path.node;
-          if (!babel.isImportDeclaration(importDeclaration)) {
-            return;
-          }
           const source = babel.isStringLiteral(importDeclaration.source) &&
               importDeclaration.source.value;
           if (!source) {
@@ -220,9 +217,8 @@ export class Es6Rewriter {
     traverse(node, {
       noScope: true,
       ExportNamedDeclaration: {
-        enter(path: NodePath) {
-          const exportNamedDeclaration =
-              path.node as babel.ExportNamedDeclaration;
+        enter(path: NodePath<babel.ExportNamedDeclaration>) {
+          const exportNamedDeclaration = path.node;
           if (!exportNamedDeclaration.source ||
               !babel.isStringLiteral(exportNamedDeclaration.source)) {
             // We can't rewrite a source if there isn't one or if it isn't a
@@ -270,8 +266,8 @@ export class Es6Rewriter {
     traverse(node, {
       noScope: true,
       ImportDeclaration: {
-        enter(path: NodePath) {
-          const importDeclaration = path.node as babel.ImportDeclaration;
+        enter(path: NodePath<babel.ImportDeclaration>) {
+          const importDeclaration = path.node;
           if (!babel.isStringLiteral(importDeclaration.source)) {
             // We can't actually handle values which are not string literals, so
             // we'll skip them.
@@ -468,7 +464,7 @@ export class Es6Rewriter {
       moduleFile: babel.File,
       relativeUrl: FileRelativeUrl): babel.File {
     // Generate a stand-in for any local references to import.meta...
-    // const __bundledImportMeta = {...__importMeta, url: __bundledImportURL};
+    // const __bundledImportMeta = {...import.meta, url: __bundledImportURL};
     const bundledImportMetaName = '__bundledImportMeta';
     const bundledImportMetaDeclaration =
         babel.variableDeclaration(  // leave this in for clang-format
@@ -495,8 +491,8 @@ export class Es6Rewriter {
     traverse(newModuleFile, {
       noScope: true,
       MetaProperty: {
-        enter(path: NodePath) {
-          const metaProperty = path.node as babel.MetaProperty;
+        enter(path: NodePath<babel.MetaProperty>) {
+          const metaProperty = path.node;
           if (metaProperty.meta.name !== 'import' &&
               metaProperty.property.name !== 'meta') {
             // We're specifically looking for instances of `import.meta` so
