@@ -12,14 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// Be careful with these imports. As much as possible should be deferred until
-// the command is actually run, in order to minimize startup time from loading
-// unused code. Any imports that are only used as types will be removed from the
-// output JS and so not result in a require() statement.
+// Be careful with these imports. As many as possible should be dynamic imports
+// in the run method in order to minimize startup time from loading unused code.
 
 import {ProjectConfig} from 'polymer-project-config';
-
-import {install as installTypeOnly} from '../install/install';
 
 import {Command, CommandOptions} from './command';
 
@@ -47,9 +43,7 @@ export class InstallCommand implements Command {
   ];
 
   async run(options: CommandOptions, config: ProjectConfig): Promise<void> {
-    // Defer dependency loading until this specific command is run
-    const install =
-        require('../install/install').install as typeof installTypeOnly;
+    const install = (await import('../install/install')).install;
 
     // Use `npm` from the config, if available and not passed as a CLI arg.
     if (options.npm === undefined && config.npm !== undefined) {

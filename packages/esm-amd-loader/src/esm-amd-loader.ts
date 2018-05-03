@@ -215,7 +215,15 @@ function require(
 
     } else if (depSpec === 'meta') {
       numUnresolvedDeps--;
-      args.push({url: mod.url});
+      args.push({
+        // We append "#<script index>" to top-level scripts so that they have
+        // unique keys in the registry. We don't want to see that here. Note
+        // that the real base URL may legitimately have an anchor, so it's not
+        // safe to trim the anchor of non-top-level script URLs.
+        url: mod.isTopLevel === true ?
+            mod.url.substring(0, mod.url.lastIndexOf('#')) :
+            mod.url
+      });
 
     } else {
       const depMod = getModule(resolveUrl(mod.urlBase, depSpec));

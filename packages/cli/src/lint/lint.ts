@@ -30,6 +30,11 @@ import {indent, prompt} from '../util';
 
 const logger = logging.getLogger('cli.lint');
 
+if (Symbol.asyncIterator === undefined) {
+  // tslint:disable-next-line: no-any polyfilling.
+  (Symbol as any).asyncIterator = Symbol('asyncIterator');
+}
+
 export async function lint(options: Options, config: ProjectConfig) {
   const lintOptions: Partial<typeof config.lint> = (config.lint || {});
 

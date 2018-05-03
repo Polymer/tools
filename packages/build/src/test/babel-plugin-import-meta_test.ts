@@ -22,30 +22,16 @@ suite('babel-plugin-import-meta', () => {
   test('transforms import.meta', () => {
     const input = stripIndent(`
       console.log(import.meta);
+      console.log(import.meta.url);
     `);
 
     const expected = stripIndent(`
-      console.log({
-        url: new URL("./bar.js", document.baseURI).toString()
-      });
+      import * as meta from 'meta';
+      console.log(meta);
+      console.log(meta.url);
     `);
-    const plugin = rewriteImportMeta('./bar.js');
-    const result = babelCore.transform(input, {plugins: [plugin]}).code;
-    assert.equal(result.trim(), expected.trim());
-  });
-
-  test('transforms import.meta with specified base', () => {
-    const input = stripIndent(`
-      console.log(import.meta);
-    `);
-
-    const expected = stripIndent(`
-      console.log({
-        url: new URL("./bar.js", 'http://foo.com/').toString()
-      });
-    `);
-    const plugin = rewriteImportMeta('./bar.js', 'http://foo.com/');
-    const result = babelCore.transform(input, {plugins: [plugin]}).code;
+    const result =
+        babelCore.transform(input, {plugins: [rewriteImportMeta]}).code;
     assert.equal(result.trim(), expected.trim());
   });
 
@@ -57,8 +43,42 @@ suite('babel-plugin-import-meta', () => {
     const expected = stripIndent(`
       console.log(foo.import.meta);
     `);
-    const plugin = rewriteImportMeta('./bar.js');
-    const result = babelCore.transform(input, {plugins: [plugin]}).code;
+    const result =
+        babelCore.transform(input, {plugins: [rewriteImportMeta]}).code;
+    assert.equal(result.trim(), expected.trim());
+  });
+
+  test('picks a unique import name', () => {
+    const input = stripIndent(`
+      const meta = 'foo';
+      console.log(import.meta);
+    `);
+
+    const expected = stripIndent(`
+      import * as _meta from 'meta';
+      const meta = 'foo';
+      console.log(_meta);
+    `);
+    const result =
+        babelCore.transform(input, {plugins: [rewriteImportMeta]}).code;
+    assert.equal(result.trim(), expected.trim());
+  });
+
+  test('picks a unique import name x2', () => {
+    const input = stripIndent(`
+      const meta = 'foo';
+      const _meta = 'bar';
+      console.log(import.meta);
+    `);
+
+    const expected = stripIndent(`
+      import * as _meta2 from 'meta';
+      const meta = 'foo';
+      const _meta = 'bar';
+      console.log(_meta2);
+    `);
+    const result =
+        babelCore.transform(input, {plugins: [rewriteImportMeta]}).code;
     assert.equal(result.trim(), expected.trim());
   });
 });

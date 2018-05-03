@@ -12,16 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-// Be careful with these imports. As much as possible should be deferred until
-// the command is actually run, in order to minimize startup time from loading
-// unused code. Any imports that are only used as types will be removed from the
-// output JS and so not result in a require() statement.
+// Be careful with these imports. As many as possible should be dynamic imports
+// in the run method in order to minimize startup time from loading unused code.
 
 import {ArgDescriptor} from 'command-line-args';
 import * as logging from 'plylog';
 import {ProjectConfig} from 'polymer-project-config';
-
-import * as polymerInitTypeOnly from '../init/init';
 
 import {Command, CommandOptions} from './command';
 
@@ -42,7 +38,7 @@ export class InitCommand implements Command {
 
   async run(options: CommandOptions, _config: ProjectConfig) {
     // Defer dependency loading until needed
-    const polymerInit = require('../init/init') as typeof polymerInitTypeOnly;
+    const polymerInit = await import('../init/init');
 
     const templateName = options['name'];
     if (templateName) {

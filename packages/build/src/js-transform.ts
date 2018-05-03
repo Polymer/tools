@@ -14,15 +14,12 @@
 
 import * as babelCore from '@babel/core';
 import * as babylon from 'babylon';
-import {relative} from 'path';
-import {ModuleResolutionStrategy} from 'polymer-project-config';
+import {JsCompileTarget, ModuleResolutionStrategy} from 'polymer-project-config';
 import * as uuid from 'uuid/v1';
 
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 import {dynamicImportAmd} from './babel-plugin-dynamic-import-amd';
 import {rewriteImportMeta} from './babel-plugin-import-meta';
-
-import isWindows = require('is-windows');
 
 // TODO(aomarks) Switch to babel-preset-env. But how do we get just syntax
 // plugins without turning on transformation, for the case where we are
@@ -36,44 +33,41 @@ import isWindows = require('is-windows');
 // nothing; however, the custom elements polyfill needs the polyfilled
 // constructor to be called so that it can supply the element being upgraded as
 // the object to use for `this`.
-const customBabelPresetEs2015 = {
-  plugins: [
-    require('@babel/plugin-transform-template-literals'),
-    require('@babel/plugin-transform-literals'),
-    require('@babel/plugin-transform-function-name'),
-    require('@babel/plugin-transform-arrow-functions'),
-    require('@babel/plugin-transform-block-scoped-functions'),
-    require('@babel/plugin-transform-classes'),
-    require('@babel/plugin-transform-object-super'),
-    require('@babel/plugin-transform-shorthand-properties'),
-    require('@babel/plugin-transform-duplicate-keys'),
-    require('@babel/plugin-transform-computed-properties'),
-    require('@babel/plugin-transform-for-of'),
-    require('@babel/plugin-transform-sticky-regex'),
-    require('@babel/plugin-transform-unicode-regex'),
-    require('@babel/plugin-transform-spread'),
-    require('@babel/plugin-transform-parameters'),
-    require('@babel/plugin-transform-destructuring'),
-    require('@babel/plugin-transform-block-scoping'),
-    require('@babel/plugin-transform-typeof-symbol'),
-    require('@babel/plugin-transform-instanceof'),
-    [
-      require('@babel/plugin-transform-regenerator'),
-      {async: false, asyncGenerators: false}
-    ],
+const babelTransformEs2015 = [
+  require('@babel/plugin-transform-template-literals'),
+  require('@babel/plugin-transform-literals'),
+  require('@babel/plugin-transform-function-name'),
+  require('@babel/plugin-transform-arrow-functions'),
+  require('@babel/plugin-transform-block-scoped-functions'),
+  require('@babel/plugin-transform-classes'),
+  require('@babel/plugin-transform-object-super'),
+  require('@babel/plugin-transform-shorthand-properties'),
+  require('@babel/plugin-transform-duplicate-keys'),
+  require('@babel/plugin-transform-computed-properties'),
+  require('@babel/plugin-transform-for-of'),
+  require('@babel/plugin-transform-sticky-regex'),
+  require('@babel/plugin-transform-unicode-regex'),
+  require('@babel/plugin-transform-spread'),
+  require('@babel/plugin-transform-parameters'),
+  require('@babel/plugin-transform-destructuring'),
+  require('@babel/plugin-transform-block-scoping'),
+  require('@babel/plugin-transform-typeof-symbol'),
+  require('@babel/plugin-transform-instanceof'),
+  [
+    require('@babel/plugin-transform-regenerator'),
+    {async: false, asyncGenerators: false}
   ],
-};
+];
 
-// The ES2016 and ES2017 presets do not inherit the plugins of previous years,
-// and there is no ES2018 preset yet. Since the additions in ES2016 and ES2017
-// are small, and we have to list syntax plugins separately anyway (see below),
-// just enumerate the transform plugins here instead of merging the 3 presets.
-const babelTransformPlugins = [
-  // ES2016
+const babelTransformEs2016 = [
   require('@babel/plugin-transform-exponentiation-operator'),
-  // ES2017
+];
+
+const babelTransformEs2017 = [
   require('@babel/plugin-transform-async-to-generator'),
-  // ES2018 (partial)
+];
+
+const babelTransformEs2018 = [
   require('@babel/plugin-proposal-object-rest-spread'),
   require('@babel/plugin-proposal-async-generator-functions'),
 ];
@@ -83,6 +77,7 @@ const babelExternalHelpersPlugin = require('@babel/plugin-external-helpers');
 
 const babelTransformModulesAmd = [
   dynamicImportAmd,
+  rewriteImportMeta,
   require('@babel/plugin-transform-modules-amd'),
 ];
 
@@ -123,7 +118,7 @@ const babelPresetMinify = require('babel-preset-minify')({}, {
  */
 export interface JsTransformOptions {
   // Whether to compile JavaScript to ES5.
-  compileToEs5?: boolean;
+  compile?: boolean|JsCompileTarget;
 
   // If true, do not include Babel helper functions in the output. Otherwise,
   // any Babel helper functions that were required by this transform (e.g. ES5
@@ -159,14 +154,8 @@ export interface JsTransformOptions {
   // Must be an absolute filesystem path.
   rootDir?: string;
 
-  // Whether to rewrite `import.meta` expressions to objects with inline URLs.
-  // This transform will always run if the AMD transform runs, regardless of
-  // this option.
-  transformImportMeta?: boolean;
-
   // Whether to replace ES modules with AMD modules. If `auto`, run the
   // transform if the script contains any ES module import/export syntax.
-  // Implies `transformImportMeta`.
   transformModulesToAmd?: boolean|'auto';
 
   // If transformModulesToAmd is true, setting this option will update the
@@ -205,10 +194,24 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     // Minify last, so push first.
     presets.push(babelPresetMinify);
   }
-  if (options.compileToEs5) {
+  if (options.compile === true || options.compile === 'es5') {
     doBabelTransform = true;
-    presets.push(customBabelPresetEs2015);
-    plugins.push(...babelTransformPlugins);
+    plugins.push(...babelTransformEs2015);
+    plugins.push(...babelTransformEs2016);
+    plugins.push(...babelTransformEs2017);
+    plugins.push(...babelTransformEs2018);
+  } else if (options.compile === 'es2015') {
+    doBabelTransform = true;
+    plugins.push(...babelTransformEs2016);
+    plugins.push(...babelTransformEs2017);
+    plugins.push(...babelTransformEs2018);
+  } else if (options.compile === 'es2016') {
+    doBabelTransform = true;
+    plugins.push(...babelTransformEs2017);
+    plugins.push(...babelTransformEs2018);
+  } else if (options.compile === 'es2017') {
+    doBabelTransform = true;
+    plugins.push(...babelTransformEs2018);
   }
   if (options.moduleResolution === 'node') {
     if (!options.filePath) {
@@ -227,8 +230,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   // When the AMD option is "auto", these options will change based on whether
   // we have a module or not (unless they are already definitely true).
   let transformModulesToAmd = options.transformModulesToAmd;
-  let transformImportMeta = options.transformImportMeta;
-  if (transformModulesToAmd === true || transformImportMeta === true) {
+  if (transformModulesToAmd === true) {
     doBabelTransform = true;
   }
 
@@ -270,25 +272,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
 
     if (transformModulesToAmd) {
       doBabelTransform = true;
-      transformImportMeta = true;
       plugins.push(...babelTransformModulesAmd);
-    }
-
-    if (transformImportMeta) {
-      if (!options.filePath) {
-        throw new Error(
-            'Cannot perform importMeta transform without filePath.');
-      }
-      if (!options.rootDir) {
-        throw new Error('Cannot perform importMeta transform without rootDir.');
-      }
-      doBabelTransform = true;
-      let relativeURL = relative(options.rootDir, options.filePath);
-      if (isWindows()) {
-        // normalize path separators to URL format
-        relativeURL = relativeURL.replace(/\\/g, '/');
-      }
-      plugins.push(rewriteImportMeta(relativeURL));
     }
 
     if (doBabelTransform) {

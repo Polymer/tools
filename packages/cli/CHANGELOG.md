@@ -1,7 +1,12 @@
 # Changelog
 
 
-<!-- ## Unreleased -->
+## Unreleased
+* The transform for `import.meta` now uses the special `"meta"` dependency
+  provided by
+  [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
+  instead of injecting a static path. As a result, it is now always coupled with
+  the AMD transform, and cannot be enabled independently.
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.16 [05-01-2018]

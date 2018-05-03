@@ -26,7 +26,7 @@ suite('jsTransform', () => {
 
   test('compiles to ES5', () => {
     assert.equal(
-        jsTransform('const foo = 3;', {compileToEs5: true}), 'var foo = 3;');
+        jsTransform('const foo = 3;', {compile: true}), 'var foo = 3;');
   });
 
   suite('minifies', () => {
@@ -43,7 +43,7 @@ suite('jsTransform', () => {
 
     test('and compiles', () => {
       assert.equal(
-          jsTransform('const foo = 3;', {compileToEs5: true, minify: true}),
+          jsTransform('const foo = 3;', {compile: true, minify: true}),
           'var foo=3;');
     });
   });
@@ -57,13 +57,13 @@ suite('jsTransform', () => {
   });
 
   test('includes babel helpers by default', () => {
-    const result = jsTransform('class Foo {}', {compileToEs5: true});
+    const result = jsTransform('class Foo {}', {compile: true});
     assert.include(result, 'function _classCallCheck(');
   });
 
   test('omits babel helpers when externalHelpers is true', () => {
-    const result = jsTransform(
-        'class Foo {}', {compileToEs5: true, externalHelpers: true});
+    const result =
+        jsTransform('class Foo {}', {compile: true, externalHelpers: true});
     assert.notInclude(result, 'function _classCallCheck(');
   });
 
@@ -72,14 +72,14 @@ suite('jsTransform', () => {
 
     test('throw when softSyntaxError is false', () => {
       assert.throws(
-          () => jsTransform(
-              invalidJs, {compileToEs5: true, softSyntaxError: false}));
+          () =>
+              jsTransform(invalidJs, {compile: true, softSyntaxError: false}));
     });
 
     test('do not throw when softSyntaxError is true', async () => {
       const output = await interceptOutput(async () => {
         assert.equal(
-            jsTransform(invalidJs, {compileToEs5: true, softSyntaxError: true}),
+            jsTransform(invalidJs, {compile: true, softSyntaxError: true}),
             invalidJs);
       });
       assert.include(output, '[polymer-build]: failed to parse JavaScript:');
@@ -95,7 +95,7 @@ suite('jsTransform', () => {
 
     test('compiles to ES5', () => {
       assert.equal(
-          jsTransform(js, {compileToEs5: true}), 'var foo = Math.pow(2, 2);');
+          jsTransform(js, {compile: true}), 'var foo = Math.pow(2, 2);');
     });
   });
 
@@ -109,7 +109,7 @@ suite('jsTransform', () => {
 
     test('compiles to ES5', () => {
       assert.include(
-          jsTransform(js, {compileToEs5: true}),
+          jsTransform(js, {compile: true}),
           // Some compiled features are very verbose. Just look for the Babel
           // helper call so we know the plugin ran.
           'objectWithoutProperties');
@@ -124,7 +124,7 @@ suite('jsTransform', () => {
     });
 
     test('compiles to ES5', () => {
-      assert.include(jsTransform(js, {compileToEs5: true}), 'objectSpread');
+      assert.include(jsTransform(js, {compile: true}), 'objectSpread');
     });
   });
 
@@ -137,7 +137,7 @@ suite('jsTransform', () => {
     });
 
     test('compiles to ES5', () => {
-      assert.include(jsTransform(js, {compileToEs5: true}), 'asyncToGenerator');
+      assert.include(jsTransform(js, {compile: true}), 'asyncToGenerator');
     });
   });
 
@@ -150,8 +150,7 @@ suite('jsTransform', () => {
     });
 
     test('compiles to ES5', () => {
-      assert.include(
-          jsTransform(js, {compileToEs5: true}), 'wrapAsyncGenerator');
+      assert.include(jsTransform(js, {compile: true}), 'wrapAsyncGenerator');
     });
   });
 
@@ -296,23 +295,22 @@ suite('jsTransform', () => {
   });
 
   test('transforms import.meta', () => {
-    // Important: keep a path seperator here to test Windows:
-    const filePath = path.join(rootDir, 'dir/npm-module.js');
-
     const input = stripIndent(`
       console.log(import.meta);
     `);
 
     const expected = stripIndent(`
-      console.log({
-        url: new URL("dir/npm-module.js", document.baseURI).toString()
+      define(["meta"], function (meta) {
+        "use strict";
+      
+        meta = babelHelpers.interopRequireWildcard(meta);
+        console.log(meta);
       });
     `);
 
     const result = jsTransform(input, {
-      filePath,
-      rootDir,
-      transformImportMeta: true,
+      transformModulesToAmd: true,
+      externalHelpers: true,
     });
     assert.equal(result.trim(), expected.trim());
   });
@@ -349,7 +347,7 @@ suite('jsTransform', () => {
 
       window.customElements.define("test-element", TestElement);
     `);
-    const result = jsTransform(input, {compileToEs5: true});
+    const result = jsTransform(input, {compile: true});
 
     assert.notInclude(result, '_wrapNativeSuper');
   });
@@ -361,7 +359,7 @@ suite('jsTransform', () => {
         while (0);
         console.log(foo);
     `);
-    const result = jsTransform(input, {compileToEs5: true, minify: true});
+    const result = jsTransform(input, {compile: true, minify: true});
 
     assert.include(result, 'bar');
   });
