@@ -53,7 +53,9 @@ export async function build(
   let buildStream: NodeJS.ReadableStream =
       mergeStream(sourcesStream, depsStream);
 
-  const compiledToES5 = !!(options.js && options.js.compile);
+  const compiledToES5 = (options.js === undefined) ?
+      false :
+      options.js.compile === true || options.js.compile === false;
   if (compiledToES5) {
     buildStream =
         buildStream.pipe(polymerProject.addCustomElementsEs5Adapter());
