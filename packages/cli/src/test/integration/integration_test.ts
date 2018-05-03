@@ -29,6 +29,36 @@ const githubToken = '8d8622bf09bb1d85cb411b5e475a35e742a7ce35';
 const isWindows = process.platform === 'win32';
 const skipOnWindows = isWindows ? test.skip : test;
 
+async function gotoOrDie(
+    page: puppeteer.Page, url: string, configurationName?: string) {
+  const configurationMessage =
+      configurationName ? ` with config ${configurationName}` : '';
+  let error: string|undefined;
+  const handler = (e: string) => error = error || e;
+  // Grab the first page error, if any.
+  page.on('pageerror', handler);
+  await page.goto(url);
+  if (error) {
+    throw new Error(
+        `Error loading ${url} in Chrome${configurationMessage}: ${error}`);
+  }
+  // For the moment we don't type check in-browser expressions.
+  // tslint:disable-next-line: no-any
+  type Window = any;
+  for (let i = 0; i < 3; i++) {
+    await page.waitFor(function(this: Window) {
+      return new Promise((resolve) => {
+        this.requestAnimationFrame(resolve);
+      });
+    });
+  }
+  if (error) {
+    throw new Error(`Error during rAFs after loading ${url} in Chrome${
+        configurationMessage}. Browser Error:\n${error}`);
+  }
+  page.removeListener('pageerror', handler);
+}
+
 suite('integration tests', function() {
   const binPath = path.join(__dirname, '../../../', 'bin', 'polymer.js');
 
@@ -181,19 +211,14 @@ suite('integration tests', function() {
         }
       };
 
-      await page.goto(`${baseUrl}/`);
+      await gotoOrDie(page, `${baseUrl}/`, configurationName);
       assert.deepEqual(`${baseUrl}/`, page.url());
       await waitFor('shop-app to be defined', function() {
         return this.customElements.get('shop-app') !== undefined;
       });
-      // Wait for a few RAFs.
-      for (let i = 0; i < 3; i++) {
-        await waitFor('requestAnimationFrame', function() {
-          return new Promise((resolve) => {
-            this.requestAnimationFrame(resolve);
-          });
-        });
-      }
+      await waitFor('shop-app to have a shadowRoot', function() {
+        return this.document.querySelector('shop-app').shadowRoot !== undefined;
+      });
       // The cart shouldn't be registered yet, because we've only loaded the
       // main page.
       await assertTrueInPage(`customElements.get('shop-cart') === undefined`);
@@ -269,15 +294,16 @@ suite('integration tests', function() {
       if (config == null) {
         throw new Error('Failed to load shop\'s polymer.json');
       }
-      // Can remove this filter after https://github.com/Polymer/tools/pull/270
-      // lands.
-      const builds = config.builds;
-      // Ideally this would be multiple independent tests, but `polymer build`
-      // takes a really long time, and we can also get a bit better performance
-      // by running these browser tests in parallel.
-      await Promise.all(builds.map((b) => {
-        const name = b.name || 'default';
-        return assertThatShopWorks(path.join(dir, 'build', name), name);
+      // Can remove this filter after
+      //     https://github.com/Polymer/polymer-cli/issues/1000 is fixed.
+      const dirs =
+          config.builds.filter((b) => b.name !== 'es5-bundled')
+              .map((b) => path.join(dir, 'build', b.name || 'default'));
+      // Ideally this would be multiple independent tests, but `polymer
+      // build` takes a really long time, and we can also get a bit better
+      // performance by running these browser tests in parallel.
+      await Promise.all(dirs.map(async (builtShopDir) => {
+        await assertThatShopWorks(builtShopDir, path.basename(builtShopDir));
       }));
     });
 
