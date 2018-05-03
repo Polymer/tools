@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Document, DocumentBackreference, Import, ScannedImport} from '../model/model';
+import {AstNodeWithLanguage, Document, DocumentBackreference, FileRelativeUrl, Import, ResolvedUrl, ScannedImport, SourceRange, Warning} from '../model/model';
 
 /**
  * <script> tags are represented in two different ways: as inline documents,
@@ -20,10 +20,45 @@ import {Document, DocumentBackreference, Import, ScannedImport} from '../model/m
  * represents a script tag with a `src` attribute as an import, so that the
  * analyzer loads and parses the referenced document.
  */
-export class ScriptTagImport extends Import { readonly type = 'html-script'; }
+export class ScriptTagImport extends Import {
+  readonly type = 'html-script';
+  readonly isModule: boolean;
+  constructor(
+      url: ResolvedUrl, originalUrl: FileRelativeUrl, type: string,
+      document: Document|undefined, sourceRange: SourceRange|undefined,
+      urlSourceRange: SourceRange|undefined, ast: AstNodeWithLanguage|undefined,
+      warnings: Warning[], lazy: boolean, isModule: boolean) {
+    super(
+        url,
+        originalUrl,
+        type,
+        document,
+        sourceRange,
+        urlSourceRange,
+        ast,
+        warnings,
+        lazy);
+    this.isModule = isModule;
+  }
+}
 
 export class ScannedScriptTagImport extends ScannedImport {
-  resolve(document: Document): ScriptTagImport|undefined {
+  // True iff this is a type="module" script tag import.
+  readonly isModule: boolean;
+  constructor(
+      url: FileRelativeUrl, sourceRange: SourceRange,
+      urlSourceRange: SourceRange, ast: AstNodeWithLanguage,
+      isModule: boolean) {
+    super('html-script', url, sourceRange, urlSourceRange, ast, false);
+    this.isModule = isModule;
+  }
+
+  resolve(document: Document) {
+    if (this.isModule) {
+      // Module script imports are just normal imports, they shouldn't
+      // depend on globals that any HTML context might involve.
+      return super.resolve(document);
+    }
     const resolvedUrl = this.getLoadableUrlOrWarn(document);
     if (this.url === undefined || resolvedUrl === undefined) {
       // Warning will already have been added to the document if necessary, so
@@ -67,15 +102,23 @@ export class ScannedScriptTagImport extends ScannedImport {
       importedDocument.resolve();
     }
 
+    return this.constructImport(
+        resolvedUrl, this.url, importedDocument, document);
+  }
+
+  protected constructImport(
+      resolvedUrl: ResolvedUrl, relativeUrl: FileRelativeUrl,
+      importedDocument: Document|undefined, _containingDocument: Document) {
     return new ScriptTagImport(
         resolvedUrl,
-        this.url,
+        relativeUrl,
         this.type,
         importedDocument,
         this.sourceRange,
         this.urlSourceRange,
         this.astNode,
         this.warnings,
-        false);
+        this.lazy,
+        this.isModule);
   }
 }

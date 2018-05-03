@@ -43,12 +43,11 @@ export class HtmlScriptScanner implements HtmlScanner {
             dom5.getAttribute(node, 'src') as FileRelativeUrl | undefined;
         if (src) {
           features.push(new ScannedScriptTagImport(
-              'html-script',
               src,
               document.sourceRangeForNode(node)!,
               document.sourceRangeForAttributeValue(node, 'src')!,
               {language: 'html', node, containingDocument: document},
-              false));
+              dom5.getAttribute(node, 'type') === 'module'));
         } else {
           const locationOffset =
               getLocationOffsetOfStartOfTextContent(node, document);

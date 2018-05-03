@@ -225,8 +225,7 @@ export abstract class AsyncTransformStream<In extends {}, Out extends {}>
   _transform(
       input: In,
       _encoding: string,
-      callback:
-          (error?: null|undefined|string|Partial<Error>, value?: Out) => void) {
+      callback: (error?: Error, value?: Out) => void) {
     this._initializeOnce();
     this._inputs.write(input).then(() => {
       callback();
