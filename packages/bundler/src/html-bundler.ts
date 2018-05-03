@@ -469,7 +469,8 @@ export class HtmlBundler {
     for (const inlineModuleScript of inlineModuleScripts) {
       const {code} = await es6Rewriter.rollup(
           this.document.parsedDocument.baseUrl,
-          inlineModuleScript.parsedDocument.contents);
+          inlineModuleScript.parsedDocument.contents,
+          inlineModuleScript);
       if (inlineModuleScript.astNode &&
           inlineModuleScript.astNode.language === 'html') {
         // Second argument 'true' tells encodeString to escape the <script>

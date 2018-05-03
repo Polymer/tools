@@ -16,13 +16,14 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import * as chai from 'chai';
 import * as parse5 from 'parse5';
+import {Analyzer, FsUrlLoader, FsUrlResolver} from 'polymer-analyzer';
 
 import {AssignedBundle, BundleManifest} from '../bundle-manifest';
 import {Bundler} from '../bundler';
 import {bundle, HtmlBundler} from '../html-bundler';
-
 import {parse} from '../parse5-utils';
 import {getFileUrl} from '../url-utils';
+
 import {heredoc, inMemoryAnalyzer} from './test-utils';
 
 chai.config.showDiff = true;
@@ -32,6 +33,32 @@ const stripSpace = (html: string): string =>
     html.replace(/>\s+/g, '>').replace(/>/g, '>\n').trim();
 
 suite('HtmlBundler', () => {
+
+  test('inline es6 modules with node module-resolution', async () => {
+    const root = 'test/html/inline-es6-modules';
+    const analyzer = new Analyzer({
+      urlResolver: new FsUrlResolver(root),
+      urlLoader: new FsUrlLoader(root),
+      moduleResolution: 'node'
+    });
+    const bundler = new Bundler({analyzer});
+    const usesNpmPackageUrl = analyzer.resolveUrl('uses-npm-package.html')!;
+    const somePackageJsonUrl =
+        analyzer.resolveUrl('node-modules/some-package/package.json')!;
+    const somePackageMainUrl =
+        analyzer.resolveUrl('node-modules/some-package/lib/main.js')!;
+    const {documents} = await bundler.bundle(
+        await bundler.generateManifest([usesNpmPackageUrl]));
+    const usesNpmPackageDoc = documents.getHtmlDoc(usesNpmPackageUrl)!;
+    assert.deepEqual(usesNpmPackageDoc.content, heredoc`
+      <script type="module">
+      const feature = {
+        cool: 'thing'
+      };
+      console.log(feature);
+      </script>
+    `);
+  });
 
   test('inline es6 modules', async () => {
     const analyzer = inMemoryAnalyzer({

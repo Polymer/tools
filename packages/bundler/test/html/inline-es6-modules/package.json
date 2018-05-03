@@ -1,0 +1,7 @@
+{
+  "name": "inline-es6-modules-test-package",
+  "version": "1.0.0",
+  "dependencies": {
+    "some-package": "=1.0.0"
+  }
+}
