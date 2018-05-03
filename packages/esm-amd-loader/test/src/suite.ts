@@ -211,7 +211,7 @@ suite('dynamic require', () => {
 suite('meta.url', () => {
   test('top-level HTML document', (done) => {
     define(['meta'], (meta: any) => {
-      assert.equal(meta.url.split('#')[0], document.baseURI);
+      assert.equal(meta.url, document.baseURI);
       done();
     });
   });
