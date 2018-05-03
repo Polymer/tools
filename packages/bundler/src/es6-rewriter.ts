@@ -514,7 +514,7 @@ export class Es6Rewriter {
             return;
           }
           const bundledImportMeta = babel.identifier(bundledImportMetaName);
-          rewriteObject(metaProperty, bundledImportMeta);
+          path.replaceWith(bundledImportMeta);
         },
       },
     });
