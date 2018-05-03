@@ -975,6 +975,35 @@ export function arrowFn() {
       });
     });
 
+    let testName = 'references to namespace objects are rewritten to ' +
+        '`undefined` when they do not start member expressions';
+    test(testName, async () => {
+      setSources({
+        'test.html': `
+          <script>
+            /** @namespace */
+            window.NS = {
+              f: function() {
+                console.log('f', this);
+                this.g();
+              },
+              g: function() { console.log('g'); },
+            };
+          </script>`,
+      });
+      assertSources(await convert(), {
+        'test.js': `
+export function f() {
+  console.log('f', undefined);
+  g();
+}
+
+export function g() { console.log('g'); }
+`
+      });
+    });
+
+
 
     test(
         'exports a namespace object and fixes local references to its properties',
@@ -1171,7 +1200,7 @@ export let subFn = function() {
       });
     });
 
-    let testName =
+    testName =
         'exports a namespace function and fixes references to its properties';
     test(testName, async () => {
       setSources({

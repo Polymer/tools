@@ -19,13 +19,23 @@ import * as jsc from 'jscodeshift';
 
 /**
  * Rewrite `this` references to the explicit namespaceReference identifier
- * within a single BlockStatement. Don't traverse deeper into new scopes.
+ * within a single BlockStatement if they are the start of a member expression,
+ * otherwise they are rewritten to `undefined`. Don't traverse deeper into new
+ * scopes.
  */
 function rewriteSingleScopeThisReferences(
     blockStatement: estree.BlockStatement, namespaceReference: string) {
   astTypes.visit(blockStatement, {
     visitThisExpression(path: NodePath<estree.ThisExpression>) {
-      path.replace(jsc.identifier(namespaceReference));
+      const parent = path.parent;
+      if (parent && parent.node.type !== 'MemberExpression') {
+        // When a namespace object is itself referenced with `this` but isn't
+        // used to reference a member of the namespace, rewrite the `this` to
+        // `undefined`:
+        path.replace(jsc.identifier('undefined'));
+      } else {
+        path.replace(jsc.identifier(namespaceReference));
+      }
       return false;
     },
 
