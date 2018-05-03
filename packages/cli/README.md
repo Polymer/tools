@@ -72,7 +72,7 @@ Installs your dependencies from Bower or npm.
 
 If the `--variants` option is provided, the command will also search your project's `bower.json` for a `"variants"` property and install any dependency variants listed there. [Dependency variants](https://www.polymer-project.org/2.0/docs/glossary#dependency-variants) describe alternative sets of dependencies to install alongside your normal `bower_components/` folder. Other CLI commands like `polymer test` and `polymer serve` are able to read these alternative dependency sets and test/serve them in parallel. This is especially useful if you need to test your elements against multiple versions of Polymer and/or other dependencies.
 
-By default, `polymer install` installs dependencies from Bower, similar to running `bower install`. If the `--npm` option is provided or `npm: true` is specified in your `polymer.json`, then this command is equivalent to running `npm install`.
+By default, `polymer install` installs dependencies from Bower, similar to running `bower install`. If the `--npm` option is provided or `"npm": true` is specified in your `polymer.json`, then this command is equivalent to running `npm install`.
 
 
 ### `polymer serve [options...]`
