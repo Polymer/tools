@@ -294,11 +294,8 @@ suite('integration tests', function() {
       if (config == null) {
         throw new Error('Failed to load shop\'s polymer.json');
       }
-      // Can remove this filter after
-      //     https://github.com/Polymer/polymer-cli/issues/1000 is fixed.
-      const dirs =
-          config.builds.filter((b) => b.name !== 'es5-bundled')
-              .map((b) => path.join(dir, 'build', b.name || 'default'));
+      const dirs = config.builds.map(
+          (b) => path.join(dir, 'build', b.name || 'default'));
       // Ideally this would be multiple independent tests, but `polymer
       // build` takes a really long time, and we can also get a bit better
       // performance by running these browser tests in parallel.
