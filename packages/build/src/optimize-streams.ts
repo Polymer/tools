@@ -110,10 +110,28 @@ export class GenericOptimizeTransform extends Transform {
  */
 export class JsTransform extends GenericOptimizeTransform {
   constructor(options: OptimizeOptions) {
-    const jsOptions = options.js || {};
+    const jsOptions: JsOptimizeOptions = options.js || {};
 
-    const shouldCompileFile =
-        jsOptions.compile ? notExcluded(jsOptions.compile) : () => false;
+    function getCompileTarget(file: vinyl): JsCompileTarget|boolean {
+      let target: JsCompileTarget|boolean|undefined;
+      const compileOptions = jsOptions.compile;
+      if (notExcluded(jsOptions.compile)(file)) {
+        if (typeof compileOptions === 'object') {
+          target = (compileOptions.target === undefined) ?
+              true :
+              compileOptions.target;
+        } else {
+          target = compileOptions;
+        }
+        if (target === undefined) {
+          target = false;
+        }
+      } else {
+        target = false;
+      }
+      return target;
+    }
+
     const shouldMinifyFile =
         jsOptions.minify ? notExcluded(jsOptions.minify) : () => false;
 
@@ -135,7 +153,7 @@ export class JsTransform extends GenericOptimizeTransform {
       }
 
       return jsTransform(content, {
-        compile: shouldCompileFile(file),
+        compile: getCompileTarget(file),
         externalHelpers: true,
         minify: shouldMinifyFile(file),
         moduleResolution: jsOptions.moduleResolution,
@@ -256,11 +274,12 @@ export function matchesExt(extension: string) {
   return (fs: vinyl) => !!fs.path && fs.relative.endsWith(extension);
 }
 
-function notExcluded(option: JsCompileOptions) {
+function notExcluded(option?: JsCompileOptions) {
   const exclude = typeof option === 'object' && option.exclude || [];
   return (fs: vinyl) => !exclude.some(
              (pattern: string) => matcher.isMatch(fs.relative, pattern));
 }
+
 function matchesExtAndNotExcluded(extension: string, option: JsCompileOptions) {
   const a = matchesExt(extension);
   const b = notExcluded(option);

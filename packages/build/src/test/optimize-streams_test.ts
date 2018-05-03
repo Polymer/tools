@@ -44,46 +44,64 @@ suite('optimize-streams', () => {
     });
   }
 
-  test('compile js', async () => {
-    const expected = `var apple = 'apple';\nvar banana = 'banana';`;
-    const sourceStream = vfs.src([
-      {
-        path: 'foo.js',
-        contents: `const apple = 'apple'; let banana = 'banana';`,
-      },
-    ]);
-    const op =
-        pipeStreams([sourceStream, getOptimizeStreams({js: {compile: true}})]);
-    assert.equal(await getOnlyFile(op), expected);
+  suite('JS compilation', () => {
+    test('compiles to ES5 if compile=true', async () => {
+      const expected = `var apple = 'apple';\nvar banana = 'banana';`;
+      const sourceStream = vfs.src([
+        {
+          path: 'foo.js',
+          contents: `const apple = 'apple'; let banana = 'banana';`,
+        },
+      ]);
+      const op = pipeStreams(
+          [sourceStream, getOptimizeStreams({js: {compile: true}})]);
+      assert.equal(await getOnlyFile(op), expected);
+    });
+
+    test('compiles ES2017 to ES2015', async () => {
+      const sourceStream = vfs.src([
+        {
+          path: 'foo.js',
+          contents: `async function test() { await 0; }`,
+        },
+      ]);
+      const op = pipeStreams(
+          [sourceStream, getOptimizeStreams({js: {compile: 'es2015'}})]);
+      const result = await getOnlyFile(op);
+      assert.include(result, 'asyncToGenerator');
+      assert.notInclude(result, 'async function test');
+      assert.notInclude(result, 'regeneratorRuntime');
+    });
+
+    test('does not compile webcomponents.js files (windows)', async () => {
+      const es6Contents = `const apple = 'apple';`;
+      const sourceStream = vfs.src([
+        {
+          path:
+              'A:\\project\\bower_components\\webcomponentsjs\\webcomponents-es5-loader.js',
+          contents: es6Contents,
+        },
+      ]);
+      const op = pipeStreams(
+          [sourceStream, getOptimizeStreams({js: {compile: true}})]);
+      assert.equal(await getOnlyFile(op), es6Contents);
+    });
+
+    test('does not compile webcomponents.js files (unix)', async () => {
+      const es6Contents = `const apple = 'apple';`;
+      const sourceStream = vfs.src([
+        {
+          path:
+              '/project/bower_components/webcomponentsjs/webcomponents-es5-loader.js',
+          contents: es6Contents,
+        },
+      ]);
+      const op = pipeStreams(
+          [sourceStream, getOptimizeStreams({js: {compile: true}})]);
+      assert.equal(await getOnlyFile(op), es6Contents);
+    });
   });
 
-  test('does not compile webcomponents.js files (windows)', async () => {
-    const es6Contents = `const apple = 'apple';`;
-    const sourceStream = vfs.src([
-      {
-        path:
-            'A:\\project\\bower_components\\webcomponentsjs\\webcomponents-es5-loader.js',
-        contents: es6Contents,
-      },
-    ]);
-    const op =
-        pipeStreams([sourceStream, getOptimizeStreams({js: {compile: true}})]);
-    assert.equal(await getOnlyFile(op), es6Contents);
-  });
-
-  test('does not compile webcomponents.js files (unix)', async () => {
-    const es6Contents = `const apple = 'apple';`;
-    const sourceStream = vfs.src([
-      {
-        path:
-            '/project/bower_components/webcomponentsjs/webcomponents-es5-loader.js',
-        contents: es6Contents,
-      },
-    ]);
-    const op =
-        pipeStreams([sourceStream, getOptimizeStreams({js: {compile: true}})]);
-    assert.equal(await getOnlyFile(op), es6Contents);
-  });
 
   suite('rewrites bare module specifiers to paths', () => {
     test('in js files', async () => {
