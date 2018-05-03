@@ -589,8 +589,8 @@ suite('Project Config', () => {
     });
 
     test('creates config instance from config file options', () => {
-      const config = ProjectConfig.loadConfigFromFile(
-          path.resolve('test/polymer.json'));
+      const config =
+          ProjectConfig.loadConfigFromFile(path.resolve('test/polymer.json'));
       config.validate();
 
       const relativeRoot = 'public';
@@ -677,7 +677,6 @@ suite('Project Config', () => {
             js: {
               minify: true,
               compile: 'es2015',
-              transformImportMeta: true,
               transformModulesToAmd: true,
             },
             browserCapabilities: ['es2015']
