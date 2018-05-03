@@ -458,7 +458,8 @@ suite('import.meta support', async () => {
   });
 
   // The given url should be a fully qualified
-  const assertPageWorksCorrectly = async (baseUrl: string) => {
+  const assertPageWorksCorrectly =
+      async (baseUrl: string, skipTestingSubdir: boolean = false) => {
     const browser = await puppeteer.launch();
     disposables.push(() => browser.close());
     const page = await browser.newPage();
@@ -471,17 +472,19 @@ suite('import.meta support', async () => {
         await page.evaluate(`window.indexHtmlUrl`), `${baseUrl}/index.html`);
     assert.deepEqual(
         await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
-    await gotoOrDie(page, `${baseUrl}/subdir/`);
-    assert.deepEqual(
-        await page.evaluate(`window.indexHtmlUrl`), `${baseUrl}/subdir/`);
-    assert.deepEqual(
-        await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
-    await gotoOrDie(page, `${baseUrl}/subdir/index.html`);
-    assert.deepEqual(
-        await page.evaluate(`window.indexHtmlUrl`),
-        `${baseUrl}/subdir/index.html`);
-    assert.deepEqual(
-        await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
+    if (!skipTestingSubdir) {
+      await gotoOrDie(page, `${baseUrl}/subdir/`);
+      assert.deepEqual(
+          await page.evaluate(`window.indexHtmlUrl`), `${baseUrl}/subdir/`);
+      assert.deepEqual(
+          await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
+      await gotoOrDie(page, `${baseUrl}/subdir/index.html`);
+      assert.deepEqual(
+          await page.evaluate(`window.indexHtmlUrl`),
+          `${baseUrl}/subdir/index.html`);
+      assert.deepEqual(
+          await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
+    }
     return page;
   };
 
@@ -506,8 +509,7 @@ suite('import.meta support', async () => {
         'expected import.meta to be compiled out!');
   });
 
-  // Unskip in https://github.com/Polymer/tools/pull/300
-  suite.skip('after building', () => {
+  suite('after building', () => {
     suiteSetup(async function() {
       this.timeout(20 * 1000);
       await runCommand(binPath, ['build'], {cwd: tempDir});
@@ -518,7 +520,7 @@ suite('import.meta support', async () => {
       test(testName, async function() {
         const url = await serve(
             path.join(tempDir, 'build', buildName), {compile: 'always'});
-        const page = await assertPageWorksCorrectly(url);
+        const page = await assertPageWorksCorrectly(url, true);
         await gotoOrDie(page, `${url}/`);
         if (buildName !== 'esm-bundle') {
           assert.notInclude(
