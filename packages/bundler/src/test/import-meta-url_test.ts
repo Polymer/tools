@@ -42,7 +42,6 @@ suite('import.meta.url', () => {
   const aUrl = analyzer.resolveUrl('a.js')!;
   const bUrl = analyzer.resolveUrl('subfolder/b.js')!;
   const cUrl = analyzer.resolveUrl('c.js')!;
-  const dUrl = analyzer.resolveUrl('d.js')!;
 
   test('bundled module with same URL as bundle', async () => {
     const bundler = new Bundler({analyzer});
