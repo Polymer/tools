@@ -24,47 +24,75 @@ suite('jsTransform', () => {
       path.join(__dirname, '..', '..', 'test-fixtures', 'npm-modules');
   const filePath = path.join(rootDir, 'foo.js');
 
-  test('compiles to ES5', () => {
-    assert.equal(
-        jsTransform('const foo = 3;', {compile: true}), 'var foo = 3;');
+  suite('compilation', () => {
+    test('compiles to ES5 when compile=true', () => {
+      assert.equal(
+          jsTransform('const foo = 3;', {compile: true}), 'var foo = 3;');
+    });
+
+    test('compiles to ES5 when compile=es5', () => {
+      assert.equal(
+          jsTransform('const foo = 3;', {compile: 'es5'}), 'var foo = 3;');
+    });
+
+    test('compiles to ES2015 when compile=es2015', () => {
+      assert.equal(
+          jsTransform('2 ** 5;', {compile: 'es2015'}), 'Math.pow(2, 5);');
+    });
+
+    test('compiles ES2017 to ES5', async () => {
+      const result =
+          jsTransform('async function test() { await 0; }', {compile: 'es5'});
+      assert.include(result, '_asyncToGenerator');
+      assert.notInclude(result, 'async function test');
+      assert.include(result, 'regeneratorRuntime');
+    });
+
+    test('compiles ES2017 to ES2015', async () => {
+      const result = jsTransform(
+          'async function test() { await 0; }', {compile: 'es2015'});
+      assert.include(result, 'asyncToGenerator');
+      assert.notInclude(result, 'async function test');
+      assert.notInclude(result, 'regeneratorRuntime');
+    });
+
+    test('does not unnecessarily reformat', () => {
+      // Even with no transform plugins, parsing and serializing with Babel will
+      // make some minor formatting changes to the code, such as removing
+      // trailing newlines. Check that we don't do this when no transformations
+      // were configured.
+      assert.equal(jsTransform('const foo = 3;\n', {}), 'const foo = 3;\n');
+    });
+
+    test('includes babel helpers by default', () => {
+      const result = jsTransform('class Foo {}', {compile: true});
+      assert.include(result, 'function _classCallCheck(');
+    });
+
+    test('omits babel helpers when externalHelpers is true', () => {
+      const result =
+          jsTransform('class Foo {}', {compile: true, externalHelpers: true});
+      assert.notInclude(result, 'function _classCallCheck(');
+    });
   });
 
-  suite('minifies', () => {
-    test('a simple expression', () => {
+  suite('minification', () => {
+    test('minifies a simple expression', () => {
       assert.equal(
           jsTransform('const foo = 3;', {minify: true}), 'const foo=3;');
     });
 
-    test('an exported const', () => {
+    test('minifies an exported const', () => {
       assert.equal(
           jsTransform('const foo = "foo"; export { foo };', {minify: true}),
           'const foo="foo";export{foo};');
     });
 
-    test('and compiles', () => {
+    test('minifies and compiles', () => {
       assert.equal(
           jsTransform('const foo = 3;', {compile: true, minify: true}),
           'var foo=3;');
     });
-  });
-
-  test('does not unnecessarily reformat', () => {
-    // Even with no transform plugins, parsing and serializing with Babel will
-    // make some minor formatting changes to the code, such as removing trailing
-    // newlines. Check that we don't do this when no transformations were
-    // configured.
-    assert.equal(jsTransform('const foo = 3;\n', {}), 'const foo = 3;\n');
-  });
-
-  test('includes babel helpers by default', () => {
-    const result = jsTransform('class Foo {}', {compile: true});
-    assert.include(result, 'function _classCallCheck(');
-  });
-
-  test('omits babel helpers when externalHelpers is true', () => {
-    const result =
-        jsTransform('class Foo {}', {compile: true, externalHelpers: true});
-    assert.notInclude(result, 'function _classCallCheck(');
   });
 
   suite('parse errors', () => {
@@ -302,7 +330,7 @@ suite('jsTransform', () => {
     const expected = stripIndent(`
       define(["meta"], function (meta) {
         "use strict";
-      
+
         meta = babelHelpers.interopRequireWildcard(meta);
         console.log(meta);
       });
