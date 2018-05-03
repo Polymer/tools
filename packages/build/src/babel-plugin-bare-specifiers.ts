@@ -94,12 +94,7 @@ const maybeResolve = (
     return resolve(specifier, filePath, componentInfo);
   } catch (e) {
     if (!isPathSpecifier(specifier)) {
-      // Don't warn if the specifier was already a path, even though we do
-      // resolve paths, because maybe the user is serving it some other
-      // way.
-      console.warn(
-          `Could not resolve module specifier "${specifier}" ` +
-          `in file "${filePath}".`);
+      // We should warn here if there's a helpful way to do that.
     }
     return specifier;
   }

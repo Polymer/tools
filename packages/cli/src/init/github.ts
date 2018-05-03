@@ -63,7 +63,6 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
         codeSource = await this._github.getBranch(branch);
       }
 
-      logger.info(`Downloading ${codeSource.name} of ${owner}/${repo}`);
       await this._github.extractReleaseTarball(
           codeSource.tarball_url, this.destinationRoot());
       this._github.removeUnwantedFiles(this.destinationRoot());
