@@ -134,7 +134,13 @@ export class Es6Rewriter {
               // URL has changed as a result of bundling.
               const relativeUrl =
                   ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
-                      this.bundle.url, id as ResolvedUrl));
+                      this.bundle.url, id));
+
+              // TODO(usergenic): This code makes assumptions about the type of
+              // the ast and the document contents that are potentially not true
+              // if there are coding or resolution errors. Need to add some kind
+              // of type checking or assertion that we're dealing with at least
+              // a `Document<ParsedJavascriptDocument>` here.
               const newAst = this._rewriteImportMetaToBundleMeta(
                   document.parsedDocument.ast as babel.File, relativeUrl);
               const newCode = serialize(newAst).code;
