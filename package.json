@@ -3,12 +3,10 @@
   "private": true,
   "description": "Polymer tooling monorepo!",
   "homepage": "https://github.com/Polymer/tools",
+  "repository": "https://github.com/Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Polymer/tools.git"
-  },
+  "author": "The Polymer Project Authors",
   "scripts": {
     "bootstrap": "lerna bootstrap --ci",
     "build": "lerna run build --stream",

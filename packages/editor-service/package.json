@@ -2,15 +2,13 @@
   "name": "polymer-editor-service",
   "version": "2.2.0",
   "description": "Static analysis for the web in your text editor!",
-  "homepage": "https://github.com/Polymer/polymer-editor-service",
-  "bugs": "https://github.com/Polymer/polymer-editor-service/issues",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/editor-service",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
   "bin": {
     "polymer-editor-service": "bin/polymer-editor-service.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Polymer/polymer-editor-service.git"
   },
   "scripts": {
     "clean": "touch lib && rm -rf lib",

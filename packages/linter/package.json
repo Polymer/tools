@@ -2,6 +2,11 @@
   "name": "polymer-linter",
   "version": "3.0.0-pre.7",
   "description": "Lint Polymer!",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/linter",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
   "main": "lib/linter.js",
   "typings": "lib/linter.d.ts",
   "dependencies": {
@@ -50,21 +55,11 @@
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
     "run-on-polymer": "npm run build && (cd test/integration && bower install --silent) && INTEGRATION_TEST=true mocha lib/test/integration_test.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Polymer/polymer-linter.git"
-  },
   "keywords": [
     "polymer",
     "lint",
     "linter"
   ],
-  "author": "The Polymer Project authors",
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/Polymer/polymer-linter/issues"
-  },
-  "homepage": "https://github.com/Polymer/polymer-linter#readme",
   "engines": {
     "node": ">=8"
   }
