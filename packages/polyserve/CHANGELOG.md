@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   instead of injecting a static path. As a result, it is now always coupled with
   the AMD transform, and cannot be enabled independently.
 <!-- Add new, unreleased items here. -->
+* Fixed issue where the package name was only a substring of a request path was
+  being considered a root path request. e.g. a package of `@foo` with a request
+  path os `/@foo/bar` is considered a root path request, but a request path of
+  `/@foobar/baz` is not but was being considered one before.
 
 ## [0.27.9] (2018-05-01)
 * Dropped support for node v6. This is a soft break, as we aren't
