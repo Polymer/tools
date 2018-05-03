@@ -36,6 +36,8 @@ function replaceGiantScripts(html: string): string {
       dom5.setTextContent(script, '// babel helpers full');
     } else if (js.includes('interopRequireDefault=')) {
       dom5.setTextContent(script, '// babel helpers amd');
+    } else if (js.includes('regeneratorRuntime')) {
+      dom5.setTextContent(script, '// regenerator runtime');
     } else if (js.includes('window._wctCallback =')) {
       dom5.setTextContent(script, '// wct hack 1/2');
     } else if (js.includes('window._wctCallback()')) {
@@ -127,6 +129,22 @@ suite('htmlTransform', () => {
       </body></html>`;
 
     const result = htmlTransform(input, {injectBabelHelpers: 'amd'});
+    assertEqualIgnoringWhitespace(replaceGiantScripts(result), expected);
+  });
+
+  test('injects regenerator runtime', () => {
+    const input = `
+      <html><head></head><body>
+        <script>const foo = 3;</script>
+      </body></html>`;
+
+    const expected = `
+      <html><head></head><body>
+        <script>// regenerator runtime</script>
+        <script>const foo = 3;</script>
+      </body></html>`;
+
+    const result = htmlTransform(input, {injectRegeneratorRuntime: true});
     assertEqualIgnoringWhitespace(replaceGiantScripts(result), expected);
   });
 

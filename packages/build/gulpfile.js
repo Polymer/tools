@@ -44,6 +44,7 @@ gulp.task('build', (done) => {
     'compile',
     'gen-babel-helpers-full',
     'gen-babel-helpers-amd',
+    'gen-regenerator-runtime',
   ], done);
 });
 
@@ -227,6 +228,12 @@ gulp.task('gen-babel-helpers-amd', () => {
   minifyAndWriteJs(
       babelCore.buildExternalHelpers(amdHelpers),
      'babel-helpers-amd.min.js');
+});
+
+gulp.task('gen-regenerator-runtime', async () => {
+  const dir = path.dirname(require.resolve('regenerator-runtime'));
+  const js = await fs.readFile(path.join(dir, 'runtime.js'));
+  minifyAndWriteJs(js, 'regenerator-runtime.min.js');
 });
 
 function minifyAndWriteJs(js, filename) {
