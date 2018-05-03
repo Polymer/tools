@@ -270,7 +270,7 @@ suite('integration tests', function() {
       }));
     });
 
-    test.only('test the lit-element "shop" template', async function() {
+    test('test the lit-element "shop" template', async function() {
       // Shop has a lot of build configurations, they take a long time.
       this.timeout(10 * 60 * 1000);
       const ShopGenerator = createGithubGenerator(
