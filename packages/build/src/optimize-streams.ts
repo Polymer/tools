@@ -32,8 +32,7 @@ import File = require('vinyl');
 
 const logger = logging.getLogger('cli.build.optimize-streams');
 
-export type FileCB =
-    (error?: null|undefined|string|Partial<Error>, file?: File) => void;
+export type FileCB = (error?: Error, file?: File) => void;
 export type CSSOptimizeOptions = {
   stripWhitespace?: boolean;
 };
@@ -87,7 +86,7 @@ export class GenericOptimizeTransform extends Transform {
     // when we have a better plan for excluding some files from optimization.
     if (!file.path || file.path.indexOf('webcomponentsjs/') >= 0 ||
         file.path.indexOf('webcomponentsjs\\') >= 0) {
-      callback(null, file);
+      callback(undefined, file);
       return;
     }
 
@@ -102,7 +101,7 @@ export class GenericOptimizeTransform extends Transform {
             {err: error.message || error});
       }
     }
-    callback(null, file);
+    callback(undefined, file);
   }
 }
 

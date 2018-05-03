@@ -71,7 +71,7 @@
     "@types/vinyl-fs": "^2.4.8",
     "babel-preset-minify": "=0.4.0-alpha.caaefb4c",
     "babylon": "^7.0.0-beta.42",
-    "css-slam": "^2.1.0",
+    "css-slam": "^2.1.1",
     "dom5": "^3.0.0",
     "gulp-if": "^2.0.2",
     "html-minifier": "^3.5.10",
@@ -114,7 +114,7 @@
     "temp": "^0.8.3",
     "tsc-then": "^1.1.0",
     "tslint": "^5.9.1",
-    "typescript": "^2.3.2",
+    "typescript": "^2.8.3",
     "vinyl-fs-fake": "^1.1.0"
   }
 }
