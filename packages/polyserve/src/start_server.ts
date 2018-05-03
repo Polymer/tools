@@ -164,7 +164,7 @@ async function _startServer(
   }
 }
 
-export type ServerInfo = MainlineServer | VariantServer | ControlServer;
+export type ServerInfo = MainlineServer|VariantServer|ControlServer;
 
 export interface PolyserveServer {
   kind: 'control'|'mainline'|'variant';
@@ -178,7 +178,9 @@ export interface PolyserveServer {
  * startServers it must be a MainlineServer. This is the server that's running
  * with the default configuration and not running a variant configuration.
  */
-export interface MainlineServer extends PolyserveServer { kind: 'mainline'; }
+export interface MainlineServer extends PolyserveServer {
+  kind: 'mainline';
+}
 /**
  * These are servers which are running some named variant configuration. For
  * multiple variant dependency directories are detected/configured, there will
@@ -196,7 +198,9 @@ export interface VariantServer extends PolyserveServer {
  * describes the other servers which have been started, and provides convenience
  * links to them.
  */
-export interface ControlServer extends PolyserveServer { kind: 'control'; }
+export interface ControlServer extends PolyserveServer {
+  kind: 'control';
+}
 
 export interface MultipleServersInfo {
   kind: 'MultipleServers';
@@ -206,7 +210,7 @@ export interface MultipleServersInfo {
   servers: PolyserveServer[];
 }
 
-export type StartServerResult = MainlineServer | MultipleServersInfo;
+export type StartServerResult = MainlineServer|MultipleServersInfo;
 
 /**
  * Starts one or more web servers, based on the given options and
@@ -389,10 +393,7 @@ export function getApp(options: ServerOptions): express.Express {
     app.use(`/${escapedPath}/`, apiProxy);
   }
 
-  const forceCompile = options.compile === 'always';
-  if (options.compile === 'auto' || forceCompile) {
-    app.use('*', injectCustomElementsEs5Adapter(forceCompile));
-  }
+  app.use('*', injectCustomElementsEs5Adapter(options.compile));
   app.use(
       '*',
       babelCompile(
