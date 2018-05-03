@@ -9,7 +9,6 @@
   "author": "The Polymer Project Authors",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
-  "homepage": "https://github.com/Polymer/polymer-project-config#readme",
   "scripts": {
     "build": "tsc && typescript-json-schema src/index.ts ProjectOptions --ignoreErrors -o lib/schema.json",
     "test": "npm run build && mocha \"test/**/*_test.js\"",

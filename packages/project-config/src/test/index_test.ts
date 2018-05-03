@@ -34,7 +34,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
-          moduleResolution: 'none',
+          moduleResolution: 'node',
         });
       });
 
@@ -58,7 +58,7 @@ suite('Project Config', () => {
               ],
               lint: undefined,
               npm: undefined,
-              moduleResolution: 'none',
+              moduleResolution: 'node',
             });
           });
 
@@ -81,7 +81,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
-          moduleResolution: 'none',
+          moduleResolution: 'node',
         });
       });
 
@@ -103,7 +103,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
-          moduleResolution: 'none',
+          moduleResolution: 'node',
         });
       });
 
@@ -131,7 +131,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
-          moduleResolution: 'none',
+          moduleResolution: 'node',
         });
       });
 
@@ -155,7 +155,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
-          moduleResolution: 'none',
+          moduleResolution: 'node',
         });
       });
 
@@ -188,7 +188,7 @@ suite('Project Config', () => {
           ],
           lint: undefined,
           npm: undefined,
-          moduleResolution: 'none',
+          moduleResolution: 'node',
         });
       });
 
@@ -224,7 +224,7 @@ suite('Project Config', () => {
               ],
               lint: undefined,
               npm: undefined,
-              moduleResolution: 'none',
+              moduleResolution: 'node',
             });
           });
 
@@ -291,16 +291,16 @@ suite('Project Config', () => {
       });
 
       suite('module resolution', () => {
-        test('defaults to none', () => {
+        test('defaults to node', () => {
           const config = new ProjectConfig({});
           config.validate();
-          assert.equal(config.moduleResolution, 'none');
+          assert.equal(config.moduleResolution, 'node');
         });
 
-        test('can be set to node', () => {
-          const config = new ProjectConfig({moduleResolution: 'node'});
+        test('can be set to none', () => {
+          const config = new ProjectConfig({moduleResolution: 'none'});
           config.validate();
-          assert.equal(config.moduleResolution, 'node');
+          assert.equal(config.moduleResolution, 'none');
         });
 
         test('cannot be set to something invalid', () => {
@@ -609,7 +609,7 @@ suite('Project Config', () => {
         ],
         lint: undefined,
         npm: undefined,
-        moduleResolution: 'none',
+        moduleResolution: 'node',
       });
     });
 
@@ -645,7 +645,7 @@ suite('Project Config', () => {
           'index.html',
         ],
         extraDependencies: [],
-        moduleResolution: 'none',
+        moduleResolution: 'node',
       });
     });
 
@@ -664,7 +664,7 @@ suite('Project Config', () => {
           'fragment.html',
         ],
         extraDependencies: ['extra.html'],
-        moduleResolution: 'none',
+        moduleResolution: 'node',
         builds: [
           {
             preset: 'es6-bundled',
