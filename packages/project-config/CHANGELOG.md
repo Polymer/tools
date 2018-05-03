@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Dropped support for node v6. This is a soft break, as we aren't
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
   for details.
+* Removed the `transformImportMeta` option, because it is now always coupled
+  with the `transformModulesToAmd` option.
+* The `import.meta` transform now depends on the special `"meta"` dependency
+  provided by
+  [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
+  instead of injecting a static path. As a result, it is now always coupled with
+  the AMD transform, and cannot be enabled independently.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.13.0] - 2018-04-03

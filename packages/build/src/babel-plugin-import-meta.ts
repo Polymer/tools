@@ -15,37 +15,54 @@
 import importMetaSyntax from '@babel/plugin-syntax-import-meta';
 import template from '@babel/template';
 import {NodePath} from '@babel/traverse';
-import {MetaProperty} from '@babel/types';
+import {Program, MetaProperty} from '@babel/types';
 
 const ast = template.ast;
 
 /**
- * Rewrites `import.meta`[1] into an object with a `url`[2] property.
- *
- * `import.meta.url` must be a URL string with the fully qualified URL of the
- * module. We use the document's base URI and the relative path from rootDir to
- * filePath to build the URL.
+ * Rewrites `import.meta`[1] into an import for a module named "meta". It is
+ * expected this plugin runs alongside @babel/plugin-transform-modules-amd which
+ * will transform this import into an AMD dependency, and is loaded using
+ * @polymer/esm-amd-loader which will provide an object with a `url`[2] property
+ * for the "meta" dependency.
  *
  * [1]: https://github.com/tc39/proposal-import-meta
  * [2]: https://html.spec.whatwg.org/#hostgetimportmetaproperties
- *
- * @param relativeUrl The URL path of the file being transformed relative to the
- *   baseURI of the document loading the modules.
- * @param base A base URL to use instead of document.baseURI
  */
-export const rewriteImportMeta = (relativeURL: string, base?: string) => {
-  return {
-    inherits: importMetaSyntax,
-    visitor: {
-      MetaProperty(path: NodePath<MetaProperty>) {
-        const node = path.node;
-        if (node.meta && node.meta.name === 'import' &&
-            node.property.name === 'meta') {
-          const baseURI = base !== undefined ? `'${base}'` : 'document.baseURI';
-          path.replaceWith(
-              ast`({url: new URL('${relativeURL}', ${baseURI}).toString()})`);
+export const rewriteImportMeta = {
+  inherits: importMetaSyntax,
+
+  visitor: {
+    Program(path: NodePath<Program>) {
+      const metas: NodePath<MetaProperty>[] = [];
+      const identifiers = new Set<string>();
+
+      path.traverse({
+        MetaProperty(path: NodePath<MetaProperty>) {
+          const node = path.node;
+          if (node.meta && node.meta.name === 'import' &&
+              node.property.name === 'meta') {
+            metas.push(path);
+            for (const name of Object.keys(path.scope.getAllBindings())) {
+              identifiers.add(name);
+            }
+          }
         }
+      });
+
+      if (metas.length === 0) {
+        return;
       }
-    }
-  };
+
+      let metaId = 'meta';
+      while (identifiers.has(metaId)) {
+        metaId = path.scope.generateUidIdentifier('meta').name;
+      }
+
+      path.node.body.unshift(ast`import * as ${metaId} from 'meta';`);
+      for (const meta of metas) {
+        meta.replaceWith(ast`${metaId}`);
+      }
+    },
+  }
 };

@@ -295,23 +295,22 @@ suite('jsTransform', () => {
   });
 
   test('transforms import.meta', () => {
-    // Important: keep a path seperator here to test Windows:
-    const filePath = path.join(rootDir, 'dir/npm-module.js');
-
     const input = stripIndent(`
       console.log(import.meta);
     `);
 
     const expected = stripIndent(`
-      console.log({
-        url: new URL("dir/npm-module.js", document.baseURI).toString()
+      define(["meta"], function (meta) {
+        "use strict";
+      
+        meta = babelHelpers.interopRequireWildcard(meta);
+        console.log(meta);
       });
     `);
 
     const result = jsTransform(input, {
-      filePath,
-      rootDir,
-      transformImportMeta: true,
+      transformModulesToAmd: true,
+      externalHelpers: true,
     });
     assert.equal(result.trim(), expected.trim());
   });

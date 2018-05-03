@@ -30,7 +30,7 @@ const logger = logging.getLogger('polymer-project-config');
  */
 export const defaultSourceGlobs = ['src/**/*'];
 
-export type ModuleResolutionStrategy = 'none'|'node';
+export type ModuleResolutionStrategy = 'none' | 'node';
 const moduleResolutionStrategies =
     new Set<ModuleResolutionStrategy>(['none', 'node']);
 
