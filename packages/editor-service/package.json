@@ -3,7 +3,7 @@
   "version": "2.2.0",
   "description": "Static analysis for the web in your text editor!",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/editor-service",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/editor-service",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

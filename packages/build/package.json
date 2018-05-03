@@ -3,7 +3,7 @@
   "version": "3.0.0-pre.16",
   "description": "A library of Gulp build tasks",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/build",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/build",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

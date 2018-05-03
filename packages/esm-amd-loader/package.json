@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Minimal AMD-style loader for replicating ES module behavior.",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

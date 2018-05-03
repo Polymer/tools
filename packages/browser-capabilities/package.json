@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Detect browser capabilities from a user agent string.",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/browser-capabilities",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/browser-capabilities",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

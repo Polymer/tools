@@ -3,7 +3,7 @@
   "version": "4.0.0-pre.6",
   "description": "Process Web Components into one output file",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/bundler",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/bundler",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

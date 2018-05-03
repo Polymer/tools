@@ -3,7 +3,7 @@
   "version": "0.27.9",
   "description": "A simple dev server for bower components",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/polyserve",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/polyserve",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

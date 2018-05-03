@@ -3,7 +3,7 @@
   "version": "3.0.0-pre.7",
   "description": "Lint Polymer!",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/linter",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/linter",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

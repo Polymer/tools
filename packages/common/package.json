@@ -1,7 +1,7 @@
 {
   "name": "@polymer/tools-common",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/common",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/common",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",

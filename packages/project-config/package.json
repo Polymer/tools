@@ -3,7 +3,7 @@
   "version": "3.13.0",
   "description": "reads, validates, and shapes your polymer.json project configuration",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/project-config",
-  "repository": "https://github.com/Polymer/tools/tree/master/packages/project-config",
+  "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
