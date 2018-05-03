@@ -117,7 +117,8 @@ export function babelCompile(
       const contentType = getContentType(response);
       let requestPath = request.path;
       // TODO(justinfagnani): Use path-is-inside, but test on Windows
-      const isRootPathRequest = request.path.startsWith(`/${packageName}`);
+      const isRootPathRequest = request.path === `/${packageName}` ||
+          request.path.startsWith(`/${packageName}/`);
       const isComponentRequest = request.baseUrl === `/${componentUrl}`;
 
       let filePath: string;
