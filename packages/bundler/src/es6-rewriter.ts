@@ -25,6 +25,8 @@ import {getOrSetBundleModuleExportName} from './es6-module-utils';
 import {appendUrlPath, ensureLeadingDot, getFileExtension} from './url-utils';
 import {rewriteObject} from './utils';
 
+const acornImportMetaInject = require('acorn-import-meta/inject');
+
 /**
  * Utility class to rollup/merge ES6 modules code using rollup and rewrite
  * import statements to point to appropriate bundles.
@@ -59,7 +61,15 @@ export class Es6Rewriter {
       input,
       external,
       onwarn: (warning: string) => {},
+      experimentalDynamicImport: true,
       treeshake: false,
+      acorn: {
+        plugins: {
+          dynamicImport: true,
+          importMeta: true,
+        },
+      },
+      acornInjectPlugins: [acornImportMetaInject],
       plugins: [
         {
           name: 'analyzerPlugin',
@@ -83,9 +93,13 @@ export class Es6Rewriter {
                        importee as PackageRelativeUrl)! as string;
           },
           load: (id: ResolvedUrl) => {
+            // When requesting the main document, just return it as-is.
             if (id === input) {
               return code;
             }
+
+            // When the requested document is part of the bundle, get it from
+            // the analysis.
             if (this.bundle.bundle.files.has(id)) {
               const document = getAnalysisDocument(analysis, id);
               if (!jsImportResolvedUrls.has(id)) {
@@ -106,20 +120,43 @@ export class Es6Rewriter {
                   }
                 }
               }
-              return document.parsedDocument.contents;
+
+              // If the URL of the requested document is the same as the bundle
+              // URL or the requested file doesn't use `import.meta` anywhere,
+              // we can return it as-is.
+              if (this.bundle.url === id ||
+                  !document.parsedDocument.contents.includes('import.meta')) {
+                return document.parsedDocument.contents;
+              }
+
+              // We need to rewrite instances of `import.meta` in the document
+              // to preserve its location because `import.meta` is used and the
+              // URL has changed as a result of bundling.
+              const relativeUrl =
+                  ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
+                      this.bundle.url, id));
+
+              // TODO(usergenic): This code makes assumptions about the type of
+              // the ast and the document contents that are potentially not true
+              // if there are coding or resolution errors. Need to add some kind
+              // of type checking or assertion that we're dealing with at least
+              // a `Document<ParsedJavascriptDocument>` here.
+              const newAst = this._rewriteImportMetaToBundleMeta(
+                  document.parsedDocument.ast as babel.File, relativeUrl);
+              const newCode = serialize(newAst).code;
+              return newCode;
             }
           },
         },
       ],
-      experimentalDynamicImport: true,
     });
     const {code: rolledUpCode} = await rollupBundle.generate({
       format: 'es',
       freeze: false,
     });
-    // We have to force the extension of the URL to analyze here because inline
-    // es6 module document url is going to end in `.html` and the file would be
-    // incorrectly analyzed as an HTML document.
+    // We have to force the extension of the URL to analyze here because
+    // inline es6 module document url is going to end in `.html` and the file
+    // would be incorrectly analyzed as an HTML document.
     const rolledUpUrl = getFileExtension(url) === '.js' ?
         url :
         appendUrlPath(url, '_inline_es6_module.js');
@@ -151,11 +188,8 @@ export class Es6Rewriter {
     traverse(node, {
       noScope: true,
       ImportDeclaration: {
-        enter(path: NodePath) {
+        enter(path: NodePath<babel.ImportDeclaration>) {
           const importDeclaration = path.node;
-          if (!babel.isImportDeclaration(importDeclaration)) {
-            return;
-          }
           const source = babel.isStringLiteral(importDeclaration.source) &&
               importDeclaration.source.value;
           if (!source) {
@@ -189,9 +223,8 @@ export class Es6Rewriter {
     traverse(node, {
       noScope: true,
       ExportNamedDeclaration: {
-        enter(path: NodePath) {
-          const exportNamedDeclaration =
-              path.node as babel.ExportNamedDeclaration;
+        enter(path: NodePath<babel.ExportNamedDeclaration>) {
+          const exportNamedDeclaration = path.node;
           if (!exportNamedDeclaration.source ||
               !babel.isStringLiteral(exportNamedDeclaration.source)) {
             // We can't rewrite a source if there isn't one or if it isn't a
@@ -239,8 +272,8 @@ export class Es6Rewriter {
     traverse(node, {
       noScope: true,
       ImportDeclaration: {
-        enter(path: NodePath) {
-          const importDeclaration = path.node as babel.ImportDeclaration;
+        enter(path: NodePath<babel.ImportDeclaration>) {
+          const importDeclaration = path.node;
           if (!babel.isStringLiteral(importDeclaration.source)) {
             // We can't actually handle values which are not string literals, so
             // we'll skip them.
@@ -431,5 +464,61 @@ export class Es6Rewriter {
     Object.assign(
         importSpecifier,
         {type: 'ImportSpecifier', imported: babel.identifier(exportName)});
+  }
+
+  private _rewriteImportMetaToBundleMeta(
+      moduleFile: babel.File,
+      relativeUrl: FileRelativeUrl): babel.File {
+    // Generate a stand-in for any local references to import.meta...
+    // const __bundledImportMeta = {...import.meta, url: __bundledImportURL};
+    // TODO(usergenic): Consider migrating this AST production mishmash into the
+    // `ast` tagged template literal available like this:
+    // https://github.com/Polymer/tools/blob/master/packages/build/src/babel-plugin-dynamic-import-amd.ts#L64
+    const bundledImportMetaName = '__bundledImportMeta';
+    const bundledImportMetaDeclaration = babel.variableDeclaration(
+        //
+        'const',
+        [
+          //
+          babel.variableDeclarator(
+              babel.identifier(bundledImportMetaName), babel.objectExpression([
+                babel.spreadProperty(babel.memberExpression(
+                    babel.identifier('import'), babel.identifier('meta'))),
+                babel.objectProperty(
+                    babel.identifier('url'),
+                    babel.memberExpression(
+                        babel.newExpression(
+                            babel.identifier('URL'),
+                            [
+                              //
+                              babel.stringLiteral(relativeUrl),
+                              babel.memberExpression(
+                                  babel.memberExpression(
+                                      babel.identifier('import'),
+                                      babel.identifier('meta')),
+                                  babel.identifier('url'))
+                            ]),
+                        babel.identifier('href')))
+              ]))
+        ]);
+    const newModuleFile = clone(moduleFile);
+    traverse(newModuleFile, {
+      noScope: true,
+      MetaProperty: {
+        enter(path: NodePath<babel.MetaProperty>) {
+          const metaProperty = path.node;
+          if (metaProperty.meta.name !== 'import' &&
+              metaProperty.property.name !== 'meta') {
+            // We're specifically looking for instances of `import.meta` so
+            // ignore any other meta properties.
+            return;
+          }
+          const bundledImportMeta = babel.identifier(bundledImportMetaName);
+          path.replaceWith(bundledImportMeta);
+        },
+      },
+    });
+    newModuleFile.program.body.unshift(bundledImportMetaDeclaration);
+    return newModuleFile;
   }
 }
