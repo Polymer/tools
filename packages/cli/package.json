@@ -13,6 +13,7 @@
     "lint": "gulp lint",
     "build": "gulp build",
     "test": "gulp test lint",
+    "prepublishOnly": "ls npm-shrinkwrap.json",
     "test:smoke": "gulp test",
     "test:smoke-lint": "gulp test lint",
     "test:integration": "mocha \"lib/test/integration/**/*_test.js\"",
