@@ -2,13 +2,11 @@
   "name": "polymer-analyzer",
   "version": "3.0.0-pre.24",
   "description": "Static analysis for Web Components",
-  "homepage": "https://github.com/Polymer/polymer-analyzer",
-  "bugs": "https://github.com/Polymer/polymer-analyzer/issues",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/analyzer",
+  "repository": "https://github.com/Polymer/tools/tree/master/packages/analyzer",
+  "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Polymer/polymer-analyzer.git"
-  },
+  "author": "The Polymer Project Authors",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [

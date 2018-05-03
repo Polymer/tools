@@ -2,6 +2,11 @@
   "name": "polymer-build",
   "version": "3.0.0-pre.16",
   "description": "A library of Gulp build tasks",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/build",
+  "repository": "https://github.com/Polymer/tools/tree/master/packages/build",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
   "main": "lib/polymer-build.js",
   "typings": "lib/polymer-build.d.ts",
   "scripts": {
@@ -13,16 +18,6 @@
     "prepublishOnly": "npm test",
     "format": "find src/ -iname \"*.ts\" -o -iname \"*.js\" | xargs clang-format --style=file -i"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Polymer/polymer-build.git"
-  },
-  "author": "The Polymer Project Authors",
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/Polymer/polymer-build/issues"
-  },
-  "homepage": "https://github.com/Polymer/polymer-build#readme",
   "dependencies": {
     "@babel/core": "^7.0.0-beta.46",
     "@babel/plugin-external-helpers": "^7.0.0-beta.46",
