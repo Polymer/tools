@@ -39,15 +39,13 @@ suite('HtmlBundler', () => {
       moduleResolution: 'node'
     });
     const bundler = new Bundler({analyzer});
-    const usesNpmPackageUrl = analyzer.resolveUrl('uses-npm-package.html')!;
-    const somePackageJsonUrl =
-        analyzer.resolveUrl('node-modules/some-package/package.json')!;
-    const somePackageMainUrl =
-        analyzer.resolveUrl('node-modules/some-package/lib/main.js')!;
+    const importUsingNodeModuleResolutionUrl =
+        analyzer.resolveUrl('import-using-node-module-resolution.html')!;
     const {documents} = await bundler.bundle(
-        await bundler.generateManifest([usesNpmPackageUrl]));
-    const usesNpmPackageDoc = documents.getHtmlDoc(usesNpmPackageUrl)!;
-    assert.deepEqual(usesNpmPackageDoc.content, heredoc`
+        await bundler.generateManifest([importUsingNodeModuleResolutionUrl]));
+    const importUsingNodeModuleResolutionDoc =
+        documents.getHtmlDoc(importUsingNodeModuleResolutionUrl)!;
+    assert.deepEqual(importUsingNodeModuleResolutionDoc.content, heredoc`
       <script type="module">
       const feature = {
         cool: 'thing'
