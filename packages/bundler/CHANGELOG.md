@@ -6,12 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Fixed inline module scripts which used bare name specifiers to correctly resolve them using the module resolutions of the Analyzer.
+<!-- Add new, unreleased changes here. -->
+
+## 4.0.0-pre.7 - 2018-05-03
 * Dropped support for node v6. This is a soft break, as we aren't
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
   for details.
 * Added support for `import.meta.url` preservation in bundled modules.
-* Fixed inline module scripts which used bare name specifiers to correctly resolve them using the module resolutions of the Analyzer.
-<!-- Add new, unreleased changes here. -->
 
 ## 4.0.0-pre.6 - 2018-04-25
 - Bundled documents now have a `language` field. It will be `html` when the ast

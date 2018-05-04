@@ -14,7 +14,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as logging from 'plylog';
 import * as semver from 'semver';
 
 import request = require('request');
@@ -28,8 +27,6 @@ const fileFilterList = [
   '.github',
   '.travis.yml',
 ];
-
-const logger = logging.getLogger('cli.github');
 
 export type RequestAPI = request.RequestAPI<
     request.Request,
@@ -137,7 +134,6 @@ export class Github {
                       tarballUrl, response.statusCode, response.statusMessage));
                   return;
                 }
-                logger.info('Unpacking template files');
               })
           .on('error', reject)
           .pipe(gunzip())
@@ -145,7 +141,6 @@ export class Github {
           .pipe(tarPipe)
           .on('error', reject)
           .on('finish', () => {
-            logger.info('Finished writing template files');
             resolve();
           });
     });
