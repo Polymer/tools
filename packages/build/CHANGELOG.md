@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * The [regenerator runtime](https://github.com/facebook/regenerator) can now
   be injected either inline each time it is used by `jsTransform`, or inline
   into the HTML document by `htmlTransform`.
+* Added es5, es2015, es2016, es2017, and es2018 compile targets to `jsTransform`
+  to allow fine grained control over what features to compile.
 
 ## [3.0.0-pre.16] - 2018-05-01
 * Disable the `simplify` babel plugin when minifying javascript. See
