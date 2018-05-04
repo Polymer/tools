@@ -31,6 +31,7 @@ export const resolveBareSpecifiers = (
     packageName?: string,
     componentDir?: string,
     rootDir?: string,
+    warningCallback?: (text: string) => void,
     ) => ({
   inherits: dynamicImportSyntax,
 
@@ -50,7 +51,8 @@ export const resolveBareSpecifiers = (
             isComponentRequest,
             packageName,
             componentDir,
-            rootDir);
+            rootDir,
+            warningCallback);
       }
     },
     'ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration'(
@@ -69,7 +71,8 @@ export const resolveBareSpecifiers = (
           isComponentRequest,
           packageName,
           componentDir,
-          rootDir);
+          rootDir,
+          warningCallback);
     }
   }
 });
@@ -81,6 +84,7 @@ const maybeResolve = (
     packageName?: string,
     componentDir?: string,
     rootDir?: string,
+    warningCallback?: (text: string) => void,
     ) => {
   try {
     let componentInfo;
@@ -97,9 +101,12 @@ const maybeResolve = (
       // Don't warn if the specifier was already a path, even though we do
       // resolve paths, because maybe the user is serving it some other
       // way.
-      console.warn(
-          `Could not resolve module specifier "${specifier}" ` +
-          `in file "${filePath}".`);
+      const warningText = `Could not resolve module specifier "${specifier}" ` +
+          `in file "${filePath}".`;
+      console.warn(warningText);
+      if (warningCallback !== undefined) {
+        warningCallback(warningText);
+      }
     }
     return specifier;
   }

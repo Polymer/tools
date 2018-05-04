@@ -66,6 +66,8 @@ export interface HtmlTransformOptions {
    * point HTML document.
    */
   injectAmdLoader?: boolean;
+
+  warningCallback?: (text: string) => void;
 }
 
 /**
@@ -113,7 +115,7 @@ export function htmlTransform(
       // don't have to check for that case here.
       const newJs = jsTransform(
           dom5.getTextContent(script),
-          {...options.js, transformModulesToAmd: false});
+          {...options.js, transformModulesToAmd: false, warningCallback: options.warningCallback});
       dom5.setTextContent(script, newJs);
 
     } else if (wctScript === undefined) {

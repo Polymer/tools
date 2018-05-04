@@ -134,6 +134,12 @@ export function babelCompile(
         // file not found, will 404 later
       }
 
+      let didWarn = false;
+      const warningCallback = (text: string) => {
+        console.warn(`WARNING DURING HTML / JS TRANSFORMATION:\n${text}`);
+        didWarn = true;
+      };
+
       if (contentType === htmlMimeType) {
         transformed = htmlTransform(body, {
           js: {
@@ -146,6 +152,7 @@ export function babelCompile(
             rootDir,
             transformModulesToAmd: options.transformModules,
             softSyntaxError: true,
+            warningCallback,
           },
           injectAmdLoader: options.transformModules,
         });
@@ -160,12 +167,17 @@ export function babelCompile(
           packageName,
           componentDir,
           rootDir,
+          warningCallback,
         });
 
       } else {
         transformed = body;
       }
-      babelCompileCache.set(cacheKey, transformed);
+
+      if (!didWarn) {
+        babelCompileCache.set(cacheKey, transformed);
+      }
+
       return transformed;
     },
   });

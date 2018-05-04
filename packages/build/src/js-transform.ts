@@ -169,6 +169,8 @@ export interface JsTransformOptions {
   // Instead, a console error will be logged, and the original JavaScript will
   // be returned with no changes. Use with caution!
   softSyntaxError?: boolean;
+
+  warningCallback?: (text: string) => void;
 }
 
 /**
@@ -224,7 +226,8 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
         !!options.isComponentRequest,
         options.packageName,
         options.componentDir,
-        options.rootDir));
+        options.rootDir,
+        options.warningCallback));
   }
 
   // When the AMD option is "auto", these options will change based on whether
