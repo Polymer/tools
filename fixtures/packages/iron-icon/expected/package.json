@@ -14,13 +14,13 @@
   "devDependencies": {
     "@polymer/gen-typescript-declarations": "^1.2.0",
     "bower": "^1.8.0",
-    "@polymer/promise-polyfill": "^3.0.0-pre.14",
-    "@polymer/iron-iconset": "^3.0.0-pre.14",
-    "@polymer/iron-icons": "^3.0.0-pre.14",
-    "@polymer/iron-component-page": "^3.0.0-pre.14",
+    "@polymer/promise-polyfill": "^3.0.0-pre.15",
+    "@polymer/iron-iconset": "^3.0.0-pre.15",
+    "@polymer/iron-icons": "^3.0.0-pre.15",
+    "@polymer/iron-component-page": "^3.0.0-pre.15",
     "wct-browser-legacy": "^0.0.1-pre.11",
     "@webcomponents/webcomponentsjs": "^2.0.0-beta.2",
-    "@polymer/iron-demo-helpers": "^3.0.0-pre.14"
+    "@polymer/iron-demo-helpers": "^3.0.0-pre.15"
   },
   "scripts": {
     "update-types": "bower install && gen-typescript-declarations --deleteExisting --outDir ."
@@ -36,8 +36,8 @@
   "main": "iron-icon.js",
   "author": "The Polymer Authors",
   "dependencies": {
-    "@polymer/iron-flex-layout": "^3.0.0-pre.14",
-    "@polymer/iron-meta": "^3.0.0-pre.14",
+    "@polymer/iron-flex-layout": "^3.0.0-pre.15",
+    "@polymer/iron-meta": "^3.0.0-pre.15",
     "@polymer/polymer": "^3.0.0-pre.13"
   }
 }
