@@ -55,6 +55,17 @@ async function serve(dirToServe: string, options: ServerOptions = {}) {
   return `http://${address.address}:${address.port}`;
 }
 
+async function requestAnimationFrame(page: puppeteer.Page) {
+  // For the moment we don't type check in-browser expressions.
+  // tslint:disable-next-line: no-any
+  type Window = any;
+  await page.waitFor(function(this: Window) {
+    return new Promise((resolve) => {
+      this.requestAnimationFrame(resolve);
+    });
+  });
+}
+
 /**
  * Like puppeteer's page.goto(), except it fails if any uncaught exceptions are
  * thrown, and it waits a few rAFs after the load to be really sure the page is
@@ -69,15 +80,8 @@ async function gotoOrDie(page: puppeteer.Page, url: string) {
   if (error) {
     throw new Error(`Error loading ${url} in Chrome: ${error}`);
   }
-  // For the moment we don't type check in-browser expressions.
-  // tslint:disable-next-line: no-any
-  type Window = any;
   for (let i = 0; i < 3; i++) {
-    await page.waitFor(function(this: Window) {
-      return new Promise((resolve) => {
-        this.requestAnimationFrame(resolve);
-      });
-    });
+    await requestAnimationFrame(page);
   }
   if (error) {
     throw new Error(`Error during rAFs after loading ${
@@ -404,9 +408,9 @@ suite('polymer shop', function() {
     } else {
       browser = await puppeteer.launch();
     }
-    const page = await browser.newPage();
     disposables.push(() => browser.close());
-
+    const page = await browser.newPage();
+    page.on('pageerror', (e) => error = error || e);
     // Evaluate an expression as a string in the browser.
     const evaluate = async (expression: string) => {
       try {
@@ -422,13 +426,9 @@ suite('polymer shop', function() {
           await evaluate(expression),
           `Expected \`${expression}\` to evaluate to true in the browser`);
     };
-    // For the moment we don't type check in-browser expressions.
-    // tslint:disable-next-line: no-any
-    type Window = any;
-    const waitFor =
-        async (name: string, cb: (this: Window) => boolean | Promise<{}>) => {
+    const waitFor = async (name: string, expression: string) => {
       try {
-        await page.waitFor(cb);
+        await page.waitForFunction(expression);
       } catch (e) {
         throw new Error(`Error waiting for ${name} in the browser`);
       }
@@ -436,14 +436,25 @@ suite('polymer shop', function() {
 
     await gotoOrDie(page, `${baseUrl}/`);
     assert.deepEqual(`${baseUrl}/`, page.url());
-    await waitFor('shop-app to be defined', function() {
-      return this.customElements.get('shop-app') !== undefined;
-    });
-    await waitFor('shop-app to be rendered', function() {
-      const shadowRoot = this.document.querySelector('shop-app').shadowRoot;
-      return shadowRoot &&
-          shadowRoot.querySelector('a[href="/cart/"], shop-cart-button');
-    });
+    await waitFor(
+        'shop-app to be defined',
+        `this.customElements.get('shop-app') !== undefined`);
+    await waitFor(
+        'shop-app children to exist', `this.document.querySelector('shop-app')
+            .shadowRoot.querySelector('a[href="/cart"], shop-cart-button')`);
+    const isLitElement =
+        await evaluate(`!!this.document.querySelector('shop-app')
+            .shadowRoot.querySelector('shop-cart-button')`);
+    if (isLitElement) {
+      // Wait a few more rAFs for the button to definitely be there.
+      for (let i = 0; i < 10; i++) {
+        await requestAnimationFrame(page);
+      }
+      await page.waitForFunction(`!!(
+          document.querySelector('shop-app').shadowRoot
+            .querySelector('shop-cart-button').shadowRoot)`);
+    }
+
     // The cart shouldn't be registered yet, because we've only loaded the
     // main page.
     await assertTrueInPage(`customElements.get('shop-cart') === undefined`);
@@ -459,17 +470,26 @@ suite('polymer shop', function() {
               .querySelector('shop-cart-button').shadowRoot
                   .querySelector('a[href="/cart"]')
         ).click()`);
-    // Url changes immediately
+    // The url changes immediately
     assert.deepEqual(`${baseUrl}/cart`, page.url());
     // We'll lazy load the code for shop-cart. We'll know that it worked
     // when the element is registered. If this resolves, it loaded
     // successfully!
-    await waitFor('shop-cart to be defined', function() {
-      return this.customElements.get('shop-cart') !== undefined;
-    });
+    await waitFor(
+        'shop-cart to be defined',
+        `this.customElements.get('shop-cart') !== undefined`);
   }
 
-  suiteTeardown(async () => {
+  let error: string|undefined;
+  setup(async () => {
+    error = undefined;
+  });
+
+  teardown(async () => {
+    if (error !== undefined) {
+      throw new Error(
+          `Error encountered in browser page while testing: ${error}`);
+    }
     await Promise.all(disposables.map((d) => d()));
     disposables.length = 0;
   });
@@ -477,13 +497,18 @@ suite('polymer shop', function() {
   suite('the 3.0 branch', () => {
     let dir: string;
     suiteSetup(async function() {
-      // Cloning and installing takes a minute
-      this.timeout(2 * 60 * 1000);
-      const ShopGenerator = createGithubGenerator(
-          {owner: 'Polymer', repo: 'shop', githubToken, branch: '3.0'});
+      const debugDir = process.env['CLI_TEST_SHOP_3_DIR'];
+      if (debugDir != null) {
+        dir = debugDir;
+      } else {
+        // Cloning and installing takes a minute
+        this.timeout(2 * 60 * 1000);
+        const ShopGenerator = createGithubGenerator(
+            {owner: 'Polymer', repo: 'shop', githubToken, branch: '3.0'});
 
-      dir = await runGenerator(ShopGenerator).toPromise();
-      await runCommand(binPath, ['install'], {cwd: dir});
+        dir = await runGenerator(ShopGenerator).toPromise();
+        await runCommand(binPath, ['install'], {cwd: dir});
+      }
     });
 
     test('serving sources with polyserve and `never` compile', async () => {
@@ -542,13 +567,22 @@ suite('polymer shop', function() {
   suite('the lit-element branch', function() {
     let dir: string;
     suiteSetup(async function() {
-      // Cloning and installing takes a minute
-      this.timeout(2 * 60 * 1000);
-      const ShopGenerator = createGithubGenerator(
-          {owner: 'Polymer', repo: 'shop', githubToken, branch: 'lit-element'});
+      const debugDir = process.env['CLI_TEST_SHOP_LIT_DIR'];
+      if (debugDir != null) {
+        dir = debugDir;
+      } else {
+        // Cloning and installing takes a minute
+        this.timeout(2 * 60 * 1000);
+        const ShopGenerator = createGithubGenerator({
+          owner: 'Polymer',
+          repo: 'shop',
+          githubToken,
+          branch: 'lit-element'
+        });
 
-      dir = await runGenerator(ShopGenerator).toPromise();
-      await runCommand(binPath, ['install'], {cwd: dir});
+        dir = await runGenerator(ShopGenerator).toPromise();
+        await runCommand(binPath, ['install'], {cwd: dir});
+      }
     });
 
     test('serving sources with polyserve and `never` compile', async () => {
