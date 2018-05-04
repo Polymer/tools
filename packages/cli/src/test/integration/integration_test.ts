@@ -393,10 +393,7 @@ suite('import.meta support', async () => {
 });
 
 suite('polymer shop', function() {
-  if (debugging) {
-    // browser is much slower when debugging.
-    this.timeout(60 * 1000);
-  }
+  this.timeout(60 * 1000);
 
   // Given the URL of a server serving out Polymer shop, opens a Chrome tab
   // and pokes around to test that Shop is working there.
