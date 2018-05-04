@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./lib",
     "lib": [
-      "ES2015",
+      "ES5",
       "DOM"
     ]
   },
