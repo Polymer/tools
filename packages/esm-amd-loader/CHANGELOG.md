@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 # Unreleased
 * Fix bug where the `import.meta.url` of a top-level module had an artificial
   anchor suffix (e.g. "http://example.com/foo#3").
+* Fix a bug relating to base URL in IE 11 which was causing invalid URLs to be
+  loaded, and incorrect import.meta.url to be provided.
 <!-- Add new, unreleased changes here. -->
 
 ## [0.1.0] - 2018-05-01
