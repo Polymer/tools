@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.17] - 2018-05-03
 * The transform for `import.meta` now uses the special `"meta"` dependency
   provided by
   [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
@@ -14,7 +17,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * The [regenerator runtime](https://github.com/facebook/regenerator) can now
   be injected either inline each time it is used by `jsTransform`, or inline
   into the HTML document by `htmlTransform`.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.16] - 2018-05-01
 * Disable the `simplify` babel plugin when minifying javascript. See

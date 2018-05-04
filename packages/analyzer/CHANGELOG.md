@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.0-pre.25] - 2018-05-03
 * Dropped support for node v6. This is a soft break, as we aren't
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
   for details.
@@ -14,7 +17,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   imports them, because unlike normal scripts, modules can be imported from
   many HTML files, and they have their own way to import their dependencies,
   rather than depending on HTML container files.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.24] - 2018-04-18
 * Typings change: `ParsedDocument#astNode` had the type `any`. It now has a
