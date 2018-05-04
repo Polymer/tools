@@ -15,9 +15,9 @@
   "main": "lib/plugin.js",
   "typings": "lib/plugin.d.ts",
   "scripts": {
-    "lint": "gulp lint",
+    "lint": "tslint --project . --format stylish",
     "build": "tsc",
-    "prepublish": "tsc",
+    "prepack": "npm run build",
     "postinstall": "node scripts/postinstall.js"
   },
   "wct-plugin": {
@@ -43,10 +43,8 @@
     }
   },
   "devDependencies": {
-    "gulp": "^3.8.10",
-    "@polymer/tools-common": "^2.0.0",
-    "tslint": "^3.14.0",
-    "typescript": "2.3.2"
+    "tslint": "^5.10.0",
+    "typescript": "^2.8.3"
   },
   "dependencies": {
     "@types/express": "^4.0.30",
@@ -63,6 +61,6 @@
     "which": "^1.0.8"
   },
   "engines": {
-    "node": ">=6.0"
+    "node": ">=8.0"
   }
 }
