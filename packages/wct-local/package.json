@@ -2,18 +2,16 @@
   "name": "wct-local",
   "version": "2.1.0",
   "description": "WCT plugin that enables support for local browsers via Selenium",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/wct-local",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
   "keywords": [
     "wct",
     "web-component-tester",
     "plugin"
   ],
-  "homepage": "https://github.com/Polymer/wct-local",
-  "bugs": "https://github.com/Polymer/wct-local/issues",
-  "license": "BSD-3-Clause",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Polymer/wct-local.git"
-  },
   "main": "lib/plugin.js",
   "typings": "lib/plugin.d.ts",
   "scripts": {
@@ -46,7 +44,7 @@
   },
   "devDependencies": {
     "gulp": "^3.8.10",
-    "tools-common": "github:Polymer/tools-common#aa1c22d",
+    "@polymer/tools-common": "^2.0.0",
     "tslint": "^3.14.0",
     "typescript": "2.3.2"
   },
