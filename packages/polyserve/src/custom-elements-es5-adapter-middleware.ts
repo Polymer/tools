@@ -17,6 +17,7 @@ import {parse as parseContentType} from 'content-type';
 import {Request, RequestHandler, Response} from 'express';
 import {addCustomElementsEs5Adapter} from 'polymer-build';
 
+import {getCompileTarget} from './get-compile-target';
 import {transformResponse} from './transform-middleware';
 
 /**
@@ -26,17 +27,17 @@ import {transformResponse} from './transform-middleware';
  * This is a *transforming* middleware, so it must be installed before the
  * middleware that actually serves the entry point.
  */
-export function injectCustomElementsEs5Adapter(forceCompile: boolean):
-    RequestHandler {
+export function injectCustomElementsEs5Adapter(compile?: 'always'|'never'|
+                                               'auto'): RequestHandler {
   return transformResponse({
     shouldTransform(request: Request, response: Response): boolean {
+      const capabilities = browserCapabilities(request.get('user-agent'));
+      const compileTarget = getCompileTarget(capabilities, compile);
       const contentTypeHeader = response.get('Content-Type');
       const contentType =
           contentTypeHeader && parseContentType(contentTypeHeader).type;
       // We only need to inject the adapter if we are compiling to ES5.
-      return contentType === 'text/html' &&
-          (forceCompile ||
-           !browserCapabilities(request.get('user-agent')).has('es2015'));
+      return contentType === 'text/html' && compileTarget === 'es5';
     },
 
     transform(_request: Request, _response: Response, body: string): string {

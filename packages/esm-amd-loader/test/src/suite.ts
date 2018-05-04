@@ -77,7 +77,7 @@ suite('static dependencies', () => {
     setTimeout(done, 1000);
   });
 
-  test('dedupe dependencies', async () => {
+  test('dedupe dependencies', (done) => {
     // All these relative paths refer to the same module, so we should expect it
     // runs only once, and we get the same exports object every time.
     const paths = [
@@ -88,20 +88,24 @@ suite('static dependencies', () => {
       'z/../y.js',
     ];
     const exports: any[] = [];
-    const promises = [];
+    let pending = 0;
 
-    for (const path of paths) {
-      promises.push(new Promise((resolve) => {
-        define([path], (a: any) => {
-          exports.push(a);
-          resolve();
-        });
-      }));
+    for (let i = 0; i < paths.length; i++) {
+      pending++;
+      define([paths[i]], (a: any) => {
+        exports.push(a);
+        check();
+      });
     }
 
-    await Promise.all(promises);
-    assert.lengthOf(exports, paths.length);
-    exports.forEach((y) => assert.equal(y, exports[0]));
+    function check() {
+      if (--pending > 0) {
+        return;
+      }
+      assert.lengthOf(exports, paths.length);
+      exports.forEach((y) => assert.equal(y, exports[0]));
+      done();
+    }
   });
 
   test('dedupe transitive dependencies', (done) => {
@@ -121,35 +125,37 @@ suite('static dependencies', () => {
 });
 
 suite('top-level modules', () => {
-  test('execute in the order they are defined', async () => {
-    const promises = [];
+  test('execute in the order they are defined', (done) => {
     const order: number[] = [];
+    let pending = 0;
 
-    promises.push(new Promise((resolve) => {
-      define(['../x.js', './y.js'], () => {
-        order.push(0);
-        resolve();
-      });
-    }));
+    pending++;
+    define(['../x.js', './y.js'], () => {
+      order.push(0);
+      check();
+    });
 
     // This define call has no dependencies, so it would resolve before the one
     // above unless we were explicitly ordering top-level scripts.
-    promises.push(new Promise((resolve) => {
-      define([], () => {
-        order.push(1);
-        resolve();
-      });
-    }));
+    pending++;
+    define([], () => {
+      order.push(1);
+      check();
+    });
 
-    promises.push(new Promise((resolve) => {
-      define(['./y.js'], () => {
-        order.push(2);
-        resolve();
-      });
-    }));
+    pending++;
+    define(['./y.js'], () => {
+      order.push(2);
+      check();
+    });
 
-    await Promise.all(promises);
-    assert.deepEqual(order, [0, 1, 2]);
+    function check() {
+      if (--pending > 0) {
+        return;
+      }
+      assert.deepEqual(order, [0, 1, 2]);
+      done();
+    }
   });
 
   test('can fail without blocking the next one', (done) => {
@@ -211,18 +217,39 @@ suite('dynamic require', () => {
 suite('meta.url', () => {
   test('top-level HTML document', (done) => {
     define(['meta'], (meta: any) => {
-      assert.equal(meta.url, document.baseURI);
+      assert.match(meta.url, /https?:\/\/.+\/static\/y\/suite(\-min)?\.html/);
       done();
     });
   });
 
   test('module at deeper path', (done) => {
     define(['./z/exports-meta.js'], (exportsMeta: any) => {
-      assert.equal(
+      assert.match(
           exportsMeta.meta.url,
-          document.baseURI!.split(/\/suite[^/]*\.html/)[0] +
-              '/z/exports-meta.js');
+          /https?:\/\/.+\/static\/y\/z\/exports-meta\.js/);
       done();
+    });
+  });
+
+  suite('with base tag', () => {
+    let base: HTMLBaseElement;
+
+    suiteSetup(() => {
+      base = document.createElement('base');
+      // Note that fragments are included in import.meta.url.
+      base.href = 'http://example.com/?foo#bar';
+      document.head.appendChild(base);
+    });
+
+    suiteTeardown(() => {
+      document.head.removeChild(base);
+    });
+
+    test('top-level HTML document', (done) => {
+      define(['meta'], (meta: any) => {
+        assert.equal(meta.url, 'http://example.com/?foo#bar');
+        done();
+      });
     });
   });
 });

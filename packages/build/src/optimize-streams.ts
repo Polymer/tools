@@ -105,15 +105,33 @@ export class GenericOptimizeTransform extends Transform {
   }
 }
 
+function getCompileTarget(
+    file: vinyl, options: JsOptimizeOptions): JsCompileTarget|boolean {
+  let target: JsCompileTarget|boolean|undefined;
+  const compileOptions = options.compile;
+  if (notExcluded(options.compile)(file)) {
+    if (typeof compileOptions === 'object') {
+      target =
+          (compileOptions.target === undefined) ? true : compileOptions.target;
+    } else {
+      target = compileOptions;
+    }
+    if (target === undefined) {
+      target = false;
+    }
+  } else {
+    target = false;
+  }
+  return target;
+}
+
 /**
  * Transform JavaScript.
  */
 export class JsTransform extends GenericOptimizeTransform {
   constructor(options: OptimizeOptions) {
-    const jsOptions = options.js || {};
+    const jsOptions: JsOptimizeOptions = options.js || {};
 
-    const shouldCompileFile =
-        jsOptions.compile ? notExcluded(jsOptions.compile) : () => false;
     const shouldMinifyFile =
         jsOptions.minify ? notExcluded(jsOptions.minify) : () => false;
 
@@ -135,7 +153,7 @@ export class JsTransform extends GenericOptimizeTransform {
       }
 
       return jsTransform(content, {
-        compile: shouldCompileFile(file),
+        compile: getCompileTarget(file, jsOptions),
         externalHelpers: true,
         minify: shouldMinifyFile(file),
         moduleResolution: jsOptions.moduleResolution,
@@ -155,7 +173,7 @@ export class JsTransform extends GenericOptimizeTransform {
  */
 export class HtmlTransform extends GenericOptimizeTransform {
   constructor(options: OptimizeOptions) {
-    const anyJsCompiledToEs5 = options.js && !!options.js.compile;
+    const jsOptions: JsOptimizeOptions = options.js || {};
 
     const shouldMinifyFile = options.html && options.html.minify ?
         notExcluded(options.html.minify) :
@@ -168,11 +186,29 @@ export class HtmlTransform extends GenericOptimizeTransform {
           !!options.entrypointPath && file.path === options.entrypointPath;
 
       let injectBabelHelpers: 'none'|'full'|'amd' = 'none';
+      let injectRegeneratorRuntime = false;
       if (isEntryPoint) {
-        if (anyJsCompiledToEs5) {
-          injectBabelHelpers = 'full';
-        } else if (transformModulesToAmd) {
-          injectBabelHelpers = 'amd';
+        const compileTarget = getCompileTarget(file, jsOptions);
+        switch (compileTarget) {
+          case 'es5':
+          case true:
+            injectBabelHelpers = 'full';
+            injectRegeneratorRuntime = true;
+            break;
+          case 'es2015':
+          case 'es2016':
+          case 'es2017':
+            injectBabelHelpers = 'full';
+            injectRegeneratorRuntime = false;
+            break;
+          case 'es2018':
+          case false:
+            injectBabelHelpers = transformModulesToAmd ? 'amd' : 'none';
+            injectRegeneratorRuntime = false;
+            break;
+          default:
+            const never: never = compileTarget;
+            throw new Error(`Unexpected compile target ${never}`);
         }
       }
 
@@ -186,6 +222,7 @@ export class HtmlTransform extends GenericOptimizeTransform {
         },
         minifyHtml: shouldMinifyFile(file),
         injectBabelHelpers,
+        injectRegeneratorRuntime,
         injectAmdLoader: isEntryPoint && transformModulesToAmd,
       });
     };
@@ -256,11 +293,12 @@ export function matchesExt(extension: string) {
   return (fs: vinyl) => !!fs.path && fs.relative.endsWith(extension);
 }
 
-function notExcluded(option: JsCompileOptions) {
+function notExcluded(option?: JsCompileOptions) {
   const exclude = typeof option === 'object' && option.exclude || [];
   return (fs: vinyl) => !exclude.some(
              (pattern: string) => matcher.isMatch(fs.relative, pattern));
 }
+
 function matchesExtAndNotExcluded(extension: string, option: JsCompileOptions) {
   const a = matchesExt(extension);
   const b = notExcluded(option);

@@ -1,6 +1,10 @@
 {
   "name": "@polymer/tools-common",
-  "repository": "https://github.com/Polymer/tools-common",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/common",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
   "version": "2.0.0",
   "engines": {
     "node": ">=8.0"
@@ -14,8 +18,6 @@
     "prepublishOnly": "gulp build-all",
     "format": "find src/ test/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
   },
-  "author": "The Polymer Project Authors",
-  "license": "BSD-3-Clause",
   "dependencies": {
     "@types/node": "^9.6.4",
     "depcheck": "^0.6.0",

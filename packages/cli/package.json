@@ -2,6 +2,11 @@
   "name": "polymer-cli",
   "version": "1.7.0-pre.16",
   "description": "A commandline tool for Polymer projects",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/cli",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
   "main": "lib/polymer-cli.js",
   "engines": {
     "node": ">=8.0"
@@ -13,6 +18,7 @@
     "lint": "gulp lint",
     "build": "gulp build",
     "test": "gulp test lint",
+    "prepublishOnly": "ls npm-shrinkwrap.json",
     "test:smoke": "gulp test",
     "test:smoke-lint": "gulp test lint",
     "test:integration": "mocha \"lib/test/integration/**/*_test.js\"",
@@ -20,12 +26,6 @@
     "format": "find src gulpfile.js \\( -iname \"*.ts\" -o -iname \"*.js\" \\) -not -path \"*fixtures*\" | xargs clang-format --style=file -i",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\""
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Polymer/polymer-cli.git"
-  },
-  "author": "The Polymer Project Authors",
-  "license": "BSD-3-Clause",
   "dependencies": {
     "@types/chalk": "^0.4.31",
     "@types/del": "^3.0.0",
@@ -66,6 +66,7 @@
     "polymer-linter": "=3.0.0-pre.7",
     "polymer-project-config": "^3.13.0",
     "polyserve": "^0.27.9",
+    "regenerator-runtime": "^0.11.1",
     "request": "^2.72.0",
     "rimraf": "^2.6.1",
     "semver": "^5.3.0",

@@ -12,15 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {browserCapabilities, BrowserCapability} from 'browser-capabilities';
+import {browserCapabilities} from 'browser-capabilities';
 import {parse as parseContentType} from 'content-type';
 import {Request, RequestHandler, Response} from 'express';
 import * as fs from 'fs';
 import * as LRU from 'lru-cache';
 import * as path from 'path';
 import {htmlTransform, jsTransform} from 'polymer-build';
-import {JsCompileTarget} from 'polymer-project-config';
 
+import {getCompileTarget} from './get-compile-target';
 import {transformResponse} from './transform-middleware';
 
 const javaScriptMimeTypes = [
@@ -87,17 +87,7 @@ export function babelCompile(
 
     transform(request: Request, response: Response, body: string): string {
       const capabilities = browserCapabilities(request.get('user-agent'));
-      let compileTarget: JsCompileTarget = undefined;
-      if (compile === 'always') {
-        compileTarget = 'es5';
-      } else if (compile === 'auto') {
-        const jsLevels: Array<BrowserCapability&JsCompileTarget> =
-            ['es2018', 'es2017', 'es2016', 'es2015'];
-        compileTarget = jsLevels.find((c) => capabilities.has(c));
-        if (compileTarget === undefined) {
-          compileTarget = 'es5';
-        }
-      }
+      const compileTarget = getCompileTarget(capabilities, compile);
       const options = {
         compileTarget,
         transformModules: compile === 'always' || !capabilities.has('modules'),

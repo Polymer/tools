@@ -6,6 +6,11 @@
     "wct-browser-legacy-version-range": "0.0.1-pre.1 || ^1.0.0"
   },
   "description": "web-component-tester makes testing your web components a breeze!",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/web-component-tester",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Project Authors",
   "keywords": [
     "browser",
     "grunt",
@@ -17,13 +22,6 @@
     "web component",
     "web"
   ],
-  "homepage": "https://github.com/Polymer/web-component-tester",
-  "bugs": "https://github.com/Polymer/web-component-tester/issues",
-  "license": "BSD-3-Clause",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Polymer/web-component-tester.git"
-  },
   "main": "runner.js",
   "bin": {
     "wct": "./bin/wct",

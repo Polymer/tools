@@ -18,8 +18,14 @@ import {runCommand} from './run-command';
 import {createElementGenerator} from '../../init/element/element';
 import {createGithubGenerator} from '../../init/github';
 import * as puppeteer from 'puppeteer';
-import {startServers} from 'polyserve';
-import {ProjectConfig} from 'polymer-project-config';
+import {startServers, ServerOptions} from 'polyserve';
+import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
+import * as tempMod from 'temp';
+import * as fs from 'fs';
+
+const temp = tempMod.track();
+
+const disposables: Array<() => void | Promise<void>> = [];
 
 // A zero privilege github token of a nonce account, used for quota.
 const githubToken = '8d8622bf09bb1d85cb411b5e475a35e742a7ce35';
@@ -28,29 +34,69 @@ const githubToken = '8d8622bf09bb1d85cb411b5e475a35e742a7ce35';
 //     windows.
 const isWindows = process.platform === 'win32';
 const skipOnWindows = isWindows ? test.skip : test;
+const binPath = path.join(__dirname, '../../../', 'bin', 'polymer.js');
+
+// Serves the given directory with polyserve, returns a fully qualified
+// url of the server.
+async function serve(dirToServe: string, options: ServerOptions = {}) {
+  const startResult = await startServers({root: dirToServe, ...options});
+  if (startResult.kind === 'MultipleServers') {
+    for (const server of startResult.servers) {
+      server.server.close();
+    }
+    throw new Error(`Unexpected startResult`);
+  }
+  disposables.push(() => {
+    startResult.server.close();
+  });
+  const address = startResult.server.address();
+  return `http://${address.address}:${address.port}`;
+}
+
+/**
+ * Like puppeteer's page.goto(), except it fails if any uncaught exceptions are
+ * thrown, and it waits a few rAFs after the load to be really sure the page is
+ * ready.
+ */
+async function gotoOrDie(
+    page: puppeteer.Page, url: string, configurationName?: string) {
+  const configurationMessage =
+      configurationName ? ` with config ${configurationName}` : '';
+  let error: string|undefined;
+  const handler = (e: string) => error = error || e;
+  // Grab the first page error, if any.
+  page.on('pageerror', handler);
+  await page.goto(url);
+  if (error) {
+    throw new Error(
+        `Error loading ${url} in Chrome${configurationMessage}: ${error}`);
+  }
+  // For the moment we don't type check in-browser expressions.
+  // tslint:disable-next-line: no-any
+  type Window = any;
+  for (let i = 0; i < 3; i++) {
+    await page.waitFor(function(this: Window) {
+      return new Promise((resolve) => {
+        this.requestAnimationFrame(resolve);
+      });
+    });
+  }
+  if (error) {
+    throw new Error(`Error during rAFs after loading ${url} in Chrome${
+        configurationMessage}. Browser Error:\n${error}`);
+  }
+  page.removeListener('pageerror', handler);
+}
 
 suite('integration tests', function() {
-  const binPath = path.join(__dirname, '../../../', 'bin', 'polymer.js');
-
   // Extend timeout limit to 90 seconds for slower systems
   this.timeout(120000);
-  let browserPromise: Promise<puppeteer.Browser>;
-  const disposables: Array<() => void | Promise<void>> = [];
-  suiteSetup(() => {
-    const debugging = !!process.env['DEBUG_CLI_TESTS'];
-    if (debugging) {
-      browserPromise = puppeteer.launch({headless: false, slowMo: 250});
-    } else {
-      browserPromise = puppeteer.launch();
-    }
-  });
+
   suiteTeardown(async () => {
-    (await browserPromise).close();
-  });
-  teardown(async () => {
     await Promise.all(disposables.map((d) => d()));
     disposables.length = 0;
   });
+  teardown(async () => {});
 
   suite('init templates', () => {
     skipOnWindows('test the Polymer 3.x element template', async () => {
@@ -134,20 +180,16 @@ suite('integration tests', function() {
     // and pokes around to test that the site is serving a working Shop.
     async function assertThatShopWorks(
         dirToServe: string, configurationName: string) {
-      const startResult = await startServers({root: dirToServe});
-      if (startResult.kind === 'MultipleServers') {
-        for (const server of startResult.servers) {
-          server.server.close();
-        }
-        throw new Error(`Unexpected startResult`);
+      const baseUrl = await serve(dirToServe);
+      const debugging = !!process.env['DEBUG_CLI_TESTS'];
+      let browser: puppeteer.Browser;
+      if (debugging) {
+        browser = await puppeteer.launch({headless: false, slowMo: 250});
+      } else {
+        browser = await puppeteer.launch();
       }
-      disposables.push(() => {
-        startResult.server.close();
-      });
-      const address = startResult.server.address();
-      const baseUrl = `http://${address.address}:${address.port}`;
-      const page = await (await browserPromise).newPage();
-      disposables.push(() => page.close());
+      const page = await browser.newPage();
+      disposables.push(() => browser.close());
 
       // Evaluate an expression as a string in the browser.
       const evaluate = async (expression: string) => {
@@ -181,19 +223,14 @@ suite('integration tests', function() {
         }
       };
 
-      await page.goto(`${baseUrl}/`);
+      await gotoOrDie(page, `${baseUrl}/`, configurationName);
       assert.deepEqual(`${baseUrl}/`, page.url());
       await waitFor('shop-app to be defined', function() {
         return this.customElements.get('shop-app') !== undefined;
       });
-      // Wait for a few RAFs.
-      for (let i = 0; i < 3; i++) {
-        await waitFor('requestAnimationFrame', function() {
-          return new Promise((resolve) => {
-            this.requestAnimationFrame(resolve);
-          });
-        });
-      }
+      await waitFor('shop-app to have a shadowRoot', function() {
+        return this.document.querySelector('shop-app').shadowRoot !== undefined;
+      });
       // The cart shouldn't be registered yet, because we've only loaded the
       // main page.
       await assertTrueInPage(`customElements.get('shop-cart') === undefined`);
@@ -269,15 +306,13 @@ suite('integration tests', function() {
       if (config == null) {
         throw new Error('Failed to load shop\'s polymer.json');
       }
-      // Can remove this filter after https://github.com/Polymer/tools/pull/270
-      // lands.
-      const builds = config.builds;
-      // Ideally this would be multiple independent tests, but `polymer build`
-      // takes a really long time, and we can also get a bit better performance
-      // by running these browser tests in parallel.
-      await Promise.all(builds.map((b) => {
-        const name = b.name || 'default';
-        return assertThatShopWorks(path.join(dir, 'build', name), name);
+      const dirs = config.builds.map(
+          (b) => path.join(dir, 'build', b.name || 'default'));
+      // Ideally this would be multiple independent tests, but `polymer
+      // build` takes a really long time, and we can also get a bit better
+      // performance by running these browser tests in parallel.
+      await Promise.all(dirs.map(async (builtShopDir) => {
+        await assertThatShopWorks(builtShopDir, path.basename(builtShopDir));
       }));
     });
 
@@ -352,5 +387,150 @@ suite('integration tests', function() {
       // await runCommand(binPath, ['test'], {cwd: dir})
       await runCommand(binPath, ['build'], {cwd: dir});
     });
+  });
+});
+
+suite('import.meta support', async () => {
+  let tempDir: string;
+  // Build options, copied from shop.
+  const options: ProjectOptions = {
+    entrypoint: 'index.html',
+    builds: [
+      {
+        name: 'esm-bundled',
+        browserCapabilities: ['es2015', 'modules'],
+        js: {minify: true},
+        css: {minify: true},
+        html: {minify: true},
+        bundle: true
+      },
+      {
+        name: 'es6-bundled',
+        browserCapabilities: ['es2015'],
+        js: {minify: true, transformModulesToAmd: true},
+        css: {minify: true},
+        html: {minify: true},
+        bundle: true
+      },
+      {
+        name: 'es5-bundled',
+        js: {compile: true, minify: true, transformModulesToAmd: true},
+        css: {minify: true},
+        html: {minify: true},
+        bundle: true
+      }
+    ],
+    moduleResolution: 'node',
+    npm: true
+  };
+  suiteSetup(function() {
+    tempDir = temp.mkdirSync('-import-meta');
+
+    // An inline import.meta test fixture!
+    fs.writeFileSync(path.join(tempDir, 'index.html'), `
+        <script type="module">
+            import './subdir/foo.js';
+            window.indexHtmlUrl = import.meta.url;
+        </script>
+      `);
+    fs.mkdirSync(path.join(tempDir, 'subdir'));
+    fs.writeFileSync(path.join(tempDir, 'subdir/index.html'), `
+        <script type="module">
+            import './foo.js';
+            window.indexHtmlUrl = import.meta.url;
+        </script>
+      `);
+    fs.writeFileSync(path.join(tempDir, 'subdir', 'foo.js'), `
+        window.fooUrl = import.meta.url;
+    `);
+    fs.writeFileSync(
+        path.join(tempDir, 'package.json'),
+        JSON.stringify({name: 'import-meta-test'}));
+    fs.writeFileSync(
+        path.join(tempDir, 'polymer.json'), JSON.stringify(options));
+  });
+  teardown(async () => {
+    await Promise.all(disposables.map((d) => d()));
+    disposables.length = 0;
+  });
+
+  // The given url should be a fully qualified
+  const assertPageWorksCorrectly =
+      async (baseUrl: string, skipTestingSubdir: boolean = false) => {
+    const browser = await puppeteer.launch();
+    disposables.push(() => browser.close());
+    const page = await browser.newPage();
+    await gotoOrDie(page, `${baseUrl}/`);
+    assert.deepEqual(await page.evaluate(`window.indexHtmlUrl`), `${baseUrl}/`);
+    assert.deepEqual(
+        await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
+    await gotoOrDie(page, `${baseUrl}/index.html`);
+    assert.deepEqual(
+        await page.evaluate(`window.indexHtmlUrl`), `${baseUrl}/index.html`);
+    assert.deepEqual(
+        await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
+    if (!skipTestingSubdir) {
+      await gotoOrDie(page, `${baseUrl}/subdir/`);
+      assert.deepEqual(
+          await page.evaluate(`window.indexHtmlUrl`), `${baseUrl}/subdir/`);
+      assert.deepEqual(
+          await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
+      await gotoOrDie(page, `${baseUrl}/subdir/index.html`);
+      assert.deepEqual(
+          await page.evaluate(`window.indexHtmlUrl`),
+          `${baseUrl}/subdir/index.html`);
+      assert.deepEqual(
+          await page.evaluate('window.fooUrl'), `${baseUrl}/subdir/foo.js`);
+    }
+    return page;
+  };
+
+  test('import.meta works uncompiled in chrome', async function() {
+    const url = await serve(tempDir, {compile: 'never'});
+    const page = await assertPageWorksCorrectly(url);
+    await gotoOrDie(page, `${url}/`);
+    assert.include(
+        await page.content(),
+        'import.meta',
+        'expected import.meta to not be compiled out!');
+  });
+
+  let testName = 'import.meta works in chrome with polyserve es5 compilation';
+  test(testName, async function() {
+    const url = await serve(tempDir, {compile: 'always'});
+    const page = await assertPageWorksCorrectly(url);
+    await gotoOrDie(page, `${url}/`);
+    assert.notInclude(
+        await page.content(),
+        'import.meta',
+        'expected import.meta to be compiled out!');
+  });
+
+  suite('after building', () => {
+    suiteSetup(async function() {
+      this.timeout(20 * 1000);
+      await runCommand(binPath, ['build'], {cwd: tempDir});
+    });
+    for (const buildOption of options.builds!) {
+      const buildName = buildOption.name || 'default';
+      testName = `import.meta works in build configuration ${buildName}`;
+      test(testName, async function() {
+        const url = await serve(
+            path.join(tempDir, 'build', buildName), {compile: 'always'});
+        const page = await assertPageWorksCorrectly(url, true);
+        await gotoOrDie(page, `${url}/`);
+        if (buildName !== 'esm-bundle') {
+          assert.notInclude(
+              await page.content(),
+              'import.meta',
+              'expected import.meta to be compiled out!');
+        } else {
+          assert.include(
+              await page.content(),
+              'import.meta',
+              'expected import.meta to not be compiled out!');
+        }
+      });
+    }
   });
 });

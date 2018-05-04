@@ -52,6 +52,7 @@ const registry: {[url: string]: Module} = Object.create(null);
 let pendingDefine: ((mod: Module) => void)|undefined = undefined;
 let topLevelScriptIdx = 0;
 let previousTopLevelUrl: string|undefined = undefined;
+let baseUrl = getBaseUrl();
 
 /**
  * Define a module and execute its factory function when all dependencies are
@@ -85,7 +86,7 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
   setTimeout(() => {
     if (defined === false) {
       pendingDefine = undefined;
-      const url = document.baseURI + '#' + topLevelScriptIdx++ as NormalizedUrl;
+      const url = baseUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
       const mod = getModule(url);
 
       // Top-level scripts are already loaded.
@@ -116,6 +117,7 @@ window.define._reset = () => {
   pendingDefine = undefined;
   topLevelScriptIdx = 0;
   previousTopLevelUrl = undefined;
+  baseUrl = getBaseUrl();
 };
 
 /**
@@ -217,12 +219,8 @@ function require(
       numUnresolvedDeps--;
       args.push({
         // We append "#<script index>" to top-level scripts so that they have
-        // unique keys in the registry. We don't want to see that here. Note
-        // that the real base URL may legitimately have an anchor, so it's not
-        // safe to trim the anchor of non-top-level script URLs.
-        url: mod.isTopLevel === true ?
-            mod.url.substring(0, mod.url.lastIndexOf('#')) :
-            mod.url
+        // unique keys in the registry. We don't want to see that here.
+        url: (mod.isTopLevel === true) ? baseUrl : mod.url
       });
 
     } else {
@@ -326,5 +324,12 @@ function resolveUrl(urlBase: NormalizedUrl, url: string): NormalizedUrl {
     return url as NormalizedUrl;
   }
   return normalizeUrl(urlBase + url);
+}
+
+function getBaseUrl(): NormalizedUrl {
+  // IE does not have document.baseURI.
+  return (document.baseURI ||
+          (document.querySelector('base') || window.location).href) as
+      NormalizedUrl;
 }
 })();
