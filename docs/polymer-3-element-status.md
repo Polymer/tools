@@ -17,7 +17,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 
 | repo | `npm install`\* | Chrome | Safari | Firefox | reason? |
 |------|-----------------|--------|--------|---------|---------|
-| app-layout | ✅ | ✅ | ❔ | ❔ | |
+| app-layout | ✅ | ✅ | ✅ | ✅ | |
 | app-localize-behavior | ✅ | ❌ | ❌ | ✅ | polyfill does not support modules needs to be moved out of element and into tests |
 | app-media | ✅ | ⚠️ | ⚠️ | ⚠️ | (Tooling Error) 'return' outside of function |
 | app-route | ✅ | ✅ | ✅ | ✅ | |
@@ -27,34 +27,34 @@ This table contains the status of every Polymer 3.0 element being run through au
 | gold-cc-cvc-input | ✅ | ✅ | ✅ | ✅ | |
 | gold-cc-expiration-input | ✅ | ✅ | ✅ | ✅ |  |
 | gold-cc-input | ✅ | ✅ | ✅ | ✅ | |
-| gold-phone-input | ✅ | ✅ | ❔ | ❔ | |
+| gold-phone-input | ✅ | ✅ | ✅ | ✅ | |
 | gold-zip-input | ✅ | ✅ | ✅ | ✅ | |
-| iron-a11y-announcer | ✅ | ✅ | ❔ | ❔ | |
+| iron-a11y-announcer | ✅ | ✅ | ✅  | ✅  | |
 | iron-a11y-keys | ✅ | ✅ | ✅ | ✅ | |
-| iron-a11y-keys-behavior | ✅ | ✅ | ❔ | ❔ | |
-| iron-ajax | ✅ | ✅ | ❔ | ❔ | |
-| iron-autogrow-textarea | ✅ | ✅ | ❔ | ❔ | |
-| iron-behaviors | ✅ | ✅ | ❔ | ❔ | |
-| iron-checked-element-behavior | ✅ | ✅ | ❔ | ❔ | |
-| iron-collapse | ✅ | ✅ | ❔ | ❔ | |
+| iron-a11y-keys-behavior | ✅ | ✅ | ✅ | ✅ | |
+| iron-ajax | ✅ | ✅ | ✅ | ✅ | |
+| iron-autogrow-textarea | ✅ | ✅ | ✅ | ✅ | |
+| iron-behaviors | ✅ | ✅ | ✅ | ✅ | |
+| iron-checked-element-behavior | ✅ | ✅ | ✅ | ✅ | |
+| iron-collapse | ✅ | ✅ | ✅ | ✅ | |
 | iron-component-page | ✅ | ✅ | ✅ | ✅ | |
-| iron-demo-helpers | ✅ | ✅ | ❔ | ❔ | |
+| iron-demo-helpers | ✅ | ✅ | ✅ | ✅ | |
 | iron-doc-viewer | ✅ | ✅ | ✅ | ✅ | |
-| iron-dropdown | ✅ | ❌ | ❌ | ❌ | Animations are broken and FF require.js is duplicating |
+| iron-dropdown | ✅ | ✅ | ✅ | ✅ | |
 | iron-fit-behavior | ✅ | ✅ | ✅ | ✅ | |
-| iron-flex-layout | ✅ | ✅ | ❔ | ❔ | |
-| iron-form | ✅ | ❌ | ❌ | ❌ | iron-form-element-behavior fails paths to names |
-| iron-form-element-behavior | ✅ | ✅ | ❔ | ❔ | |
-| iron-icon | ✅ | ✅ | ❔ | ❔ | |
-| iron-icons | ✅ | ✅ | ❔ | ❔ | |
-| iron-iconset | ✅ | ✅ | ❔ | ❔ | |
-| iron-iconset-svg | ✅ | ✅ | ❔ | ❔ | |
-| iron-image | ✅ | ✅ | ❔ | ❔ | |
-| iron-input | ✅ | ✅ | ❔ | ❔ | |
-| iron-jsonp-library | ✅ | ✅ | ❔ | ❔ | |
-| iron-label | ✅ | ✅ | ❔ | ❔ | |
-| iron-list | ✅ | ❌ | ❌ | ❌ | 6 breaking tests. FF more; requirejs duplication |
-| iron-localstorage | ✅ | ✅ | ❔ | ❔ | |
+| iron-flex-layout | ✅ | ✅ | ✅ | ✅ | |
+| iron-form | ✅ | ✅ | ✅ | ✅ | same as master |
+| iron-form-element-behavior | ✅ | ✅ | ✅ | ✅ | |
+| iron-icon | ✅ | ✅ | ✅ | ✅ | |
+| iron-icons | ✅ | ✅ | ✅ | ✅ | |
+| iron-iconset | ✅ | ✅ | ✅ | ✅ | |
+| iron-iconset-svg | ✅ | ✅ | ✅ | ✅ | |
+| iron-image | ✅ | ✅ | ✅ | ✅ | |
+| iron-input | ✅ | ✅ | ✅ | ✅ | |
+| iron-jsonp-library | ✅ | ✅ | ✅ | ✅ | |
+| iron-label | ✅ | ✅ | ✅ | ✅ | |
+| iron-list | ✅ | ❌ | ❌ | ❌ | 4-10 breaking tests |
+| iron-localstorage | ✅ | ✅ | ✅ | ✅ | |
 | iron-location | ✅ | ✅ | ✅ | ✅ | same as master |
 | iron-media-query | ✅ | ✅ | ❔ | ❔ | |
 | iron-menu-behavior | ✅ | ✅ | ❔ | ❔ | |
