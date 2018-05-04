@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!--## Unreleased -->
+<!-- Add new, unreleased items here. -->
+
+## [0.27.10] (2018-05-03)
 * The transform for `import.meta` now uses the special `"meta"` dependency
   provided by
   [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
@@ -17,7 +20,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `/@foobar/baz` is not but was being considered one before.
 * The [regenerator runtime](https://github.com/facebook/regenerator) is now
   injected into projects that are compiling to ES5.
-<!-- Add new, unreleased items here. -->
 
 ## [0.27.9] (2018-05-01)
 * Dropped support for node v6. This is a soft break, as we aren't

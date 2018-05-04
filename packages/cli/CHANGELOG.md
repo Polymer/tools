@@ -1,7 +1,10 @@
 # Changelog
 
 
-## Unreleased
+<!--## Unreleased -->
+<!-- Add new, unreleased items here. -->
+
+## v1.7.0-pre.17 [05-03-2018]
 * The transform for `import.meta` now uses the special `"meta"` dependency
   provided by
   [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
@@ -12,7 +15,6 @@
   async/await and generators. `serve` will include the runtime in each script
   where it is used while `build` will include it once, inline, in the entrypoint
   HTML file.
-<!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.16 [05-01-2018]
 * Dropped support for node v6. This is a soft break, as we aren't

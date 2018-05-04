@@ -1,6 +1,6 @@
 {
   "name": "browser-capabilities",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Detect browser capabilities from a user agent string.",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/browser-capabilities",
   "repository": "github:Polymer/tools",
