@@ -13,11 +13,10 @@
  */
 
 import * as dom5 from 'dom5/lib/index-next';
-import * as fs from 'fs';
 import * as htmlMinifier from 'html-minifier';
 import * as parse5 from 'parse5';
-import * as pathlib from 'path';
 
+import * as externalJs from './external-js';
 import {scriptWasSplitByHtmlSplitter} from './html-splitter';
 import {jsTransform, JsTransformOptions} from './js-transform';
 
@@ -59,6 +58,12 @@ export interface HtmlTransformOptions {
    * includes only the helpers needed for the AMD transform.
    */
   injectBabelHelpers?: 'none'|'full'|'amd';
+
+  /**
+   * Whether to inject the regenerator runtime as an inline script. This is
+   * needed if you are compiling to ES5 and use async/await or generators.
+   */
+  injectRegeneratorRuntime?: boolean;
 
   /**
    * Whether to inject an AMD loader as an inline script. This is typically
@@ -130,7 +135,7 @@ export function htmlTransform(
   if (options.injectAmdLoader && shouldTransformEsModuleToAmd &&
       firstModuleScript !== undefined) {
     const fragment = parse5.parseFragment('<script></script>\n');
-    dom5.setTextContent(fragment.childNodes![0], getAmdLoader());
+    dom5.setTextContent(fragment.childNodes![0], externalJs.getAmdLoader());
     const amdLoaderScript = fragment.childNodes![0];
 
     // Inject as late as possible (just before the first module is declared, if
@@ -146,25 +151,9 @@ export function htmlTransform(
     }
   }
 
-  let babelHelpers;
-  switch (options.injectBabelHelpers) {
-    case undefined:
-    case 'none':
-      break;
-    case 'full':
-      babelHelpers = getBabelHelpersFull();
-      break;
-    case 'amd':
-      babelHelpers = getBabelHelpersAmd();
-      break;
-    default:
-      const never: never = options.injectBabelHelpers;
-      throw new Error(`Unknown injectBabelHelpers value: ${never}`);
-  }
-
-  if (babelHelpers !== undefined) {
+  const injectScript = (js: string) => {
     const fragment = parse5.parseFragment('<script></script>\n');
-    dom5.setTextContent(fragment.childNodes![0], babelHelpers);
+    dom5.setTextContent(fragment.childNodes![0], js);
 
     const firstJsScriptOrHtmlImport =
         dom5.query(document, isJsScriptOrHtmlImport);
@@ -179,6 +168,29 @@ export function htmlTransform(
           dom5.query(document, dom5.predicates.hasTagName('head')) || document;
       dom5.append(headOrDocument, fragment);
     }
+  };
+
+  let babelHelpers;
+  switch (options.injectBabelHelpers) {
+    case undefined:
+    case 'none':
+      break;
+    case 'full':
+      babelHelpers = externalJs.getBabelHelpersFull();
+      break;
+    case 'amd':
+      babelHelpers = externalJs.getBabelHelpersAmd();
+      break;
+    default:
+      const never: never = options.injectBabelHelpers;
+      throw new Error(`Unknown injectBabelHelpers value: ${never}`);
+  }
+
+  if (babelHelpers !== undefined) {
+    injectScript(babelHelpers);
+  }
+  if (options.injectRegeneratorRuntime === true) {
+    injectScript(externalJs.getRegeneratorRuntime());
   }
 
   html = parse5.serialize(document);
@@ -281,33 +293,6 @@ function addWctTimingHack(wctScript: dom5.Node, amdLoaderScript: dom5.Node) {
   })();
 </script>
 `));
-}
-
-let babelHelpersFull: string;
-function getBabelHelpersFull() {
-  if (babelHelpersFull === undefined) {
-    babelHelpersFull = fs.readFileSync(
-        pathlib.join(__dirname, 'babel-helpers-full.min.js'), 'utf-8');
-  }
-  return babelHelpersFull;
-}
-
-let babelHelpersAmd: string;
-function getBabelHelpersAmd() {
-  if (babelHelpersAmd === undefined) {
-    babelHelpersAmd = fs.readFileSync(
-        pathlib.join(__dirname, 'babel-helpers-amd.min.js'), 'utf-8');
-  }
-  return babelHelpersAmd;
-}
-
-let amdLoader: string;
-function getAmdLoader() {
-  if (amdLoader === undefined) {
-    amdLoader =
-        fs.readFileSync(require.resolve('@polymer/esm-amd-loader'), 'utf-8');
-  }
-  return amdLoader;
 }
 
 /**

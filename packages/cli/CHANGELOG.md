@@ -7,6 +7,11 @@
   [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
   instead of injecting a static path. As a result, it is now always coupled with
   the AMD transform, and cannot be enabled independently.
+* The [regenerator runtime](https://github.com/facebook/regenerator) is now
+  injected into projects that are compiling to ES5. This is needed to support
+  async/await and generators. `serve` will include the runtime in each script
+  where it is used while `build` will include it once, inline, in the entrypoint
+  HTML file.
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.16 [05-01-2018]
