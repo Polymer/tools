@@ -14,7 +14,7 @@
 import traverse, {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as clone from 'clone';
-import {Document, FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
+import {Document, FileRelativeUrl, PackageRelativeUrl, ParsedJavaScriptDocument, ResolvedUrl} from 'polymer-analyzer';
 import {rollup} from 'rollup';
 
 import {assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
@@ -113,7 +113,9 @@ export class Es6Rewriter {
             // When the requested document is part of the bundle, get it from
             // the analysis.
             if (this.bundle.bundle.files.has(id)) {
-              const document = getAnalysisDocument(analysis, id);
+              const document =
+                  assertIsJsDocument(getAnalysisDocument(analysis, id));
+
               if (!jsImportResolvedUrls.has(id)) {
                 jsImportResolvedUrls.set(
                     id, this._getJsImportResolutions(document));
@@ -134,13 +136,8 @@ export class Es6Rewriter {
                   ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
                       this.bundle.url, id));
 
-              // TODO(usergenic): This code makes assumptions about the type of
-              // the ast and the document contents that are potentially not true
-              // if there are coding or resolution errors. Need to add some kind
-              // of type checking or assertion that we're dealing with at least
-              // a `Document<ParsedJavascriptDocument>` here.
               const newAst = this._rewriteImportMetaToBundleMeta(
-                  document.parsedDocument.ast as babel.File, relativeUrl);
+                  document.parsedDocument.ast, relativeUrl);
               const newCode = serialize(newAst).code;
               return newCode;
             }
