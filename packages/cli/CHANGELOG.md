@@ -15,7 +15,7 @@
   async/await and generators. `serve` will include the runtime in each script
   where it is used while `build` will include it once, inline, in the entrypoint
   HTML file.
-* Added es5, es2015, es2016, es2017, and es2018 compile targets to the to
+* Added es5, es2015, es2016, es2017, and es2018 compile targets to the
   `js.compile` option of `polymer.json`, to allow fine grained control over
   which JavaScript features to compile during `build`.
 

@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
   instead of injecting a static path. As a result, it is now always coupled with
   the AMD transform, and cannot be enabled independently.
-* Added es5, es2015, es2016, es2017, and es2018 compile targets to the to
+* Added es5, es2015, es2016, es2017, and es2018 compile targets to the
   `js.compile` option, to allow fine grained control over which JavaScript
   features to compile.
 
