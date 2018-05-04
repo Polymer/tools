@@ -93,7 +93,10 @@ const maybeResolve = (
     }
     return resolve(specifier, filePath, componentInfo);
   } catch (e) {
-    if (!isPathSpecifier(specifier)) {
+    // `require` and `meta` are fake imports that our other build tooling
+    // injects, so we should not warn for them.
+    if (!isPathSpecifier(specifier) && specifier !== 'require' &&
+        specifier !== 'meta') {
       // Don't warn if the specifier was already a path, even though we do
       // resolve paths, because maybe the user is serving it some other
       // way.
