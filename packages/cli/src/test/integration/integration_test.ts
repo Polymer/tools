@@ -539,9 +539,7 @@ suite('polymer shop', function() {
         // Building takes a few minutes.
         this.timeout(10 * 60 * 1000);
         await Promise.all([
-          // Does not lint clean at the moment.
-          // TODO: https://github.com/Polymer/tools/issues/274
-          // runCommand(binPath, ['lint', '--rules=polymer-3'], {cwd: dir}),
+          runCommand(binPath, ['lint'], {cwd: dir}),
           runCommand(binPath, ['build'], {cwd: dir}),
         ]);
         const config =
