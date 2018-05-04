@@ -14,7 +14,7 @@
 import traverse, {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as clone from 'clone';
-import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
+import {Document, FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {rollup} from 'rollup';
 
 import {assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
@@ -38,7 +38,18 @@ export class Es6Rewriter {
       public bundle: AssignedBundle) {
   }
 
-  async rollup(url: ResolvedUrl, code: string) {
+  /**
+   * Produces a module bundle from given source code string and from analysis of
+   * imported ES6 modules.
+   * @param url The base URL of the module to roll-up.
+   * @param code The source code to roll-up.
+   * @param document The optional Document which contains the source code to
+   * rollup; this is used to get access to the Analyzer's resolutions of module
+   * specifiers encountered in the source code if available.
+   * TODO(usergenic): Return a valid source-map along with the code.
+   */
+  async rollup(url: ResolvedUrl, code: string, document?: Document):
+      Promise<{code: string, map: undefined}> {
     // This is a synthetic module specifier used to identify the code to rollup
     // and differentiate it from the a request to contents of the document at
     // the actual given url which should load from the analyzer.
@@ -55,8 +66,10 @@ export class Es6Rewriter {
     // For each document loaded from the analyzer, we build a map of the
     // original specifiers to the resolved URLs since we want to use analyzer
     // resolutions for such things as bare module specifiers.
-    const jsImportResolvedUrls =
-        new Map<ResolvedUrl, Map<string, ResolvedUrl>>();
+    const jsImportResolvedUrls = new Map<string, Map<string, ResolvedUrl>>();
+    if (document) {
+      jsImportResolvedUrls.set(input, this._getJsImportResolutions(document));
+    }
     const rollupBundle = await rollup({
       input,
       external,
@@ -78,9 +91,8 @@ export class Es6Rewriter {
               return input;
             }
             if (importer) {
-              if (jsImportResolvedUrls.has(importer as ResolvedUrl)) {
-                const resolutions =
-                    jsImportResolvedUrls.get(importer as ResolvedUrl)!;
+              if (jsImportResolvedUrls.has(importer)) {
+                const resolutions = jsImportResolvedUrls.get(importer)!;
                 if (resolutions.has(importee)) {
                   return resolutions.get(importee);
                 }
@@ -103,22 +115,8 @@ export class Es6Rewriter {
             if (this.bundle.bundle.files.has(id)) {
               const document = getAnalysisDocument(analysis, id);
               if (!jsImportResolvedUrls.has(id)) {
-                const jsImports = document.getFeatures({
-                  kind: 'js-import',
-                  imported: false,
-                  externalPackages: true,
-                  excludeBackreferences: true,
-                });
-                const resolutions = new Map<string, ResolvedUrl>();
-                jsImportResolvedUrls.set(id, resolutions);
-                for (const jsImport of jsImports) {
-                  const node = jsImport.astNode.node;
-                  if ('source' in node) {
-                    if (node.source && jsImport.document !== undefined) {
-                      resolutions.set(node.source.value, jsImport.document.url);
-                    }
-                  }
-                }
+                jsImportResolvedUrls.set(
+                    id, this._getJsImportResolutions(document));
               }
 
               // If the URL of the requested document is the same as the bundle
@@ -168,6 +166,26 @@ export class Es6Rewriter {
     this._deduplicateImportStatements(babelFile);
     const {code: rewrittenCode} = serialize(babelFile);
     return {code: rewrittenCode, map: undefined};
+  }
+
+  private _getJsImportResolutions(document: Document):
+      Map<string, ResolvedUrl> {
+    const jsImports = document.getFeatures({
+      kind: 'js-import',
+      imported: false,
+      externalPackages: true,
+      excludeBackreferences: true,
+    });
+    const resolutions = new Map<string, ResolvedUrl>();
+    for (const jsImport of jsImports) {
+      const node = jsImport.astNode.node;
+      if ('source' in node) {
+        if (node.source && jsImport.document !== undefined) {
+          resolutions.set(node.source.value, jsImport.document.url);
+        }
+      }
+    }
+    return resolutions;
   }
 
   /**
