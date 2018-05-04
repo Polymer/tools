@@ -93,8 +93,16 @@ const maybeResolve = (
     }
     return resolve(specifier, filePath, componentInfo);
   } catch (e) {
-    if (!isPathSpecifier(specifier)) {
-      // We should warn here if there's a helpful way to do that.
+    // `require` and `meta` are fake imports that our other build tooling
+    // injects, so we should not warn for them.
+    if (!isPathSpecifier(specifier) && specifier !== 'require' &&
+        specifier !== 'meta') {
+      // Don't warn if the specifier was already a path, even though we do
+      // resolve paths, because maybe the user is serving it some other
+      // way.
+      console.warn(
+          `Could not resolve module specifier "${specifier}" ` +
+          `in file "${filePath}".`);
     }
     return specifier;
   }
