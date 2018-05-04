@@ -11,12 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-/// <reference path="../../node_modules/@types/chai/index.d.ts" />
-/// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import * as chai from 'chai';
 import * as parse5 from 'parse5';
-import * as path from 'path';
 import {Analyzer, FsUrlLoader, FsUrlResolver} from 'polymer-analyzer';
 
 import {AssignedBundle, BundleManifest} from '../bundle-manifest';
@@ -36,7 +32,7 @@ const stripSpace = (html: string): string =>
 suite('HtmlBundler', () => {
 
   test('inline es6 modules with node module-resolution', async () => {
-    const root = path.join('test', 'html', 'inline-es6-modules');
+    const root = 'test/html/inline-es6-modules';
     const analyzer = new Analyzer({
       urlResolver: new FsUrlResolver(root),
       urlLoader: new FsUrlLoader(root),
