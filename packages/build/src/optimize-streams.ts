@@ -186,9 +186,11 @@ export class HtmlTransform extends GenericOptimizeTransform {
           !!options.entrypointPath && file.path === options.entrypointPath;
 
       let injectBabelHelpers: 'none'|'full'|'amd' = 'none';
+      let injectRegeneratorRuntime = false;
       if (isEntryPoint) {
         if (anyJsCompiledToEs5) {
           injectBabelHelpers = 'full';
+          injectRegeneratorRuntime = true;
         } else if (transformModulesToAmd) {
           injectBabelHelpers = 'amd';
         }
@@ -204,6 +206,7 @@ export class HtmlTransform extends GenericOptimizeTransform {
         },
         minifyHtml: shouldMinifyFile(file),
         injectBabelHelpers,
+        injectRegeneratorRuntime,
         injectAmdLoader: isEntryPoint && transformModulesToAmd,
       });
     };

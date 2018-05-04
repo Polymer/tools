@@ -78,6 +78,7 @@
     "polymer-analyzer": "=3.0.0-pre.24",
     "polymer-bundler": "=4.0.0-pre.6",
     "polymer-project-config": "^3.13.0",
+    "regenerator-runtime": "^0.11.1",
     "stream": "0.0.2",
     "sw-precache": "^5.1.1",
     "uuid": "^3.2.1",

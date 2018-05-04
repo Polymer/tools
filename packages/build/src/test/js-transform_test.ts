@@ -63,17 +63,6 @@ suite('jsTransform', () => {
       // were configured.
       assert.equal(jsTransform('const foo = 3;\n', {}), 'const foo = 3;\n');
     });
-
-    test('includes babel helpers by default', () => {
-      const result = jsTransform('class Foo {}', {compile: true});
-      assert.include(result, 'function _classCallCheck(');
-    });
-
-    test('omits babel helpers when externalHelpers is true', () => {
-      const result =
-          jsTransform('class Foo {}', {compile: true, externalHelpers: true});
-      assert.notInclude(result, 'function _classCallCheck(');
-    });
   });
 
   suite('minification', () => {
@@ -92,6 +81,58 @@ suite('jsTransform', () => {
       assert.equal(
           jsTransform('const foo = 3;', {compile: true, minify: true}),
           'var foo=3;');
+    });
+  });
+
+  suite('babel helpers', () => {
+    const classJs = `class MyClass {}`;
+    const helperSnippet = `function _classCallCheck(`;
+
+    test('inlined when external helpers are disabled', () => {
+      const result =
+          jsTransform(classJs, {compile: true, externalHelpers: false});
+      assert.include(result, helperSnippet);
+      assert.include(result, 'MyClass');
+    });
+
+    test('omitted when external helpers are enabled', () => {
+      const result =
+          jsTransform(classJs, {compile: true, externalHelpers: true});
+      assert.notInclude(result, helperSnippet);
+      assert.include(result, 'MyClass');
+    });
+  });
+
+  suite('regenerator runtime', () => {
+    const asyncJs = `async () => { await myFunction(); } `;
+    const regeneratorSnippet = `regeneratorRuntime=`;
+
+    test('inlined when external helpers are disabled', () => {
+      const result =
+          jsTransform(asyncJs, {compile: 'es5', externalHelpers: false});
+      assert.include(result, regeneratorSnippet);
+      assert.include(result, 'myFunction');
+    });
+
+    test('omitted when external helpers are enabled', () => {
+      const result =
+          jsTransform(asyncJs, {compile: 'es5', externalHelpers: true});
+      assert.notInclude(result, regeneratorSnippet);
+      assert.include(result, 'myFunction');
+    });
+
+    test('omitted when compile target is es2015', () => {
+      const result =
+          jsTransform(asyncJs, {compile: 'es2015', externalHelpers: false});
+      assert.notInclude(result, regeneratorSnippet);
+      assert.include(result, 'myFunction');
+    });
+
+    test('omitted when code does not require it', () => {
+      const result = jsTransform(
+          `class MyClass {}`, {compile: 'es5', externalHelpers: false});
+      assert.notInclude(result, regeneratorSnippet);
+      assert.include(result, 'MyClass');
     });
   });
 

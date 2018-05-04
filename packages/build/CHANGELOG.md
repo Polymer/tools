@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader),
   instead of injecting a static path. As a result, it is now always coupled with
   the AMD transform, and cannot be enabled independently.
+* The [regenerator runtime](https://github.com/facebook/regenerator) can now
+  be injected either inline each time it is used by `jsTransform`, or inline
+  into the HTML document by `htmlTransform`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.16] - 2018-05-01

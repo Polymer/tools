@@ -20,6 +20,7 @@ import * as uuid from 'uuid/v1';
 import {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 import {dynamicImportAmd} from './babel-plugin-dynamic-import-amd';
 import {rewriteImportMeta} from './babel-plugin-import-meta';
+import * as externalJs from './external-js';
 
 // TODO(aomarks) Switch to babel-preset-env. But how do we get just syntax
 // plugins without turning on transformation, for the case where we are
@@ -282,6 +283,11 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
             'Babel transform failed: resulting code was undefined.');
       }
       js = result.code;
+
+      if (!options.externalHelpers && options.compile === 'es5' &&
+          js.includes('regeneratorRuntime')) {
+        js = externalJs.getRegeneratorRuntime() + js;
+      }
     }
   }
 
