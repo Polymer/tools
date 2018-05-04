@@ -1,5 +1,9 @@
-[![NPM version](http://img.shields.io/npm/v/wct-local.svg?style=flat-square)](https://npmjs.org/package/wct-local)
+## 🚨 Moved to [`Polymer/tools/packages/wct-local`][1] 🚨
 
-Local browser support for [web-component-tester](https://github.com/Polymer/web-component-tester).
+The [`Polymer/wct-local`][2] repo has been migrated to [`packages/wct-local`][1] folder of the [`Polymer/wct-local`][3] 🚝  *monorepo*.
 
-This is currently a dependency of WCT, and tested via it.
+We are *actively* working on migrating open Issues and PRs to the new repo. New Issues and PRs should be filed at [`Polymer/tools`][3].
+
+[1]: https://github.com/Polymer/tools/tree/master/packages/wct-local
+[2]: https://github.com/Polymer/wct-local
+[3]: https://github.com/Polymer/tools
