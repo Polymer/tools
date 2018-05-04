@@ -15,6 +15,8 @@
   async/await and generators. `serve` will include the runtime in each script
   where it is used while `build` will include it once, inline, in the entrypoint
   HTML file.
+* Added es5, es2015, es2016, es2017, and es2018 compile targets to `build` to
+  allow fine grained control over what features to compile.
 
 ## v1.7.0-pre.16 [05-01-2018]
 * Dropped support for node v6. This is a soft break, as we aren't
