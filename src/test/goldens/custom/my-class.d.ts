@@ -9,6 +9,7 @@
  */
 
 declare class MyClass {
+  constructor(num: number, truth: boolean);
   no_params(): void;
   one_param(p1: any): void;
   two_params(p1: any, p2: any): void;

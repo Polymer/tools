@@ -75,7 +75,10 @@ const defaultExclude = [
  */
 export async function generateDeclarations(
     rootDir: string, config: Config): Promise<Map<string, string>> {
-  const a = analyzer.Analyzer.createForDirectory(rootDir);
+  const a = new analyzer.Analyzer({
+    urlLoader: new analyzer.FsUrlLoader(rootDir),
+    urlResolver: new analyzer.PackageUrlResolver({packageDir: rootDir}),
+  });
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();
   for (const tsDoc of analyzerToAst(analysis, config, rootDir)) {
@@ -311,7 +314,8 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
       methods: [
         ...handleMethods(feature.staticMethods.values(), {isStatic: true}),
         ...handleMethods(feature.methods.values()),
-      ]
+      ],
+      constructorMethod: handleConstructorMethod(feature.constructorMethod)
     }));
 
     if (behaviors.length > 0) {
@@ -499,6 +503,7 @@ function handleClass(feature: analyzer.Class, root: ts.Document) {
     ...handleMethods(feature.staticMethods.values(), {isStatic: true}),
     ...handleMethods(feature.methods.values())
   ];
+  m.constructorMethod = handleConstructorMethod(feature.constructorMethod);
   findOrCreateNamespace(root, namespacePath).members.push(m);
 }
 
@@ -565,48 +570,66 @@ function handleMethods(
     if (method.inheritedFrom || method.privacy === 'private') {
       continue;
     }
-    const m = new ts.Method({
-      name: method.name,
-      returns: closureTypeToTypeScript(method.return && method.return.type),
-      returnsDescription: method.return && method.return.desc,
-      isStatic: opts && opts.isStatic,
-    });
-    m.description = method.description || '';
 
-    let requiredAhead = false;
-    for (const param of reverseIter(method.params || [])) {
-      const tsParam = closureParamToTypeScript(param.name, param.type);
-      tsParam.description = param.description || '';
-
-      if (param.defaultValue !== undefined) {
-        // Parameters with default values generally behave like optional
-        // parameters. However, unlike optional parameters, they may be
-        // followed by a required parameter, in which case the default value is
-        // set by explicitly passing undefined.
-        if (!requiredAhead) {
-          tsParam.optional = true;
-        } else {
-          tsParam.type = new ts.UnionType([tsParam.type, ts.undefinedType]);
-        }
-      } else if (!tsParam.optional) {
-        requiredAhead = true;
-      }
-
-      // Analyzer might know this is a rest parameter even if there was no
-      // JSDoc type annotation (or if it was wrong).
-      tsParam.rest = tsParam.rest || !!param.rest;
-      if (tsParam.rest && tsParam.type.kind !== 'array') {
-        // Closure rest parameter types are written without the Array syntax,
-        // but in TypeScript they must be explicitly arrays.
-        tsParam.type = new ts.ArrayType(tsParam.type);
-      }
-
-      m.params.unshift(tsParam);
-    }
-
-    tsMethods.push(m);
+    tsMethods.push(handleMethod(method, opts));
   }
   return tsMethods;
+}
+
+/**
+ * Convert the given Analyzer method to the equivalent TypeScript declaration
+ */
+function handleMethod(
+    method: analyzer.Method, opts?: {isStatic?: boolean}): ts.Method {
+  const m = new ts.Method({
+    name: method.name,
+    returns: closureTypeToTypeScript(method.return && method.return.type),
+    returnsDescription: method.return && method.return.desc,
+    isStatic: opts && opts.isStatic,
+  });
+  m.description = method.description || '';
+
+  let requiredAhead = false;
+  for (const param of reverseIter(method.params || [])) {
+    const tsParam = closureParamToTypeScript(param.name, param.type);
+    tsParam.description = param.description || '';
+
+    if (param.defaultValue !== undefined) {
+      // Parameters with default values generally behave like optional
+      // parameters. However, unlike optional parameters, they may be
+      // followed by a required parameter, in which case the default value is
+      // set by explicitly passing undefined.
+      if (!requiredAhead) {
+        tsParam.optional = true;
+      } else {
+        tsParam.type = new ts.UnionType([tsParam.type, ts.undefinedType]);
+      }
+    } else if (!tsParam.optional) {
+      requiredAhead = true;
+    }
+
+    // Analyzer might know this is a rest parameter even if there was no
+    // JSDoc type annotation (or if it was wrong).
+    tsParam.rest = tsParam.rest || !!param.rest;
+    if (tsParam.rest && tsParam.type.kind !== 'array') {
+      // Closure rest parameter types are written without the Array syntax,
+      // but in TypeScript they must be explicitly arrays.
+      tsParam.type = new ts.ArrayType(tsParam.type);
+    }
+
+    m.params.unshift(tsParam);
+  }
+  return m;
+}
+
+function handleConstructorMethod(method?: analyzer.Method): ts.Method|
+    undefined {
+  if (!method) {
+    return;
+  }
+  const m = handleMethod(method);
+  m.returns = undefined;
+  return m;
 }
 
 /**

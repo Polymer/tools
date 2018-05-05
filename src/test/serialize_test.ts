@@ -156,7 +156,6 @@ interface MyInterface {
 declare class MyClass {
 }
 `);
-
   });
 
   test('namespace', () => {

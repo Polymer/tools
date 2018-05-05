@@ -1,4 +1,11 @@
 class MyClass {
+  /**
+   * @param {number} num
+   * @param {boolean} truth
+   */
+  constructor(num, truth) {
+
+  }
   no_params() { }
 
   one_param(p1) { }

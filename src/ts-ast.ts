@@ -124,6 +124,7 @@ export class Class {
   mixins: string[];
   properties: Property[];
   methods: Method[];
+  constructorMethod?: Method;
 
   constructor(data: {
     name: string,
@@ -131,7 +132,8 @@ export class Class {
     extends?: string,
     mixins?: string[],
     properties?: Property[],
-    methods?: Method[]
+    methods?: Method[],
+    constructorMethod?: Method
   }) {
     this.name = data.name;
     this.description = data.description || '';
@@ -139,11 +141,15 @@ export class Class {
     this.mixins = data.mixins || [];
     this.properties = data.properties || [];
     this.methods = data.methods || [];
+    this.constructorMethod = data.constructorMethod;
   }
 
   * traverse(): Iterable<Node> {
     for (const p of this.properties) {
       yield* p.traverse();
+    }
+    if (this.constructorMethod) {
+      yield* this.constructorMethod.traverse();
     }
     for (const m of this.methods) {
       yield* m.traverse();
@@ -179,6 +185,9 @@ export class Class {
     out += ' {\n';
     for (const property of this.properties) {
       out += property.serialize(depth + 1);
+    }
+    if (this.constructorMethod) {
+      out += this.constructorMethod.serialize(depth + 1);
     }
     for (const method of this.methods) {
       out += method.serialize(depth + 1);
@@ -255,7 +264,7 @@ export abstract class FunctionLike {
   description: string;
   params: ParamType[];
   templateTypes: string[];
-  returns: Type;
+  returns?: Type;
   returnsDescription: string;
   isStatic: boolean;
 
@@ -318,7 +327,11 @@ export abstract class FunctionLike {
     }
     out += '(';
     out += this.params.map((p) => p.serialize()).join(', ');
-    out += `): ${this.returns.serialize()};\n`;
+    out += `)`
+    if (this.returns) {
+      out += `: ${this.returns.serialize()}`;
+    }
+    out += `;\n`
     return out;
   }
 }
@@ -330,7 +343,9 @@ export class Function extends FunctionLike {
     for (const p of this.params) {
       yield* p.traverse();
     }
-    yield* this.returns.traverse();
+    if (this.returns) {
+      yield* this.returns.traverse();
+    }
     yield this;
   }
 }
@@ -342,7 +357,9 @@ export class Method extends FunctionLike {
     for (const p of this.params) {
       yield* p.traverse();
     }
-    yield* this.returns.traverse();
+    if (this.returns) {
+      yield* this.returns.traverse();
+    }
     yield this;
   }
 }
