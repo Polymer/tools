@@ -104,13 +104,16 @@ export class Analyzer {
       Promise<Analysis> {
     const previousAnalysisComplete = this._analysisComplete;
     const uiUrls = this.brandUserInputUrls(urls);
+    let filesWithParsers: PackageRelativeUrl[];
     this._analysisComplete = (async () => {
       const previousContext = await previousAnalysisComplete;
+      filesWithParsers =
+          this._filterFilesByParsableExtension(uiUrls, previousContext);
       return await previousContext.analyze(
-          uiUrls, options.cancelToken || neverCancels);
+          filesWithParsers, options.cancelToken || neverCancels);
     })();
     const context = await this._analysisComplete;
-    const resolvedUrls = context.resolveUserInputUrls(uiUrls);
+    const resolvedUrls = context.resolveUserInputUrls(filesWithParsers!);
     return this._constructAnalysis(context, resolvedUrls);
   }
 
@@ -129,9 +132,8 @@ export class Analyzer {
       // TODO(rictic): parameterize this, perhaps with polymer.json.
       const filesInPackage =
           allFiles.filter((file) => !Analysis.isExternal(file));
-      const extensions = new Set(previousContext.parsers.keys());
-      const filesWithParsers = filesInPackage.filter(
-          (fn) => extensions.has(path.extname(fn).substring(1)));
+      const filesWithParsers =
+          this._filterFilesByParsableExtension(filesInPackage, previousContext);
 
       const newContext = await previousContext.analyze(
           filesWithParsers, options.cancelToken || neverCancels);
@@ -142,6 +144,13 @@ export class Analyzer {
     })();
     await this._analysisComplete;
     return analysis!;
+  }
+
+  private _filterFilesByParsableExtension(
+      filenames: PackageRelativeUrl[], context: AnalysisContext) {
+    const extensions = new Set(context.parsers.keys());
+    return filenames.filter(
+        (fn) => extensions.has(path.extname(fn).substring(1)));
   }
 
   private _constructAnalysis(

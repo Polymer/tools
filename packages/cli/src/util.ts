@@ -17,6 +17,8 @@
 
 import * as inquirer from 'inquirer';
 import {execSync} from 'mz/child_process';
+import { ProjectConfig } from 'polymer-project-config';
+import * as path from 'path';
 
 /**
  * Check if the current shell environment is MinGW. MinGW can't handle some
@@ -71,4 +73,36 @@ export function indent(str: string, additionalIndentation = '  ') {
 
 export function dashToCamelCase(text: string): string {
   return text.replace(/-([a-z])/g, (v) => v[1].toUpperCase());
+}
+
+/**
+ * Gets the root source files of the project, for analysis & linting.
+ *
+ * First looks for explicit options on the command line, then looks in
+ * the config file. If none are specified in either case, returns undefined.
+ *
+ * Returned file paths are relative from config.root.
+ */
+export async function getProjectSources(options: { input?: Array<string> }, config: ProjectConfig): Promise<string[] | undefined> {
+  const globby = await import('globby');
+
+  if (options.input !== undefined && options.input.length > 0) {
+    // Files specified from the command line are relative to the current
+    //   working directory (which is usually, but not always, config.root).
+    const absPaths = await globby(options.input, { root: process.cwd() });
+    return absPaths.map((p) => path.relative(config.root, p));
+  }
+  const candidateFiles = await globby(config.sources, { root: config.root });
+  candidateFiles.push(...config.fragments);
+  if (config.shell) {
+    candidateFiles.push(config.shell);
+  }
+  if (config.entrypoint) {
+    candidateFiles.push(config.entrypoint);
+  }
+  if (candidateFiles.length > 0) {
+    // Files in the project config are all absolute paths.
+    return [...new Set(candidateFiles.map((absFile) => path.relative(config.root, absFile)))];
+  }
+  return undefined;
 }
