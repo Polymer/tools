@@ -15,8 +15,7 @@
 import * as clone from 'clone';
 import * as dom5 from 'dom5';
 import {ASTNode, parseFragment, serialize, treeAdapters} from 'parse5';
-import {Document, DocumentBackreference, FileRelativeUrl, ParsedHtmlDocument, ParsedJavaScriptDocument, ResolvedUrl} from 'polymer-analyzer';
-import ThisVariable from 'rollup/dist/typings/ast/variables/ThisVariable';
+import {Document, FileRelativeUrl, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
 
 import {assertIsHtmlDocument, assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
