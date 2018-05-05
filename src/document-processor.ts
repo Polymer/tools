@@ -155,8 +155,8 @@ export abstract class DocumentProcessor {
       for (const claimedDomModule of localClaimedDomModules) {
         claimedDomModules.add(claimedDomModule);
       }
-      if (this.conversionSettings.addImportPath) {
-        this.addImportPathsToElements(scriptProgram, scriptDocument);
+      if (!this.conversionSettings.removeImportMeta) {
+        this.addImportMetaToElements(scriptProgram, scriptDocument);
       }
       const statements = scriptProgram.body;
       if (script.astNode && script.astNode.language === 'html') {
@@ -309,9 +309,9 @@ export abstract class DocumentProcessor {
   }
 
   /**
-   * Adds a static importPath property to Polymer elements.
+   * Adds a static importMeta property to Polymer elements.
    */
-  private addImportPathsToElements(program: Program, scriptDocument: Document) {
+  private addImportMetaToElements(program: Program, scriptDocument: Document) {
     const elements = scriptDocument.getFeatures({'kind': 'polymer-element'});
 
     for (const element of elements) {
@@ -338,29 +338,27 @@ export abstract class DocumentProcessor {
         continue;
       }
 
-      const importMetaUrl = jsc.memberExpression(
-          jsc.memberExpression(
-              jsc.identifier('import'), jsc.identifier('meta')),
-          jsc.identifier('url'));
+      const importMeta = jsc.memberExpression(
+          jsc.identifier('import'), jsc.identifier('meta'));
 
       const node = nodePath.node;
       if (node.type === 'ClassDeclaration' || node.type === 'ClassExpression') {
         // A Polymer 2.0 class-based element
         const getter = jsc.methodDefinition(
             'get',
-            jsc.identifier('importPath'),
+            jsc.identifier('importMeta'),
             jsc.functionExpression(
                 null,
                 [],
-                jsc.blockStatement([jsc.returnStatement(importMetaUrl)])),
+                jsc.blockStatement([jsc.returnStatement(importMeta)])),
             true);
         node.body.body.splice(0, 0, getter);
       } else if (node.type === 'CallExpression') {
         // A Polymer hybrid/legacy factory function element
         const arg = node.arguments[0];
         if (arg && arg.type === 'ObjectExpression') {
-          arg.properties.unshift(jsc.property(
-              'init', jsc.identifier('importPath'), importMetaUrl));
+          arg.properties.unshift(
+              jsc.property('init', jsc.identifier('importMeta'), importMeta));
         }
       } else {
         console.error(`Internal Error, Class or CallExpression expected, got ${

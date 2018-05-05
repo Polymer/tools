@@ -158,11 +158,11 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
         `Defaults to "path".`,
   },
   {
-    name: 'add-import-path',
+    name: 'remove-import-meta',
     type: Boolean,
     defaultValue: false,
-    description: `Whether to add a static importPath property to elements. ` +
-        `Defaults to false`,
+    description: `Whether to not add a static importMeta property to ` +
+        `elements. Defaults to false`,
   },
   {
     name: 'flat',
@@ -209,7 +209,7 @@ export interface CliOptions {
   push: boolean;
   publish: boolean;
   'import-style': NpmImportStyle;
-  'add-import-path': boolean;
+  'remove-import-meta': boolean;
   flat: boolean;
   'private': boolean;
   'package-type': PackageType;
