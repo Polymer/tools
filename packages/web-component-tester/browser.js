@@ -1361,6 +1361,8 @@ function _runMocha(reporter, done, waited) {
                 return;
             if (event.error.ignore)
                 return;
+            if (window.uncaughtErrorFilter && window.uncaughtErrorFilter(event))
+                return;
             runner.uncaught(event.error);
         });
     }
