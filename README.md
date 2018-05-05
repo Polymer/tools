@@ -107,9 +107,9 @@ This will create a `modulizer_workspace` directory and checkout the repos and th
 
 Setting the import style allows you to set whether JavaScript imports are specified by npm package name, or relative file path. Importing specifiers that use package names are easier for third-party packages to work with, but unlike paths they currently can not run natively on the web. Defaults to "path".
 
-#### `--add-import-path`
+#### `--remove-import-meta
 
-If included, the static `importPath` property will be added to converted Polymer elements. See [the `importPath` documentation](https://www.polymer-project.org/2.0/docs/devguide/dom-template) for more information.
+If included, the static `importMeta` property will not be added to converted Polymer elements. See [the `importPath` documentation](https://www.polymer-project.org/2.0/docs/devguide/dom-template) for more information.
 
 
 ## Conversion Guidelines
