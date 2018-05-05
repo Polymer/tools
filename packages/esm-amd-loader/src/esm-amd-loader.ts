@@ -152,10 +152,14 @@ function load(module: Module<Initialized>): Module<Loading> {
       moduleBody = undefined;
     }
     beginWaitingOnEarlierScripts(mutatedModule, deps, moduleBody);
+    document.head.removeChild(script);
   };
 
-  script.onerror = () =>
-      fail(module, new TypeError('Failed to fetch ' + module.url));
+  script.onerror = () => {
+    fail(module, new TypeError('Failed to fetch ' + module.url));
+    document.head.removeChild(script);
+  };
+
 
   document.head.appendChild(script);
 
@@ -294,6 +298,7 @@ function waitOnDeps(
   }
   const nextDep = deps[0];
   switch (nextDep.stateData.state) {
+    // Cases where the dep needs us to push it forward.
     case StateEnum.Initialized:
       load(nextDep as Module<Initialized>);
       return;
@@ -301,6 +306,8 @@ function waitOnDeps(
       beginWaitingOnDeps(nextDep as Module<WaitingOnEarlierScripts>);
       waitOnDeps(deps, onResolve, onError);
       return;
+
+    // Terminal cases that we should respond to.
     case StateEnum.Failed:
       if (onError) {
         onError(nextDep.stateData.error);
@@ -310,12 +317,14 @@ function waitOnDeps(
       deps.shift();
       return waitOnDeps(deps, onResolve, onError);
 
+    // Nothing to do but wait
     case StateEnum.Loading:
     case StateEnum.WaitingOnDeps:
-      // Nothing for us to do but wait in this case.
       nextDep.onNextStateChange.push(
           () => waitOnDeps(deps, onResolve, onError));
       return;
+
+    // This should not happen.
     default:
       const never: never = nextDep.stateData;
       throw new Error(`Impossible module state: ${never}`);
