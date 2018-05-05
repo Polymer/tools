@@ -36,6 +36,5 @@ export async function runFixture(
     '--out',
     '.',
     '--force',
-    '--add-import-path',
   ].concat(testConfig.options || []));
 }
