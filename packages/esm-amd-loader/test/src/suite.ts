@@ -58,7 +58,7 @@ test('define an empty module', (done) => {
 });
 
 suite('static dependencies', () => {
-  test.only('load 1 dependency', (done) => {
+  test('load 1 dependency', (done) => {
     define(['./y.js'], (y: any) => {
       assert.equal(y.y, 'y');
       done();

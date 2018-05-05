@@ -18,10 +18,11 @@ interface Window {
   };
 }
 
-type Registry = {
-  [url: string]: Module
-};
+type ResolveCallback = (...args: Array<{}>) => void;
+type ErrorCallback = (error: Error) => void;
+type NormalizedUrl = string&{_normalized: never};
 
+(function() {
 
 /**
  * Describes the state loading state machine.
@@ -36,6 +37,7 @@ const enum StateEnum {
 
   /**
    * Comes after Initialized. We have begun loading the module over the network.
+   * Toplevel scripts skip this state entirely.
    */
   Loading,
 
@@ -85,6 +87,8 @@ interface BaseWaiting {
   /**
    * The body of the module, which is executed after its dependencies are
    * loaded.
+   *
+   * In AMD/Commonjs terminology, this is the factory function.
    */
   moduleBody: undefined|Function;
 }
@@ -118,12 +122,6 @@ interface Module<SD extends ModuleStateData = ModuleStateData> {
   onNextStateChange: Array<() => void>;
 }
 
-type ResolveCallback = (...args: Array<{}>) => void;
-type ErrorCallback = (error: Error) => void;
-type NormalizedUrl = string&{_normalized: never};
-
-(function() {
-
 /**
  * A global map from a fully qualified module URLs to module objects.
  */
@@ -134,9 +132,9 @@ let topLevelScriptIdx = 0;
 let previousTopLevelUrl: string|undefined = undefined;
 let baseUrl = getBaseUrl();
 
+/** Begin loading a module from the network. */
 function load(module: Module<Initialized>): Module<Loading> {
-  const mutatedModule = ((module as Module) as Module<Loading>);
-  mutatedModule.stateData.state = StateEnum.Loading;
+  const mutatedModule = stateTransition(module, {state: StateEnum.Loading});
 
   const script = document.createElement('script');
   script.src = module.url;
@@ -144,9 +142,7 @@ function load(module: Module<Initialized>): Module<Loading> {
   script.onload = () => {
     let deps: string[], moduleBody;
     if (pendingDefine !== undefined) {
-      const result = pendingDefine();
-      deps = result[0];
-      moduleBody = result[1];
+      [deps, moduleBody] = pendingDefine();
     } else {
       // The script did not make a call to define(), otherwise the global
       // callback would have been set. That's fine, we can resolve immediately
@@ -165,6 +161,7 @@ function load(module: Module<Initialized>): Module<Loading> {
   return mutatedModule;
 }
 
+/** Start loading the module's dependencies, but don't execute anything yet. */
 function beginWaitingOnEarlierScripts(
     module: Module<Loading>,
     deps: string[],
@@ -197,7 +194,7 @@ function loadDeps(
 
         waitOnDeps(depModules, () => {
           if (onResolve) {
-            onResolve.call(args);
+            onResolve.apply(null, args);
           }
         }, onError);
       });
@@ -224,6 +221,10 @@ function loadDeps(
   return [args, depModules];
 }
 
+/**
+ * Start executing our dependencies, in order, as they become available.
+ * Once they're all executed, execute our own module body, if any.
+ */
 function beginWaitingOnDeps(module: Module<WaitingOnEarlierScripts>) {
   const stateData: WaitingOnDeps = {
     state: StateEnum.WaitingOnDeps,
@@ -239,11 +240,12 @@ function beginWaitingOnDeps(module: Module<WaitingOnEarlierScripts>) {
   return mutatedModule;
 }
 
+/** Runs the given module body. */
 function execute(module: Module<WaitingOnDeps>): Module<Executed|Failed> {
   const stateData = module.stateData;
   if (stateData.moduleBody != null) {
     try {
-      stateData.moduleBody.call(stateData.args);
+      stateData.moduleBody.apply(null, stateData.args);
     } catch (e) {
       return fail(module, e);
     }
@@ -259,6 +261,12 @@ function fail(mod: Module, error: Error) {
   return stateTransition(mod, {state: StateEnum.Failed, error});
 }
 
+/**
+ * Transition the given module to the given state.
+ *
+ * Does not do any checking that the transition is legal.
+ * Calls onNextStateChange callbacks.
+ */
 function stateTransition<SD extends ModuleStateData>(
     module: Module, stateData: SD): Module<SD> {
   const mutatedModule = module as Module<SD>;
@@ -362,14 +370,25 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
         // mirror type=module behavior as much as possible, wait for the
         // previous module script to finish (successfully or otherwise)
         // before executing further.
-        waitOnDeps(
-            [getModule(predecessor as NormalizedUrl)], nextStep, nextStep);
+        whenModuleTerminated(getModule(predecessor as NormalizedUrl), nextStep);
       } else {
         nextStep();
       }
     }
   }, 0);
 };
+
+function whenModuleTerminated(module: Module, onTerminalState: () => void) {
+  switch (module.stateData.state) {
+    case StateEnum.Executed:
+    case StateEnum.Failed:
+      onTerminalState();
+      return;
+    default:
+      module.onNextStateChange.push(
+          () => whenModuleTerminated(module, onTerminalState));
+  }
+}
 
 /**
  * Reset all internal state for testing and debugging.

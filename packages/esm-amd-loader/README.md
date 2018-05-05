@@ -2,7 +2,7 @@
 
 # @polymer/esm-amd-loader
 
-A JavaScript library which loads AMD-style modules in the browser in 0.9 KB.
+A JavaScript library which loads AMD-style modules in the browser in 1.2 KB.
 
 ## Contents
 

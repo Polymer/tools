@@ -3,8 +3,8 @@
   "compilerOptions": {
     "outDir": "./lib",
     "lib": [
-      "ES5",
-      "DOM"
+      "es5",
+      "dom"
     ]
   },
   "include": [
