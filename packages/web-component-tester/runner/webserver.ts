@@ -103,10 +103,6 @@ export function webserver(wct: Context): void {
       options.clientOptions.environmentScripts =
           options.clientOptions.environmentScripts.concat(
               resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
-
-      if (isPackageScoped) {
-        browserScript = `../${browserScript}`;
-      }
     }
     const a11ySuiteScript = 'web-component-tester/data/a11ySuite.js';
     options.webserver._generatedIndexContent = INDEX_TEMPLATE(
@@ -176,8 +172,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
           WARNING:
           Loading WCT's browser.js from /browser.js is deprecated.
 
-          Instead load it from ../web-component-tester/browser.js
-          (or with the absolute url /components/web-component-tester/browser.js)
+          Instead load it from /node_modules/web-component-tester/browser.js
         `);
           hasWarnedBrowserJs = true;
         }
@@ -186,8 +181,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       });
     }
 
-    const pathToGeneratedIndex =
-        `/components/${packageName}/generated-index.html`;
+    const pathToGeneratedIndex = `/generated-index.html`;
     additionalRoutes.set(pathToGeneratedIndex, (_request, response) => {
       response.set(DEFAULT_HEADERS);
       response.send(options.webserver._generatedIndexContent);

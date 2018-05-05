@@ -246,7 +246,7 @@ export function defaults(): Config {
     extraScripts: [],
     // Configuration options passed to the browser client.
     clientOptions: {
-      root: '/components/',
+      root: '/node_modules/',
     },
     compile: 'auto',
 
