@@ -23,7 +23,7 @@ let ComputingBehavior = {
   }
 };
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div id="boundChild" value="{{ value }}" negvalue="{{!bool}}" attrvalue\$="{{attrvalue}}" sanitize-value="{{sanitizeValue}}" computedvalue="{{computedvalue}}" computedvaluetwo="{{computedvaluetwo}}" camel-case="{{value}}" computed-inline="{{computeInline(value,add, divide)}}" computed-inline2="{{computeInline(value, add,divide)}}" computed-inline3="{{computeInline(value, add,
@@ -321,7 +321,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-basic id="basic1" value="{{boundvalue}}" notifyingvalue="{{boundnotifyingvalue}}" notifyingvalue-with-default="{{boundnotifyingvalueWithDefault}}" camel-notifying-value="{{boundnotifyingvalue}}" computedvalue="{{boundcomputedvalue}}" computednotifyingvalue="{{boundcomputednotifyingvalue}}" readonlyvalue="{{boundreadonlyvalue}}" custom-notifying-value="{{boundCustomNotifyingValue}}">
@@ -426,7 +426,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <slot name="drawer"></slot>
@@ -459,7 +459,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-reflect',
 
   properties: {
@@ -490,7 +490,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-prop',
 
   properties: {
@@ -510,7 +510,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-notifies1',
 
   properties: {
@@ -524,7 +524,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-notifies1 id="notifies1" notifies="{{shouldChange}}"></x-notifies1>
@@ -539,7 +539,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-notifies2 id="notifies2" notifies="{{shouldNotChange}}"></x-notifies2>
@@ -556,7 +556,7 @@ Polymer({
   shouldNotChangeChanged: function() { }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <p>©</p>
@@ -573,7 +573,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <input id="input" value\$="{{inputValue}}">
@@ -582,7 +582,7 @@ Polymer({
   is: 'x-input-value'
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div id="check">{{isAttached}}</div>
@@ -600,7 +600,7 @@ Polymer({
 });
 var invocations = [];
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-order-of-effects id="child" base="{{base}}"></x-order-of-effects>
@@ -620,7 +620,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-order-of-effects-child prop1="[[base]]" prop2="[[_computedAnnotation(base)]]"></x-order-of-effects-child>
@@ -672,7 +672,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-order-of-effects-child',
 
   properties: {
@@ -693,7 +693,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div id="check">[[translateMessage('Hello World.')]]</div>
@@ -728,7 +728,7 @@ var TranslateBehavior = {
   }
 };
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div id="check">[[translateMessage(message)]]</div>
@@ -757,7 +757,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div -u-p-c-a-s-e\$="[[UPCASE]]"></div>
@@ -773,7 +773,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" if="[[visible]]">
@@ -799,7 +799,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-propagate',
 
   properties: {
@@ -827,8 +827,8 @@ Polymer({
   }
 });
 class XRaw extends HTMLElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   constructor() {
@@ -869,7 +869,7 @@ class XRaw extends HTMLElement {
 customElements.define('x-raw', XRaw);
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-polymer',
 
   created: function() {
@@ -890,7 +890,7 @@ Polymer({
 });
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-polymer id="polymer" array="{{array}}" compound="**{{array}}**">{{array}}</x-polymer>
@@ -912,7 +912,7 @@ Polymer({
 });
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-template-proto',
 
   _template: (function() {
@@ -945,13 +945,13 @@ let TemplateBehavior = {
 };
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-template-behavior',
   behaviors: [TemplateBehavior]
 });
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-immutable-b b="[[a.b]]" x="[[a.x]]" id="b"></x-immutable-b>
@@ -966,8 +966,8 @@ Polymer({
   }
 });
 class XImmutableB extends PolymerElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {
@@ -987,7 +987,7 @@ class XImmutableB extends PolymerElement {
 }
 customElements.define('x-immutable-b', XImmutableB);
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-immutable-c',
   observers: ['cChanged(c)', 'xChanged(x)'],
 
@@ -997,7 +997,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-mutable-b b="[[a.b]]" x="[[a.x]]" id="b"></x-mutable-b>
@@ -1013,8 +1013,8 @@ Polymer({
   }
 });
 class XMutableB extends MutableData(PolymerElement) {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {
@@ -1034,7 +1034,7 @@ class XMutableB extends MutableData(PolymerElement) {
 }
 customElements.define('x-mutable-b', XMutableB);
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-mutable-c',
   behaviors: [MutableDataBehavior],
   observers: ['cChanged(c)', 'xChanged(x)'],
@@ -1045,8 +1045,8 @@ Polymer({
   }
 });
 class SVGElement extends PolymerElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {

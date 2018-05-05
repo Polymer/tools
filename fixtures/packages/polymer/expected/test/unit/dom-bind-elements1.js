@@ -11,7 +11,7 @@ import { Polymer } from '../../lib/legacy/polymer-fn.js';
 
 import { html } from '../../lib/utils/html-tag.js';
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-basic',
 
   properties: {
@@ -21,7 +21,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
 <div id="container"><slot id="slot"></slot></div>
@@ -30,7 +30,7 @@ Polymer({
   is: 'x-content'
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
 <x-content id="local"></x-content>
@@ -54,7 +54,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
 <x-content id="local"></x-content>
@@ -63,7 +63,7 @@ Polymer({
   is: 'x-compose'
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-produce-a',
 
   properties: {

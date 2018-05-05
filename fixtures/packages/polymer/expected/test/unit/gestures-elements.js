@@ -14,7 +14,7 @@ import { html } from '../../lib/utils/html-tag.js';
 import { PolymerElement } from '../../polymer-element.js';
 import { GestureEventListeners } from '../../lib/mixins/gesture-event-listeners.js';
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
   <style>
@@ -39,7 +39,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-foo id="foo"></x-foo>
@@ -57,7 +57,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div id="inner" on-tap="handler" on-track="handler" on-down="handler" on-up="handler"></div>
@@ -76,7 +76,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-dynamic',
   handler: function(){},
 
@@ -102,7 +102,7 @@ var EventCaptureBehavior = {
   }
 };
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   listeners: {
     'down': 'prevent',
@@ -122,7 +122,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-buttons',
 
   listeners: {
@@ -135,7 +135,7 @@ Polymer({
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-document-listener',
 
   setup: function() {
@@ -149,7 +149,7 @@ Polymer({
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-nested-child-prevent',
 
   listeners: {
@@ -159,7 +159,7 @@ Polymer({
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <style>
@@ -192,13 +192,13 @@ Polymer({
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-imperative',
   behaviors: [EventCaptureBehavior]
 });
 class XNativeLabel extends PolymerElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {
@@ -214,8 +214,8 @@ class XNativeLabel extends PolymerElement {
 }
 customElements.define(XNativeLabel.is, XNativeLabel);
 class XNativeLabelNested extends PolymerElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {
@@ -232,8 +232,8 @@ class XNativeLabelNested extends PolymerElement {
 }
 customElements.define(XNativeLabelNested.is, XNativeLabelNested);
 class XDisabled extends GestureEventListeners(PolymerElement) {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {

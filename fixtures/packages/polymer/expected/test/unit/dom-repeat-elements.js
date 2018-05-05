@@ -102,7 +102,7 @@ window.getData = () => [
 ];
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <style>
@@ -159,7 +159,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-bar',
 
   properties: {
@@ -199,7 +199,7 @@ Polymer({
   }
 });
 let XNestedRepeat = Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: `
 <template id="repeater" is="dom-repeat" items="{{items}}" as="itema" index-as="indexa" on-dom-change="domUpdateHandler">
@@ -263,8 +263,8 @@ let XNestedRepeat = Polymer({
   }
 });
 class XNestedRepeatMutable extends MutableData(XNestedRepeat) {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {
@@ -284,7 +284,7 @@ class XNestedRepeatMutable extends MutableData(XNestedRepeat) {
 }
 customElements.define('x-nested-repeat-mutable', XNestedRepeatMutable);
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}" as="itema" index-as="indexa" observe="prop">
@@ -342,7 +342,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
       <template id="repeater" is="dom-repeat" items="{{items}}">
@@ -367,7 +367,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template id="repeat" is="dom-repeat" items="{{items}}">
@@ -384,7 +384,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div id="container1">
@@ -410,7 +410,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}">
@@ -433,7 +433,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}">
@@ -461,7 +461,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template id="repeater" is="dom-repeat" items="{{items}}" initial-count="10">
@@ -484,7 +484,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-wait',
 
   created: function() {
@@ -494,7 +494,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-repeat" items="{{items}}" id="outer">

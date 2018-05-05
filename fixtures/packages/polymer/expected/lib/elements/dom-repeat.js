@@ -130,8 +130,8 @@ const domRepeatBase = OptionalMutableData(PolymerElement);
  *   items in an array.
  */
 class DomRepeat extends domRepeatBase {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   // Not needed to find template; can be removed once the analyzer

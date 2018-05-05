@@ -63,8 +63,8 @@ const base = PropertyEffects(class {});
  * @unrestricted
  */
 class TemplateInstanceBase extends base {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   constructor(props) {

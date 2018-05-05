@@ -13,8 +13,8 @@ import '../../../../@webcomponents/shadycss/entrypoints/apply-shim.js';
 import '../../lib/elements/custom-style.js';
 import { html } from '../../lib/utils/html-tag.js';
 class ApplyElement extends PolymerElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {
@@ -32,8 +32,8 @@ class ApplyElement extends PolymerElement {
 }
 customElements.define('apply-element', ApplyElement);
 class XOuter extends PolymerElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {

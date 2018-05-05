@@ -11,7 +11,7 @@ import { Polymer } from '../../lib/legacy/polymer-fn.js';
 
 import { html } from '../../lib/utils/html-tag.js';
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-bar id="bar" prop="{{prop}}" item-prop="{{item.prop}}">
@@ -30,7 +30,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-bar',
 
   properties: {
@@ -43,7 +43,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp}}" on-dom-change="domUpdateHandler">
@@ -90,7 +90,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp}}">
@@ -129,7 +129,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" id="if-1" if="{{shouldStamp1}}">
@@ -165,7 +165,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template id="domIf" is="dom-if" if="">
@@ -186,7 +186,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
       <template id="domIf" is="dom-if" if="">
@@ -207,7 +207,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template id="domif" is="dom-if" if="">
@@ -220,7 +220,7 @@ Polymer({
   is: 'x-host'
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-client',
 
   statics: {
@@ -232,7 +232,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" if="{{bool}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
@@ -247,7 +247,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" if="{{isTrue(bool)}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
@@ -266,7 +266,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" if="{{switch}}" restamp="{{restamp}}">{{guarded(bool)}}</template>
@@ -291,7 +291,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" if="{{obj.bool}}" restamp="{{restamp}}">{{guarded(obj.bool)}}</template>
@@ -306,7 +306,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" if="{{switch}}" restamp="{{restamp}}">{{guarded(obj.bool)}}</template>
@@ -331,7 +331,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" if="{{b}}" restamp="{{restamp}}">{{guarded(a)}}</template>
@@ -346,7 +346,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <template is="dom-if" if="{{obj.b}}" restamp="{{restamp}}">{{guarded(obj.a)}}</template>

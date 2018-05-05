@@ -26,7 +26,7 @@ let PropertyTypeBehavior = {
 };
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-basic',
 
   hostAttributes: {
@@ -114,7 +114,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-reflect',
   behaviors: [ PropertyTypeBehavior ],
 
@@ -189,7 +189,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-basic id="basic" prop="{{attr1}}" attr1\$="{{attr1}}" class="should-not-override"></x-basic>

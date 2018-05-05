@@ -15,8 +15,8 @@ $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = `<dom-module id="p-r-ap" assetpath="../../assets/"></dom-module>`;
 document.head.appendChild($_documentContainer.content);
 class PR extends PolymerElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get template() {
@@ -49,8 +49,8 @@ class PR extends PolymerElement {
 }
 customElements.define(PR.is, PR);
 class PRAp extends PolymerElement {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get is() { return 'p-r-ap'; }

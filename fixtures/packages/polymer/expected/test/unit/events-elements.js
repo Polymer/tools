@@ -27,7 +27,7 @@ var EventLoggerImpl = {
   }
 };
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-listeners',
   behaviors: [EventLoggerImpl],
 
@@ -37,7 +37,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div id="inner" on-foo="handle" on-bar="missing"></div>
@@ -47,7 +47,7 @@ Polymer({
   behaviors: [EventLoggerImpl]
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
       <x-listeners id="inner" on-foo="handle"></x-listeners>
@@ -57,7 +57,7 @@ Polymer({
   behaviors: [EventLoggerImpl]
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <div id="inner"></div>
@@ -81,7 +81,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-double',
   behaviors: [EventLoggerImpl],
 

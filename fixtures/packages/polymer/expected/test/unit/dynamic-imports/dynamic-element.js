@@ -13,7 +13,7 @@ import { Polymer } from '../../../lib/legacy/polymer-fn.js';
 import { html } from '../../../lib/utils/html-tag.js';
 import { dom } from '../../../lib/legacy/polymer.dom.js';
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <span id="content">dynamic-element</span> :

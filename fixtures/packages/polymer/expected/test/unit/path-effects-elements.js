@@ -12,8 +12,8 @@ import { PropertiesMixin } from '../../lib/mixins/properties-mixin.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
 class XPropertiesElement extends PropertiesMixin(HTMLElement) {
-  static get importPath() {
-    return import.meta.url;
+  static get importMeta() {
+    return import.meta;
   }
 
   static get properties() {
@@ -36,7 +36,7 @@ class XPropertiesElement extends PropertiesMixin(HTMLElement) {
 }
 customElements.define('x-pe', XPropertiesElement);
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-basic',
 
   properties: {
@@ -54,7 +54,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-basic id="basic1" notifying-value="{{obj.value}}" attrvalue\$="{{obj.value}}" othervalue="{{obj.value2}}"></x-basic>
@@ -92,7 +92,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-compose id="compose" obj="{{obj}}"></x-compose>
@@ -132,7 +132,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-basic id="basic" notifying-value="{{nested.obj.value}}" attrvalue\$="{{nested.obj.value}}"></x-basic>
@@ -218,7 +218,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-reentry-client',
 
   properties: {
@@ -240,7 +240,7 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-reentry-client obj="{{obj}}" prop="{{prop}}"></x-reentry-client>
@@ -266,13 +266,13 @@ Polymer({
   }
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-path-client',
   observers: ['objChanged(obj.*)'],
   objChanged: function() {}
 });
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-path-client id="client" obj="{{obj}}"></x-path-client>

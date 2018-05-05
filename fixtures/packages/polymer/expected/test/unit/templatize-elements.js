@@ -14,7 +14,7 @@ import { Templatizer } from '../../lib/legacy/templatizer-behavior.js';
 import { html } from '../../lib/utils/html-tag.js';
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-child',
 
   properties: {
@@ -51,7 +51,7 @@ Polymer({
 });
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-templatize',
 
   properties: {
@@ -112,7 +112,7 @@ Polymer({
 });
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
   is: 'x-templatize-behavior',
 
   properties: {
@@ -178,7 +178,7 @@ Polymer({
 });
 
 Polymer({
-  importPath: import.meta.url,
+  importMeta: import.meta,
 
   _template: html`
     <x-templatize obj="{{objA}}" prop="{{propA}}" id="templatizeA">
