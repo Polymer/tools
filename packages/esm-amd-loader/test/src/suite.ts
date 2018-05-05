@@ -266,4 +266,42 @@ suite('dependency ordering', () => {
       done();
     });
   });
+
+  // The dependency graph here looks like:
+  // suite.html#0  -> start-one
+  // suite.html#1  -> start-two
+  // start-one -> [a, e]
+  // start-two -> [a, g, h]
+  // a -> [b, e]
+  // b -> [c, d]
+  // e -> [f, g]
+  // h -> [i, j, k]
+  const testName =
+      'with a deep and more complicated tree of deps, they still execute in import order according to spec';
+  test(testName, (done) => {
+    define(['../deepRace/start-one.js'], () => {
+      window.executionOrder.push('suite#0');
+    });
+    define(['../deepRace/start-two.js'], () => {
+      window.executionOrder.push('suite#1');
+      assert.deepEqual(window.executionOrder, [
+        'c',
+        'd',
+        'b',
+        'f',
+        'g',
+        'e',
+        'a',
+        'start-one',
+        'suite#0',
+        'i',
+        'j',
+        'k',
+        'h',
+        'start-two',
+        'suite#1'
+      ]);
+      done();
+    });
+  });
 });
