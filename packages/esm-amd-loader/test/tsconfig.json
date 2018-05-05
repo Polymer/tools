@@ -2,6 +2,7 @@
   "extends": "../../../tsconfig-base.json",
   "compilerOptions": {
     "outDir": "./lib",
+    "sourceMap": false,
     "lib": [
       "es5",
       "dom"

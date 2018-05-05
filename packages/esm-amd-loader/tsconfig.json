@@ -5,6 +5,7 @@
     "target": "es5",
     "downlevelIteration": false,
     "preserveConstEnums": false,
+    "sourceMap": false,
     "lib": [
       "es5",
       "dom"

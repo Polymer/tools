@@ -24,6 +24,10 @@ type NormalizedUrl = string&{_normalized: never};
 
 (function() {
 
+// Set to true for more logging. Anything guarded by an
+// `if (debugging)` check will not appear in the final output.
+const debugging: boolean = false;
+
 /**
  * Describes the state machine for loading a single module.
  *
@@ -273,6 +277,9 @@ function fail(mod: Module, error: Error) {
  */
 function stateTransition<SD extends ModuleStateData>(
     module: Module, stateData: SD): Module<SD> {
+  if (debugging) {
+    console.log(`${module.url} transitioning to state ${stateData.state}`);
+  }
   const mutatedModule = module as Module<SD>;
   mutatedModule.stateData = stateData;
   if (mutatedModule.onNextStateChange.length > 0) {
@@ -363,6 +370,8 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
     if (defined === false) {
       pendingDefine = undefined;
       const url = baseUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
+      // It's actually Initialized, but we're skipping over the Loading
+      // state, because this is a top level document and it's already loaded.
       const mod = getModule(url) as Module<Loading>;
 
       // Top-level scripts are already loaded.
@@ -372,6 +381,20 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
       const waitingModule = beginWaitingOnEarlierScripts(mod, deps, factory);
       const nextStep = () => {
         beginWaitingOnDeps(waitingModule);
+        function failureShouldThrow(module: Module) {
+          if (module.stateData.state === StateEnum.Executed) {
+            return;  // no failure!
+          }
+          if (module.stateData.state === StateEnum.Failed) {
+            const error = module.stateData.error;
+            // Throw with a fresh stack, so as not to disrupt our caller.
+            setTimeout(() => {
+              throw error;  // failure running toplevel module
+            });
+          }
+          module.onNextStateChange.push(() => failureShouldThrow(module));
+        }
+        failureShouldThrow(waitingModule);
       };
       if (predecessor !== undefined) {
         // type=module scripts execute in order (with the same timing as defer
