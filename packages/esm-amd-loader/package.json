@@ -15,6 +15,7 @@
     "lint": "tslint --project . --format stylish",
     "build": "npm run clean && tsc && npm run minify",
     "minify": "babel-minify lib/esm-amd-loader.js --outFile=lib/esm-amd-loader.min.js",
+    "get-size": "npm run build && cat lib/esm-amd-loader.min.js | gzip -9 > esm-amd-loader.min.js.gz && ls -a -l -h esm-amd-loader.min.js.gz && rm esm-amd-loader.min.js.gz",
     "test:integration": "npm run lint && npm run build && cd test/ && npm run test:wct",
     "test": "npm run test:integration",
     "prepack": "npm run build",
