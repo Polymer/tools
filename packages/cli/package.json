@@ -24,7 +24,8 @@
     "test:integration": "mocha \"lib/test/integration/**/*_test.js\"",
     "test:unit": "mocha \"lib/test/unit/**/*_test.js\"",
     "format": "find src gulpfile.js \\( -iname \"*.ts\" -o -iname \"*.js\" \\) -not -path \"*fixtures*\" | xargs clang-format --style=file -i",
-    "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\""
+    "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
+    "update-goldens": "tsc && UPDATE_POLYMER_CLI_GOLDENS=true mocha lib/test/integration/build_test.js"
   },
   "dependencies": {
     "@types/chalk": "^0.4.31",
