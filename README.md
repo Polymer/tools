@@ -109,7 +109,7 @@ Setting the import style allows you to set whether JavaScript imports are specif
 
 #### `--add-import-meta
 
-True by default, but if set to false, the static `importMeta` property will not be added to converted Polymer elements. See [the `importPath` documentation](https://www.polymer-project.org/2.0/docs/devguide/dom-template) for more information.
+True by default; the static `importMeta` property will be added to converted Polymer elements. See [the `importPath` documentation](https://www.polymer-project.org/2.0/docs/devguide/dom-template) for more information.
 
 
 ## Conversion Guidelines
