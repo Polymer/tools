@@ -38,6 +38,7 @@ const define = window.define;
 interface Window {
   executed: {[url: string]: true};
   checkExecuted: (key: string) => void;
+  executionOrder: string[];
 }
 
 window.checkExecuted = (key) => {
@@ -250,6 +251,19 @@ suite('meta.url', () => {
         assert.equal(meta.url, 'http://example.com/?foo#bar');
         done();
       });
+    });
+  });
+});
+
+// Test for https://github.com/Polymer/tools/issues/335
+suite.skip('dependency ordering', () => {
+  setup(() => {
+    window.executionOrder = []; // only used by these tests.
+  });
+  test('all else being equal, dependencies execute in import order', (done) => {
+    define(['../race/start.js'], () => {
+      assert.deepEqual(window.executionOrder, ['baz', 'foo', 'bar', 'start']);
+      done();
     });
   });
 });
