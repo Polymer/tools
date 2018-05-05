@@ -193,8 +193,9 @@ export function resolveWctNpmEntrypointNames(
         path.join(npmPackage.name, npmPackage.jsEntrypoint),
         {basedir: wctPackageRoot});
     const relativeFilepath = path.relative(rootNodeModules, absoluteFilepath);
-    // Convert Windows filesystem paths.
-    const relativeUrl = relativeFilepath.replace(/\\/g, '/');
+    const relativeUrl = (process.platform === 'win32') ?
+        relativeFilepath.replace(/\\/g, '/') :
+        relativeFilepath;
     resolvedEntrypoints.push(relativeUrl);
   }
 
