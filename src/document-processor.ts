@@ -155,7 +155,7 @@ export abstract class DocumentProcessor {
       for (const claimedDomModule of localClaimedDomModules) {
         claimedDomModules.add(claimedDomModule);
       }
-      if (!this.conversionSettings.removeImportMeta) {
+      if (this.conversionSettings.addImportMeta) {
         this.addImportMetaToElements(scriptProgram, scriptDocument);
       }
       const statements = scriptProgram.body;

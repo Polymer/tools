@@ -110,7 +110,7 @@ export default async function run(options: CliOptions) {
     packageName: npmPackageName.toLowerCase(),
     packageVersion: npmPackageVersion,
     cleanOutDir: options.clean!!,
-    removeImportMeta: options['remove-import-meta'],
+    addImportMeta: options['add-import-meta'],
     flat: options.flat,
     private: options.private,
     packageType: options['package-type']

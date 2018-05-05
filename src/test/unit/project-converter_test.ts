@@ -94,7 +94,7 @@ suite('AnalysisConverter', () => {
         excludes: partialOptions.excludes,
         referenceExcludes: partialOptions.referenceExcludes,
         npmImportStyle: partialOptions.npmImportStyle,
-        removeImportMeta: partialOptions.removeImportMeta,
+        addImportMeta: partialOptions.addImportMeta,
         flat: false,
         private: false,
         packageEntrypoints,
@@ -1596,10 +1596,6 @@ import { html } from './html-tag.js';
  * @polymer
  */
 class TestElement extends Element {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return html\`
     <h1>Hi!</h1>
@@ -1651,8 +1647,6 @@ class TestElement extends Element {
 import { Polymer } from './polymer.js';
 import { html } from './html-tag.js';
 Polymer({
-  importMeta: import.meta,
-
   _template: html\`
       <h1>Hi!</h1>
 \`,
@@ -1678,7 +1672,7 @@ Polymer({
       });
       assertSources(
           await convert({
-            removeImportMeta: true,
+            addImportMeta: true,
           }),
           {
             'test.js': `
@@ -1687,6 +1681,9 @@ Polymer({
  * @polymer
  */
 class TestElement extends Polymer.Element {
+  static get importMeta() {
+    return import.meta;
+  }
 }
 `
           });
@@ -1704,11 +1701,12 @@ class TestElement extends Polymer.Element {
 
       assertSources(
           await convert({
-            removeImportMeta: true,
+            addImportMeta: true,
           }),
           {
             'test.js': `
 Polymer({
+  importMeta: import.meta
 });
 `
           });
@@ -2007,10 +2005,6 @@ $_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Random footer</div>\`;
 document.head.appendChild($_documentContainer.content);
 customElements.define('foo-elem', class FooElem extends Element {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return Polymer.html\`
     <div>foo-element body</div>
@@ -2018,10 +2012,6 @@ customElements.define('foo-elem', class FooElem extends Element {
   }
 });
 customElements.define('bar-elem', class BarElem extends Element {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return Polymer.html\`
     <div>bar body</div>
@@ -2293,8 +2283,6 @@ console.log(ShadyDOM.flush());
       assertSources(await convert(), {
         'test.js': `
 Polymer({
-  importMeta: import.meta,
-
   _template: Polymer.html\`
 foo
 \`,
@@ -2302,8 +2290,6 @@ foo
   is: 'foo'
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: Polymer.html\`
 bar
 \`,
@@ -2554,10 +2540,6 @@ console.log(foo);
           {
             'test.js': `
 class XFoo extends HTMLElement {
-  static get importMeta() {
-    return import.meta;
-  }
-
   connectedCallback() {
     this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
     super.connectedCallback();
@@ -2567,7 +2549,6 @@ class XFoo extends HTMLElement {
 customElements.define('x-foo', XFoo);
 
 Polymer({
-  importMeta: import.meta,
   is: 'data-popup'
 });
 `,
@@ -2999,17 +2980,9 @@ $_documentContainer.innerHTML = \`<dom-module id="dom-module-attr" attr=""></dom
 
 document.head.appendChild($_documentContainer.content);
 customElements.define(
-    'dom-module-attr', class extends HTMLElement{
-  static get importMeta() {
-    return import.meta;
-  }
-});
+    'dom-module-attr', class extends HTMLElement{});
 customElements.define(
     'just-fine', class extends HTMLElement{
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return Polymer.html\`
 Hello world
@@ -3017,11 +2990,7 @@ Hello world
   }
 });
 customElements.define(
-    'multiple-templates', class extends HTMLElement{
-  static get importMeta() {
-    return import.meta;
-  }
-});
+    'multiple-templates', class extends HTMLElement{});
 `,
       });
     });
@@ -3578,8 +3547,6 @@ console.log('main file contents');
         assertSources(await convert(), {
           'test.js': `
 Polymer({
-  importMeta: import.meta,
-
   _template: Polymer.html\`
             <div>Implementation here</div>
 \`,

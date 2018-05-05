@@ -146,7 +146,7 @@ export default async function run(options: CliOptions) {
     deleteFiles: options['delete-files'],
     flat: options.flat,
     private: options.private,
-    removeImportMeta: options['remove-import-meta'],
+    addImportMeta: options['add-import-meta'],
     excludes: options.exclude,
   });
 

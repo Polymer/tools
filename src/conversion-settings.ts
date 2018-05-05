@@ -77,7 +77,7 @@ export interface ConversionSettings {
    * Whether to add the static importMeta static property (set to import.meta)
    * to elements.
    */
-  readonly removeImportMeta: boolean;
+  readonly addImportMeta: boolean;
 }
 
 /**
@@ -125,7 +125,7 @@ export interface PartialConversionSettings {
    * Whether to add the static importMeta property (set to import.meta) to
    * elements.
    */
-  readonly removeImportMeta?: boolean;
+  readonly addImportMeta?: boolean;
 
   /**
    * After conversion, delete all files/directories that match any of these
@@ -200,7 +200,7 @@ export function createDefaultConversionSettings(
   const npmImportStyle = options.npmImportStyle || 'path';
 
   // Configure "npmImportStyle", defaults to false
-  const removeImportMeta = options.removeImportMeta === true;
+  const addImportMeta = options.addImportMeta === true;
 
   // Return configured settings.
   return {
@@ -210,6 +210,6 @@ export function createDefaultConversionSettings(
     referenceExcludes,
     referenceRewrites,
     npmImportStyle,
-    removeImportMeta,
+    addImportMeta,
   };
 }
