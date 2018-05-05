@@ -31,6 +31,30 @@ const stripSpace = (html: string): string =>
 
 suite('HtmlBundler', () => {
 
+  test('external script tag inlines an es6 module', async () => {
+    const root = 'test/html/inline-es6-modules';
+    const analyzer = new Analyzer({
+      urlResolver: new FsUrlResolver(root),
+      urlLoader: new FsUrlLoader(root),
+      moduleResolution: 'node',
+    });
+    const bundler = new Bundler({analyzer});
+    const externalScriptToNodeModuleUrl =
+        analyzer.resolveUrl('external-script-to-node-module.html')!;
+    const {documents} = await bundler.bundle(
+        await bundler.generateManifest([externalScriptToNodeModuleUrl]));
+    const externalScriptToNodeModuleDoc =
+        documents.getHtmlDoc(externalScriptToNodeModuleUrl)!;
+    assert.deepEqual(externalScriptToNodeModuleDoc.content, heredoc`
+      <script type="module">
+      const feature = {
+        cool: 'thing'
+      };
+      console.log('imported some-package/main.js');
+      </script>
+    `);
+  });
+
   test('inline es6 modules with node module-resolution', async () => {
     const root = 'test/html/inline-es6-modules';
     const analyzer = new Analyzer({
@@ -50,6 +74,7 @@ suite('HtmlBundler', () => {
       const feature = {
         cool: 'thing'
       };
+      console.log('imported some-package/main.js');
       console.log(feature);
       </script>
     `);

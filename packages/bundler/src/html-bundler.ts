@@ -15,9 +15,10 @@
 import * as clone from 'clone';
 import * as dom5 from 'dom5';
 import {ASTNode, parseFragment, serialize, treeAdapters} from 'parse5';
-import {Document, FileRelativeUrl, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
+import {Document, DocumentBackreference, FileRelativeUrl, ParsedHtmlDocument, ParsedJavaScriptDocument, ResolvedUrl} from 'polymer-analyzer';
+import ThisVariable from 'rollup/dist/typings/ast/variables/ThisVariable';
 
-import {assertIsHtmlDocument, getAnalysisDocument} from './analyzer-utils';
+import {assertIsHtmlDocument, assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
 import constants from './constants';
@@ -72,13 +73,13 @@ export class HtmlBundler {
     // imports, since we may now have appended some that were not initially
     // present.
     this.document = await this._reanalyze(serialize(ast));
-
     await this._inlineHtmlImports(ast);
 
-    await this._updateExternalModuleScripts(ast);
+    await this._updateExternalModuleScriptTags(ast);
     if (this.bundler.enableScriptInlining) {
       await this._inlineNonModuleScripts(ast);
       await this._inlineModuleScripts(ast);
+      await this._rollupInlineModuleScripts(ast);
     }
     if (this.bundler.enableCssInlining) {
       await this._inlineStylesheetLinks(ast);
@@ -426,17 +427,22 @@ export class HtmlBundler {
    * Update the `src` attribute of external `type=module` script tags to point
    * at new bundle locations.
    */
-  public async _updateExternalModuleScripts(ast: ASTNode) {
+  public async _updateExternalModuleScriptTags(ast: ASTNode) {
     const scripts = dom5.queryAll(ast, matchers.externalModuleScript);
     for (const script of scripts) {
       const oldSrc = dom5.getAttribute(script, 'src');
       const oldFileUrl = this.bundler.analyzer.urlResolver.resolve(
-          this.assignedBundle.url, oldSrc as FileRelativeUrl);
+          this.document.parsedDocument.baseUrl, oldSrc as FileRelativeUrl);
       if (oldFileUrl === undefined) {
         continue;
       }
       const bundle = this.manifest.getBundleForFile(oldFileUrl);
       if (bundle === undefined) {
+        continue;
+      }
+      // Do not rewrite the src if the current bundle is going to be the new
+      // home of the code.
+      if (bundle.url === this.assignedBundle.url) {
         continue;
       }
       const newFileUrl = bundle.url;
@@ -450,7 +456,7 @@ export class HtmlBundler {
    * Inlines the contents of external module scripts and rolls-up imported
    * modules into inline scripts.
    */
-  private async _inlineModuleScripts(ast: ASTNode) {
+  private async _rollupInlineModuleScripts(ast: ASTNode) {
     this.document = await this._reanalyze(serialize(ast));
     rewriteObject(ast, this.document.parsedDocument.ast);
     dom5.removeFakeRootElements(ast);
@@ -481,6 +487,37 @@ export class HtmlBundler {
     }
   }
 
+  private async _inlineModuleScript(scriptTag: ASTNode) {
+    const scriptHref = dom5.getAttribute(scriptTag, 'src')!;
+    const resolvedImportUrl = this.bundler.analyzer.urlResolver.resolve(
+        this.document.parsedDocument.baseUrl, scriptHref as FileRelativeUrl);
+    if (resolvedImportUrl === undefined) {
+      return;
+    }
+    // We won't inline a module script if its not supposed to be in this bundle.
+    if (!this.assignedBundle.bundle.files.has(resolvedImportUrl)) {
+      return;
+    }
+    const scriptContent = `import ${JSON.stringify(scriptHref)};`;
+    dom5.removeAttribute(scriptTag, 'src');
+    dom5.setTextContent(scriptTag, encodeString(scriptContent, true));
+    this.assignedBundle.bundle.inlinedScripts.add(resolvedImportUrl);
+    return scriptContent;
+  }
+
+  /**
+   * Replace all external module script tags (`<script type="module"
+   * src="...">`) with `<script type="module">` tags containing rebased file
+   * contents inlined.
+   */
+  private async _inlineModuleScripts(ast: ASTNode) {
+    const scriptImports = dom5.queryAll(ast, matchers.externalModuleScript);
+    for (const externalScript of scriptImports) {
+      await this._inlineModuleScript(externalScript);
+    }
+  }
+
+
   /**
    * Inlines the contents of the document returned by the script tag's src URL
    * into the script tag content and removes the src attribute.
@@ -488,7 +525,7 @@ export class HtmlBundler {
   private async _inlineNonModuleScript(scriptTag: ASTNode) {
     const scriptHref = dom5.getAttribute(scriptTag, 'src')!;
     const resolvedImportUrl = this.bundler.analyzer.urlResolver.resolve(
-        this.assignedBundle.url, scriptHref as FileRelativeUrl);
+        this.document.parsedDocument.baseUrl, scriptHref as FileRelativeUrl);
     if (resolvedImportUrl === undefined) {
       return;
     }
