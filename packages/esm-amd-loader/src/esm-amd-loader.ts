@@ -42,9 +42,10 @@ const enum StateEnum {
   Loading,
 
   /**
-   * Comes after Loading. The module's script has loaded and executed
-   * successfully. We have started loading the module's dependencies, but we
-   * can't execute them run until some other, earlier scripts have executed.
+   * Comes after Loading. The module's <script> tag has loaded. If there was a
+   * define() call for this module, it has run by now. We have started loading
+   * the module's dependencies, but we can't execute them until some other,
+   * earlier scripts have executed.
    */
   WaitingOnEarlierScripts,
 
@@ -63,8 +64,8 @@ const enum StateEnum {
   Executed,
 
   /**
-   * The unsuccessful terminal state. Something went wrong before we got to the
-   * executed state.
+   * The unsuccessful terminal state. Something went wrong, either leading up
+   * to, or during execution of the module.
    */
   Failed,
 }
