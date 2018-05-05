@@ -18,7 +18,8 @@
     "test": "npm run build && mocha \"lib/test/**/*_test.js\" && tslint \"src/**/*.ts\"",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
-    "format": "find src test -iname \"*.ts\" | xargs clang-format --style=file -i"
+    "format": "find src test -iname \"*.ts\" | xargs clang-format --style=file -i",
+    "update-goldens": "tsc && UPDATE_POLYSERVE_GOLDENS=true mocha lib/test/compile-middleware_test.js"
   },
   "keywords": [
     "polymer",
