@@ -25,7 +25,7 @@ type NormalizedUrl = string&{_normalized: never};
 (function() {
 
 /**
- * Describes the state loading state machine.
+ * Describes the state machine for loading a single module.
  *
  * At runtime, these are integers that are inlined in their use sites.
  */
