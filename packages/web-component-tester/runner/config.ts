@@ -145,20 +145,14 @@ export function getPackageName(options: Config): string|undefined {
 }
 
 /**
- * Truncates the path to the slash after the last occurrence of the given
- * package name.
- *
- * @param directory Name of directory
- * @param pathName Path to be truncated
+ * Return the root package directory of the given NPM package.
  */
-export function truncatePathToDir(directory: string, pathName: string): string|
-    null {
-  const delimitedDir = `/${directory}/`;
-  const lastDirOccurrence = pathName.lastIndexOf(delimitedDir);
-  if (lastDirOccurrence === -1) {
-    return null;
-  }
-  return pathName.substr(0, lastDirOccurrence + delimitedDir.length);
+function resolvePackageDir(
+    packageName: string, opts?: resolve.SyncOpts): string {
+  // package.json files are always in the root directory of a package, so we can
+  // resolve that and then drop the filename.
+  return path.dirname(
+      resolve.sync(path.join(packageName, 'package.json'), opts));
 }
 
 /**
@@ -175,43 +169,34 @@ export function truncatePathToDir(directory: string, pathName: string): string|
  */
 export function resolveWctNpmEntrypointNames(
     config: Config, npmPackages: NPMPackage[]): string[] {
-  // grab from CLI flag defaults to wct-browser-legacy
   let wctPackageName = config.wctPackageName;
-
   if (wctPackageName === undefined) {
     wctPackageName = 'wct-browser-legacy';
   }
 
-  let absoluteBrowserPath;
-
+  let wctPackageRoot;
   try {
-    absoluteBrowserPath = resolve.sync(wctPackageName, {basedir: config.root});
+    wctPackageRoot = resolvePackageDir(wctPackageName, {basedir: config.root});
   } catch {
     throw new Error(
         `${wctPackageName} not installed. Please change --wct-package-name` +
         ` flag or install the package.`);
   }
 
-  // We want to find and inject dependencies WCT relies on not the local
-  // package or its dependencies' dependencies
-  const absoluteWCTRoot =
-      truncatePathToDir(wctPackageName, absoluteBrowserPath);
+  // We want to find and inject WCT's version of these dependencies, not the
+  // version from the package being tested.
   const resolvedEntrypoints: string[] = [];
+  const rootNodeModules = path.join(config.root, 'node_modules');
 
   for (const npmPackage of npmPackages) {
-    const absoluteNpmMainPath =
-        resolve.sync(npmPackage.name, {basedir: absoluteWCTRoot});
-
-    const absoluteBasePath =
-        truncatePathToDir(npmPackage.name, absoluteNpmMainPath);
-
-    // Find path relative to our testing element's node_modules
-    const nodeModulesDir = path.posix.join(config.root, 'node_modules');
-    const relativeBasePath =
-        path.posix.relative(nodeModulesDir, absoluteBasePath);
-
-    resolvedEntrypoints.push(
-        path.posix.join(relativeBasePath, npmPackage.jsEntrypoint));
+    const absoluteFilepath = resolve.sync(
+        path.join(npmPackage.name, npmPackage.jsEntrypoint),
+        {basedir: wctPackageRoot});
+    const relativeFilepath = path.relative(rootNodeModules, absoluteFilepath);
+    const relativeUrl = (process.platform === 'win32') ?
+        relativeFilepath.replace(/\\/g, '/') :
+        relativeFilepath;
+    resolvedEntrypoints.push(relativeUrl);
   }
 
   return resolvedEntrypoints;
