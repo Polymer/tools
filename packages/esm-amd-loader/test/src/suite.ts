@@ -58,7 +58,7 @@ test('define an empty module', (done) => {
 });
 
 suite('static dependencies', () => {
-  test('load 1 dependency', (done) => {
+  test.only('load 1 dependency', (done) => {
     define(['./y.js'], (y: any) => {
       assert.equal(y.y, 'y');
       done();
@@ -256,9 +256,9 @@ suite('meta.url', () => {
 });
 
 // Test for https://github.com/Polymer/tools/issues/335
-suite.skip('dependency ordering', () => {
+suite('dependency ordering', () => {
   setup(() => {
-    window.executionOrder = []; // only used by these tests.
+    window.executionOrder = [];  // only used by these tests.
   });
   test('all else being equal, dependencies execute in import order', (done) => {
     define(['../race/start.js'], () => {

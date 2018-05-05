@@ -22,20 +22,100 @@ type Registry = {
   [url: string]: Module
 };
 
-interface Module {
+
+/**
+ * Describes the state loading state machine.
+ *
+ * At runtime, these are integers that are inlined in their use sites.
+ */
+const enum StateEnum {
+  /**
+   * The initial state.
+   */
+  Initialized,
+
+  /**
+   * Comes after Initialized. We have begun loading the module over the network.
+   */
+  Loading,
+
+  /**
+   * Comes after Loading. The module's script has loaded and executed
+   * successfully. We have started loading the module's dependencies, but we
+   * can't execute them run until some other, earlier scripts have executed.
+   */
+  WaitingOnEarlierScripts,
+
+  /**
+   * Comes after WaitingOnEarlierScripts. All earlier scripts are now executed,
+   * and we can now execute our dependencies in order. Once that's done, we can
+   * execute this module too.
+   */
+  WaitingOnDeps,
+
+  /**
+   * The successful terminal state. Comes after WaitingOnDeps. All of the
+   * module's dependencies have loaded and executed, and the module's body, if
+   * any, has executed, and there were no errors.
+   */
+  Executed,
+
+  /**
+   * The unsuccessful terminal state. Something went wrong before we got to the
+   * executed state.
+   */
+  Failed,
+}
+
+interface Initialized {
+  state: StateEnum.Initialized;
+}
+interface Loading {
+  state: StateEnum.Loading;
+}
+interface BaseWaiting {
+  /**
+   * The dependencies of this module, in order.
+   */
+  deps: Module[];
+  /**
+   * Args that we will pass into to moduleBody.
+   */
+  args: Array<{}>;
+  /**
+   * The body of the module, which is executed after its dependencies are
+   * loaded.
+   */
+  moduleBody: undefined|Function;
+}
+interface WaitingOnEarlierScripts extends BaseWaiting {
+  state: StateEnum.WaitingOnEarlierScripts;
+}
+interface WaitingOnDeps extends BaseWaiting {
+  state: StateEnum.WaitingOnDeps;
+}
+interface Executed {
+  state: StateEnum.Executed;
+}
+interface Failed {
+  state: StateEnum.Failed;
+  readonly error: Error;
+}
+type ModuleStateData =
+    Initialized|Loading|WaitingOnEarlierScripts|WaitingOnDeps|Executed|Failed;
+
+interface Module<SD extends ModuleStateData = ModuleStateData> {
   url: NormalizedUrl;
   urlBase: NormalizedUrl;
   exports: {[id: string]: {}};
-  /** This is a top-level module. */
+  stateData: SD;
+  /** True if this is a top-level module. */
   isTopLevel: boolean;
-  /** This module hasn't started loading its script yet. */
-  needsLoad: boolean;
-  /** All dependencies are resolved and the factory has run. */
-  resolved: boolean;
-  error: Error|undefined;
-  /** Callbacks from dependents waiting for this module to resolve. */
-  onResolve: Array<() => void>;
-  onError: Array<ErrorCallback>;
+  /**
+   * Callbacks that are called exactly once, for the next time the module
+   * progresses to a new state.
+   */
+  onNextStateChange: Array<() => void>;
 }
 
 type ResolveCallback = (...args: Array<{}>) => void;
@@ -48,11 +128,190 @@ type NormalizedUrl = string&{_normalized: never};
  * A global map from a fully qualified module URLs to module objects.
  */
 const registry: {[url: string]: Module} = Object.create(null);
-
-let pendingDefine: ((mod: Module) => void)|undefined = undefined;
+let pendingDefine: (() => [Array<string>, ResolveCallback | undefined])|
+    undefined = undefined;
 let topLevelScriptIdx = 0;
 let previousTopLevelUrl: string|undefined = undefined;
 let baseUrl = getBaseUrl();
+
+function load(module: Module<Initialized>): Module<Loading> {
+  const mutatedModule = ((module as Module) as Module<Loading>);
+  mutatedModule.stateData.state = StateEnum.Loading;
+
+  const script = document.createElement('script');
+  script.src = module.url;
+
+  script.onload = () => {
+    let deps: string[], moduleBody;
+    if (pendingDefine !== undefined) {
+      const result = pendingDefine();
+      deps = result[0];
+      moduleBody = result[1];
+    } else {
+      // The script did not make a call to define(), otherwise the global
+      // callback would have been set. That's fine, we can resolve immediately
+      // because we don't have any dependencies, by definition.
+      deps = [];
+      moduleBody = undefined;
+    }
+    beginWaitingOnEarlierScripts(mutatedModule, deps, moduleBody);
+  };
+
+  script.onerror = () =>
+      fail(module, new TypeError('Failed to fetch ' + module.url));
+
+  document.head.appendChild(script);
+
+  return mutatedModule;
+}
+
+function beginWaitingOnEarlierScripts(
+    module: Module<Loading>,
+    deps: string[],
+    moduleBody: ResolveCallback|undefined) {
+  const [args, depModules] = loadDeps(module, deps);
+  const stateData: WaitingOnEarlierScripts = {
+    state: StateEnum.WaitingOnEarlierScripts,
+    args,
+    deps: depModules,
+    moduleBody,
+  };
+  return stateTransition(module, stateData);
+}
+
+function loadDeps(
+    module: Module, depSpecifiers: string[]): [Array<{}>, Module[]] {
+  const args: Array<{}> = [];
+  const depModules: Module[] = [];
+  for (const depSpec of depSpecifiers) {
+    if (depSpec === 'exports') {
+      args.push(module.exports);
+      continue;
+    }
+    if (depSpec === 'require') {
+      args.push(function(
+          deps: string[],
+          onResolve?: ResolveCallback,
+          onError?: ErrorCallback) {
+        const [args, depModules] = loadDeps(module, deps);
+
+        waitOnDeps(depModules, () => {
+          if (onResolve) {
+            onResolve.call(args);
+          }
+        }, onError);
+      });
+      continue;
+    }
+    if (depSpec === 'meta') {
+      args.push({
+        // We append "#<script index>" to top-level scripts so that they have
+        // unique keys in the registry. We don't want to see that here.
+        url: (module.isTopLevel === true) ? baseUrl : module.url
+      });
+      continue;
+    }
+
+    // We have a dependency on a real module.
+    const dependency = getModule(resolveUrl(module.urlBase, depSpec));
+    args.push(dependency.exports);
+    depModules.push(dependency);
+
+    if (dependency.stateData.state === StateEnum.Initialized) {
+      load(dependency as Module<Initialized>);
+    }
+  }
+  return [args, depModules];
+}
+
+function beginWaitingOnDeps(module: Module<WaitingOnEarlierScripts>) {
+  const stateData: WaitingOnDeps = {
+    state: StateEnum.WaitingOnDeps,
+    args: module.stateData.args,
+    deps: module.stateData.deps,
+    moduleBody: module.stateData.moduleBody
+  };
+  const mutatedModule = stateTransition(module, stateData);
+  waitOnDeps(
+      module.stateData.deps,
+      () => execute(mutatedModule),
+      (e) => fail(mutatedModule, e));
+  return mutatedModule;
+}
+
+function execute(module: Module<WaitingOnDeps>): Module<Executed|Failed> {
+  const stateData = module.stateData;
+  if (stateData.moduleBody != null) {
+    try {
+      stateData.moduleBody.call(stateData.args);
+    } catch (e) {
+      return fail(module, e);
+    }
+  }
+  return stateTransition(module, {state: StateEnum.Executed});
+}
+
+/**
+ * Called when a module has failed to load, either becuase its script errored,
+ * or because one of its transitive dependencies errored.
+ */
+function fail(mod: Module, error: Error) {
+  return stateTransition(mod, {state: StateEnum.Failed, error});
+}
+
+function stateTransition<SD extends ModuleStateData>(
+    module: Module, stateData: SD): Module<SD> {
+  const mutatedModule = module as Module<SD>;
+  mutatedModule.stateData = stateData;
+  if (mutatedModule.onNextStateChange.length > 0) {
+    const callbacks = mutatedModule.onNextStateChange.slice();
+    mutatedModule.onNextStateChange.length = 0;
+    for (const callback of callbacks) {
+      callback();
+    }
+  }
+  return mutatedModule;
+}
+
+function waitOnDeps(
+    deps: Module[],
+    onResolve: ResolveCallback|undefined,
+    onError: ErrorCallback|undefined): void {
+  if (deps.length === 0) {
+    if (onResolve) {
+      onResolve();
+    }
+    return;
+  }
+  const nextDep = deps[0];
+  switch (nextDep.stateData.state) {
+    case StateEnum.Initialized:
+      load(nextDep as Module<Initialized>);
+      return;
+    case StateEnum.WaitingOnEarlierScripts:
+      beginWaitingOnDeps(nextDep as Module<WaitingOnEarlierScripts>);
+      waitOnDeps(deps, onResolve, onError);
+      return;
+    case StateEnum.Failed:
+      if (onError) {
+        onError(nextDep.stateData.error);
+      }
+      return;
+    case StateEnum.Executed:
+      deps.shift();
+      return waitOnDeps(deps, onResolve, onError);
+
+    case StateEnum.Loading:
+    case StateEnum.WaitingOnDeps:
+      // Nothing for us to do but wait in this case.
+      nextDep.onNextStateChange.push(
+          () => waitOnDeps(deps, onResolve, onError));
+      return;
+    default:
+      const never: never = nextDep.stateData;
+      throw new Error(`Impossible module state: ${never}`);
+  }
+}
 
 /**
  * Define a module and execute its factory function when all dependencies are
@@ -73,10 +332,10 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
   // fired by this <script>, which will be handled by the loading script,
   // which will invoke the callback with our module object.
   let defined = false;
-  pendingDefine = (mod) => {
+  pendingDefine = () => {
     defined = true;
     pendingDefine = undefined;
-    define(mod, deps, factory);
+    return [deps, factory];
   };
 
   // Case #2: We are a top-level script in the HTML document. Our URL is the
@@ -87,22 +346,27 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
     if (defined === false) {
       pendingDefine = undefined;
       const url = baseUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
-      const mod = getModule(url);
+      const mod = getModule(url) as Module<Loading>;
 
       // Top-level scripts are already loaded.
       mod.isTopLevel = true;
-      mod.needsLoad = false;
-
-      if (previousTopLevelUrl !== undefined) {
+      const predecessor = previousTopLevelUrl;
+      previousTopLevelUrl = url;
+      const waitingModule = beginWaitingOnEarlierScripts(mod, deps, factory);
+      const nextStep = () => {
+        beginWaitingOnDeps(waitingModule);
+      };
+      if (predecessor !== undefined) {
         // type=module scripts execute in order (with the same timing as defer
         // scripts). Because this is a top-level script, and we are trying to
-        // mirror type=module behavior as much as possible, inject a
-        // dependency on the previous top-level script to preserve the
-        // relative ordering.
-        deps.push(previousTopLevelUrl);
+        // mirror type=module behavior as much as possible, wait for the
+        // previous module script to finish (successfully or otherwise)
+        // before executing further.
+        waitOnDeps(
+            [getModule(predecessor as NormalizedUrl)], nextStep, nextStep);
+      } else {
+        nextStep();
       }
-      previousTopLevelUrl = url;
-      define(mod, deps, factory);
     }
   }, 0);
 };
@@ -131,156 +395,12 @@ function getModule(url: NormalizedUrl): Module {
       url,
       urlBase: getUrlBase(url),
       exports: Object.create(null),
+      stateData: {state: StateEnum.Initialized},
       isTopLevel: false,
-      resolved: false,
-      needsLoad: true,
-      error: undefined,
-      onResolve: [],
-      onError: [],
+      onNextStateChange: []
     };
   }
   return mod;
-}
-
-/**
- * Initialize a module with its dependencies and factory function. Note that
- * Module objects are created and registered before they are loaded, which is
- * why this is not simply part of creation.
- */
-function define(mod: Module, deps: string[], factory?: ResolveCallback) {
-  function onLoad(...args: Array<{}>) {
-    if (factory !== undefined) {
-      factory.apply(null, args);
-    }
-    mod.resolved = true;
-    for (const callback of mod.onResolve) {
-      callback();
-    }
-  }
-
-  require(mod, deps, onLoad, (error: Error) => modError(mod, error));
-}
-
-/**
- * Called when a module has failed to load, either becuase its script errored,
- * or because one of its transitive dependencies errored.
- */
-function modError(mod: Module, error: Error) {
-  mod.error = error;
-  for (const callback of mod.onError) {
-    callback(error);
-  }
-}
-
-/**
- * Execute onResolve when all dependencies have resolved, or onError if any of
- * the dependencies fail.
- */
-function require(
-    mod: Module,
-    deps: string[],
-    onResolve?: ResolveCallback,
-    onError?: ErrorCallback) {
-  const args: Array<{}> = [];
-  let numUnresolvedDeps = deps.length;
-
-  function onDepResolved() {
-    numUnresolvedDeps--;
-    checkIfAllDepsResolved();
-  }
-
-  let calledOnError = false;
-  function callOnErrorOnce(error: Error) {
-    if (onError !== undefined && calledOnError === false) {
-      onError(error);
-      calledOnError = true;
-    }
-  }
-
-  function checkIfAllDepsResolved() {
-    if (numUnresolvedDeps === 0 && onResolve !== undefined) {
-      onResolve.apply(null, args);
-    }
-  }
-
-  for (const depSpec of deps) {
-    if (depSpec === 'exports') {
-      numUnresolvedDeps--;
-      args.push(mod.exports);
-
-    } else if (depSpec === 'require') {
-      numUnresolvedDeps--;
-      args.push(
-          (deps: string[],
-           onResolve?: ResolveCallback,
-           onError?: ErrorCallback) => require(mod, deps, onResolve, onError));
-
-    } else if (depSpec === 'meta') {
-      numUnresolvedDeps--;
-      args.push({
-        // We append "#<script index>" to top-level scripts so that they have
-        // unique keys in the registry. We don't want to see that here.
-        url: (mod.isTopLevel === true) ? baseUrl : mod.url
-      });
-
-    } else {
-      const depMod = getModule(resolveUrl(mod.urlBase, depSpec));
-      args.push(depMod.exports);
-
-      if (depMod.resolved === true) {
-        numUnresolvedDeps--;
-
-      } else {
-        // If this is a top-level dependency, we don't actually care if it fails
-        // to load. We only added this dependency to enforce ordering. Act like
-        // it resolved normally if it errors.
-        const onDepError =
-            depMod.isTopLevel === true ? onDepResolved : callOnErrorOnce;
-
-        if (depMod.error !== undefined) {
-          onDepError(depMod.error);
-
-        } else {
-          depMod.onResolve.push(onDepResolved);
-          depMod.onError.push(onDepError);
-          loadIfNeeded(depMod);
-        }
-      }
-    }
-  }
-
-  checkIfAllDepsResolved();
-}
-
-/**
- * Load a module by creating a <script> tag in the document <head>, unless we
- * have already started (or didn't need to, as in the case of top-level
- * scripts).
- */
-function loadIfNeeded(mod: Module) {
-  if (mod.needsLoad === false) {
-    return;
-  }
-  mod.needsLoad = false;
-
-  const script = document.createElement('script');
-  script.src = mod.url;
-
-  script.onload = () => {
-    if (pendingDefine !== undefined) {
-      pendingDefine(mod);
-    } else {
-      // The script did not make a call to define(), otherwise the global
-      // callback would have been set. That's fine, we can resolve immediately
-      // because we don't have any dependencies, by definition.
-      define(mod, []);
-    }
-  };
-
-  script.onerror = () =>
-      modError(mod, new TypeError('Failed to fetch ' + mod.url));
-
-  document.head.appendChild(script);
 }
 
 const anchor = document.createElement('a');
