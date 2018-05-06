@@ -156,15 +156,21 @@ function load(module: Module<Initialized>): Module<Loading> {
       moduleBody = undefined;
     }
     beginWaitingOnEarlierScripts(mutatedModule, deps, moduleBody);
+    try {
+      document.head.removeChild(script);
+    } catch { /* don't care */
+    }
   };
 
-  script.onerror = () =>
-      fail(module, new TypeError('Failed to fetch ' + module.url));
+  script.onerror = () => {
+    fail(module, new TypeError('Failed to fetch ' + module.url));
+    try {
+      document.head.removeChild(script);
+    } catch { /* don't care */
+    }
+  };
 
   document.head.appendChild(script);
-  // Remove it immediately to keep the document small. Does not affect
-  // execution.
-  document.head.removeChild(script);
 
   return mutatedModule;
 }
