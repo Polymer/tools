@@ -108,7 +108,7 @@ suite('static dependencies', () => {
 
     const testName =
         'modules before a failure execute, but after a failure do not';
-    test(testName, () => {
+    test(testName, (done) => {
       define(['require'], (require: any) => {
         require(
             [
@@ -124,6 +124,7 @@ suite('static dependencies', () => {
               assert.deepEqual(
                   window.executionOrder, ['beforeFailure', 'failure']);
               assert.include(error.message, 'failure.js is supposed to fail');
+              done();
             });
       });
     });
