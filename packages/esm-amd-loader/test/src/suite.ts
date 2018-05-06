@@ -99,7 +99,8 @@ suite('static dependencies', () => {
         // We only expect this error once.
         window.uncaughtErrorFilter = undefined;
         // Only filter a failure to fetch a file that does not exist.
-        return /Failed to fetch .*static\/y\/not-found\.js/.test(e.message);
+        return /Failed to fetch .*static\/y\/not-found\.js/.test(
+            e.error.message);
       };
 
       define(['./not-found.js'], () => assert.fail());
@@ -219,7 +220,8 @@ suite('top-level modules', () => {
         // We only expect this error once.
         window.uncaughtErrorFilter = undefined;
         // Look for a failure to fetch the file that does not exist.
-        return /Failed to fetch .*static\/y\/not-found\.js/.test(e.message);
+        return /Failed to fetch .*static\/y\/not-found\.js/.test(
+            e.error.message);
       };
       // We order top-level modules by injecting dependencies between them.
       // However, unlike normal dependencies, if module 1 fails, we should still
