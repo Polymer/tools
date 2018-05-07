@@ -51,10 +51,11 @@ Converts to:
 
 ```javascript
 import { PolymerElement } from '../../@polymer/polymer/polymer-element.js';
+import { html } from '../../@polymer/polymer/lib/utils/html-tag.js';
 
 export const MyElement = class extends PolymerElement {
   static get template() {
-    return `
+    return html`
     <h2>Hello Modules!</h2>
 `;
   }
