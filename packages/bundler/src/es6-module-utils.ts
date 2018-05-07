@@ -58,10 +58,6 @@ export function getOrSetBundleModuleExportName(
 
 /**
  * Returns a set of every name exported by a module.
- *
- * TODO(usergenic): This does not include names brought in by the statement
- * `export * from './module-a.js';`.
- * https://github.com/Polymer/polymer-bundler/issues/641
  */
 export function getModuleExportNames(document: Document): Set<string> {
   const exports_ = document.getFeatures({kind: 'export'});

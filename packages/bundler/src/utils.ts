@@ -82,3 +82,18 @@ export function rewriteObject(target: Object, replacement: Object) {
     target[key] = replacement[key];
   }
 }
+
+/**
+ * Generate a valid identifier name which is unique (i.e. does not appear
+ * anywhere in the source text provided).  Do this by trying the provided
+ * `value` and then successively trying the value with an incrementing suffix
+ * counter until one is found that appears nowhere in the source.
+ */
+export function generateUniqueIdentifierName(
+    value: string, source: string): string {
+  let counter = 0, uniqueValue = value;
+  while (source.includes(uniqueValue)) {
+    uniqueValue = `${value}$${++counter}`;
+  }
+  return uniqueValue;
+}
