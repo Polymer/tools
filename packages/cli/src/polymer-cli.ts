@@ -16,7 +16,7 @@
 // commands.
 
 import * as commandLineArgs from 'command-line-args';
-import {sep as pathSeperator} from 'path';
+import * as path from 'path';
 import * as logging from 'plylog';
 import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
 
@@ -131,7 +131,13 @@ export class PolymerCli {
     this.defaultConfigOptions.extraDependencies =
         this.defaultConfigOptions.extraDependencies || [];
     this.defaultConfigOptions.extraDependencies.unshift(
-        `bower_components${pathSeperator}webcomponentsjs${pathSeperator}*.js`);
+        path.join('!bower_components', 'webcomponentsjs', 'gulpfile.js'));
+    this.defaultConfigOptions.extraDependencies.unshift(
+        path.join('bower_components', 'webcomponentsjs', '*.js'));
+    this.defaultConfigOptions.extraDependencies.unshift(path.join(
+        '!node_modules', '@webcomponents', 'webcomponentsjs', 'gulpfile.js'));
+    this.defaultConfigOptions.extraDependencies.unshift(
+        path.join('node_modules', '@webcomponents', 'webcomponentsjs', '*.js'));
 
     this.addCommand(new AnalyzeCommand());
     this.addCommand(new BuildCommand());

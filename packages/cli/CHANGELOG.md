@@ -1,9 +1,10 @@
 # Changelog
 
-
 ## Unreleased
 * Fix `test` bug which broke Windows support relating to path delimeters.
 * Change the default value of --module-resolution to "node".
+* Include node_modules/webcomponentsjs/*.js in extraDependencies by default.
+
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.17 [05-03-2018]
