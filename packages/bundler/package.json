@@ -4,7 +4,7 @@
   "description": "Process Web Components into one output file",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/bundler",
   "repository": "github:Polymer/tools",
-  "bugs": "https://github.com/Polymer/polymer-bundler/issues",
+  "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
   "main": "lib/bundler.js",
