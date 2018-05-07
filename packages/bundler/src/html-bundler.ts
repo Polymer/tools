@@ -77,7 +77,7 @@ export class HtmlBundler {
     await this._updateExternalModuleScriptTags(ast);
     if (this.bundler.enableScriptInlining) {
       await this._inlineNonModuleScripts(ast);
-      await this._inlineModuleScripts(ast);
+      await this._rewriteExternalModuleScriptTagsAsImports(ast);
       await this._rollupInlineModuleScripts(ast);
     }
     if (this.bundler.enableCssInlining) {
@@ -486,33 +486,30 @@ export class HtmlBundler {
     }
   }
 
-  private async _inlineModuleScript(scriptTag: ASTNode) {
-    const scriptHref = dom5.getAttribute(scriptTag, 'src')!;
-    const resolvedImportUrl = this.bundler.analyzer.urlResolver.resolve(
-        this.document.parsedDocument.baseUrl, scriptHref as FileRelativeUrl);
-    if (resolvedImportUrl === undefined) {
-      return;
-    }
-    // We won't inline a module script if its not supposed to be in this bundle.
-    if (!this.assignedBundle.bundle.files.has(resolvedImportUrl)) {
-      return;
-    }
-    const scriptContent = `import ${JSON.stringify(scriptHref)};`;
-    dom5.removeAttribute(scriptTag, 'src');
-    dom5.setTextContent(scriptTag, encodeString(scriptContent, true));
-    this.assignedBundle.bundle.inlinedScripts.add(resolvedImportUrl);
-    return scriptContent;
-  }
-
   /**
-   * Replace all external module script tags (`<script type="module"
-   * src="...">`) with `<script type="module">` tags containing rebased file
-   * contents inlined.
+   * Replace all external module script tags:
+   * `<script type="module" src="..."></script>`
+   * with inline script tags containing import:
+   * `<script type="module">import '...';</script>`
+   * And these will be subsequently rolled up by call to
+   * `this._rollupInlineModuleScripts()`.
    */
-  private async _inlineModuleScripts(ast: ASTNode) {
-    const scriptImports = dom5.queryAll(ast, matchers.externalModuleScript);
-    for (const externalScript of scriptImports) {
-      await this._inlineModuleScript(externalScript);
+  private async _rewriteExternalModuleScriptTagsAsImports(ast: ASTNode) {
+    for (const scriptTag of dom5.queryAll(ast, matchers.externalModuleScript)) {
+      const scriptHref = dom5.getAttribute(scriptTag, 'src')!;
+      const resolvedImportUrl = this.bundler.analyzer.urlResolver.resolve(
+          this.document.parsedDocument.baseUrl, scriptHref as FileRelativeUrl);
+      if (resolvedImportUrl === undefined) {
+        return;
+      }
+      // We won't inline a module script if its not supposed to be in this
+      // bundle.
+      if (!this.assignedBundle.bundle.files.has(resolvedImportUrl)) {
+        return;
+      }
+      const scriptContent = `import ${JSON.stringify(scriptHref)};`;
+      dom5.removeAttribute(scriptTag, 'src');
+      dom5.setTextContent(scriptTag, encodeString(scriptContent, true));
     }
   }
 
