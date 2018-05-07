@@ -3,13 +3,8 @@
   "version": "4.0.0-pre.7",
   "description": "Process Web Components into one output file",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/bundler",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/Polymer/polymer-bundler.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Polymer/polymer-bundler/issues"
-  },
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/polymer-bundler/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
   "main": "lib/bundler.js",
