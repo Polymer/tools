@@ -27,6 +27,10 @@
       "js": {
         "transformModulesToAmd": true
       }
+    },
+    {
+      "name": "bundled-inlined-es",
+      "bundle": true
     }
   ]
 }
