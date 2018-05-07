@@ -29,11 +29,12 @@ suite('import.meta.url', () => {
     `,
     'subfolder/b.js': `
       import {myUrl as aUrl} from '../a.js';
+      const bundledImportMeta = 'Potential naming conflict!';
       const myUrl = import.meta.url;
-      export {myUrl, aUrl};
+      export {myUrl, aUrl, bundledImportMeta as bDefinedImportMeta};
     `,
     'c.js': `
-      import {aUrl, myUrl as bUrl} from './subfolder/b.js';
+      import {aUrl, myUrl as bUrl, bDefinedImportMeta} from './subfolder/b.js';
       const myMeta = import.meta;
       export {aUrl, bUrl, myMeta};
     `,
@@ -61,19 +62,21 @@ suite('import.meta.url', () => {
     const {documents} =
         await bundler.bundle(await bundler.generateManifest([bUrl]));
     assert.deepEqual(documents.get(bUrl)!.content, heredoc`
-      const __bundledImportMeta = { ...import.meta,
+      const bundledImportMeta = { ...import.meta,
         url: new URL('../a.js', import.meta.url).href
       };
-      const myUrl = __bundledImportMeta.url;
+      const myUrl = bundledImportMeta.url;
       var a = {
         myUrl: myUrl
       };
+      const bundledImportMeta$1 = 'Potential naming conflict!';
       const myUrl$1 = import.meta.url;
       var b = {
         myUrl: myUrl$1,
-        aUrl: myUrl
+        aUrl: myUrl,
+        bDefinedImportMeta: bundledImportMeta$1
       };
-      export { a as $a, b as $b, myUrl as myUrl$1, myUrl$1 as myUrl, myUrl as aUrl };`);
+      export { a as $a, b as $b, myUrl as myUrl$1, myUrl$1 as myUrl, myUrl as aUrl, bundledImportMeta$1 as bDefinedImportMeta };`);
   });
 
   test('multiple corrected import.meta.url values', async () => {
@@ -81,20 +84,22 @@ suite('import.meta.url', () => {
     const {documents} =
         await bundler.bundle(await bundler.generateManifest([cUrl]));
     assert.deepEqual(documents.get(cUrl)!.content, heredoc`
-      const __bundledImportMeta = { ...import.meta,
+      const bundledImportMeta = { ...import.meta,
         url: new URL('./a.js', import.meta.url).href
       };
-      const myUrl = __bundledImportMeta.url;
+      const myUrl = bundledImportMeta.url;
       var a = {
         myUrl: myUrl
       };
-      const __bundledImportMeta$1 = { ...import.meta,
+      const bundledImportMeta$1 = { ...import.meta,
         url: new URL('./subfolder/b.js', import.meta.url).href
       };
-      const myUrl$1 = __bundledImportMeta$1.url;
+      const bundledImportMeta$2 = 'Potential naming conflict!';
+      const myUrl$1 = bundledImportMeta$1.url;
       var b = {
         myUrl: myUrl$1,
-        aUrl: myUrl
+        aUrl: myUrl,
+        bDefinedImportMeta: bundledImportMeta$2
       };
       const myMeta = import.meta;
       var c = {
@@ -102,6 +107,6 @@ suite('import.meta.url', () => {
         bUrl: myUrl$1,
         myMeta: myMeta
       };
-      export { a as $a, c as $c, b as $b, myUrl, myUrl as aUrl, myUrl$1 as bUrl, myMeta, myUrl$1, myUrl as aUrl$1 };`);
+      export { a as $a, c as $c, b as $b, myUrl, myUrl as aUrl, myUrl$1 as bUrl, myMeta, myUrl$1, myUrl as aUrl$1, bundledImportMeta$2 as bDefinedImportMeta };`);
   });
 });

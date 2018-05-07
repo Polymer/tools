@@ -11,6 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+import generate from '@babel/generator';
 import traverse, {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as clone from 'clone';
@@ -23,7 +24,7 @@ import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
 import {getOrSetBundleModuleExportName} from './es6-module-utils';
 import {appendUrlPath, ensureLeadingDot, getFileExtension} from './url-utils';
-import {rewriteObject} from './utils';
+import {generateUniqueIdentifierName, rewriteObject} from './utils';
 
 const acornImportMetaInject = require('acorn-import-meta/inject');
 
@@ -137,7 +138,10 @@ export class Es6Rewriter {
                       this.bundle.url, id));
 
               const newAst = this._rewriteImportMetaToBundleMeta(
-                  document.parsedDocument.ast, relativeUrl);
+                  generateUniqueIdentifierName(
+                      'bundledImportMeta', document.parsedDocument.contents),
+                  document.parsedDocument.ast,
+                  relativeUrl);
               const newCode = serialize(newAst).code;
               return newCode;
             }
@@ -482,21 +486,27 @@ export class Es6Rewriter {
   }
 
   private _rewriteImportMetaToBundleMeta(
+      bundledImportMetaIdentifierName: string,
       moduleFile: babel.File,
       relativeUrl: FileRelativeUrl): babel.File {
     // Generate a stand-in for any local references to import.meta...
-    // const __bundledImportMeta = {...import.meta, url: __bundledImportURL};
+    // ```javascript
+    // const bundledImportMeta = {
+    //    ...import.meta,
+    //    url: new URL(${ relativeUrl }, import.meta.url).href
+    // };
+    // ```
     // TODO(usergenic): Consider migrating this AST production mishmash into the
     // `ast` tagged template literal available like this:
     // https://github.com/Polymer/tools/blob/master/packages/build/src/babel-plugin-dynamic-import-amd.ts#L64
-    const bundledImportMetaName = '__bundledImportMeta';
     const bundledImportMetaDeclaration = babel.variableDeclaration(
         //
         'const',
         [
           //
           babel.variableDeclarator(
-              babel.identifier(bundledImportMetaName), babel.objectExpression([
+              babel.identifier(bundledImportMetaIdentifierName),
+              babel.objectExpression([
                 babel.spreadProperty(babel.memberExpression(
                     babel.identifier('import'), babel.identifier('meta'))),
                 babel.objectProperty(
@@ -528,7 +538,8 @@ export class Es6Rewriter {
             // ignore any other meta properties.
             return;
           }
-          const bundledImportMeta = babel.identifier(bundledImportMetaName);
+          const bundledImportMeta =
+              babel.identifier(bundledImportMetaIdentifierName);
           path.replaceWith(bundledImportMeta);
         },
       },
