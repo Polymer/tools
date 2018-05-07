@@ -267,6 +267,7 @@ export abstract class FunctionLike {
   returns?: Type;
   returnsDescription: string;
   isStatic: boolean;
+  ignoreTypeCheck: boolean;
 
   constructor(data: {
     name: string,
@@ -276,6 +277,7 @@ export abstract class FunctionLike {
     returns?: Type,
     returnsDescription?: string,
     isStatic?: boolean,
+    ignoreTypeCheck?: boolean,
   }) {
     this.name = data.name;
     this.description = data.description || '';
@@ -284,6 +286,7 @@ export abstract class FunctionLike {
     this.templateTypes = data.templateTypes || [];
     this.returnsDescription = data.returnsDescription || '';
     this.isStatic = data.isStatic || false;
+    this.ignoreTypeCheck = data.ignoreTypeCheck || false;
   }
 
   serialize(depth: number = 0): string {
@@ -309,6 +312,9 @@ export abstract class FunctionLike {
     }
     if (combinedDescription) {
       out += '\n' + formatComment(combinedDescription, depth);
+    }
+    if (this.ignoreTypeCheck) {
+      out += indent(depth) + '// @ts-ignore\n';
     }
 
     out += i;

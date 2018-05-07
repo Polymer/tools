@@ -20,4 +20,14 @@ interface MyElementElement extends Polymer.Element {
 
 interface HTMLElementTagNameMap {
   "my-element": MyElementElement;
+  "my-sub-element": MySubElement;
+}
+
+declare class MySubElement extends Polymer.Element {
+
+  /**
+   * Some description
+   */
+  // @ts-ignore
+  get(): void;
 }

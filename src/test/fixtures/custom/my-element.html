@@ -12,3 +12,19 @@ I'm an HTML comment that contains JavaScript comments which must be escaped:
     })
   </script>
 </dom-module>
+
+<dom-module id="my-sub-element">
+  <script>
+    class MySubElement extends Polymer.Element {
+      static get is() { return 'my-sub-element'; }
+      /**
+       * Some description
+       * @suppress {checkTypes}
+       */
+      get() {
+
+      }
+    }
+    customElements.define(MySubElement.is, MySubElement);
+  </script>
+</dom-module>

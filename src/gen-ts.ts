@@ -9,6 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import * as jsdoc from 'doctrine';
 import * as minimatch from 'minimatch';
 import * as path from 'path';
 import * as analyzer from 'polymer-analyzer';
@@ -295,7 +296,8 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
     parent = root;
 
   } else {
-    console.error(`Could not find element name defined in ${feature.sourceRange}`);
+    console.error(
+        `Could not find element name defined in ${feature.sourceRange}`);
     return;
   }
 
@@ -371,7 +373,8 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
  */
 function handleBehavior(feature: analyzer.PolymerBehavior, root: ts.Document) {
   if (!feature.className) {
-    console.error(`Could not find a name for behavior defined in ${feature.sourceRange}`);
+    console.error(
+        `Could not find a name for behavior defined in ${feature.sourceRange}`);
     return;
   }
 
@@ -492,7 +495,8 @@ function transitiveMixins(
  */
 function handleClass(feature: analyzer.Class, root: ts.Document) {
   if (!feature.className) {
-    console.error(`Could not find a name for class defined in ${feature.sourceRange}`);
+    console.error(
+        `Could not find a name for class defined in ${feature.sourceRange}`);
     return;
   }
   const [namespacePath, name] = splitReference(feature.className);
@@ -586,6 +590,7 @@ function handleMethod(
     returns: closureTypeToTypeScript(method.return && method.return.type),
     returnsDescription: method.return && method.return.desc,
     isStatic: opts && opts.isStatic,
+    ignoreTypeCheck: documentationHasSuppressTypeCheck(method.jsdoc)
   });
   m.description = method.description || '';
 
@@ -620,6 +625,17 @@ function handleMethod(
     m.params.unshift(tsParam);
   }
   return m;
+}
+
+function documentationHasSuppressTypeCheck(annotation: jsdoc.Annotation|
+                                           undefined): boolean {
+  if (!annotation) {
+    return false;
+  }
+
+  const annotationValue = annotation.tags.find(e => e.title === 'suppress');
+  return annotationValue && annotationValue.description === '{checkTypes}' ||
+      false;
 }
 
 function handleConstructorMethod(method?: analyzer.Method): ts.Method|
