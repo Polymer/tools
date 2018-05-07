@@ -37,13 +37,13 @@ const enum StateEnum {
   /**
    * The initial state.
    */
-  Initialized,
+  Initialized = 'Initialized',
 
   /**
    * Comes after Initialized. We have begun loading the module over the network.
    * Toplevel scripts skip this state entirely.
    */
-  Loading,
+  Loading = 'Loading',
 
   /**
    * Comes after Loading. The module's <script> tag has loaded. If there was a
@@ -51,81 +51,74 @@ const enum StateEnum {
    * the module's dependencies, but we can't execute them until some other,
    * earlier scripts have executed.
    */
-  WaitingOnEarlierScripts,
+  WaitingOnEarlierScripts = 'WaitingOnEarlierScripts',
 
   /**
    * Comes after WaitingOnEarlierScripts. All earlier scripts are now executed,
    * and we can now execute our dependencies in order. Once that's done, we can
    * execute this module too.
    */
-  WaitingOnDeps,
+  WaitingOnDeps = 'WaitingOnDeps',
 
   /**
    * The successful terminal state. Comes after WaitingOnDeps. All of the
    * module's dependencies have loaded and executed, and the module's body, if
    * any, has executed, and there were no errors.
    */
-  Executed,
+  Executed = 'Executed',
 
   /**
    * The unsuccessful terminal state. Something went wrong, either leading up
    * to, or during execution of the module.
    */
-  Failed,
+  Failed = 'Failed',
 }
 
-interface Initialized {
-  state: StateEnum.Initialized;
+interface StateDataMap {
+  [StateEnum.Initialized]: undefined;
+  [StateEnum.Loading]: undefined;
+  [StateEnum.WaitingOnEarlierScripts]: WaitingData;
+  [StateEnum.WaitingOnDeps]: WaitingData;
+  [StateEnum.Executed]: undefined;
+  [StateEnum.Failed]: Error;
 }
-interface Loading {
-  state: StateEnum.Loading;
-}
-interface BaseWaiting {
+
+interface WaitingData {
   /**
    * The dependencies of this module, in order.
    */
-  deps: Module[];
+  readonly deps: Module[];
   /**
    * Args that we will pass into to moduleBody.
    */
-  args: Array<{}>;
+  readonly args: Array<{}>;
   /**
    * The body of the module, which is executed after its dependencies are
    * loaded.
    *
    * In AMD/Commonjs terminology, this is the factory function.
    */
-  moduleBody: undefined|Function;
+  readonly moduleBody: undefined|Function;
 }
-interface WaitingOnEarlierScripts extends BaseWaiting {
-  state: StateEnum.WaitingOnEarlierScripts;
-}
-interface WaitingOnDeps extends BaseWaiting {
-  state: StateEnum.WaitingOnDeps;
-}
-interface Executed {
-  state: StateEnum.Executed;
-}
-interface Failed {
-  state: StateEnum.Failed;
-  readonly error: Error;
-}
-type ModuleStateData =
-    Initialized|Loading|WaitingOnEarlierScripts|WaitingOnDeps|Executed|Failed;
 
-interface Module<SD extends ModuleStateData = ModuleStateData> {
-  url: NormalizedUrl;
-  urlBase: NormalizedUrl;
-  exports: {[id: string]: {}};
-  stateData: SD;
+interface ModuleG<State extends keyof StateDataMap = keyof StateDataMap> {
+  readonly url: NormalizedUrl;
+  readonly urlBase: NormalizedUrl;
+  readonly exports: {[id: string]: {}};
   /** True if this is a top-level module. */
   isTopLevel: boolean;
   /**
    * Callbacks that are called exactly once, for the next time the module
    * progresses to a new state.
    */
-  onNextStateChange: Array<() => void>;
+  readonly onNextStateChange: Array<() => void>;
+  state: State;
+  stateData: StateDataMap[State];
 }
+
+type Module = ModuleG<StateEnum.Initialized>|ModuleG<StateEnum.Loading>|
+    ModuleG<StateEnum.WaitingOnEarlierScripts>|ModuleG<StateEnum.WaitingOnDeps>|
+    ModuleG<StateEnum.Executed>|ModuleG<StateEnum.Failed>;
 
 /**
  * A global map from a fully qualified module URLs to module objects.
@@ -138,8 +131,9 @@ let previousTopLevelUrl: string|undefined = undefined;
 let baseUrl = getBaseUrl();
 
 /** Begin loading a module from the network. */
-function load(module: Module<Initialized>): Module<Loading> {
-  const mutatedModule = stateTransition(module, {state: StateEnum.Loading});
+function load(module: ModuleG<StateEnum.Initialized>):
+    ModuleG<StateEnum.Loading> {
+  const mutatedModule = stateTransition(module, StateEnum.Loading, undefined);
 
   const script = document.createElement('script');
   script.src = module.url;
@@ -177,17 +171,16 @@ function load(module: Module<Initialized>): Module<Loading> {
 
 /** Start loading the module's dependencies, but don't execute anything yet. */
 function beginWaitingOnEarlierScripts(
-    module: Module<Loading>,
+    module: ModuleG<StateEnum.Loading>,
     deps: string[],
     moduleBody: ResolveCallback|undefined) {
   const [args, depModules] = loadDeps(module, deps);
-  const stateData: WaitingOnEarlierScripts = {
-    state: StateEnum.WaitingOnEarlierScripts,
+  const stateData: WaitingData = {
     args,
     deps: depModules,
     moduleBody,
   };
-  return stateTransition(module, stateData);
+  return stateTransition(module, StateEnum.WaitingOnEarlierScripts, stateData);
 }
 
 function loadDeps(
@@ -228,8 +221,8 @@ function loadDeps(
     args.push(dependency.exports);
     depModules.push(dependency);
 
-    if (dependency.stateData.state === StateEnum.Initialized) {
-      load(dependency as Module<Initialized>);
+    if (dependency.state === StateEnum.Initialized) {
+      load(dependency);
     }
   }
   return [args, depModules];
@@ -239,14 +232,10 @@ function loadDeps(
  * Start executing our dependencies, in order, as they become available.
  * Once they're all executed, execute our own module body, if any.
  */
-function beginWaitingOnDeps(module: Module<WaitingOnEarlierScripts>) {
-  const stateData: WaitingOnDeps = {
-    state: StateEnum.WaitingOnDeps,
-    args: module.stateData.args,
-    deps: module.stateData.deps,
-    moduleBody: module.stateData.moduleBody
-  };
-  const mutatedModule = stateTransition(module, stateData);
+function beginWaitingOnDeps(
+    module: ModuleG<StateEnum.WaitingOnEarlierScripts>) {
+  const mutatedModule =
+      stateTransition(module, StateEnum.WaitingOnDeps, module.stateData);
   waitOnDeps(
       module.stateData.deps,
       () => execute(mutatedModule),
@@ -255,7 +244,8 @@ function beginWaitingOnDeps(module: Module<WaitingOnEarlierScripts>) {
 }
 
 /** Runs the given module body. */
-function execute(module: Module<WaitingOnDeps>): Module<Executed|Failed> {
+function execute(module: ModuleG<StateEnum.WaitingOnDeps>):
+    ModuleG<StateEnum.Executed|StateEnum.Failed> {
   const stateData = module.stateData;
   if (stateData.moduleBody != null) {
     try {
@@ -264,7 +254,7 @@ function execute(module: Module<WaitingOnDeps>): Module<Executed|Failed> {
       return fail(module, e);
     }
   }
-  return stateTransition(module, {state: StateEnum.Executed});
+  return stateTransition(module, StateEnum.Executed, undefined);
 }
 
 /**
@@ -272,7 +262,7 @@ function execute(module: Module<WaitingOnDeps>): Module<Executed|Failed> {
  * or because one of its transitive dependencies errored.
  */
 function fail(mod: Module, error: Error) {
-  return stateTransition(mod, {state: StateEnum.Failed, error});
+  return stateTransition(mod, StateEnum.Failed, error);
 }
 
 /**
@@ -281,12 +271,14 @@ function fail(mod: Module, error: Error) {
  * Does not do any checking that the transition is legal.
  * Calls onNextStateChange callbacks.
  */
-function stateTransition<SD extends ModuleStateData>(
-    module: Module, newStateData: SD): Module<SD> {
+function stateTransition<NewState extends StateEnum>(
+    module: Module, newState: NewState, newStateData: StateDataMap[NewState]):
+    ModuleG<NewState> {
   if (debugging) {
-    console.log(`${module.url} transitioning to state ${newStateData.state}`);
+    console.log(`${module.url} transitioning to state ${newState}`);
   }
-  const mutatedModule = module as Module<SD>;
+  const mutatedModule = module as ModuleG<NewState>;
+  mutatedModule.state = newState;
   mutatedModule.stateData = newStateData;
   if (mutatedModule.onNextStateChange.length > 0) {
     const callbacks = mutatedModule.onNextStateChange.slice();
@@ -311,7 +303,7 @@ function waitOnDeps(
     return;
   }
 
-  if (nextDep.stateData.state === StateEnum.WaitingOnDeps) {
+  if (nextDep.state === StateEnum.WaitingOnDeps) {
     if (debugging) {
       console.log(`Cycle detected importing ${nextDep.url}`);
     }
@@ -328,20 +320,20 @@ function waitOnDeps(
 
 function waitOnDep(
     dependency: Module, onResolve: () => void, onError?: (e: Error) => void) {
-  switch (dependency.stateData.state) {
+  switch (dependency.state) {
     // Cases where the dep needs us to push it forward.
     case StateEnum.Initialized:
-      load(dependency as Module<Initialized>);
+      load(dependency);
       return;
     case StateEnum.WaitingOnEarlierScripts:
-      beginWaitingOnDeps(dependency as Module<WaitingOnEarlierScripts>);
+      beginWaitingOnDeps(dependency);
       waitOnDep(dependency, onResolve, onError);
       return;
 
     // Terminal cases that we should respond to.
     case StateEnum.Failed:
       if (onError) {
-        onError(dependency.stateData.error);
+        onError(dependency.stateData);
       }
       return;
     case StateEnum.Executed:
@@ -357,8 +349,8 @@ function waitOnDep(
 
     // This should not happen.
     default:
-      const never: never = dependency.stateData;
-      throw new Error(`Impossible module state: ${never}`);
+      const never: never = dependency;
+      throw new Error(`Impossible module state: ${(never as Module).state}`);
   }
 }
 
@@ -397,7 +389,7 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
       const url = baseUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
       // It's actually Initialized, but we're skipping over the Loading
       // state, because this is a top level document and it's already loaded.
-      const mod = getModule(url) as Module<Loading>;
+      const mod = getModule(url) as ModuleG<StateEnum.Loading>;
 
       // Top-level scripts are already loaded.
       mod.isTopLevel = true;
@@ -407,11 +399,11 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
       const nextStep = () => {
         beginWaitingOnDeps(waitingModule);
         function failureShouldThrow(module: Module) {
-          if (module.stateData.state === StateEnum.Executed) {
+          if (module.state === StateEnum.Executed) {
             return;  // no failure!
           }
-          if (module.stateData.state === StateEnum.Failed) {
-            const error = module.stateData.error;
+          if (module.state === StateEnum.Failed) {
+            const error = module.stateData;
             // Throw with a fresh stack, so as not to disrupt our caller.
             setTimeout(() => {
               throw error;  // failure running toplevel module
@@ -436,7 +428,7 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
 };
 
 function whenModuleTerminated(module: Module, onTerminalState: () => void) {
-  switch (module.stateData.state) {
+  switch (module.state) {
     case StateEnum.Executed:
     case StateEnum.Failed:
       onTerminalState();
@@ -471,7 +463,8 @@ function getModule(url: NormalizedUrl): Module {
       url,
       urlBase: getUrlBase(url),
       exports: Object.create(null),
-      stateData: {state: StateEnum.Initialized},
+      state: StateEnum.Initialized,
+      stateData: undefined,
       isTopLevel: false,
       onNextStateChange: []
     };
