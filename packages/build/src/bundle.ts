@@ -152,18 +152,20 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
    */
   private _unmapBundledFiles(manifest: BundleManifest) {
     for (const {
+           files,
            inlinedHtmlImports,
            inlinedScripts,
            inlinedStyles,
-           bundledExports,
          } of manifest.bundles.values()) {
       for (const url
-               of [...inlinedHtmlImports,
+               of [...files,
+                   ...inlinedHtmlImports,
                    ...inlinedScripts,
-                   ...inlinedStyles,
-                   ...bundledExports.keys()]) {
-        this.files.delete(url);
+                   ...inlinedStyles]) {
+        // Don't unmap the bundle file url itself.
+        if (!manifest.bundles.has(url)) {
+          this.files.delete(url);
+        }
       }
     }
   }
-}
