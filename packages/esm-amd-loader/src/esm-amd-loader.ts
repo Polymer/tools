@@ -318,6 +318,7 @@ function waitOnDeps(
     // Do not wait on the dep that introduces a cycle, press on as though it
     // were not there.
     waitOnDeps(deps, onResolve, onError);
+    return;
   }
 
   waitOnDep(nextDep, () => {
