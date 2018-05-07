@@ -282,12 +282,12 @@ function fail(mod: Module, error: Error) {
  * Calls onNextStateChange callbacks.
  */
 function stateTransition<SD extends ModuleStateData>(
-    module: Module, stateData: SD): Module<SD> {
+    module: Module, newStateData: SD): Module<SD> {
   if (debugging) {
-    console.log(`${module.url} transitioning to state ${stateData.state}`);
+    console.log(`${module.url} transitioning to state ${newStateData.state}`);
   }
   const mutatedModule = module as Module<SD>;
-  mutatedModule.stateData = stateData;
+  mutatedModule.stateData = newStateData;
   if (mutatedModule.onNextStateChange.length > 0) {
     const callbacks = mutatedModule.onNextStateChange.slice();
     mutatedModule.onNextStateChange.length = 0;
@@ -302,43 +302,61 @@ function waitOnDeps(
     deps: Module[],
     onResolve: ResolveCallback|undefined,
     onError: ErrorCallback|undefined): void {
-  if (deps.length === 0) {
+  const nextDep = deps.shift();
+  if (nextDep === undefined) {
+    // all deps resolved
     if (onResolve) {
       onResolve();
     }
     return;
   }
-  const nextDep = deps[0];
-  switch (nextDep.stateData.state) {
+
+  if (nextDep.stateData.state === StateEnum.WaitingOnDeps) {
+    if (debugging) {
+      console.log(`Cycle detected importing ${nextDep.url}`);
+    }
+    // Do not wait on the dep that introduces a cycle, press on as though it
+    // were not there.
+    waitOnDeps(deps, onResolve, onError);
+  }
+
+  waitOnDep(nextDep, () => {
+    waitOnDeps(deps, onResolve, onError);
+  }, onError);
+}
+
+function waitOnDep(
+    dependency: Module, onResolve: () => void, onError?: (e: Error) => void) {
+  switch (dependency.stateData.state) {
     // Cases where the dep needs us to push it forward.
     case StateEnum.Initialized:
-      load(nextDep as Module<Initialized>);
+      load(dependency as Module<Initialized>);
       return;
     case StateEnum.WaitingOnEarlierScripts:
-      beginWaitingOnDeps(nextDep as Module<WaitingOnEarlierScripts>);
-      waitOnDeps(deps, onResolve, onError);
+      beginWaitingOnDeps(dependency as Module<WaitingOnEarlierScripts>);
+      waitOnDep(dependency, onResolve, onError);
       return;
 
     // Terminal cases that we should respond to.
     case StateEnum.Failed:
       if (onError) {
-        onError(nextDep.stateData.error);
+        onError(dependency.stateData.error);
       }
       return;
     case StateEnum.Executed:
-      deps.shift();
-      return waitOnDeps(deps, onResolve, onError);
+      onResolve();
+      return;
 
     // Nothing to do but wait
     case StateEnum.Loading:
     case StateEnum.WaitingOnDeps:
-      nextDep.onNextStateChange.push(
-          () => waitOnDeps(deps, onResolve, onError));
+      dependency.onNextStateChange.push(
+          () => waitOnDep(dependency, onResolve, onError));
       return;
 
     // This should not happen.
     default:
-      const never: never = nextDep.stateData;
+      const never: never = dependency.stateData;
       throw new Error(`Impossible module state: ${never}`);
   }
 }

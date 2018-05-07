@@ -367,3 +367,29 @@ suite('dependency ordering', () => {
     });
   });
 });
+
+suite('cyclical dependencies', () => {
+  test('get a first', (done) => {
+    define(['../cycle/a.js', '../cycle/b.js'], (a: any, b: any) => {
+      assert.deepEqual(a.a, 'a');
+      assert.deepEqual(b.b, 'b');
+      assert.deepEqual(a.getterForB(), 'b');
+      assert.deepEqual(b.getterForA(), 'a');
+      assert.deepEqual(a.usesBAtExecution, 'b');
+      assert.deepEqual(b.usesAAtExecution, undefined);
+      done();
+    });
+  });
+
+  test('get b first', (done) => {
+    define(['../cycle/b.js', '../cycle/a.js'], (b: any, a: any) => {
+      assert.deepEqual(a.a, 'a');
+      assert.deepEqual(b.b, 'b');
+      assert.deepEqual(a.getterForB(), 'b');
+      assert.deepEqual(b.getterForA(), 'a');
+      assert.deepEqual(a.usesBAtExecution, undefined);
+      assert.deepEqual(b.usesAAtExecution, 'a');
+      done();
+    });
+  });
+});
