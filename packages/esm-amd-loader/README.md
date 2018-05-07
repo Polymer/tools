@@ -64,7 +64,7 @@ define(['exports', 'require', 'meta'], function(exports, require, meta) {
 ```ts
 window.define = function(
     dependencies: string[],
-    factory?: (...args: Array<{}>) => void
+    moduleBody?: (...args: Array<{}>) => void
 ```
 
 ### `dependencies`
@@ -72,13 +72,15 @@ An array of module paths, relative or absolute, which are dependencies of this
 module. Relative paths are resolved relative to the location of this module.
 Can also be one of the special dependencies listed below.
 
-### `factory`
+Dependencies are run in the same deterministic order as they would if they
+were ES modules.
+
+### `moduleBody`
 A function which is invoked when all dependencies have resolved. The `exports`
 of each dependency is passed as an argument to this function, in the same order
 that they were specified in the `dependencies` array.
 
-If any module static dependencies do not load (e.g. `404`), then the factory
-will never execute, and neither will the factories of any transitive dependents.
+If any dependencies do not load (e.g. `404`), or if their module bodies throw an error nothing later in the dependency graph will execute, and an `Error` will be thrown up to the `window` error event.
 
 ## Special dependencies
 
@@ -108,7 +110,7 @@ Corresponds to an ES module's [`import.meta`][5].
 
 ## Differences from AMD/RequireJS
 
-- Minified and compressed size is 0.9 KB, vs 6.6 KB for RequireJS.
+- Minified and compressed size is 1.3 KB, vs 6.6 KB for RequireJS.
 
 - Only supports specifying dependencies as paths, and does not support
   explicitly naming modules.
@@ -130,6 +132,12 @@ Corresponds to an ES module's [`import.meta`][5].
 - RequireJS contains a [bug][4] whereby relative path resolution for modules
   above the HTML document base URL can result in duplicate requests for the same
   module.
+
+- Module execution order happens according to the ES spec, including support for
+  cyclical dependencies.
+
+- Toplevel define calls are also ordered, similar to the way that multiple
+  `<script type="module">` tags in an HTML document are.
 
 [1]: https://github.com/Polymer/tools/tree/master/packages/cli
 [2]: https://babeljs.io/docs/plugins/transform-es2015-modules-amd/

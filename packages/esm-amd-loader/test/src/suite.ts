@@ -224,7 +224,7 @@ suite('top-level modules', () => {
         return /Failed to fetch .*static\/y\/not-found\.js/.test(
             e.error.message);
       };
-      // We order top-level modules by injecting dependencies between them.
+      // We order top-level modules sequentially.
       // However, unlike normal dependencies, if module 1 fails, we should still
       // execute module 2.
       define(['./not-found.js'], () => assert.fail());
@@ -339,7 +339,7 @@ suite('dependency ordering', () => {
   // e -> [f, g]
   // h -> [i, j, k]
   const testName =
-      'with a deep and more complicated tree of deps, they still execute in import order according to spec';
+      'order modules according to their position in the global total ordering, not just based on file-local information';
   test(testName, (done) => {
     define(['../deepRace/start-one.js'], () => {
       window.executionOrder.push('suite#0');

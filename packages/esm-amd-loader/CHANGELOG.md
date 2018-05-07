@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Fix bug where the ordering of module execution was not strict enough.
   Standard ES modules are loaded as they're encountered, but they execute
   strictly in the order that they're first imported.
+* Support cyclical dependencies.
 <!-- Add new, unreleased changes here. -->
 
 ## [0.1.1] - 2018-05-03
