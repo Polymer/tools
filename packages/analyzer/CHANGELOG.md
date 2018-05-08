@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 * Better support for handling errors early on in the analysis process (load,
   parse, scan). This should solve the vast majority of Internal Error warnings.
+* When constructing an analyzer you can provide a fileToContentType, a
+  function that can override a file's content type, to change how it
+  will be parsed and analyzed. It is a function from a fully qualified
+  url to a content type, like `text/html`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0] - 2018-05-08
