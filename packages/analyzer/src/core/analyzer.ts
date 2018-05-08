@@ -14,8 +14,6 @@
 
 /// <reference path="../../custom_typings/main.d.ts" />
 
-import * as path from 'path';
-
 import {ParsedDocument} from '..';
 import {Analysis, Document, Warning} from '../model/model';
 import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
@@ -26,6 +24,7 @@ import {UrlResolver} from '../url-loader/url-resolver';
 
 import {AnalysisContext} from './analysis-context';
 import {MinimalCancelToken, neverCancels} from './cancel-token';
+import {getExtension} from './utils';
 
 export interface Options {
   urlLoader: UrlLoader;
@@ -45,6 +44,23 @@ export interface Options {
    * A value of 'node' uses Node.js resolution to find modules.
    */
   moduleResolution?: 'node';
+
+  /**
+   * If this is given, it will be called for each file that might be parsed
+   * with that file's fully qualified URL.
+   * If it returns a string, that string will be treated as the content type
+   * of the given file when parsing.
+   *
+   * Common content types:
+   *   - text/html
+   *   - application/javascript
+   *   - text/css
+   *   - application/json
+   *
+   * If it returns undefined, the analyzer will infer the content type based on
+   * the file extension.
+   */
+  fileToContentType?: (url: ResolvedUrl) => undefined | string;
 
   // For internal use
   __contextPromise?: Promise<AnalysisContext>;
@@ -104,17 +120,18 @@ export class Analyzer {
       Promise<Analysis> {
     const previousAnalysisComplete = this._analysisComplete;
     const uiUrls = this.brandUserInputUrls(urls);
-    let filesWithParsers: PackageRelativeUrl[];
+    let resolvedUrls: ResolvedUrl[];
+    let filesWithParsers: ResolvedUrl[];
     this._analysisComplete = (async () => {
       const previousContext = await previousAnalysisComplete;
+      resolvedUrls = previousContext.resolveUserInputUrls(uiUrls);
       filesWithParsers =
-          this._filterFilesByParsableExtension(uiUrls, previousContext);
+          this._filterFilesByParsableExtension(resolvedUrls, previousContext);
       return await previousContext.analyze(
           filesWithParsers, options.cancelToken || neverCancels);
     })();
     const context = await this._analysisComplete;
-    const resolvedUrls = context.resolveUserInputUrls(filesWithParsers!);
-    return this._constructAnalysis(context, resolvedUrls);
+    return this._constructAnalysis(context, resolvedUrls!);
   }
 
   async analyzePackage(options: AnalyzeOptions = {}): Promise<Analysis> {
@@ -132,14 +149,15 @@ export class Analyzer {
       // TODO(rictic): parameterize this, perhaps with polymer.json.
       const filesInPackage =
           allFiles.filter((file) => !Analysis.isExternal(file));
-      const filesWithParsers =
-          this._filterFilesByParsableExtension(filesInPackage, previousContext);
+      const resolvedFilesInPackage =
+          previousContext.resolveUserInputUrls(filesInPackage);
+
+      const filesWithParsers = this._filterFilesByParsableExtension(
+          resolvedFilesInPackage, previousContext);
 
       const newContext = await previousContext.analyze(
           filesWithParsers, options.cancelToken || neverCancels);
-      const resolvedFilesWithParsers =
-          newContext.resolveUserInputUrls(filesWithParsers);
-      analysis = this._constructAnalysis(newContext, resolvedFilesWithParsers);
+      analysis = this._constructAnalysis(newContext, filesWithParsers);
       return newContext;
     })();
     await this._analysisComplete;
@@ -147,10 +165,10 @@ export class Analyzer {
   }
 
   private _filterFilesByParsableExtension(
-      filenames: PackageRelativeUrl[], context: AnalysisContext) {
+      filenames: ResolvedUrl[], context: AnalysisContext) {
     const extensions = new Set(context.parsers.keys());
     return filenames.filter(
-        (fn) => extensions.has(path.extname(fn).substring(1)));
+        (fn) => extensions.has(getExtension(fn, context.fileToContentType)));
   }
 
   private _constructAnalysis(

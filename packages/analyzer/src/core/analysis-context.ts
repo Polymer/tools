@@ -51,6 +51,7 @@ import {UrlResolver} from '../url-loader/url-resolver';
 import {AnalysisCache} from './analysis-cache';
 import {MinimalCancelToken} from './cancel-token';
 import {LanguageAnalyzer} from './language-analyzer';
+import {getExtension} from './utils';
 
 export const analyzerVersion: string = require('../../package.json').version;
 
@@ -101,6 +102,12 @@ export class AnalysisContext {
    */
   private _analysisComplete: Promise<void>;
 
+  /**
+   * Allows the user to override how files are parsed.
+   */
+  readonly fileToContentType: undefined|
+      ((url: ResolvedUrl) => undefined | string);
+
   static getDefaultScanners(options: Options) {
     return new Map<string, Scanner<ParsedDocument, {}|null|undefined, {}>[]>([
       [
@@ -144,6 +151,7 @@ export class AnalysisContext {
     this._cache = cache || new AnalysisCache();
     this._generation = generation || 0;
     this._analysisComplete = Promise.resolve();
+    this.fileToContentType = options.fileToContentType;
   }
 
   /**
@@ -157,17 +165,15 @@ export class AnalysisContext {
   /**
    * Implements Analyzer#analyze, see its docs.
    */
-  async analyze(urls: PackageRelativeUrl[], cancelToken: MinimalCancelToken):
+  async analyze(urls: ResolvedUrl[], cancelToken: MinimalCancelToken):
       Promise<AnalysisContext> {
-    const resolvedUrls = this.resolveUserInputUrls(urls);
-
     // 1. Await current analysis if there is one, so we can check to see if it
     // has all of the requested URLs.
     await this._analysisComplete;
 
     // 2. Check to see if we have all of the requested documents
-    const hasAllDocuments = resolvedUrls.every(
-        (url) => this._cache.analyzedDocuments.get(url) != null);
+    const hasAllDocuments =
+        urls.every((url) => this._cache.analyzedDocuments.get(url) != null);
     if (hasAllDocuments) {
       // all requested URLs are present, return the existing context
       return this;
@@ -176,7 +182,7 @@ export class AnalysisContext {
     // 3. Some URLs are new, so fork, but don't invalidate anything
     const newCache = this._cache.invalidate([]);
     const newContext = this._fork(newCache);
-    return newContext._analyze(resolvedUrls, cancelToken);
+    return newContext._analyze(urls, cancelToken);
   }
 
   /**
@@ -293,6 +299,7 @@ export class AnalysisContext {
       scanners: this._scanners,
       urlLoader: this.loader,
       urlResolver: this.resolver,
+      fileToContentType: this.fileToContentType,
     };
     if (options && options.urlLoader) {
       contextOptions.urlLoader = options.urlLoader;
@@ -562,7 +569,7 @@ export class AnalysisContext {
               })
             };
           }
-          const extension = path.extname(resolvedUrl).substring(1);
+          const extension = getExtension(resolvedUrl, this.fileToContentType);
           try {
             const parsedDoc =
                 this._parseContents(extension, result.value, resolvedUrl);

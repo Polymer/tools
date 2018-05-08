@@ -12,7 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import * as path from 'path';
 import {parse as parseUrl_, resolve as resolveUrl_, Url} from 'url';
+import {ResolvedUrl} from '../model/url';
 
 const unspecifiedProtocol = '-';
 export function parseUrl(
@@ -25,6 +27,29 @@ export function parseUrl(
         urlObject.href && urlObject.href.slice(unspecifiedProtocol.length + 1);
   }
   return urlObject;
+}
+
+const contentTypeToFileExtension: ReadonlyMap<string, string> = new Map([
+  ['text/html', 'html'],
+  ['application/javascript', 'js'],
+  ['text/css', 'css'],
+  ['application/json', 'json']
+]);
+
+export function getExtension(
+    url: ResolvedUrl,
+    userProvidedUrlToContentType: undefined|
+    ((url: ResolvedUrl) => undefined | string)): string {
+  if (userProvidedUrlToContentType !== undefined) {
+    const contentType = userProvidedUrlToContentType(url);
+    if (contentType !== undefined) {
+      const fileExtension = contentTypeToFileExtension.get(contentType);
+      if (fileExtension !== undefined) {
+        return fileExtension;
+      }
+    }
+  }
+  return path.extname(url).substring(1);
 }
 
 export function ensureProtocol(url: string, defaultProtocol: string): string {

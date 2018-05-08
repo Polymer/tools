@@ -31,16 +31,16 @@ import {Document, ScannedImport, ScannedInlineDocument, Severity, Warning} from 
 import {FsUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-import {CodeUnderliner, createForDirectory, fixtureDir, invertPromise, resolvedUrl} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, resolvedUrl} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');
 import stripIndent = require('strip-indent');
-import {ResolvedUrl, FileRelativeUrl} from '../../model/url';
+import {ResolvedUrl, FileRelativeUrl, PackageRelativeUrl} from '../../model/url';
 import {PackageUrlResolver} from '../../url-loader/package-url-resolver';
 import {AnalysisContext} from '../../core/analysis-context';
 import {HtmlScanner} from '../../html/html-scanner';
-import {ScannedFeature} from '../../index';
+import {ScannedFeature, FsUrlResolver} from '../../index';
 import Uri from 'vscode-uri';
 import {neverCancels} from '../../core/cancel-token';
 
@@ -332,6 +332,25 @@ suite('Analyzer', () => {
       assert.equal(subBehavior.className, 'TestBehavior');
     });
 
+    test('a user given content type overrides the file extension', async () => {
+      const urlLoader = new InMemoryOverlayUrlLoader();
+      const urlResolver = new FsUrlResolver(undefined);
+      const analyzer = new Analyzer({
+        urlLoader,
+        urlResolver,
+        fileToContentType: () => 'application/javascript'
+      });
+      const url = 'secretlyJavascript.html' as PackageRelativeUrl;
+      urlLoader.urlContentsMap.set(urlResolver.resolve(url)!, `
+          class Foo {};
+      `);
+      const analysis = await analyzer.analyze([url]);
+      assert.deepEqual(analysis.getWarnings().map((w) => w.message), []);
+      // Parsed as JS!
+      assert.deepEqual(
+          [...analysis.getFeatures({kind: 'class'})].map((f) => f.name),
+          ['Foo']);
+    });
 
     // This test is nearly identical to the previous, but covers a different
     // issue.
