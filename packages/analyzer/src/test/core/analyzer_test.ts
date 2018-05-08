@@ -465,7 +465,7 @@ suite('Analyzer', () => {
     });
 
     test(`warns for files that don't exist`, async () => {
-      const url = '/static/does_not_exist';
+      const url = '/static/does_not_exist.html';
       const analysis = await analyzer.analyze([url]);
       const result = analysis.getDocument(url);
       if (result.successful) {
