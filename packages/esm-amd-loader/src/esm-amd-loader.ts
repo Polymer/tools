@@ -171,7 +171,7 @@ const registry: {[url: string]: Module} = Object.create(null);
 let pendingDefine: (() => [Array<string>, OnExecutedCallback | undefined])|
     undefined = undefined;
 let topLevelScriptIdx = 0;
-let previousTopLevelUrl: string|undefined = undefined;
+let previousTopLevelUrl: NormalizedUrl|undefined = undefined;
 let baseUrl = getBaseUrl();
 
 /** Begin loading a module from the network. */
@@ -433,21 +433,20 @@ window.define = function(deps: string[], moduleBody?: OnExecutedCallback) {
       // state, because this is a top level document and it's already loaded.
       const mod = getModule(url) as ModuleG<StateEnum.Loading>;
       mod.isTopLevel = true;
-      const predecessor = previousTopLevelUrl;
-      previousTopLevelUrl = url;
       const waitingModule = beginWaitingForTurn(mod, deps, moduleBody);
-      if (predecessor !== undefined) {
+      if (previousTopLevelUrl !== undefined) {
         // type=module scripts execute in order (with the same timing as defer
         // scripts). Because this is a top-level script, and we are trying to
         // mirror type=module behavior as much as possible, wait for the
         // previous module script to finish (successfully or otherwise)
         // before executing further.
-        whenModuleTerminated(getModule(predecessor as NormalizedUrl), () => {
+        whenModuleTerminated(getModule(previousTopLevelUrl), () => {
           beginWaitingOnDeps(waitingModule);
         });
       } else {
         beginWaitingOnDeps(waitingModule);
       }
+      previousTopLevelUrl = url;
     }
   }, 0);
 };

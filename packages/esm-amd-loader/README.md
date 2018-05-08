@@ -136,7 +136,7 @@ Corresponds to an ES module's [`import.meta`][5].
 - Module execution order happens according to the ES spec, including support for
   cyclical dependencies.
 
-- Toplevel define calls are also ordered, similar to the way that multiple
+- Top level define calls are also ordered, similar to the way that multiple
   `<script type="module">` tags in an HTML document are.
 
 [1]: https://github.com/Polymer/tools/tree/master/packages/cli
