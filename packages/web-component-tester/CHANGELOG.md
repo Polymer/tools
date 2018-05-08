@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
   for details.
 * Fix path delimiter bug which broke Windows support.
+* Change the default value of --module-resolution to "node".
 <!-- Add new, unreleased items here. -->
 
 ## 6.6.0-pre.5 - 2018-04-12

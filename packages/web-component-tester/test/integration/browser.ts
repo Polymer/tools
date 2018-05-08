@@ -111,8 +111,7 @@ class VariantResults {
 function runsAllIntegrationSuites(options: config.Config = {}) {
   const integrationDirnames =
       fs.readdirSync(integrationDir).filter((fn) => fn !== 'temp');
-  // Overwrite integrationDirnames to run tests in isolation while developing:
-  // integrationDirnames = ['components_dir'];
+  const suitesToOnly = new Set([]);
 
   // TODO(#421): `missing` correctly fails, but currently it times out which
   //     takes ~2 minutes.
@@ -123,14 +122,17 @@ function runsAllIntegrationSuites(options: config.Config = {}) {
   ]);
 
   for (const fn of integrationDirnames) {
-    runIntegrationSuiteForDir(fn, options, suitesToSkip.has(fn));
+    const config = suitesToOnly.has(fn) ?
+        'only' :
+        suitesToSkip.has(fn) ? 'skip' : 'normal';
+    runIntegrationSuiteForDir(fn, options, config);
   }
 }
 
 
 function runIntegrationSuiteForDir(
-    dirname: string, options: config.Config, skip: boolean) {
-  runsIntegrationSuite(dirname, options, skip, function(testResults) {
+    dirname: string, options: config.Config, howToRun: 'only'|'skip'|'normal') {
+  runsIntegrationSuite(dirname, options, howToRun, function(testResults) {
     const golden: Golden = JSON.parse(fs.readFileSync(
         path.join(integrationDir, dirname, 'golden.json'), 'utf-8'));
 
@@ -166,12 +168,14 @@ const integrationDir = path.resolve(__dirname, '../fixtures/integration');
  * the output for tests.
  */
 function runsIntegrationSuite(
-    dirName: string, options: config.Config, skip: boolean,
+    dirName: string, options: config.Config, howToRun: 'only'|'skip'|'normal',
     contextFunction: (context: TestResults) => void) {
   const suiteName = `integration fixture dir '${dirName}'`;
   let describer: (suiteName: string, spec: () => void) => void = describe;
-  if (skip) {
+  if (howToRun === 'skip') {
     describer = describe.skip;
+  } else if (howToRun === 'only') {
+    describer = describe.only;
   }
   describer(suiteName, function() {
     let log: string[] = [];

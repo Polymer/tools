@@ -43,7 +43,7 @@ export const args: ArgDescriptor[] = [
         'Valid values are "none" and "node". "none" disables module specifier ' +
         'rewriting. "node" uses Node.js resolution to find modules.',
     type: String,
-    defaultValue: 'none',
+    defaultValue: 'node',
   },
   {
     name: 'compile-cache',

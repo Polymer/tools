@@ -136,7 +136,7 @@ const optionDefinitions = [
         'rewriting. "node" uses Node.js resolution to find modules.',
     type: String,
     typeLabel: '"node|none"',
-    defaultValue: 'none',
+    defaultValue: 'node',
   }
 ];
 

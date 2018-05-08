@@ -290,7 +290,9 @@ export function defaults(): Config {
       hostname: 'localhost',
     },
     // The name of the NPM package that is vending wct's browser.js
-    wctPackageName: 'wct-browser-legacy'
+    wctPackageName: 'wct-browser-legacy',
+
+    moduleResolution: 'node'
   };
 }
 
