@@ -106,7 +106,7 @@ export function createApplicationGenerator(templateName: string):
           `test/${elementName}/${elementName}_test.html`,
           this.props);
 
-      this.fs.copyTpl(this.templatePath('gitignore'), '.gitignore', this.props);
+      this.fs.move('gitignore', '.gitignore');
     }
 
     install() {
@@ -157,7 +157,7 @@ export function createApplicationGenerator(templateName: string):
           `test/${elementName}/${elementName}_test.html`,
           this.props);
 
-      this.fs.copyTpl(this.templatePath('gitignore'), '.gitignore', this.props);
+      this.fs.move('gitignore', '.gitignore');
     }
 
     install() {
