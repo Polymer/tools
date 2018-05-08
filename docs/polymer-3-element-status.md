@@ -18,10 +18,10 @@ This table contains the status of every Polymer 3.0 element being run through au
 | repo | `npm install`\* | Chrome | Safari | Firefox | reason? |
 |------|-----------------|--------|--------|---------|---------|
 | app-layout | ✅ | ✅ | ✅ | ✅ | |
-| app-localize-behavior | ✅ | ❌ | ❌ | ✅ | polyfill does not support modules needs to be moved out of element and into tests |
-| app-media | ✅ | ⚠️ | ⚠️ | ⚠️ | (Tooling Error) 'return' outside of function |
+| app-localize-behavior | ✅ | ✅ | ✅ | ✅ | polyfill does not support modules needs to be moved out of element and into tests |
+| app-media | ✅ | ✅ | ✅ | ✅ |  |
 | app-route | ✅ | ✅ | ✅ | ✅ | |
-| app-storage | ✅ | ❌| ❌ | ❌ | importPath not defined and certain js files not being copied |
+| app-storage | ✅ | ✅| ✅ | ✅ | |
 | font-roboto | ✅ | ⚠️ | ⚠️ | ⚠️ | *No test suites were found matching your configuration* |
 | font-roboto-local | ✅ | ⚠️ | ⚠️ | ⚠️ | *No test suites were found matching your configuration* |
 | gold-cc-cvc-input | ✅ | ✅ | ✅ | ✅ | |
@@ -43,7 +43,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-dropdown | ✅ | ✅ | ✅ | ✅ | |
 | iron-fit-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-flex-layout | ✅ | ✅ | ✅ | ✅ | |
-| iron-form | ✅ | ✅ | ✅ | ✅ | same as master |
+| iron-form | ✅ | ✅ | ✅ | ✅ | ~2 failing same as master |
 | iron-form-element-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-icon | ✅ | ✅ | ✅ | ✅ | |
 | iron-icons | ✅ | ✅ | ✅ | ✅ | |
@@ -53,60 +53,59 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-input | ✅ | ✅ | ✅ | ✅ | |
 | iron-jsonp-library | ✅ | ✅ | ✅ | ✅ | |
 | iron-label | ✅ | ✅ | ✅ | ✅ | |
-| iron-list | ✅ | ❌ | ❌ | ❌ | 4-10 breaking tests |
+| iron-list | ✅ | ❌ | ❌ | ❌ | 6-10 breaking tests |
 | iron-localstorage | ✅ | ✅ | ✅ | ✅ | |
-| iron-location | ✅ | ✅ | ✅ | ✅ | same as master |
-| iron-media-query | ✅ | ✅ | ❔ | ❔ | |
-| iron-menu-behavior | ✅ | ✅ | ❔ | ❔ | |
-| iron-meta | ✅ | ✅ | ❔ | ❔ | |
-| iron-overlay-behavior | ✅ | ✅ | ❌ | ✅ | Safari still fails due to script error everything else passes based on this [PR](https://github.com/PolymerElements/iron-overlay-behavior/pull/279) |
-| iron-pages | ✅ | ✅ | ❔ | ❔ | |
-| iron-range-behavior | ✅ | ✅ | ❔ | ❔ | |
-| iron-resizable-behavior | ✅ | ✅ | ✅ | ✅ | same as master |
-| iron-scroll-target-behavior | ✅ | ✅ | ❔ | ❔ | |
-| iron-scroll-threshold | ✅ | ✅ | ❔ | ❔ | |
-| iron-selector | ✅ | ✅ | ❔ | ❔ | |
-| iron-test-helpers | ✅ | ❌ | ❌ | ❌ | 7 failed tests. Modularizing loses functionality. |
-| iron-validatable-behavior | ✅ | ✅ | ❔ | ❔ | |
-| iron-validator-behavior | ✅ | ✅ | ❔ | ❔ | |
-| marked-element | ✅ | ✅ | ❔ | ❔ | |
-| neon-animation | ✅ | ❌ | ❌ | ❌ | Web animations polyfill is ignored. |
-| paper-badge | ✅ | ✅ | ❔ | ❔ | |
-| paper-behaviors | ✅ | ✅ | ❔ | ❔ | |
-| paper-button | ✅ | ✅ | ❔ | ❔ | |
-| paper-card | ✅ | ✅ | ❔ | ❔ | |
-| paper-checkbox | ✅ | ✅ | ❔ | ❔ | |
-| paper-dialog | ✅ | ✅ | ❔ | ❔ | |
-| paper-dialog-behavior | ✅ | ✅ | ❔ | ❔ | |
-| paper-dialog-scrollable | ✅ | ✅ | ❔ | ❔ | |
-| paper-drawer-panel | ✅ | ✅ | ❔ | ❔ | |
+| iron-location | ✅ | ✅ | ✅ | ✅ | ~1 failing - timeout same as master |
+| iron-media-query | ✅ | ✅ | ✅ | ✅ | |
+| iron-menu-behavior | ✅ | ✅ | ✅ | ✅ | |
+| iron-meta | ✅ | ✅ | ✅ | ✅ | |
+| iron-overlay-behavior | ✅ | ✅ | ✅ | ✅ | |
+| iron-pages | ✅ | ✅ | ✅ | ✅ | |
+| iron-range-behavior | ✅ | ✅ | ✅ | ✅ | |
+| iron-resizable-behavior | ✅ | ✅ | ✅ | ✅ | 2 failing same as master |
+| iron-scroll-target-behavior | ✅ | ✅ | ✅ | ✅ | |
+| iron-scroll-threshold | ✅ | ✅ | ✅ | ✅ | |
+| iron-selector | ✅ | ✅ | ✅ | ✅ | |
+| iron-test-helpers | ✅ | ✅ | ✅ | ✅ | 4 failing chrome same as master |
+| iron-validatable-behavior | ✅ | ✅ | ✅ | ✅ | |
+| iron-validator-behavior | ✅ | ✅ | ✅ | ✅ | |
+| marked-element | ✅ | ✅ | ✅ | ✅ | |
+| neon-animation | ✅ | ✅ | ✅ | ✅ | |
+| paper-badge | ✅ | ✅ | ✅ | ✅ | |
+| paper-behaviors | ✅ | ✅ | ✅ | ✅ | |
+| paper-button | ✅ | ✅ | ✅ | ✅ | |
+| paper-card | ✅ | ✅ | ✅ | ✅ | |
+| paper-checkbox | ✅ | ✅ | ✅ | ✅ | |
+| paper-dialog | ✅ | ✅ | ✅ | ✅ | |
+| paper-dialog-behavior | ✅ | ✅ | ✅ | ✅ | |
+| paper-dialog-scrollable | ✅ | ✅ | ✅ | ✅ | |
+| paper-drawer-panel | ✅ | ✅ | ✅ | ✅ | |
 | paper-dropdown-menu | ✅ | ✅ | ✅ | ✅ | |
-| paper-fab | ✅ | ✅ | ❔ | ❔ | |
-| paper-header-panel | ✅ | ✅ | ❔ | ❔ | |
-| paper-icon-button | ✅ | ✅ | ❔ | ❔ | |
-| paper-input | ✅ | ✅ | ✅ | ❌ | Chrome fails in headless focus tests, FF 16 fails all the time |
-| paper-item | ✅ | ✅ | ❔ | ❔ | |
-| paper-listbox | ✅ | ✅ | ❔ | ❔ | |
-| paper-material | ✅ | ✅ | ❔ | ❔ | |
+| paper-fab | ✅ | ✅ | ✅ | ✅ | |
+| paper-header-panel | ✅ | ✅ | ✅ | ✅ | |
+| paper-icon-button | ✅ | ✅ | ✅ | ✅ | |
+| paper-input | ✅ | ✅ | ✅ | ❌ | Chrome fails in headless focus tests, FF 16 fails addon is registered test |
+| paper-item | ✅ | ✅ | ✅ | ✅ | |
+| paper-listbox | ✅ | ✅ | ✅ | ✅ | |
+| paper-material | ✅ | ✅ | ✅ | ✅ | |
 | paper-menu-button | ✅ | ✅ | ✅ | ✅ | |
-| paper-progress | ✅ | ✅ | ❔ | ❔ | |
-| paper-radio-button | ✅ | ✅ | ❔ | ❔ | |
-| paper-radio-group | ✅ | ✅ | ❔ | ❔ | |
-| paper-ripple | ✅ | ✅ | ❔ | ❔ | |
-| paper-scroll-header-panel | ✅ | ✅ | ❔ | ❔ | |
-| paper-slider | ✅ | ✅ | ❔ | ❔ | |
-| paper-spinner | ✅ | ✅ | ❔ | ❔ | |
-| paper-styles | ✅ | ⚠️ | ⚠️ | ⚠️ | *No test suites were found matching your configuration* |
-| paper-swatch-picker | ✅ | ❌ | ❌ | ❌ | Animations are broken |
-| paper-tabs | ✅ | ✅ | ❔ | ❔ | |
-| paper-toast | ✅ | ✅ | ❔ | ❔ | |
-| paper-toggle-button | ✅ | ✅ | ❔ | ❔ | |
-| paper-toolbar | ✅ | ✅ | ❔ | ❔ | |
-| paper-tooltip | ✅ | ✅ | ❔ | ❔ | |
-| platinum-sw | ✅ | ❌ | ❌ | ❌ | Fix is waiting on `importPath` |
-| polymer | ✅ | ❌ | ❌ | ❌ | module is not defined |
-| prism-element | ✅ | ✅ | ❔ | ❔ | |
-| promise-polyfill | ✅ | ❌ | ❔ | ❔ | wct-browser-legacy not installed.  |
-| test-fixture | ✅ | ❌ | ❔ | ❔ | Cannot read property \'import\' of null |
+| paper-progress | ✅ | ✅ | ✅ | ✅ | |
+| paper-radio-button | ✅ | ✅ | ✅ | ✅ | |
+| paper-radio-group | ✅ | ✅ | ✅ | ✅ | |
+| paper-ripple | ✅ | ✅ | ✅ | ✅ | |
+| paper-scroll-header-panel | ✅ | ✅ | ✅ | ✅ | |
+| paper-slider | ✅ | ✅ | ✅ | ✅ | |
+| paper-spinner | ✅ | ✅ | ✅ | ✅ | |
+| paper-styles | ✅ | ✅ | ✅ | ✅ | |
+| paper-swatch-picker | ✅ | ✅ | ✅ | ✅ | |
+| paper-tabs | ✅ | ✅ | ✅ | ✅ | |
+| paper-toast | ✅ | ✅ | ✅ | ✅ | |
+| paper-toggle-button | ✅ | ✅ | ✅ | ✅ | |
+| paper-toolbar | ✅ | ✅ | ✅ | ✅ | |
+| paper-tooltip | ✅ | ✅ | ✅ | ✅ | |
+| platinum-sw | ✅ | ❌ | ❌ | ❌ | 🚧  not to be modulized 🚧 |
+| prism-element | ✅ | ✅ | ✅ | ✅ | |
+| promise-polyfill | ✅ | ⚠️ | ⚠️ | ⚠️ | non-wct tests |
+| test-fixture | ✅ | ✅ | ✅ | ✅ | |
 
 *\*Note: `npm install` is currently being used for testing instead of the planned `yarn install --flat` due to a yarn bug in multi-repo conversion & testing. See https://github.com/Polymer/polymer-modulizer/issues/254 for more info.*
