@@ -43,7 +43,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-dropdown | ✅ | ✅ | ✅ | ✅ | |
 | iron-fit-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-flex-layout | ✅ | ✅ | ✅ | ✅ | |
-| iron-form | ✅ | ✅ | ✅ | ✅ | ~2 failing same as master |
+| iron-form | ✅ | ⚠️ | ⚠️ | ⚠️ | ~2 failing same as master |
 | iron-form-element-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-icon | ✅ | ✅ | ✅ | ✅ | |
 | iron-icons | ✅ | ✅ | ✅ | ✅ | |
@@ -55,18 +55,18 @@ This table contains the status of every Polymer 3.0 element being run through au
 | iron-label | ✅ | ✅ | ✅ | ✅ | |
 | iron-list | ✅ | ❌ | ❌ | ❌ | 6-10 breaking tests |
 | iron-localstorage | ✅ | ✅ | ✅ | ✅ | |
-| iron-location | ✅ | ✅ | ✅ | ✅ | ~1 failing - timeout same as master |
+| iron-location | ✅ | ⚠️ | ⚠️ | ⚠️ | ~1 failing - timeout same as master |
 | iron-media-query | ✅ | ✅ | ✅ | ✅ | |
 | iron-menu-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-meta | ✅ | ✅ | ✅ | ✅ | |
 | iron-overlay-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-pages | ✅ | ✅ | ✅ | ✅ | |
 | iron-range-behavior | ✅ | ✅ | ✅ | ✅ | |
-| iron-resizable-behavior | ✅ | ✅ | ✅ | ✅ | 2 failing same as master |
+| iron-resizable-behavior | ✅ | ⚠️ | ⚠️ | ⚠️ | 2 failing same as master |
 | iron-scroll-target-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-scroll-threshold | ✅ | ✅ | ✅ | ✅ | |
 | iron-selector | ✅ | ✅ | ✅ | ✅ | |
-| iron-test-helpers | ✅ | ✅ | ✅ | ✅ | 4 failing chrome same as master |
+| iron-test-helpers | ✅ | ⚠️ | ✅ | ✅ | 4 failing chrome same as master |
 | iron-validatable-behavior | ✅ | ✅ | ✅ | ✅ | |
 | iron-validator-behavior | ✅ | ✅ | ✅ | ✅ | |
 | marked-element | ✅ | ✅ | ✅ | ✅ | |
