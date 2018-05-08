@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+- `Analyzer#analyze` when called with an explicit list of files, will ignore
+  any files that do not have a known file extension, as it will not know
+  how to parse them.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.0-pre.25] - 2018-05-03
