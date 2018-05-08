@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Change the default value of --module-resolution to "node".
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [4.0.0] - 2018-05-08
+* Change the default value of `--module-resolution` to "node".
 
 ## [3.14.0] - 2018-05-03
 * Dropped support for node v6. This is a soft break, as we aren't

@@ -1,7 +1,10 @@
 # Changelog
 
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased items here. -->
+
+## v1.7.0 [05-08-2018]
 * Fix bug with `init` templates and missing `.gitignore` files due to npm
   renaming them to `.npmignore` on install of cli.
 * Fix `test` bug which broke Windows support relating to path delimeters.
@@ -12,7 +15,7 @@
   - Specifically it considers any files listed in `sources`, `fragments`,
     `shell`, and `entrypoint` as the source files for your project, and will
     ignore all others.
-<!-- Add new, unreleased items here. -->
+* Updated dependencies.
 
 ## v1.7.0-pre.17 [05-03-2018]
 * The transform for `import.meta` now uses the special `"meta"` dependency

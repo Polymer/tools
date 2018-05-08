@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!--## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## [0.27.11] (2018-05-08)
+* Updated dependencies.
+
 ## [0.27.10] (2018-05-03)
 * The transform for `import.meta` now uses the special `"meta"` dependency
   provided by
