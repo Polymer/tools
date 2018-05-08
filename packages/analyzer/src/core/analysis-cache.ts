@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Result} from '../model/analysis';
 import {Document, ScannedDocument, Warning} from '../model/model';
 import {ResolvedUrl} from '../model/url';
 import {ParsedDocument} from '../parser/document';
@@ -24,11 +25,12 @@ export class AnalysisCache {
    * These are maps from resolved URLs to Promises of various stages of the
    * analysis pipeline.
    */
-  readonly parsedDocumentPromises: AsyncWorkCache<ResolvedUrl, ParsedDocument>;
+  readonly parsedDocumentPromises:
+      AsyncWorkCache<ResolvedUrl, Result<ParsedDocument, Warning>>;
   readonly scannedDocumentPromises:
-      AsyncWorkCache<ResolvedUrl, ScannedDocument>;
+      AsyncWorkCache<ResolvedUrl, Result<ScannedDocument, Warning>>;
   readonly dependenciesScannedPromises:
-      AsyncWorkCache<ResolvedUrl, ScannedDocument>;
+      AsyncWorkCache<ResolvedUrl, Result<ScannedDocument, Warning>>;
   readonly analyzedDocumentPromises: AsyncWorkCache<ResolvedUrl, Document>;
 
   /**

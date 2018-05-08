@@ -46,8 +46,13 @@ export class FsUrlLoader implements UrlLoader {
         throw new Error(`FsUrlLoader can not load url ${
             JSON.stringify(url)} - ${result.error}`);
       }
-      fs.readFile(result.value, 'utf8', (error: Error, contents: string) => {
+      type FSError = Error&{code?: string, path: string};
+      fs.readFile(result.value, 'utf8', (error: FSError, contents: string) => {
         if (error) {
+          // Improve the error message of the most common error.
+          if (error.code === 'ENOENT') {
+            reject(new Error(`No such file: ${error.path}`));
+          }
           reject(error);
         } else {
           resolve(contents);
