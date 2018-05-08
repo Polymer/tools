@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Fixed inline module scripts which used bare name specifiers to correctly resolve them using the module resolutions of the Analyzer.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## 4.0.0 - 2018-05-08
+* Fixed inline module scripts which used bare name specifiers to correctly resolve them using the module resolutions of the Analyzer.
 
 ## 4.0.0-pre.7 - 2018-05-03
 * Dropped support for node v6. This is a soft break, as we aren't
