@@ -19,6 +19,7 @@ import * as inquirer from 'inquirer';
 import {execSync} from 'mz/child_process';
 import { ProjectConfig } from 'polymer-project-config';
 import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Check if the current shell environment is MinGW. MinGW can't handle some
@@ -97,8 +98,20 @@ export async function getProjectSources(options: { input?: Array<string> }, conf
   if (config.shell) {
     candidateFiles.push(config.shell);
   }
-  if (config.entrypoint) {
-    candidateFiles.push(config.entrypoint);
+  /**
+   *  A project config will always have an entrypoint of
+   * `${config.root}/index.html`, even if the polymer.json file is
+   * totally blank.
+   *
+   * So we should only return config.entrypoint here if:
+   *   - the user has specified other sources in their config file
+   *   - and if the entrypoint ends with index.html, we only include it if it
+   *     exists on disk.
+   */
+  if (candidateFiles.length > 0 && config.entrypoint) {
+    if (!config.entrypoint.endsWith('index.html') || fs.existsSync(config.entrypoint)) {
+      candidateFiles.push(config.entrypoint);
+    }
   }
   if (candidateFiles.length > 0) {
     // Files in the project config are all absolute paths.
