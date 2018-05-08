@@ -107,7 +107,9 @@ export function createElementGenerator(templateName: string):
       this.fs.copyTpl(
           this.templatePath('test/index.html'), `test/index.html`, this.props);
 
-      this.fs.move('gitignore', '.gitignore');
+      this.fs.move(
+          this.destinationPath('gitignore'),
+          this.destinationPath('.gitignore'));
     }
 
     install() {
@@ -159,7 +161,9 @@ export function createElementGenerator(templateName: string):
       this.fs.copyTpl(
           this.templatePath('test/index.html'), `test/index.html`, this.props);
 
-      this.fs.move('gitignore', '.gitignore');
+      this.fs.move(
+          this.destinationPath('gitignore'),
+          this.destinationPath('.gitignore'));
     }
 
     install() {
