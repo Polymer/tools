@@ -38,8 +38,8 @@
     "through2": "^2.0.0",
     "web-component-tester": "^6.5.0",
     "wct-browser-legacy": "^0.0.1-pre.11",
-    "@polymer/test-fixture": "^3.0.0-pre.16",
-    "@polymer/iron-component-page": "^3.0.0-pre.16"
+    "@polymer/test-fixture": "^3.0.0-pre.17",
+    "@polymer/iron-component-page": "^3.0.0-pre.17"
   },
   "scripts": {
     "build": "gulp",
