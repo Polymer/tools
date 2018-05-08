@@ -67,11 +67,10 @@ suite('test', () => {
   test('--module-resolution flag is passed to WCT', async () => {
     const wctCliRunStub =
         sandbox.stub(wct.cli, 'run').returns(Promise.resolve());
-    const cli = new PolymerCli(['test', '--module-resolution=node']);
+    const cli = new PolymerCli(['test', '--module-resolution=none']);
     await cli.run();
 
     const wctArgs = wctCliRunStub.args[0][1];
-    assert.includeMembers(wctArgs, [`--module-resolution=node`]);
+    assert.includeMembers(wctArgs, [`--module-resolution=none`]);
   });
-
 });

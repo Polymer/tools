@@ -3,10 +3,10 @@
 <% if (description) { -%>  "description": "<%= description %>",
 <% } -%>
   "dependencies": {
-    "@polymer/polymer": "^3.0.0-pre.12"
+    "@polymer/polymer": "^3.0.0-pre.13"
   },
   "devDependencies": {
-    "@webcomponents/webcomponentsjs": "^1.0.0",
+    "@webcomponents/webcomponentsjs": "^2.0.0-beta.2",
     "wct-browser-legacy": "^0.0.1-pre.11"
   }
 }

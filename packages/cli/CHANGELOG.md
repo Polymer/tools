@@ -3,6 +3,7 @@
 
 ## Unreleased
 * Fix `test` bug which broke Windows support relating to path delimeters.
+* Change the default value of --module-resolution to "node".
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.17 [05-03-2018]

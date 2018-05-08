@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   expected uncaught errors. The function receives `ErrorEvent` objects from the
   `error` event on window, and if it returns true, the error will not be logged
   and will not cause tests to fail.
+* Change the default value of --module-resolution to "node".
 <!-- Add new, unreleased items here. -->
 
 ## 6.6.0-pre.5 - 2018-04-12
