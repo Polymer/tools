@@ -534,5 +534,9 @@
   "es6-promise": {
     "npm": "es6-promise",
     "semver": "^4.0.0"
+  },
+  "webrtc-adapter": {
+    "npm": "webrtc-adapter",
+    "semver": "^3.0.0"
   }
 }
