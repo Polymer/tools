@@ -21,7 +21,6 @@
     "@types/acorn": "^4.0.3",
     "@types/babel-generator": "^6.25.1",
     "@types/babel-traverse": "^6.25.3",
-    "@types/rollup": "^0.54.0",
     "acorn-import-meta": "^0.2.1",
     "babel-generator": "^6.26.1",
     "babel-traverse": "^6.26.0",
@@ -34,7 +33,7 @@
     "mkdirp": "^0.5.1",
     "parse5": "^2.2.2",
     "polymer-analyzer": "=3.0.0-pre.25",
-    "rollup": "^0.56.1",
+    "rollup": "^0.58.2",
     "source-map": "^0.5.6",
     "vscode-uri": "^1.0.1"
   },
@@ -65,19 +64,11 @@
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\""
   },
-  "license": "BSD-3-Clause",
   "directories": {
     "test": "test"
   },
   "keywords": [
     "web components",
     "polymer"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/Polymer/polymer-bundler.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Polymer/polymer-bundler/issues"
-  }
+  ]
 }

@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Dropped support for node v6. This is a soft break, as we aren't
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)
   for details.
+* Fix path delimiter bug which broke Windows support.
+* Tests can define `window.uncaughtErrorFilter`, a function to filter out
+  expected uncaught errors. The function receives `ErrorEvent` objects from the
+  `error` event on window, and if it returns true, the error will not be logged
+  and will not cause tests to fail.
+* Change the default value of --module-resolution to "node".
 <!-- Add new, unreleased items here. -->
 
 ## 6.6.0-pre.5 - 2018-04-12

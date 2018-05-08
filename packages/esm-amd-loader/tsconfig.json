@@ -4,9 +4,11 @@
     "outDir": "./lib",
     "target": "es5",
     "downlevelIteration": false,
+    "preserveConstEnums": false,
+    "sourceMap": false,
     "lib": [
-      "ES5",
-      "DOM"
+      "es5",
+      "dom"
     ]
   },
   "include": [

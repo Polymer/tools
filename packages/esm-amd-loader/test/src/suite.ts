@@ -36,8 +36,22 @@ const {assert} = chai;
 const define = window.define;
 
 interface Window {
+  /**
+   * A function to filter out expected uncaught errors.
+   *
+   * If this function exists, then any events fired from the window's 'error'
+   * will be passed to this function. If it returns true, then the error event
+   * will not be logged and will not cause tests to fail.
+   *
+   * (typing copied from WCT. should try to import it).
+   */
+  uncaughtErrorFilter?(errorEvent: ErrorEvent): boolean;
+}
+
+interface Window {
   executed: {[url: string]: true};
   checkExecuted: (key: string) => void;
+  executionOrder: string[];
 }
 
 window.checkExecuted = (key) => {
@@ -50,6 +64,7 @@ window.checkExecuted = (key) => {
 setup(() => {
   define._reset!();
   window.executed = {};
+  window.executionOrder = [];
 });
 
 test('define an empty module', (done) => {
@@ -72,9 +87,47 @@ suite('static dependencies', () => {
     });
   });
 
-  test('do not resolve when a static dependency 404s', (done) => {
-    define(['./not-found.js'], () => assert.fail());
-    setTimeout(done, 1000);
+  suite('failure', () => {
+    teardown(() => {
+      window.uncaughtErrorFilter = undefined;
+    });
+
+    test('do not execute a module when a static dependency 404s', (done) => {
+      window.uncaughtErrorFilter = (e) => {
+        // The test is done next tick.
+        setTimeout(done);
+        // We only expect this error once.
+        window.uncaughtErrorFilter = undefined;
+        // Only filter a failure to fetch a file that does not exist.
+        return /Failed to fetch .*static\/y\/not-found\.js/.test(
+            e.error.message);
+      };
+
+      define(['./not-found.js'], () => assert.fail());
+    });
+
+    const testName =
+        'modules before a failure execute, but after a failure do not';
+    test(testName, (done) => {
+      define(['require'], (require: any) => {
+        require(
+            [
+              '../failure/beforeFailure.js',
+              '../failure/failure.js',
+              '../failure/afterFailure.js'
+            ],
+            () => {
+              window.executionOrder.push('toplevel');
+              assert.fail('should have been stopped by failure.js');
+            },
+            (error: Error) => {
+              assert.deepEqual(
+                  window.executionOrder, ['beforeFailure', 'failure']);
+              assert.include(error.message, 'failure.js is supposed to fail');
+              done();
+            });
+      });
+    });
   });
 
   test('dedupe dependencies', (done) => {
@@ -116,7 +169,7 @@ suite('static dependencies', () => {
     });
   });
 
-  test('module with no define call resolves to empty exports', (done) => {
+  test('module with no define call exports the empty object', (done) => {
     define(['./no-define.js'], (noDefine: any) => {
       assert.deepEqual(noDefine, {});
       done();
@@ -135,8 +188,8 @@ suite('top-level modules', () => {
       check();
     });
 
-    // This define call has no dependencies, so it would resolve before the one
-    // above unless we were explicitly ordering top-level scripts.
+    // This define call has no dependencies, so it would execute before the
+    // one above unless we were explicitly ordering top-level scripts.
     pending++;
     define([], () => {
       order.push(1);
@@ -158,12 +211,25 @@ suite('top-level modules', () => {
     }
   });
 
-  test('can fail without blocking the next one', (done) => {
-    // We order top-level modules by injecting dependencies between them.
-    // However, unlike normal dependencies, if module 1 fails, we should still
-    // execute module 2.
-    define(['./not-found.js'], () => assert.fail());
-    define([], () => done());
+  suite('failing modules', () => {
+    teardown(() => {
+      window.uncaughtErrorFilter = undefined;
+    });
+
+    test('can fail without blocking the next one', (done) => {
+      window.uncaughtErrorFilter = (e) => {
+        // We only expect this error once.
+        window.uncaughtErrorFilter = undefined;
+        // Look for a failure to fetch the file that does not exist.
+        return /Failed to fetch .*static\/y\/not-found\.js/.test(
+            e.error.message);
+      };
+      // We order top-level modules sequentially.
+      // However, unlike normal dependencies, if module 1 fails, we should still
+      // execute module 2.
+      define(['./not-found.js'], () => assert.fail());
+      define([], () => done());
+    });
   });
 });
 
@@ -250,6 +316,80 @@ suite('meta.url', () => {
         assert.equal(meta.url, 'http://example.com/?foo#bar');
         done();
       });
+    });
+  });
+});
+
+// Test for https://github.com/Polymer/tools/issues/335
+suite('dependency ordering', () => {
+  test('all else being equal, dependencies execute in import order', (done) => {
+    define(['../race/start.js'], () => {
+      assert.deepEqual(window.executionOrder, ['baz', 'foo', 'bar', 'start']);
+      done();
+    });
+  });
+
+  // The dependency graph here looks like:
+  // suite.html#0  -> start-one
+  // suite.html#1  -> start-two
+  // start-one -> [a, e]
+  // start-two -> [a, g, h]
+  // a -> [b, e]
+  // b -> [c, d]
+  // e -> [f, g]
+  // h -> [i, j, k]
+  const testName =
+      'order modules according to their position in the global total ordering, not just based on file-local information';
+  test(testName, (done) => {
+    define(['../deepRace/start-one.js'], () => {
+      window.executionOrder.push('suite#0');
+    });
+    define(['../deepRace/start-two.js'], () => {
+      window.executionOrder.push('suite#1');
+      assert.deepEqual(window.executionOrder, [
+        'c',
+        'd',
+        'b',
+        'f',
+        'g',
+        'e',
+        'a',
+        'start-one',
+        'suite#0',
+        'i',
+        'j',
+        'k',
+        'h',
+        'start-two',
+        'suite#1'
+      ]);
+      done();
+    });
+  });
+});
+
+suite('cyclical dependencies', () => {
+  test('get a first', (done) => {
+    define(['../cycle/a.js', '../cycle/b.js'], (a: any, b: any) => {
+      assert.deepEqual(a.a, 'a');
+      assert.deepEqual(b.b, 'b');
+      assert.deepEqual(a.getterForB(), 'b');
+      assert.deepEqual(b.getterForA(), 'a');
+      assert.deepEqual(a.usesBAtExecution, 'b');
+      assert.deepEqual(b.usesAAtExecution, undefined);
+      done();
+    });
+  });
+
+  test('get b first', (done) => {
+    define(['../cycle/b.js', '../cycle/a.js'], (b: any, a: any) => {
+      assert.deepEqual(a.a, 'a');
+      assert.deepEqual(b.b, 'b');
+      assert.deepEqual(a.getterForB(), 'b');
+      assert.deepEqual(b.getterForA(), 'a');
+      assert.deepEqual(a.usesBAtExecution, undefined);
+      assert.deepEqual(b.usesAAtExecution, 'a');
+      done();
     });
   });
 });

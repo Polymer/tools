@@ -11,10 +11,11 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+import generate from '@babel/generator';
 import traverse, {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
 import * as clone from 'clone';
-import {FileRelativeUrl, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
+import {Document, FileRelativeUrl, PackageRelativeUrl, ParsedJavaScriptDocument, ResolvedUrl} from 'polymer-analyzer';
 import {rollup} from 'rollup';
 
 import {assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
@@ -23,7 +24,7 @@ import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
 import {getOrSetBundleModuleExportName} from './es6-module-utils';
 import {appendUrlPath, ensureLeadingDot, getFileExtension} from './url-utils';
-import {rewriteObject} from './utils';
+import {generateUniqueIdentifierName, rewriteObject} from './utils';
 
 const acornImportMetaInject = require('acorn-import-meta/inject');
 
@@ -38,7 +39,18 @@ export class Es6Rewriter {
       public bundle: AssignedBundle) {
   }
 
-  async rollup(url: ResolvedUrl, code: string) {
+  /**
+   * Produces a module bundle from given source code string and from analysis of
+   * imported ES6 modules.
+   * @param url The base URL of the module to roll-up.
+   * @param code The source code to roll-up.
+   * @param document The optional Document which contains the source code to
+   * rollup; this is used to get access to the Analyzer's resolutions of module
+   * specifiers encountered in the source code if available.
+   * TODO(usergenic): Return a valid source-map along with the code.
+   */
+  async rollup(url: ResolvedUrl, code: string, document?: Document):
+      Promise<{code: string, map: undefined}> {
     // This is a synthetic module specifier used to identify the code to rollup
     // and differentiate it from the a request to contents of the document at
     // the actual given url which should load from the analyzer.
@@ -55,8 +67,10 @@ export class Es6Rewriter {
     // For each document loaded from the analyzer, we build a map of the
     // original specifiers to the resolved URLs since we want to use analyzer
     // resolutions for such things as bare module specifiers.
-    const jsImportResolvedUrls =
-        new Map<ResolvedUrl, Map<string, ResolvedUrl>>();
+    const jsImportResolvedUrls = new Map<string, Map<string, ResolvedUrl>>();
+    if (document) {
+      jsImportResolvedUrls.set(input, this._getJsImportResolutions(document));
+    }
     const rollupBundle = await rollup({
       input,
       external,
@@ -78,9 +92,8 @@ export class Es6Rewriter {
               return input;
             }
             if (importer) {
-              if (jsImportResolvedUrls.has(importer as ResolvedUrl)) {
-                const resolutions =
-                    jsImportResolvedUrls.get(importer as ResolvedUrl)!;
+              if (jsImportResolvedUrls.has(importer)) {
+                const resolutions = jsImportResolvedUrls.get(importer)!;
                 if (resolutions.has(importee)) {
                   return resolutions.get(importee);
                 }
@@ -101,24 +114,12 @@ export class Es6Rewriter {
             // When the requested document is part of the bundle, get it from
             // the analysis.
             if (this.bundle.bundle.files.has(id)) {
-              const document = getAnalysisDocument(analysis, id);
+              const document =
+                  assertIsJsDocument(getAnalysisDocument(analysis, id));
+
               if (!jsImportResolvedUrls.has(id)) {
-                const jsImports = document.getFeatures({
-                  kind: 'js-import',
-                  imported: false,
-                  externalPackages: true,
-                  excludeBackreferences: true,
-                });
-                const resolutions = new Map<string, ResolvedUrl>();
-                jsImportResolvedUrls.set(id, resolutions);
-                for (const jsImport of jsImports) {
-                  const node = jsImport.astNode.node;
-                  if ('source' in node) {
-                    if (node.source && jsImport.document !== undefined) {
-                      resolutions.set(node.source.value, jsImport.document.url);
-                    }
-                  }
-                }
+                jsImportResolvedUrls.set(
+                    id, this._getJsImportResolutions(document));
               }
 
               // If the URL of the requested document is the same as the bundle
@@ -136,13 +137,11 @@ export class Es6Rewriter {
                   ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
                       this.bundle.url, id));
 
-              // TODO(usergenic): This code makes assumptions about the type of
-              // the ast and the document contents that are potentially not true
-              // if there are coding or resolution errors. Need to add some kind
-              // of type checking or assertion that we're dealing with at least
-              // a `Document<ParsedJavascriptDocument>` here.
               const newAst = this._rewriteImportMetaToBundleMeta(
-                  document.parsedDocument.ast as babel.File, relativeUrl);
+                  generateUniqueIdentifierName(
+                      'bundledImportMeta', document.parsedDocument.contents),
+                  document.parsedDocument.ast,
+                  relativeUrl);
               const newCode = serialize(newAst).code;
               return newCode;
             }
@@ -168,6 +167,26 @@ export class Es6Rewriter {
     this._deduplicateImportStatements(babelFile);
     const {code: rewrittenCode} = serialize(babelFile);
     return {code: rewrittenCode, map: undefined};
+  }
+
+  private _getJsImportResolutions(document: Document):
+      Map<string, ResolvedUrl> {
+    const jsImports = document.getFeatures({
+      kind: 'js-import',
+      imported: false,
+      externalPackages: true,
+      excludeBackreferences: true,
+    });
+    const resolutions = new Map<string, ResolvedUrl>();
+    for (const jsImport of jsImports) {
+      const node = jsImport.astNode.node;
+      if ('source' in node) {
+        if (node.source && jsImport.document !== undefined) {
+          resolutions.set(node.source.value, jsImport.document.url);
+        }
+      }
+    }
+    return resolutions;
   }
 
   /**
@@ -467,21 +486,27 @@ export class Es6Rewriter {
   }
 
   private _rewriteImportMetaToBundleMeta(
+      bundledImportMetaIdentifierName: string,
       moduleFile: babel.File,
       relativeUrl: FileRelativeUrl): babel.File {
     // Generate a stand-in for any local references to import.meta...
-    // const __bundledImportMeta = {...import.meta, url: __bundledImportURL};
+    // ```javascript
+    // const bundledImportMeta = {
+    //    ...import.meta,
+    //    url: new URL(${ relativeUrl }, import.meta.url).href
+    // };
+    // ```
     // TODO(usergenic): Consider migrating this AST production mishmash into the
     // `ast` tagged template literal available like this:
     // https://github.com/Polymer/tools/blob/master/packages/build/src/babel-plugin-dynamic-import-amd.ts#L64
-    const bundledImportMetaName = '__bundledImportMeta';
     const bundledImportMetaDeclaration = babel.variableDeclaration(
         //
         'const',
         [
           //
           babel.variableDeclarator(
-              babel.identifier(bundledImportMetaName), babel.objectExpression([
+              babel.identifier(bundledImportMetaIdentifierName),
+              babel.objectExpression([
                 babel.spreadProperty(babel.memberExpression(
                     babel.identifier('import'), babel.identifier('meta'))),
                 babel.objectProperty(
@@ -513,7 +538,8 @@ export class Es6Rewriter {
             // ignore any other meta properties.
             return;
           }
-          const bundledImportMeta = babel.identifier(bundledImportMetaName);
+          const bundledImportMeta =
+              babel.identifier(bundledImportMetaIdentifierName);
           path.replaceWith(bundledImportMeta);
         },
       },

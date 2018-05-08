@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!--## Unreleased -->
+## Unreleased
+* Fixed inline module scripts which used bare name specifiers to correctly resolve them using the module resolutions of the Analyzer.
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.0-pre.7 - 2018-05-03
