@@ -41,7 +41,7 @@ const enum StateEnum {
 
   /**
    * Comes after Initialized. We have begun loading the module over the network.
-   * Toplevel scripts skip this state entirely.
+   * Top level scripts skip this state entirely.
    */
   Loading = 'Loading',
 
@@ -90,6 +90,10 @@ interface StateDataMap {
   [StateEnum.Failed]: Error;
 }
 
+/**
+ * State that we need to keep track of while a module is loaded but waiting
+ * to execute.
+ */
 interface WaitingData {
   /**
    * The dependencies of this module, in order.
@@ -108,7 +112,15 @@ interface WaitingData {
   readonly moduleBody: undefined|Function;
 }
 
-interface ModuleG<State extends keyof StateDataMap = keyof StateDataMap> {
+/**
+ * Represents a module at a given state of the loading process.
+ *
+ * The Module/ModuleG distinction is a compromise in the TypeScript typings.
+ * Use `Module` when a module's state must be checked at runtime,
+ * `ModuleG<State>` for a module with a definite state. There is probably a
+ * much better way to represent that.
+ */
+interface ModuleG<State extends keyof StateDataMap> {
   readonly url: NormalizedUrl;
   readonly urlBase: NormalizedUrl;
   readonly exports: {[id: string]: {}};
@@ -170,6 +182,20 @@ function load(module: ModuleG<StateEnum.Initialized>):
   const script = document.createElement('script');
   script.src = module.url;
 
+  /**
+   * Remove our script tags from the document after they have loaded/errored, to
+   * reduce the number of nodes. Since the file load order is arbitrary and not
+   * the order in which we execute modules, these scripts aren't even helpful
+   * for debugging, and they might give a false impression of the execution
+   * order.
+   */
+  function removeScript() {
+    try {
+      document.head.removeChild(script);
+    } catch { /* Something else removed the script. We don't care. */
+    }
+  }
+
   script.onload = () => {
     let deps: string[], moduleBody;
     if (pendingDefine !== undefined) {
@@ -182,18 +208,12 @@ function load(module: ModuleG<StateEnum.Initialized>):
       moduleBody = undefined;
     }
     beginWaitingForTurn(mutatedModule, deps, moduleBody);
-    try {
-      document.head.removeChild(script);
-    } catch { /* don't care */
-    }
+    removeScript();
   };
 
   script.onerror = () => {
     fail(module, new TypeError('Failed to fetch ' + module.url));
-    try {
-      document.head.removeChild(script);
-    } catch { /* don't care */
-    }
+    removeScript();
   };
 
   document.head.appendChild(script);
@@ -293,9 +313,9 @@ function execute(module: ModuleG<StateEnum.WaitingOnDeps>):
  * or because one of its transitive dependencies errored.
  */
 function fail(mod: Module, error: Error) {
-  if (mod.isTopLevel) {
+  if (mod.isTopLevel === true) {
     setTimeout(() => {
-      // Toplevel modules have no way to handle errors other than throwing
+      // Top level modules have no way to handle errors other than throwing
       // an uncaught exception.
       throw error;
     });
@@ -338,7 +358,7 @@ function executeDependenciesInOrder(
 /**
  * This method does two things: it waits for a module to execute, and it
  * will transition that module to WaitingOnDeps. This is the only place where we
- * transition a non-toplevel module from WaitingForTurn to WaitingOnDeps.
+ * transition a non-top-level module from WaitingForTurn to WaitingOnDeps.
  */
 function waitForModuleWhoseTurnHasCome(
     dependency: Module, onExecuted: () => void, onFailed?: (e: Error) => void) {

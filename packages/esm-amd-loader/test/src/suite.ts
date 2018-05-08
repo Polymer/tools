@@ -92,7 +92,7 @@ suite('static dependencies', () => {
       window.uncaughtErrorFilter = undefined;
     });
 
-    test('do not resolve a module when a static dependency 404s', (done) => {
+    test('do not execute a module when a static dependency 404s', (done) => {
       window.uncaughtErrorFilter = (e) => {
         // The test is done next tick.
         setTimeout(done);
@@ -169,7 +169,7 @@ suite('static dependencies', () => {
     });
   });
 
-  test('module with no define call resolves to empty exports', (done) => {
+  test('module with no define call exports the empty object', (done) => {
     define(['./no-define.js'], (noDefine: any) => {
       assert.deepEqual(noDefine, {});
       done();
@@ -188,7 +188,7 @@ suite('top-level modules', () => {
       check();
     });
 
-    // This define call has no dependencies, so it would resolve before the
+    // This define call has no dependencies, so it would execute before the
     // one above unless we were explicitly ordering top-level scripts.
     pending++;
     define([], () => {
