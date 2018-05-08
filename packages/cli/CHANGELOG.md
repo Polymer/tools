@@ -2,6 +2,8 @@
 
 
 ## Unreleased
+* Fix bug with `init` templates and missing `.gitignore` files due to npm
+  renaming them to `.npmignore` on install of cli.
 * Fix `test` bug which broke Windows support relating to path delimeters.
 * Change the default value of --module-resolution to "node".
 * Polymer `lint` and `analyze`, when run without files, will look for sources
