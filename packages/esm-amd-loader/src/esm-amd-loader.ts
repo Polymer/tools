@@ -13,55 +13,397 @@
  */
 
 interface Window {
-  define: ((deps: string[], factory: ResolveCallback) => void)&{
+  define: ((deps: string[], moduleBody: OnExecutedCallback) => void)&{
     _reset?: () => void;
   };
 }
 
-type Registry = {
-  [url: string]: Module
-};
-
-interface Module {
-  url: NormalizedUrl;
-  urlBase: NormalizedUrl;
-  exports: {[id: string]: {}};
-  /** This is a top-level module. */
-  isTopLevel: boolean;
-  /** This module hasn't started loading its script yet. */
-  needsLoad: boolean;
-  /** All dependencies are resolved and the factory has run. */
-  resolved: boolean;
-  error: Error|undefined;
-  /** Callbacks from dependents waiting for this module to resolve. */
-  onResolve: Array<() => void>;
-  onError: Array<ErrorCallback>;
-}
-
-type ResolveCallback = (...args: Array<{}>) => void;
-type ErrorCallback = (error: Error) => void;
+type OnExecutedCallback = (...args: Array<{}>) => void;
+type onFailedCallback = (error: Error) => void;
 type NormalizedUrl = string&{_normalized: never};
 
 (function() {
+
+// Set to true for more logging. Anything guarded by an
+// `if (debugging)` check will not appear in the final output.
+const debugging: boolean = false;
+
+/**
+ * Describes the state machine for loading a single module.
+ *
+ * At runtime, these are integers that are inlined in their use sites.
+ */
+const enum StateEnum {
+  /**
+   * The initial state.
+   */
+  Initialized = 'Initialized',
+
+  /**
+   * Comes after Initialized. We have begun loading the module over the network.
+   * Top level scripts skip this state entirely.
+   */
+  Loading = 'Loading',
+
+  /**
+   * Comes after Loading. The module's <script> tag has loaded. If there was a
+   * define() call for this module, it has run by now. We have started loading
+   * the module's dependencies, but they can't be executed until
+   * earlier modules have executed.
+   *
+   * Note that we only ever wait for things to execute.
+   * We always load a module as soon as we can, and in no particular order.
+   */
+  WaitingForTurn = 'WaitingForTurn',
+
+  /**
+   * Comes after WaitingForTurn. All earlier scripts are now executed,
+   * and we can now execute our dependencies in order. Only after that's done
+   * can we execute this module.
+   */
+  WaitingOnDeps = 'WaitingOnDeps',
+
+  /**
+   * The successful terminal state. Comes after WaitingOnDeps. All of the
+   * module's dependencies have loaded and executed, and the module's body, if
+   * any, has executed, and there were no errors.
+   */
+  Executed = 'Executed',
+
+  /**
+   * The unsuccessful terminal state. Can come after any other state except
+   * Executed. Indicates that either the module body threw an error, the
+   * module's script failed to load (e.g. 404), or one of its dependencies
+   * Failed.
+   */
+  Failed = 'Failed',
+}
+
+// Given a state, what additional data do we need to keep track of for a module
+// at this state?
+interface StateDataMap {
+  [StateEnum.Initialized]: undefined;
+  [StateEnum.Loading]: undefined;
+  [StateEnum.WaitingForTurn]: WaitingData;
+  [StateEnum.WaitingOnDeps]: WaitingData;
+  [StateEnum.Executed]: undefined;
+  [StateEnum.Failed]: Error;
+}
+
+/**
+ * State that we need to keep track of while a module is loaded but waiting
+ * to execute.
+ */
+interface WaitingData {
+  /**
+   * The dependencies of this module, in order.
+   */
+  readonly deps: Module[];
+  /**
+   * Args that we will pass into moduleBody.
+   */
+  readonly args: Array<{}>;
+  /**
+   * The body of the module, which is executed after its dependencies have
+   * executed.
+   *
+   * In AMD/Commonjs terminology, this is the factory function.
+   */
+  readonly moduleBody: undefined|Function;
+}
+
+/**
+ * Represents a module at a given state of the loading process.
+ *
+ * The Module/ModuleG distinction is a compromise in the TypeScript typings.
+ * Use `Module` when a module's state must be checked at runtime,
+ * `ModuleG<State>` for a module with a definite state. There is probably a
+ * much better way to represent that.
+ */
+interface ModuleG<State extends keyof StateDataMap> {
+  readonly url: NormalizedUrl;
+  readonly urlBase: NormalizedUrl;
+  readonly exports: {[id: string]: {}};
+  /** True if this is a top-level module. */
+  isTopLevel: boolean;
+  /**
+   * Callbacks that are called exactly once, for the next time the module
+   * progresses to a new state.
+   */
+  readonly onNextStateChange: Array<() => void>;
+  state: State;
+  stateData: StateDataMap[State];
+}
+
+type Module = ModuleG<StateEnum.Initialized>|ModuleG<StateEnum.Loading>|
+    ModuleG<StateEnum.WaitingForTurn>|ModuleG<StateEnum.WaitingOnDeps>|
+    ModuleG<StateEnum.Executed>|ModuleG<StateEnum.Failed>;
+
+/**
+ * Transition the given module to the given state.
+ *
+ * Does not ensure that the transition is legal.
+ * Calls onNextStateChange callbacks.
+ */
+function stateTransition<NewState extends StateEnum>(
+    module: Module, newState: NewState, newStateData: StateDataMap[NewState]):
+    ModuleG<NewState> {
+  if (debugging) {
+    console.log(`${module.url} transitioning to state ${newState}`);
+  }
+  const mutatedModule = module as ModuleG<NewState>;
+  mutatedModule.state = newState;
+  mutatedModule.stateData = newStateData;
+  if (mutatedModule.onNextStateChange.length > 0) {
+    const callbacks = mutatedModule.onNextStateChange.slice();
+    mutatedModule.onNextStateChange.length = 0;
+    for (const callback of callbacks) {
+      callback();
+    }
+  }
+  return mutatedModule;
+}
 
 /**
  * A global map from a fully qualified module URLs to module objects.
  */
 const registry: {[url: string]: Module} = Object.create(null);
-
-let pendingDefine: ((mod: Module) => void)|undefined = undefined;
+let pendingDefine: (() => [Array<string>, OnExecutedCallback | undefined])|
+    undefined = undefined;
 let topLevelScriptIdx = 0;
-let previousTopLevelUrl: string|undefined = undefined;
+let previousTopLevelUrl: NormalizedUrl|undefined = undefined;
 let baseUrl = getBaseUrl();
 
+/** Begin loading a module from the network. */
+function load(module: ModuleG<StateEnum.Initialized>):
+    ModuleG<StateEnum.Loading> {
+  const mutatedModule = stateTransition(module, StateEnum.Loading, undefined);
+
+  const script = document.createElement('script');
+  script.src = module.url;
+
+  /**
+   * Remove our script tags from the document after they have loaded/errored, to
+   * reduce the number of nodes. Since the file load order is arbitrary and not
+   * the order in which we execute modules, these scripts aren't even helpful
+   * for debugging, and they might give a false impression of the execution
+   * order.
+   */
+  function removeScript() {
+    try {
+      document.head.removeChild(script);
+    } catch { /* Something else removed the script. We don't care. */
+    }
+  }
+
+  script.onload = () => {
+    let deps: string[], moduleBody;
+    if (pendingDefine !== undefined) {
+      [deps, moduleBody] = pendingDefine();
+    } else {
+      // The script did not make a call to define(), otherwise the global
+      // callback would have been set. That's fine, we can execute immediately
+      // because we can't have any dependencies.
+      deps = [];
+      moduleBody = undefined;
+    }
+    beginWaitingForTurn(mutatedModule, deps, moduleBody);
+    removeScript();
+  };
+
+  script.onerror = () => {
+    fail(module, new TypeError('Failed to fetch ' + module.url));
+    removeScript();
+  };
+
+  document.head.appendChild(script);
+
+  return mutatedModule;
+}
+
+/** Start loading the module's dependencies, but don't execute anything yet. */
+function beginWaitingForTurn(
+    module: ModuleG<StateEnum.Loading>,
+    deps: string[],
+    moduleBody: OnExecutedCallback|undefined) {
+  const [args, depModules] = loadDeps(module, deps);
+  const stateData: WaitingData = {
+    args,
+    deps: depModules,
+    moduleBody,
+  };
+  return stateTransition(module, StateEnum.WaitingForTurn, stateData);
+}
+
+function loadDeps(
+    module: Module, depSpecifiers: string[]): [Array<{}>, Module[]] {
+  const args: Array<{}> = [];
+  const depModules: Module[] = [];
+  for (const depSpec of depSpecifiers) {
+    if (depSpec === 'exports') {
+      args.push(module.exports);
+      continue;
+    }
+    if (depSpec === 'require') {
+      args.push(function(
+          deps: string[],
+          onExecuted?: OnExecutedCallback,
+          onError?: onFailedCallback) {
+        const [args, depModules] = loadDeps(module, deps);
+
+        executeDependenciesInOrder(depModules, () => {
+          if (onExecuted) {
+            onExecuted.apply(null, args);
+          }
+        }, onError);
+      });
+      continue;
+    }
+    if (depSpec === 'meta') {
+      args.push({
+        // We append "#<script index>" to top-level scripts so that they have
+        // unique keys in the registry. We don't want to see that here.
+        url: (module.isTopLevel === true) ? baseUrl : module.url
+      });
+      continue;
+    }
+
+    // We have a dependency on a real module.
+    const dependency = getModule(resolveUrl(module.urlBase, depSpec));
+    args.push(dependency.exports);
+    depModules.push(dependency);
+
+    if (dependency.state === StateEnum.Initialized) {
+      load(dependency);
+    }
+  }
+  return [args, depModules];
+}
+
 /**
- * Define a module and execute its factory function when all dependencies are
- * resolved.
+ * Start executing our dependencies, in order, as they become available.
+ * Once they're all executed, execute our own module body, if any.
+ */
+function beginWaitingOnDeps(module: ModuleG<StateEnum.WaitingForTurn>) {
+  const mutatedModule =
+      stateTransition(module, StateEnum.WaitingOnDeps, module.stateData);
+  executeDependenciesInOrder(
+      module.stateData.deps,
+      () => execute(mutatedModule),
+      (e) => fail(mutatedModule, e));
+  return mutatedModule;
+}
+
+/** Runs the given module body. */
+function execute(module: ModuleG<StateEnum.WaitingOnDeps>):
+    ModuleG<StateEnum.Executed|StateEnum.Failed> {
+  const stateData = module.stateData;
+  if (stateData.moduleBody != null) {
+    try {
+      stateData.moduleBody.apply(null, stateData.args);
+    } catch (e) {
+      return fail(module, e);
+    }
+  }
+  return stateTransition(module, StateEnum.Executed, undefined);
+}
+
+/**
+ * Called when a module has failed to load, either becuase its script errored,
+ * or because one of its transitive dependencies errored.
+ */
+function fail(mod: Module, error: Error) {
+  if (mod.isTopLevel === true) {
+    setTimeout(() => {
+      // Top level modules have no way to handle errors other than throwing
+      // an uncaught exception.
+      throw error;
+    });
+  }
+  return stateTransition(mod, StateEnum.Failed, error);
+}
+
+/**
+ * @param deps The dependencies to execute, if they have not already executed.
+ * @param onAllExecuted Called after all dependencies have executed.
+ * @param onFailed Called if any dependency fails.
+ */
+function executeDependenciesInOrder(
+    deps: Module[],
+    onAllExecuted: OnExecutedCallback|undefined,
+    onFailed: onFailedCallback|undefined): void {
+  const nextDep = deps.shift();
+  if (nextDep === undefined) {
+    if (onAllExecuted) {
+      onAllExecuted();
+    }
+    return;
+  }
+
+  if (nextDep.state === StateEnum.WaitingOnDeps) {
+    if (debugging) {
+      console.log(`Cycle detected while importing ${nextDep.url}`);
+    }
+    // Do not wait on the dep that introduces a cycle, continue on as though it
+    // were not there.
+    executeDependenciesInOrder(deps, onAllExecuted, onFailed);
+    return;
+  }
+
+  waitForModuleWhoseTurnHasCome(nextDep, () => {
+    executeDependenciesInOrder(deps, onAllExecuted, onFailed);
+  }, onFailed);
+}
+
+/**
+ * This method does two things: it waits for a module to execute, and it
+ * will transition that module to WaitingOnDeps. This is the only place where we
+ * transition a non-top-level module from WaitingForTurn to WaitingOnDeps.
+ */
+function waitForModuleWhoseTurnHasCome(
+    dependency: Module, onExecuted: () => void, onFailed?: (e: Error) => void) {
+  switch (dependency.state) {
+    case StateEnum.WaitingForTurn:
+      beginWaitingOnDeps(dependency);
+      waitForModuleWhoseTurnHasCome(dependency, onExecuted, onFailed);
+      return;
+
+    case StateEnum.Failed:
+      if (onFailed) {
+        onFailed(dependency.stateData);
+      }
+      return;
+    case StateEnum.Executed:
+      onExecuted();
+      return;
+
+    // Nothing to do but wait
+    case StateEnum.Loading:
+    case StateEnum.WaitingOnDeps:
+      dependency.onNextStateChange.push(
+          () =>
+              waitForModuleWhoseTurnHasCome(dependency, onExecuted, onFailed));
+      return;
+
+    // These cases should never happen.
+    case StateEnum.Initialized:
+      throw new Error(
+          `All dependencies should be loading already before ` +
+          `pressureDependencyToExecute is called.`);
+    default:
+      const never: never = dependency;
+      throw new Error(`Impossible module state: ${(never as Module).state}`);
+  }
+}
+
+/**
+ * Define a module and execute its module body function when all dependencies
+ * have executed.
  *
  * Dependencies must be specified as URLs, either relative or fully qualified
  * (e.g. "../foo.js" or "http://example.com/bar.js" but not "my-module-name").
  */
-window.define = function(deps: string[], factory?: ResolveCallback) {
+window.define = function(deps: string[], moduleBody?: OnExecutedCallback) {
   // We don't yet know our own module URL. We need to discover it so that we
   // can resolve our relative dependency specifiers. There are two ways the
   // script executing this define() call could have been loaded:
@@ -73,10 +415,10 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
   // fired by this <script>, which will be handled by the loading script,
   // which will invoke the callback with our module object.
   let defined = false;
-  pendingDefine = (mod) => {
+  pendingDefine = () => {
     defined = true;
     pendingDefine = undefined;
-    define(mod, deps, factory);
+    return [deps, moduleBody];
   };
 
   // Case #2: We are a top-level script in the HTML document. Our URL is the
@@ -87,25 +429,39 @@ window.define = function(deps: string[], factory?: ResolveCallback) {
     if (defined === false) {
       pendingDefine = undefined;
       const url = baseUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
-      const mod = getModule(url);
-
-      // Top-level scripts are already loaded.
+      // It's actually Initialized, but we're skipping over the Loading
+      // state, because this is a top level document and it's already loaded.
+      const mod = getModule(url) as ModuleG<StateEnum.Loading>;
       mod.isTopLevel = true;
-      mod.needsLoad = false;
-
+      const waitingModule = beginWaitingForTurn(mod, deps, moduleBody);
       if (previousTopLevelUrl !== undefined) {
         // type=module scripts execute in order (with the same timing as defer
         // scripts). Because this is a top-level script, and we are trying to
-        // mirror type=module behavior as much as possible, inject a
-        // dependency on the previous top-level script to preserve the
-        // relative ordering.
-        deps.push(previousTopLevelUrl);
+        // mirror type=module behavior as much as possible, wait for the
+        // previous module script to finish (successfully or otherwise)
+        // before executing further.
+        whenModuleTerminated(getModule(previousTopLevelUrl), () => {
+          beginWaitingOnDeps(waitingModule);
+        });
+      } else {
+        beginWaitingOnDeps(waitingModule);
       }
       previousTopLevelUrl = url;
-      define(mod, deps, factory);
     }
   }, 0);
 };
+
+function whenModuleTerminated(module: Module, onTerminalState: () => void) {
+  switch (module.state) {
+    case StateEnum.Executed:
+    case StateEnum.Failed:
+      onTerminalState();
+      return;
+    default:
+      module.onNextStateChange.push(
+          () => whenModuleTerminated(module, onTerminalState));
+  }
+}
 
 /**
  * Reset all internal state for testing and debugging.
@@ -131,156 +487,13 @@ function getModule(url: NormalizedUrl): Module {
       url,
       urlBase: getUrlBase(url),
       exports: Object.create(null),
+      state: StateEnum.Initialized,
+      stateData: undefined,
       isTopLevel: false,
-      resolved: false,
-      needsLoad: true,
-      error: undefined,
-      onResolve: [],
-      onError: [],
+      onNextStateChange: []
     };
   }
   return mod;
-}
-
-/**
- * Initialize a module with its dependencies and factory function. Note that
- * Module objects are created and registered before they are loaded, which is
- * why this is not simply part of creation.
- */
-function define(mod: Module, deps: string[], factory?: ResolveCallback) {
-  function onLoad(...args: Array<{}>) {
-    if (factory !== undefined) {
-      factory.apply(null, args);
-    }
-    mod.resolved = true;
-    for (const callback of mod.onResolve) {
-      callback();
-    }
-  }
-
-  require(mod, deps, onLoad, (error: Error) => modError(mod, error));
-}
-
-/**
- * Called when a module has failed to load, either becuase its script errored,
- * or because one of its transitive dependencies errored.
- */
-function modError(mod: Module, error: Error) {
-  mod.error = error;
-  for (const callback of mod.onError) {
-    callback(error);
-  }
-}
-
-/**
- * Execute onResolve when all dependencies have resolved, or onError if any of
- * the dependencies fail.
- */
-function require(
-    mod: Module,
-    deps: string[],
-    onResolve?: ResolveCallback,
-    onError?: ErrorCallback) {
-  const args: Array<{}> = [];
-  let numUnresolvedDeps = deps.length;
-
-  function onDepResolved() {
-    numUnresolvedDeps--;
-    checkIfAllDepsResolved();
-  }
-
-  let calledOnError = false;
-  function callOnErrorOnce(error: Error) {
-    if (onError !== undefined && calledOnError === false) {
-      onError(error);
-      calledOnError = true;
-    }
-  }
-
-  function checkIfAllDepsResolved() {
-    if (numUnresolvedDeps === 0 && onResolve !== undefined) {
-      onResolve.apply(null, args);
-    }
-  }
-
-  for (const depSpec of deps) {
-    if (depSpec === 'exports') {
-      numUnresolvedDeps--;
-      args.push(mod.exports);
-
-    } else if (depSpec === 'require') {
-      numUnresolvedDeps--;
-      args.push(
-          (deps: string[],
-           onResolve?: ResolveCallback,
-           onError?: ErrorCallback) => require(mod, deps, onResolve, onError));
-
-    } else if (depSpec === 'meta') {
-      numUnresolvedDeps--;
-      args.push({
-        // We append "#<script index>" to top-level scripts so that they have
-        // unique keys in the registry. We don't want to see that here.
-        url: (mod.isTopLevel === true) ? baseUrl : mod.url
-      });
-
-    } else {
-      const depMod = getModule(resolveUrl(mod.urlBase, depSpec));
-      args.push(depMod.exports);
-
-      if (depMod.resolved === true) {
-        numUnresolvedDeps--;
-
-      } else {
-        // If this is a top-level dependency, we don't actually care if it fails
-        // to load. We only added this dependency to enforce ordering. Act like
-        // it resolved normally if it errors.
-        const onDepError =
-            depMod.isTopLevel === true ? onDepResolved : callOnErrorOnce;
-
-        if (depMod.error !== undefined) {
-          onDepError(depMod.error);
-
-        } else {
-          depMod.onResolve.push(onDepResolved);
-          depMod.onError.push(onDepError);
-          loadIfNeeded(depMod);
-        }
-      }
-    }
-  }
-
-  checkIfAllDepsResolved();
-}
-
-/**
- * Load a module by creating a <script> tag in the document <head>, unless we
- * have already started (or didn't need to, as in the case of top-level
- * scripts).
- */
-function loadIfNeeded(mod: Module) {
-  if (mod.needsLoad === false) {
-    return;
-  }
-  mod.needsLoad = false;
-
-  const script = document.createElement('script');
-  script.src = mod.url;
-
-  script.onload = () => {
-    if (pendingDefine !== undefined) {
-      pendingDefine(mod);
-    } else {
-      // The script did not make a call to define(), otherwise the global
-      // callback would have been set. That's fine, we can resolve immediately
-      // because we don't have any dependencies, by definition.
-      define(mod, []);
-    }
-  };
-
-  script.onerror = () =>
-      modError(mod, new TypeError('Failed to fetch ' + mod.url));
-
-  document.head.appendChild(script);
 }
 
 const anchor = document.createElement('a');

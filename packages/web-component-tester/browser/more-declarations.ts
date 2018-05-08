@@ -27,3 +27,14 @@ declare namespace SocketIO {
     off(): void;
   }
 }
+
+interface Window {
+  /**
+   * A function to filter out expected uncaught errors.
+   *
+   * If this function exists, then any events fired from the window's 'error'
+   * will be passed to this function. If it returns true, then the error event
+   * will not be logged and will not cause tests to fail.
+   */
+  uncaughtErrorFilter?(errorEvent: ErrorEvent): boolean;
+}

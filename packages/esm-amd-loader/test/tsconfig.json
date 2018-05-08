@@ -2,9 +2,10 @@
   "extends": "../../../tsconfig-base.json",
   "compilerOptions": {
     "outDir": "./lib",
+    "sourceMap": false,
     "lib": [
-      "ES5",
-      "DOM"
+      "es5",
+      "dom"
     ]
   },
   "include": [

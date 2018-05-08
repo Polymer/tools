@@ -304,13 +304,10 @@ suite('compile-middleware', () => {
                            .get('/components/test-modules/' + filename)
                            // Chrome 60 supports ES2015 but not modules.
                            .set('User-Agent', chrome60UA);
-      // uncomment to update the golden:
-      /**
-      fs.writeFileSync(path.join(root, goldenPath), response.text);
-      if (1 + 1 === 2) {
+      if (process.env['UPDATE_POLYSERVE_GOLDENS']) {
+        fs.writeFileSync(path.join(root, goldenPath), response.text);
         throw new Error('Goldens updated, test failing for your saftey.');
       }
-      */
       assert.equal(response.text.trim(), golden.trim());
     }
 

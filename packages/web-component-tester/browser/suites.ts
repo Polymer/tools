@@ -145,6 +145,20 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
         return;
       if (event.error.ignore)
         return;
+      if (window.uncaughtErrorFilter && window.uncaughtErrorFilter(event)) {
+        event.preventDefault();
+        return;
+      }
+      runner.uncaught(event.error);
+    });
+  } else {
+    window.onerror = null;
+    window.addEventListener('error', function(event) {
+      if (window.uncaughtErrorFilter && window.uncaughtErrorFilter(event)) {
+        event.preventDefault();
+        return;
+      }
+
       runner.uncaught(event.error);
     });
   }
