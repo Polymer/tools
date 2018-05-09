@@ -3,30 +3,33 @@
 [![Build Status](https://travis-ci.com/Polymer/polymer-modulizer.svg?token=x6MxFyUe7PYM8oPW9m6b&branch=master)](https://travis-ci.org/Polymer/polymer-modulizer)
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/koepsxxwhl6reof8/branch/master?svg=true)](https://ci.appveyor.com/project/FredKSchott/polymer-modulizer/branch/master)
 
-polymer-modulizer is a tool to convert packages of HTML imports to JavaScript modules.
-
-## 🚧 Warning: Extremely Early Preview! 🚧
-
-polymer-modulizer may include bugs, unexpected behavior, breaking changes, and especially, too little documentation. If you choose to use it:
-
- 1. 🚿 Run the tool in a clean Git working directory, or use workspace mode. Do not run on uncommitted changes.
- 2. 📞 Please report any issues you find!
- 3. 👷🏽‍ Pardon the dust. Some parts of the workflow, like testing the output of multi-package conversions, are still under construction.
- 4. 🔄 Be ready to update and run the tool again in the future to pick up changes in output.
- 5. 📚 _If_ you want to publish the output of the tool, use a pre-release version and tag for now, until we can make stronger guarantees about the API of the output it generates.
-
-
-To track our status on Polymer elements, check out or [elements status tracker](./docs/polymer-3-element-status.md).
-For a list of all breaking changes, see our [Breaking Changes Changelog](./docs/breaking_changes.md).
-
-Good luck, the future is exciting! 😎 Please join us for discussion in the [`#modulizer` Slack channel](https://polymer.slack.com/messages/G6R11FXEC/).
-
-
+Convert Polymer 2.x projects to Polymer 3.x.
+.
 ## Overview
 
-polymer-modulizer is designed to convert HTML documents, and especially those containing Polymer and Polymer elements, to JavaScript modules as automatically as possible.
+polymer-modulizer, aka Modulizer, converts Bower packages using HTML Imports to npm packages using JavaScript modules. It automatically rewrites code to upgrade your projects and elements. In fact, the Polymer team used modulizer to upgrade the Polymer Elements, and Polymer itself!
 
-polymer-modulizer tries to strike a balance between supporting the general semantics of HTML Imports and generating idiomatic JavaScript modules. It converts assignments to global namespace objects to module exports, and references to namespaces as imported names.
+Modulizer performs many different upgrade tasks, like:
+ * Detects which `.html` files are used as HTML Imports and moves them to `.js`
+ * Rewrites `<link rel="import>` in HTML to `import` in JS.
+ * Removes "module wrappers" - IIFEs that scopes your code.
+ * Converts `bower.json` to `package.json`, using the corresponding packages on npm.
+ * Converts "namespace references" to the proper JS module import, ie: `Polymer.Async.timeOut` to `timeOut` as imported from `@polymer/polymer/lib/util/async`.
+ * Creates exports for values assigned to namespace referencs. ie, `Foo.bar = {...}` becomes `export const bar = {...}`
+ * Rewrites namespace objects - an object with many members intended to be used as a module-like object, to JS modules.
+ * Moves Polymer element templates from HTML into a JS template string.
+ * Removes `<dom-module>`s if they only contained a template.
+ * Moves other generic HTML in the document into a JS string and creates it when the module runs.
+
+Modulizer then writes out a file that records what changes it made. This file can be published to npm along with the new package, so that dependencies of your package can also automatically be upgraded with modulizer.
+
+Modulizer will also install dependencies from npm, run tests, push to a git branch and publish to npm for you! And modulizer has a "workspace" mode where it will do this for entire collections of packages at once.
+
+Modulizer tries to update everything it can, but some manual changes may be necessary. In particular:
+ * Modules are always in strict mode and scoped. Modulizer does not fix strict mode errors.
+ * If you use `importHref` you'll need to change to use dynamic `import()`.
+ * Some APIs, like `document.currentScript` are not available in JS modules.
+ * Modulizer does not understand other modules systems like AMD or CommonJS. If you use those, you'll have to update them to JS modules manually.
 
 ### Example
 
@@ -56,8 +59,8 @@ import { html } from '../../@polymer/polymer/lib/utils/html-tag.js';
 export const MyElement = class extends PolymerElement {
   static get template() {
     return html`
-    <h2>Hello Modules!</h2>
-`;
+      <h2>Hello Modules!</h2>
+    `;
   }
 
   static get is() { return 'my-element'; }
