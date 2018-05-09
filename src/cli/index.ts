@@ -162,7 +162,7 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
     type: Boolean,
     defaultValue: false,
     description: `Whether to add a static importMeta property to ` +
-        `elements. Defaults to true`,
+        `elements. Defaults to false`,
   },
   {
     name: 'flat',
