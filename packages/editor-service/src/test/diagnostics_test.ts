@@ -52,8 +52,7 @@ suite('DiagnosticGenerator', function() {
 <link rel="import" href="./does-not-exist.html">
                         ~~~~~~~~~~~~~~~~~~~~~~~`]);
     assert.match(
-        diagnostics[0].message,
-        /Unable to load import:.*no such file or directory/);
+        diagnostics[0].message, /Unable to load import:.*No such file/);
 
     // Closing the document without saving clears the diagnostics
     await client.closeFile(indexPath);

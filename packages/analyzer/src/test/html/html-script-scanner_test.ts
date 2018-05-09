@@ -72,13 +72,14 @@ suite('HtmlScriptScanner', () => {
       throw testDoc.error;
     }
     const warnings = testDoc.value.warnings;
-    assert.isAtLeast(warnings.length, 2);
-    assert.isTrue(warnings.some(
-        (w: Warning) => w.code === 'could-not-load' &&
-            !!w.message.match('does-not-exist-but-should.js')));
-    assert.isTrue(warnings.some(
-        (w: Warning) => w.code === 'not-loadable' &&
-            !!w.message.match('does-not-exist-lol-dont-care.js')));
+    assert.deepEqual(
+        warnings.map((w) => w.code).sort(), ['could-not-load', 'not-loadable']);
+    const couldNotLoadWarning =
+        warnings.find((w) => w.code === 'could-not-load')!;
+    assert.match(couldNotLoadWarning.message, /does-not-exist-but-should\.js/);
+    const notLoadableWarning = warnings.find((w) => w.code === 'not-loadable')!;
+    assert.match(
+        notLoadableWarning.message, /does-not-exist-lol-dont-care\.js/);
   });
 
   suite('modules', () => {

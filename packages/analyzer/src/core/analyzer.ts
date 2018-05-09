@@ -236,7 +236,11 @@ export class Analyzer {
    * URLs.
    */
   async load(resolvedUrl: ResolvedUrl) {
-    return (await this._analysisComplete).load(resolvedUrl);
+    const result = await (await this._analysisComplete).load(resolvedUrl);
+    if (!result.successful) {
+      throw new Error(result.error);
+    }
+    return result.value;
   }
 
   /**
