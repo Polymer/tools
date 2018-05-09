@@ -160,7 +160,7 @@ const optionDefinitions: commandLineArgs.OptionDefinition[] = [
   {
     name: 'add-import-meta',
     type: Boolean,
-    defaultValue: true,
+    defaultValue: false,
     description: `Whether to add a static importMeta property to ` +
         `elements. Defaults to true`,
   },
