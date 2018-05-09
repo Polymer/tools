@@ -26,9 +26,7 @@ let PropertyTypeBehavior = {
 };
 
 Polymer({
-  importMeta: import.meta,
   is: 'x-basic',
-
   hostAttributes: {
     attr1: 'this is attr 1',
     attr2: 42,
@@ -39,9 +37,7 @@ Polymer({
     'attr-stupid': false,
     class: 'foo bar baz'
   },
-
   behaviors: [ PropertyTypeBehavior ],
-
   properties: {
     object: {
       type: Object,
@@ -112,12 +108,11 @@ Polymer({
   attr1Changed: function() {
     this.attr1ChangedCount++;
   }
+
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-reflect',
   behaviors: [ PropertyTypeBehavior ],
-
   properties: {
     object: {
       type: Object,
@@ -180,7 +175,6 @@ Polymer({
       value: 'none'
     }
   },
-
   _warn: function() {
     var search = Array.prototype.join.call(arguments, '');
     if (search.indexOf('UPCASE') > -1) {
@@ -189,8 +183,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-basic id="basic" prop="{{attr1}}" attr1\$="{{attr1}}" class="should-not-override"></x-basic>
 `,

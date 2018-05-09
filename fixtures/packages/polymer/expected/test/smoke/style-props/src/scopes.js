@@ -5,8 +5,6 @@ import { html } from '../../../../lib/utils/html-tag.js';
 import { dom } from '../../../../lib/legacy/polymer.dom.js';
 
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <style>
 
@@ -46,8 +44,6 @@ Polymer({
 });
 
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <style include="simple-layout-styles">
 
@@ -90,8 +86,6 @@ Polymer({
 });
 
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <style include="simple-layout-styles">
 

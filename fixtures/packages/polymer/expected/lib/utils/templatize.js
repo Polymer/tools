@@ -63,10 +63,6 @@ const base = PropertyEffects(class {});
  * @unrestricted
  */
 class TemplateInstanceBase extends base {
-  static get importMeta() {
-    return import.meta;
-  }
-
   constructor(props) {
     super();
     this._configureProperties(props);
@@ -248,9 +244,9 @@ class TemplateInstanceBase extends base {
    * @param {Event} event Event to dispatch
    * @return {boolean} Always true.
    */
-  dispatchEvent(event) { // eslint-disable-line no-unused-vars
-    return true;
- }
+   dispatchEvent(event) { // eslint-disable-line no-unused-vars
+     return true;
+  }
 }
 
 /** @type {!DataTemplate} */

@@ -23,8 +23,6 @@ let ComputingBehavior = {
   }
 };
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <div id="boundChild" value="{{ value }}" negvalue="{{!bool}}" attrvalue\$="{{attrvalue}}" sanitize-value="{{sanitizeValue}}" computedvalue="{{computedvalue}}" computedvaluetwo="{{computedvaluetwo}}" camel-case="{{value}}" computed-inline="{{computeInline(value,add, divide)}}" computed-inline2="{{computeInline(value, add,divide)}}" computed-inline3="{{computeInline(value, add,
                                         divide )}}" computedattribute\$="{{computeInline(value, add,divide)}}" computedattribute2\$="{{computeInline(
@@ -321,8 +319,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-basic id="basic1" value="{{boundvalue}}" notifyingvalue="{{boundnotifyingvalue}}" notifyingvalue-with-default="{{boundnotifyingvalueWithDefault}}" camel-notifying-value="{{boundnotifyingvalue}}" computedvalue="{{boundcomputedvalue}}" computednotifyingvalue="{{boundcomputednotifyingvalue}}" readonlyvalue="{{boundreadonlyvalue}}" custom-notifying-value="{{boundCustomNotifyingValue}}">
     </x-basic>
@@ -426,8 +422,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <slot name="drawer"></slot>
     <div id="before"></div>
@@ -459,9 +453,7 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-reflect',
-
   properties: {
     reflectedobject: {
       type: Object,
@@ -490,9 +482,7 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-prop',
-
   properties: {
     prop1: {
       value: 'default',
@@ -503,29 +493,23 @@ Polymer({
       observer: function(newProp, oldProp) { return this.prop2Changed(newProp, oldProp); }
     }
   },
-
   created: function() {
     this.prop1Changed = sinon.spy();
     this.prop2Changed = sinon.spy();
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-notifies1',
-
   properties: {
     notifies: {
       notify: true
     }
   },
-
   ready: function() {
     this.notifies = 'readyValue';
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-notifies1 id="notifies1" notifies="{{shouldChange}}"></x-notifies1>
 `,
@@ -539,8 +523,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-notifies2 id="notifies2" notifies="{{shouldNotChange}}"></x-notifies2>
 `,
@@ -556,8 +538,6 @@ Polymer({
   shouldNotChangeChanged: function() { }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <p>©</p>
     <p id="binding">{{myText}}</p>
@@ -573,8 +553,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <input id="input" value\$="{{inputValue}}">
 `,
@@ -582,8 +560,6 @@ Polymer({
   is: 'x-input-value'
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <div id="check">{{isAttached}}</div>
 `,
@@ -600,8 +576,6 @@ Polymer({
 });
 var invocations = [];
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-order-of-effects id="child" base="{{base}}"></x-order-of-effects>
 `,
@@ -620,8 +594,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-order-of-effects-child prop1="[[base]]" prop2="[[_computedAnnotation(base)]]"></x-order-of-effects-child>
 `,
@@ -672,9 +644,7 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-order-of-effects-child',
-
   properties: {
     prop1: {
       observer: '_prop1Changed'
@@ -683,18 +653,14 @@ Polymer({
       observer: '_prop2Changed'
     }
   },
-
   _prop1Changed: function() {
     invocations.push('propagate');
   },
-
   _prop2Changed: function() {
     invocations.push('propagate');
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <div id="check">[[translateMessage('Hello World.')]]</div>
 `,
@@ -728,8 +694,6 @@ var TranslateBehavior = {
   }
 };
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <div id="check">[[translateMessage(message)]]</div>
 `,
@@ -757,8 +721,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <div -u-p-c-a-s-e\$="[[UPCASE]]"></div>
 `,
@@ -773,8 +735,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <template is="dom-if" if="[[visible]]">
       <p>[[translateMessage('text')]]</p>
@@ -799,27 +759,22 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-propagate',
-
   properties: {
     value: {
       type: Number,
       value: -1
     }
   },
-
   observers: [
     '_boundOne(value)',
     '_boundTwo(value)'
   ],
-
   _boundOne: function(value) {
     if (value < 0) {
       this.value = 1;
     }
   },
-
   _boundTwo: function(value) {
     if (value < 0) {
       this.value = 2;
@@ -827,10 +782,6 @@ Polymer({
   }
 });
 class XRaw extends HTMLElement {
-  static get importMeta() {
-    return import.meta;
-  }
-
   constructor() {
     super();
     this._value = null;
@@ -869,29 +820,22 @@ class XRaw extends HTMLElement {
 customElements.define('x-raw', XRaw);
 
 Polymer({
-  importMeta: import.meta,
   is: 'x-polymer',
-
   created: function() {
     this.arrayChanged = sinon.spy();
     this.compoundChanged = sinon.spy();
   },
-
   observers: ['compoundChanged(compound)'],
-
   set array(value) {
     this._array = value;
     this.arrayChanged(value);
   },
-
   get array() {
     return this._array;
   }
 });
 
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-polymer id="polymer" array="{{array}}" compound="**{{array}}**">{{array}}</x-polymer>
     <x-raw id="raw" array="{{array}}" value="{{value}}" compound="**{{array}}**"></x-raw>
@@ -912,21 +856,17 @@ Polymer({
 });
 
 Polymer({
-  importMeta: import.meta,
   is: 'x-template-proto',
-
   _template: (function() {
     let template = document.createElement('template');
     template.innerHTML = '<div id="div" on-click="clicked">{{bound}}</div>';
     return template;
   })(),
-
   properties: {
     bound: {
       value: 'yes'
     }
   },
-
   clicked: sinon.spy()
 });
 
@@ -945,14 +885,11 @@ let TemplateBehavior = {
 };
 
 Polymer({
-  importMeta: import.meta,
   is: 'x-template-behavior',
   behaviors: [TemplateBehavior]
 });
 
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-immutable-b b="[[a.b]]" x="[[a.x]]" id="b"></x-immutable-b>
 `,
@@ -966,10 +903,6 @@ Polymer({
   }
 });
 class XImmutableB extends PolymerElement {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return html`
     <x-immutable-c c="[[b.c]]" x="[[b.x]]" id="c">
@@ -987,18 +920,14 @@ class XImmutableB extends PolymerElement {
 }
 customElements.define('x-immutable-b', XImmutableB);
 Polymer({
-  importMeta: import.meta,
   is: 'x-immutable-c',
   observers: ['cChanged(c)', 'xChanged(x)'],
-
   created() {
     this.cChanged = sinon.spy();
     this.xChanged = sinon.spy();
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-mutable-b b="[[a.b]]" x="[[a.x]]" id="b"></x-mutable-b>
 `,
@@ -1013,10 +942,6 @@ Polymer({
   }
 });
 class XMutableB extends MutableData(PolymerElement) {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return html`
     <x-mutable-c c="[[b.c]]" x="[[b.x]]" id="c">
@@ -1034,21 +959,15 @@ class XMutableB extends MutableData(PolymerElement) {
 }
 customElements.define('x-mutable-b', XMutableB);
 Polymer({
-  importMeta: import.meta,
   is: 'x-mutable-c',
   behaviors: [MutableDataBehavior],
   observers: ['cChanged(c)', 'xChanged(x)'],
-
   created() {
     this.cChanged = sinon.spy();
     this.xChanged = sinon.spy();
   }
 });
 class SVGElement extends PolymerElement {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return html`
     <svg id="svg" viewBox="[[value]]"></svg>

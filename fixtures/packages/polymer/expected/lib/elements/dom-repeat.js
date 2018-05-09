@@ -130,9 +130,6 @@ const domRepeatBase = OptionalMutableData(PolymerElement);
  *   items in an array.
  */
 class DomRepeat extends domRepeatBase {
-  static get importMeta() {
-    return import.meta;
-  }
 
   // Not needed to find template; can be removed once the analyzer
   // can find the tag name from customElements.define call
@@ -727,6 +724,7 @@ class DomRepeat extends domRepeatBase {
   modelForElement(el) {
     return modelForElement$0(this.template, el);
   }
+
 }
 
 customElements.define(DomRepeat.is, DomRepeat);

@@ -10,14 +10,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 
 Polymer({
-  importMeta: import.meta,
   is: 'observe-el',
-
   observers: [
     'singleChanged(singleSelected.*)',
     'multiChanged(multiSelected.*)'
   ],
-
   singleChanged: function() {},
   multiChanged: function() {}
 });

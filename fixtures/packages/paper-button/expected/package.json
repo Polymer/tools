@@ -24,7 +24,7 @@
     "@polymer/iron-test-helpers": "^3.0.0-pre.18",
     "@polymer/test-fixture": "^3.0.0-pre.18",
     "wct-browser-legacy": "^0.0.1-pre.11",
-    "@webcomponents/webcomponentsjs": "^2.0.0-beta.2"
+    "@webcomponents/webcomponentsjs": "^2.0.0"
   },
   "scripts": {
     "update-types": "bower install && gen-typescript-declarations --deleteExisting --outDir ."
@@ -40,7 +40,7 @@
   "main": "paper-button.js",
   "author": "The Polymer Authors",
   "dependencies": {
-    "@polymer/polymer": "^3.0.0-pre.13",
+    "@polymer/polymer": "^3.0.0",
     "@polymer/iron-flex-layout": "^3.0.0-pre.18",
     "@polymer/paper-behaviors": "^3.0.0-pre.18",
     "@polymer/paper-styles": "^3.0.0-pre.18"

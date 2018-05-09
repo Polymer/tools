@@ -14,8 +14,6 @@ import { html } from '../../lib/utils/html-tag.js';
 import { PolymerElement } from '../../polymer-element.js';
 import { GestureEventListeners } from '../../lib/mixins/gesture-event-listeners.js';
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
   <style>
     #div {
@@ -39,8 +37,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-foo id="foo"></x-foo>
 `,
@@ -57,8 +53,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <div id="inner" on-tap="handler" on-track="handler" on-down="handler" on-up="handler"></div>
 `,
@@ -76,14 +70,11 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-dynamic',
   handler: function(){},
-
   setup: function() {
     this.listen(this, 'tap', 'handler');
   },
-
   teardown: function() {
     this.unlisten(this, 'tap', 'handler');
   }
@@ -102,18 +93,14 @@ var EventCaptureBehavior = {
   }
 };
 Polymer({
-  importMeta: import.meta,
-
   listeners: {
     'down': 'prevent',
     'up': 'handle',
     'tap': 'handle',
     'track': 'handle'
   },
-
   behaviors: [EventCaptureBehavior],
   is: 'x-prevent',
-
   prevent: function(e, detail) {
     detail.prevent('tap');
     detail.prevent('track');
@@ -122,45 +109,33 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-buttons',
-
   listeners: {
     'down': 'handle',
     'up': 'handle',
     'tap': 'handle',
     'track': 'handle'
   },
-
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-document-listener',
-
   setup: function() {
     this.listen(document, 'down', 'handle');
   },
-
   teardown: function() {
     this.unlisten(document, 'down', 'handle');
   },
-
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-nested-child-prevent',
-
   listeners: {
     tap: 'handle'
   },
-
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <style>
       :host {
@@ -192,15 +167,10 @@ Polymer({
   behaviors: [EventCaptureBehavior]
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-imperative',
   behaviors: [EventCaptureBehavior]
 });
 class XNativeLabel extends PolymerElement {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return html`
     <label id="label" for="check"></label>
@@ -214,10 +184,6 @@ class XNativeLabel extends PolymerElement {
 }
 customElements.define(XNativeLabel.is, XNativeLabel);
 class XNativeLabelNested extends PolymerElement {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return html`
     <label id="label">
@@ -232,10 +198,6 @@ class XNativeLabelNested extends PolymerElement {
 }
 customElements.define(XNativeLabelNested.is, XNativeLabelNested);
 class XDisabled extends GestureEventListeners(PolymerElement) {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get template() {
     return html`
     <button id="disabled" on-tap="tap" disabled=""></button>

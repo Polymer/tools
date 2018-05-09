@@ -14,9 +14,7 @@ import { Templatizer } from '../../lib/legacy/templatizer-behavior.js';
 import { html } from '../../lib/utils/html-tag.js';
 
 Polymer({
-  importMeta: import.meta,
   is: 'x-child',
-
   properties: {
     outerProp: {
       notify: true
@@ -40,20 +38,16 @@ Polymer({
       notify: true
     }
   },
-
   observers: [
     'objChanged(obj.*)',
     'outerObjChanged(outerObj.*)'
   ],
-
   objChanged: function() {},
   outerObjChanged: function() {}
 });
 
 Polymer({
-  importMeta: import.meta,
   is: 'x-templatize',
-
   properties: {
     obj: {
       notify: true
@@ -63,23 +57,19 @@ Polymer({
       observer: 'propChanged'
     }
   },
-
   observers: [
     'objChanged(obj.*)'
   ],
-
   propChanged: function(value) {
     if (this.instance) {
       this.instance.prop = value;
     }
   },
-
   objChanged: function(info) {
     if (this.instance) {
       this.instance.notifyPath(info.path, info.value);
     }
   },
-
   go: function(withProps) {
     var template = this.querySelector('template');
     var ctor = templatize$0(template, this, {
@@ -112,9 +102,7 @@ Polymer({
 });
 
 Polymer({
-  importMeta: import.meta,
   is: 'x-templatize-behavior',
-
   properties: {
     obj: {
       notify: true
@@ -124,44 +112,35 @@ Polymer({
       observer: 'propChanged'
     }
   },
-
   observers: [
     'objChanged(obj.*)'
   ],
-
   behaviors: [Templatizer],
-
   propChanged: function(value) {
     if (this.instance) {
       this.instance.prop = value;
     }
   },
-
   objChanged: function(info) {
     if (this.instance) {
       this.instance.notifyPath(info.path, info.value);
     }
   },
-
   _parentModel: true,
-
   _instanceProps: {
     obj: true,
     prop: true,
     outerInnerConflict: true
   },
-
   _forwardHostPropV2: function(prop, value) {
     if (this.instance) {
       this.instance.forwardHostProp(prop, value);
     }
   },
-
   _notifyInstancePropV2: function(inst, prop, value) {
     // notify path on host (set won't work since it dirty checks)
     this.notifyPath(prop, value);
   },
-
   go: function(withProps) {
     var template = this.querySelector('template');
     this.templatize(template);
@@ -178,8 +157,6 @@ Polymer({
 });
 
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-templatize obj="{{objA}}" prop="{{propA}}" id="templatizeA">
       <template>

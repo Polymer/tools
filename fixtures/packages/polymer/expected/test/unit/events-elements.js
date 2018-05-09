@@ -27,18 +27,14 @@ var EventLoggerImpl = {
   }
 };
 Polymer({
-  importMeta: import.meta,
   is: 'x-listeners',
   behaviors: [EventLoggerImpl],
-
   listeners: {
     foo: 'handle',
     bar: 'missing'
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <div id="inner" on-foo="handle" on-bar="missing"></div>
 `,
@@ -47,8 +43,6 @@ Polymer({
   behaviors: [EventLoggerImpl]
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
       <x-listeners id="inner" on-foo="handle"></x-listeners>
 `,
@@ -57,8 +51,6 @@ Polymer({
   behaviors: [EventLoggerImpl]
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <div id="inner"></div>
 `,
@@ -81,19 +73,15 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-double',
   behaviors: [EventLoggerImpl],
-
   ready: function() {
     this.fooChanged = sinon.spy();
   },
-
   setup: function() {
     this.listen(this, 'foo', 'fooChanged');
     this.listen(this, 'foo', 'fooChanged');
   },
-
   teardown: function() {
     this.unlisten(this, 'foo', 'fooChanged');
   }

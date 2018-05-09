@@ -10,9 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 
 Polymer({
-  importMeta: import.meta,
   is: 'x-needs-host',
-
   attached: function() {
     if (!this.__dataHost) {
       throw "No dataHost at ready time";

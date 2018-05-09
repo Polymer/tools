@@ -12,8 +12,6 @@ import '../../../polymer-legacy.js';
 import { Polymer } from '../../../lib/legacy/polymer-fn.js';
 import { html } from '../../../lib/utils/html-tag.js';
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <span id="content">inner-element</span>
 `,

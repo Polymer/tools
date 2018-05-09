@@ -425,10 +425,6 @@ let baseArraySelector = ArraySelectorMixin(PolymerElement);
  *   an output `selected` item or array based on calls to its selection API.
  */
 class ArraySelector extends baseArraySelector {
-  static get importMeta() {
-    return import.meta;
-  }
-
   // Not needed to find template; can be removed once the analyzer
   // can find the tag name from customElements.define call
   static get is() { return 'array-selector'; }

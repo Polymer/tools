@@ -90,8 +90,6 @@ import { html } from '../../@polymer/polymer/lib/utils/html-tag.js';
 import { dom } from '../../@polymer/polymer/lib/legacy/polymer.dom.js';
 
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <style>
       :host {

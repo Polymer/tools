@@ -12,10 +12,6 @@ import { PropertiesMixin } from '../../lib/mixins/properties-mixin.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
 class XPropertiesElement extends PropertiesMixin(HTMLElement) {
-  static get importMeta() {
-    return import.meta;
-  }
-
   static get properties() {
     return {
       obj: Object
@@ -36,9 +32,7 @@ class XPropertiesElement extends PropertiesMixin(HTMLElement) {
 }
 customElements.define('x-pe', XPropertiesElement);
 Polymer({
-  importMeta: import.meta,
   is: 'x-basic',
-
   properties: {
     notifyingValue: {
       type: Number,
@@ -48,14 +42,11 @@ Polymer({
       computed: 'compute(notifyingValue)'
     }
   },
-
   compute: function(val) {
     return '[' + val + ']';
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-basic id="basic1" notifying-value="{{obj.value}}" attrvalue\$="{{obj.value}}" othervalue="{{obj.value2}}"></x-basic>
     <x-basic id="basic2" notifying-value="{{obj.value}}" attrvalue\$="{{obj.value}}"></x-basic>
@@ -92,8 +83,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-compose id="compose" obj="{{obj}}"></x-compose>
 `,
@@ -132,8 +121,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-basic id="basic" notifying-value="{{nested.obj.value}}" attrvalue\$="{{nested.obj.value}}"></x-basic>
     <x-compose id="compose" obj="{{nested.obj}}"></x-compose>
@@ -218,21 +205,16 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-reentry-client',
-
   properties: {
     prop: {
       notify: true
     }
   },
-
   observers: ['objChanged(obj.*)'],
-
   created: function() {
     this.objChanged = sinon.spy(this.objChanged);
   },
-
   objChanged: function(info) {
     if (info.path !== 'obj') {
       this.prop++;
@@ -240,8 +222,6 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-reentry-client obj="{{obj}}" prop="{{prop}}"></x-reentry-client>
 `,
@@ -266,14 +246,11 @@ Polymer({
   }
 });
 Polymer({
-  importMeta: import.meta,
   is: 'x-path-client',
   observers: ['objChanged(obj.*)'],
   objChanged: function() {}
 });
 Polymer({
-  importMeta: import.meta,
-
   _template: html`
     <x-path-client id="client" obj="{{obj}}"></x-path-client>
 `,

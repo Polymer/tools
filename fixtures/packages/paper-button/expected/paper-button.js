@@ -178,7 +178,6 @@ $_documentContainer.innerHTML = `<dom-module id="paper-button">
 
 document.head.appendChild($_documentContainer.content);
 Polymer({
-  importMeta: import.meta,
   is: 'paper-button',
 
   behaviors: [

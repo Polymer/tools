@@ -38,9 +38,6 @@ import { root as root$0 } from '../utils/path.js';
  *   template content based on a boolean flag.
  */
 class DomIf extends PolymerElement {
-  static get importMeta() {
-    return import.meta;
-  }
 
   // Not needed to find template; can be removed once the analyzer
   // can find the tag name from customElements.define call
@@ -277,6 +274,7 @@ class DomIf extends PolymerElement {
       this.__instance._showHideChildren(hidden);
     }
   }
+
 }
 
 customElements.define(DomIf.is, DomIf);

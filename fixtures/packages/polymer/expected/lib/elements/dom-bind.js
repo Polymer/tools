@@ -46,9 +46,6 @@ const domBindBase =
  *   binding, declarative event listeners, etc.) in the main document.
  */
 class DomBind extends domBindBase {
-  static get importMeta() {
-    return import.meta;
-  }
 
   static get observedAttributes() { return ['mutable-data']; }
 
@@ -125,6 +122,7 @@ class DomBind extends domBindBase {
       composed: true
     }));
   }
+
 }
 
 customElements.define('dom-bind', DomBind);

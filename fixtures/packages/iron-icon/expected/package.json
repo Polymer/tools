@@ -19,7 +19,7 @@
     "@polymer/iron-icons": "^3.0.0-pre.18",
     "@polymer/iron-component-page": "^3.0.0-pre.18",
     "wct-browser-legacy": "^0.0.1-pre.11",
-    "@webcomponents/webcomponentsjs": "^2.0.0-beta.2",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
     "@polymer/iron-demo-helpers": "^3.0.0-pre.18"
   },
   "scripts": {
@@ -38,6 +38,6 @@
   "dependencies": {
     "@polymer/iron-flex-layout": "^3.0.0-pre.18",
     "@polymer/iron-meta": "^3.0.0-pre.18",
-    "@polymer/polymer": "^3.0.0-pre.13"
+    "@polymer/polymer": "^3.0.0"
   }
 }
