@@ -38,7 +38,7 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
     _github: Github;
 
     constructor(args: string|string[], options: {}|null|undefined) {
-      super(args, options);
+      super(args, options||{});
       this._github = new Github({owner, repo, githubToken});
     }
 
@@ -69,7 +69,10 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
     }
 
     async writing(): Promise<void> {
-      const done = this.async();
+      // TODO(usergenic): Cast here to any because the yeoman-generator typings
+      // for 2.x are not surfacing the async() method placed onto the Generator
+      // in the constructor.
+      const done = (this as any).async();
       this._writing().then(() => done(), (err) => done(err));
     }
 
