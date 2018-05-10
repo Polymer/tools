@@ -24,6 +24,7 @@
     "acorn-import-meta": "^0.2.1",
     "babel-generator": "^6.26.1",
     "babel-traverse": "^6.26.0",
+    "babel-types": "^6.26.0",
     "clone": "^2.1.0",
     "command-line-args": "^3.0.1",
     "command-line-usage": "^3.0.3",
