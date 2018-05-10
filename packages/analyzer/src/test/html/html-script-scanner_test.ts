@@ -19,7 +19,6 @@ import {HtmlScriptScanner} from '../../html/html-script-scanner';
 import {JavaScriptDocument} from '../../javascript/javascript-document';
 import {Analysis} from '../../model/analysis';
 import {FileRelativeUrl, ResolvedUrl, ScannedImport, ScannedInlineDocument} from '../../model/model';
-import {Warning} from '../../model/warning';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {createForDirectory, fixtureDir, runScannerOnContents} from '../test-utils';
 
