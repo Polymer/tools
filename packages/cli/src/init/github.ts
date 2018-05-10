@@ -24,6 +24,11 @@ export interface GithubGeneratorOptions {
   repo: string;
   semverRange?: string;
   branch?: string;
+  installDependencies?: {
+    bower?: boolean;
+    npm?: boolean;
+    yarn?: boolean;
+  };
 }
 
 export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
@@ -33,6 +38,7 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
   const repo = githubOptions.repo;
   const semverRange = githubOptions.semverRange || '*';
   const branch = githubOptions.branch;
+  const installDependencies = githubOptions.installDependencies;
 
   return class GithubGenerator extends Generator {
     _github: Github;
@@ -74,7 +80,7 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
     }
 
     install() {
-      this.installDependencies();
+      this.installDependencies(installDependencies);
     }
   };
 }

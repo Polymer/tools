@@ -164,7 +164,12 @@ suite('integration tests', function() {
       const ShopGenerator = createGithubGenerator({
         owner: 'Polymer',
         repo: 'shop',
+        semverRange: '^2.0.0',
         githubToken,
+        installDependencies: {
+          bower: true,
+          npm: false,
+        },
       });
 
       const dir = await runGenerator(ShopGenerator).toPromise();
@@ -186,6 +191,10 @@ suite('integration tests', function() {
         repo: 'polymer-starter-kit',
         semverRange: '^2.0.0',
         githubToken,
+        installDependencies: {
+          bower: true,
+          npm: false,
+        },
       });
 
       const dir = await runGenerator(PSKGenerator).toPromise();
@@ -205,6 +214,10 @@ suite('integration tests', function() {
         repo: 'polymer-starter-kit',
         semverRange: '^3.0.0',
         githubToken,
+        installDependencies: {
+          bower: true,
+          npm: false,
+        },
       });
 
       const dir = await runGenerator(PSKGenerator).toPromise();
@@ -503,8 +516,16 @@ suite('polymer shop', function() {
       } else {
         // Cloning and installing takes a minute
         this.timeout(2 * 60 * 1000);
-        const ShopGenerator = createGithubGenerator(
-            {owner: 'Polymer', repo: 'shop', githubToken, branch: '3.0'});
+        const ShopGenerator = createGithubGenerator({
+          owner: 'Polymer',
+          repo: 'shop',
+          githubToken,
+          branch: '3.0',
+          installDependencies: {
+            bower: false,
+            npm: true,
+          },
+        });
 
         dir = await runGenerator(ShopGenerator).toPromise();
         await runCommand(binPath, ['install'], {cwd: dir});
@@ -577,7 +598,11 @@ suite('polymer shop', function() {
           owner: 'Polymer',
           repo: 'shop',
           githubToken,
-          branch: 'lit-element'
+          branch: 'lit-element',
+          installDependencies: {
+            bower: false,
+            npm: true,
+          },
         });
 
         dir = await runGenerator(ShopGenerator).toPromise();
