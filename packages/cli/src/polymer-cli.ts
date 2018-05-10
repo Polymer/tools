@@ -195,7 +195,9 @@ export class PolymerCli {
         {args: commandArgs});
 
     const commandDefinitions = mergeArguments([command.args, globalArguments]);
-    const commandOptionsRaw = commandLineArgs(commandDefinitions, commandArgs);
+    console.log(`commandLineArgs: ${JSON.stringify(commandLineArgs, null, 2
+    )}`);
+    const commandOptionsRaw = commandLineArgs(commandDefinitions, { argv: commandArgs });
     const commandOptions = parseCLIArgs(commandOptionsRaw);
     logger.debug(`command options parsed from args:`, commandOptions);
 

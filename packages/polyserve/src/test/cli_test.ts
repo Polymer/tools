@@ -58,6 +58,8 @@ suite('cli', () => {
       }
     } finally {
       unintercept();
+      console.log('stdout from failed cli invocation:');
+      console.log(stdout);
       process.argv = originalArgv;
     }
     return stdout;

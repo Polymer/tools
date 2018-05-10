@@ -33,7 +33,6 @@ export async function run(): Promise<StartServerResult> {
     description: 'Shows this help message',
     type: Boolean,
   });
-
   // tslint:disable-next-line: no-any We should declare/infer a type for this.
   let cliOptions: any;
 
