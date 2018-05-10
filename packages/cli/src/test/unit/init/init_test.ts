@@ -22,8 +22,6 @@ import * as polymerInit from '../../../init/init';
 import {invertPromise} from '../../util';
 
 const temp = tempMod.track();
-
-
 const isPlatformWin = /^win/.test(process.platform);
 const uname = childProcess.execSync('uname -s').toString();
 const isMinGw = !!/^mingw/i.test(uname);
@@ -240,7 +238,7 @@ suite('init', () => {
             foo: 'TEST',
           }));
       helpers.registerDependencies(yeomanEnv, [[
-                                     helpers.createDummyGenerator(),
+                                     <any>function() {}, 
                                      'polymer-init-custom-template:app',
                                    ]]);
       try {

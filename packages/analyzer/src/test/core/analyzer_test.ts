@@ -31,7 +31,7 @@ import {Document, ScannedImport, ScannedInlineDocument, Severity, Warning} from 
 import {FsUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-import {CodeUnderliner, createForDirectory, fixtureDir, invertPromise, resolvedUrl} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, resolvedUrl} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');

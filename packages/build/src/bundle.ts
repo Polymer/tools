@@ -169,3 +169,4 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
       }
     }
   }
+}
