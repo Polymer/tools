@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [0.4.0] - 2018-05-11
+
 * In Polymer, 'polymer.html' is renamed during conversion to 'polymer-legacy.js'
   instead of 'polymer.js' and `Polymer.Element` (from 'polymer-element.html')
   is now exported as `PolymerElement` instead of `Element`.
@@ -20,7 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * `deleteFiles` option will no longer delete any file from `node_modules/` or
   `bower_components/`.
 * Preserve comments more reliably.
-<!-- Add new, unreleased changes here. -->
+* Allow Modulizer to run in directories that are not Git repositories.
 
 ## [0.3.0] - 2017-11-28
 
