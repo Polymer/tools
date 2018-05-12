@@ -49,7 +49,7 @@ export interface Config {
       {root?: string; verbose?: boolean; environmentScripts?: string[]};
   activeBrowsers?: BrowserDef[];
   browserOptions?: {[name: string]: Capabilities};
-  plugins?: (string|boolean)[]|{[key: string]: ({disabled: boolean} | boolean)};
+  plugins?: Array<string|boolean>|{[key: string]: ({disabled: boolean} | boolean)};
   registerHooks?: (wct: Context) => void;
   enforceJsonConf?: boolean;
   webserver?: {
@@ -61,7 +61,7 @@ export interface Config {
     hostname: string;
 
     _generatedIndexContent?: string;
-    _servers?: {variant: string, url: string}[];
+    _servers?: Array<{variant: string, url: string}>;
   };
   npm?: boolean;
   moduleResolution?: 'none'|'node';
@@ -274,7 +274,7 @@ export function defaults(): Config {
     //       });
     //     }
     //
-    registerHooks: function(_wct) {},
+    registerHooks(_wct) {},
     // Whether `wct.conf.*` is allowed, or only `wct.conf.json`.
     //
     // Handy for CI suites that want to be locked down.
@@ -477,8 +477,8 @@ export function preparseArgs(args: string[]): PreparsedArgs {
   args = _.difference(args, ['--help', '-h']);
 
   const parser = nomnom();
-  parser.options(<any>ARG_CONFIG);
-  parser.printer(function() {});  // No-op output & errors.
+  parser.options(ARG_CONFIG as any);
+  parser.printer(() => undefined);  // No-op output & errors.
   const options = parser.parse(args);
 
   return _expandOptionPaths(_.pick(options, PREPARSE_ARGS));
@@ -495,11 +495,11 @@ export async function parseArgs(
     context: Context, args: string[]): Promise<void> {
   const parser = nomnom();
   parser.script('wct');
-  parser.options(<any>ARG_CONFIG);
+  parser.options(ARG_CONFIG as any);
 
   const plugins = await context.plugins();
   plugins.forEach(_configurePluginOptions.bind(null, parser));
-  const options = <any>_expandOptionPaths(normalize(parser.parse(args)));
+  const options = _expandOptionPaths(normalize(parser.parse(args))) as any;
   if (options._ && options._.length > 0) {
     options.suites = options._;
   }
@@ -510,7 +510,7 @@ export async function parseArgs(
 function _configurePluginOptions(
     parser: NomnomInternal.Parser, plugin: Plugin) {
   /** HACK(rictic): this looks wrong, cliConfig shouldn't have a length. */
-  if (!plugin.cliConfig || (<any>plugin.cliConfig).length === 0) {
+  if (!plugin.cliConfig || (plugin.cliConfig as any).length === 0) {
     return;
   }
 
@@ -518,7 +518,7 @@ function _configurePluginOptions(
   // up shifting all the options over.
   parser.option('plugins.' + plugin.name + '.', {string: ' '});
 
-  _.each(plugin.cliConfig, function(config, key) {
+  _.each(plugin.cliConfig, (config, key) => {
     // Make sure that we don't expose the name prefixes.
     if (!config['full']) {
       config['full'] = key;
@@ -531,7 +531,7 @@ function _configurePluginOptions(
 
 function _expandOptionPaths(options: {[key: string]: any}): any {
   const result = {};
-  _.each(options, function(value, key) {
+  _.each(options, (value, key) => {
     let target = result;
     const parts = key.split('.');
     for (const part of parts.slice(0, -1)) {
@@ -550,13 +550,13 @@ function _expandOptionPaths(options: {[key: string]: any}): any {
 export function merge(...configs: Config[]): Config;
 export function merge(): Config {
   let configs: Config[] = Array.prototype.slice.call(arguments);
-  const result = <Config>{};
+  const result = {} as Config;
   configs = configs.map(normalize);
   _.merge.apply(_, [result].concat(configs));
 
   // false plugin configs are preserved.
-  configs.forEach(function(config) {
-    _.each(config.plugins, function(value, key) {
+  configs.forEach(config => {
+    _.each(config.plugins, (value, key) => {
       if (typeof value === 'boolean' && value === false) {
         result.plugins[key] = false;
       }
@@ -568,20 +568,16 @@ export function merge(): Config {
 
 export function normalize(config: Config): Config {
   if (_.isArray(config.plugins)) {
-    const pluginConfigs = <{[key: string]: {disabled: boolean}}>{};
-    for (let i = 0, name: string; name = <string>config.plugins[i]; i++) {
-      // A named plugin is explicitly enabled (e.g. --plugin foo).
-      pluginConfigs[name] = {disabled: false};
-    }
+    const pluginConfigs = {} as {[key: string]: {disabled: boolean}};
+    // A named plugin is explicitly enabled (e.g. --plugin foo).
+    config.plugins.forEach(name => pluginConfigs[name as string] = {disabled: false});
     config.plugins = pluginConfigs;
   }
 
   // Always wins.
   if (config.skipPlugins) {
     config.plugins = config.plugins || {};
-    for (let i = 0, name: string; name = config.skipPlugins[i]; i++) {
-      config.plugins[name] = false;
-    }
+    config.skipPlugins.forEach(name => config.plugins[name] = false);
   }
 
   return config;
@@ -614,9 +610,9 @@ function expandDeprecated(context: Context) {
   // We collect configuration fragments to be merged into the options object.
   const fragments = [];
 
-  let browsers: Browser[] = <any>(
-      _.isArray(options.browsers) ? options.browsers : [options.browsers]);
-  browsers = <any>_.compact(<any>browsers);
+  let browsers: Browser[] = (
+      _.isArray(options.browsers) ? options.browsers : [options.browsers]) as any;
+  browsers = _.compact(browsers as any) as any;
   if (browsers.length > 0) {
     context.emit(
         'log:warn',
@@ -629,8 +625,8 @@ function expandDeprecated(context: Context) {
     fragments.push(fragment);
 
     for (const browser of browsers) {
-      const name = (<any>browser).browserName || browser;
-      const plugin = (<any>browser).platform || name.indexOf('/') !== -1 ?
+      const name = (browser as any).browserName || browser;
+      const plugin = (browser as any).platform || name.indexOf('/') !== -1 ?
           'sauce' :
           'local';
       fragment.plugins[plugin].browsers =

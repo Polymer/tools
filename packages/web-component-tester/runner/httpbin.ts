@@ -35,14 +35,12 @@ function capWords(s: string) {
 
 function formatRequest(req: express.Request) {
   const headers = {};
-  for (const key in req.headers) {
-    headers[capWords(key)] = req.headers[key];
-  }
+  Object.keys(req.headers).forEach(key => headers[capWords(key)] = req.headers[key]);
   const formatted = {
-    headers: headers,
+    headers,
     url: req.originalUrl,
     data: req.body,
-    files: (<any>req).files,
+    files: (req as any).files,
     form: {},
     json: {},
   };
@@ -62,19 +60,19 @@ function formatRequest(req: express.Request) {
 httpbin.use(bodyParser.urlencoded({extended: false}));
 httpbin.use(bodyParser.json());
 const storage = multer.memoryStorage();
-const upload = multer({storage: storage});
+const upload = multer({storage});
 httpbin.use(upload.any());
 httpbin.use(bodyParser.text());
 httpbin.use(bodyParser.text({type: 'html'}));
 httpbin.use(bodyParser.text({type: 'xml'}));
 
-httpbin.get('/delay/:seconds', function(req, res) {
-  setTimeout(function() {
+httpbin.get('/delay/:seconds', (req, res) => {
+  setTimeout(() => {
     res.json(formatRequest(req));
   }, (req.params.seconds || 0) * 1000);
 });
 
-httpbin.post('/post', function(req, res) {
+httpbin.post('/post', (req, res) => {
   res.json(formatRequest(req));
 });
 
@@ -92,7 +90,7 @@ async function main() {
   const port = await findPort([7777, 7000, 8000, 8080, 8888]);
 
   server.listen(port);
-  (<any>server).port = port;
+  (server as any).port = port;
   serverDestroy(server);
   cleankill.onInterrupt(() => {
     return new Promise((resolve) => {

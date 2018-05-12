@@ -100,15 +100,12 @@ export default class CLISocket {
    */
   static init(done: (error?: any, socket?: CLISocket) => void) {
     const browserId = util.getParam('cli_browser_id');
-    if (!browserId)
-      return done();
+    if (!browserId) return done();
     // Only fire up the socket for root runners.
-    if (ChildRunner.current())
-      return done();
+    if (ChildRunner.current()) return done();
 
     util.loadScript(SOCKETIO_LIBRARY, function(error: any) {
-      if (error)
-        return done(error);
+      if (error) return done(error);
 
       const socket = io(SOCKETIO_ENDPOINT);
       socket.on('error', function(error?: any) {

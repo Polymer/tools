@@ -33,12 +33,13 @@ describe('Context', () => {
 
   describe('.plugins', () => {
     it('excludes plugins with a falsy config', async () => {
-      const context = new Context(<any>{plugins: {local: false, sauce: {}}});
+      const context = new Context({plugins: {local: false, sauce: {}}} as any);
       const stub = sandbox.stub(Plugin, 'get').callsFake((name: string) => {
         return Promise.resolve(name);
       });
 
       const plugins = await context.plugins();
+      // tslint:disable-next-line:no-unused-expression
       expect(stub).to.have.been.calledOnce;
       expect(stub).to.have.been.calledWith('sauce');
       expect(plugins).to.have.members(['sauce']);
@@ -46,12 +47,13 @@ describe('Context', () => {
 
     it('excludes plugins disabled: true', async () => {
       const context =
-          new Context(<any>{plugins: {local: {}, sauce: {disabled: true}}});
+          new Context({plugins: {local: {}, sauce: {disabled: true}}} as any);
       const stub = sandbox.stub(Plugin, 'get').callsFake((name: string) => {
         return Promise.resolve(name);
       });
 
       const plugins = await context.plugins();
+      // tslint:disable-next-line:no-unused-expression
       expect(stub).to.have.been.calledOnce;
       expect(stub).to.have.been.calledWith('local');
       expect(plugins).to.have.members(['local']);
@@ -61,7 +63,7 @@ describe('Context', () => {
       it('are passed the "done" callback function instead of the argument passed to emitHook',
          async () => {
            const context = new Context();
-           context.hook('foo', function(arg1: any, done: () => void) {
+           context.hook('foo', (arg1: any, done: () => void) => {
              expect(arg1).to.eq('hookArg');
              done();
            });
@@ -87,12 +89,13 @@ describe('Context', () => {
         const error = await new Promise((resolve) => {
           context.emitHook('foo', 'one', 2, resolve);
         });
+        // tslint:disable-next-line:no-unused-expression
         expect(error).to.not.be.ok;
       });
 
       it('halts on error', async () => {
         const context = new Context();
-        context.hook('bar', function(hookDone: (err?: any) => void) {
+        context.hook('bar', (hookDone: (err?: any) => void) => {
           hookDone('nope');
         });
 
@@ -115,7 +118,7 @@ describe('Context', () => {
     describe('hooks handlers written to return promises', () => {
       it('passes additional arguments through', async () => {
         const context = new Context();
-        context.hook('foo', async function(arg1: any, arg2: any) {
+        context.hook('foo', async (arg1: any, arg2: any) => {
           expect(arg1).to.eq('one');
           expect(arg2).to.eq(2);
         });
@@ -124,6 +127,7 @@ describe('Context', () => {
         const error = await new Promise((resolve) => {
           context.emitHook('foo', 'one', 2, resolve);
         });
+        // tslint:disable-next-line:no-unused-expression
         expect(error).to.not.be.ok;
       });
 

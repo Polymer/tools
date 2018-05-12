@@ -1,11 +1,11 @@
 declare module 'findup-sync' {
-  import * as minimatch from 'minimatch';
+import * as minimatch from 'minimatch';
 
-  interface IOptions extends minimatch.IOptions {
+  interface Options extends minimatch.IOptions {
     cwd?: string;
   }
 
-  function mod(pattern: string[]|string, opts?: IOptions): string;
+  function mod(pattern: string[]|string, opts?: Options): string;
   namespace mod {}
   export = mod;
 }

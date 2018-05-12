@@ -16,6 +16,7 @@ import * as gulp from 'gulp';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
+import {BrowserDef} from '../../runner/browserrunner';
 import {Config} from '../../runner/config';
 import {Context} from '../../runner/context';
 import * as wctGulp from '../../runner/gulp';
@@ -27,12 +28,12 @@ chai.use(require('sinon-chai'));
 
 const FIXTURES = path.resolve(__dirname, '../fixtures/cli');
 
-describe('gulp', function() {
+describe('gulp', () => {
   let pluginsCalled: string[];
   let sandbox: sinon.SinonSandbox;
   let orch: gulp.Gulp;
   let options: Config;
-  beforeEach(function() {
+  beforeEach(() => {
     orch = new gulp['Gulp']();
     wctGulp.init(orch);
 
@@ -48,11 +49,11 @@ describe('gulp', function() {
         .callsFake(async function(context: Context) {
           pluginsCalled.push(this.name);
           context.options.activeBrowsers.push(
-              <any>{browserName: 'fake for ' + this.name});
+              {browserName: 'fake for ' + this.name} as BrowserDef);
         });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -74,17 +75,19 @@ describe('gulp', function() {
     expect(options.plugins['sauce'].username).to.eq('jsonconf');
   });
 
-  describe('wct:local', function() {
+  describe('wct:local', () => {
     it('kicks off local tests', async () => {
       await runGulpTask('wct:local');
+      // tslint:disable-next-line:no-unused-expression
       expect(steps.runTests).to.have.been.calledOnce;
       expect(pluginsCalled).to.have.members(['local']);
     });
   });
 
-  describe('wct:sauce', function() {
+  describe('wct:sauce', () => {
     it('kicks off sauce tests', async () => {
       await runGulpTask('wct:sauce');
+      // tslint:disable-next-line:no-unused-expression
       expect(steps.runTests).to.have.been.calledOnce;
       expect(pluginsCalled).to.have.members(['sauce']);
     });

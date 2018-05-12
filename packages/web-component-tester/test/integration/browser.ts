@@ -132,7 +132,7 @@ function runsAllIntegrationSuites(options: config.Config = {}) {
 
 function runIntegrationSuiteForDir(
     dirname: string, options: config.Config, howToRun: 'only'|'skip'|'normal') {
-  runsIntegrationSuite(dirname, options, howToRun, function(testResults) {
+  runsIntegrationSuite(dirname, options, howToRun, testResults => {
     const golden: Golden = JSON.parse(fs.readFileSync(
         path.join(integrationDir, dirname, 'golden.json'), 'utf-8'));
 
@@ -143,11 +143,11 @@ function runIntegrationSuiteForDir(
       variantsGolden = {variants: {'': golden}};
     }
 
-    it('ran the correct variants', function() {
+    it('ran the correct variants', () => {
       expect(Object.keys(testResults.variants).sort())
           .to.deep.equal(Object.keys(variantsGolden.variants).sort());
     });
-    for (const variantName in variantsGolden.variants) {
+    for (const variantName of Object.keys(variantsGolden.variants)) {
       const run = () => assertVariantResultsConformToGolden(
           variantsGolden.variants[variantName],
           testResults.getVariantResults(variantName));
@@ -177,11 +177,11 @@ function runsIntegrationSuite(
   } else if (howToRun === 'only') {
     describer = describe.only;
   }
-  describer(suiteName, function() {
+  describer(suiteName, () => {
     let log: string[] = [];
     let testResults: TestResults = new TestResults();
 
-    before(async function() {
+    before(async () => {
       const maxRetries = 3;
       let tryNumber = 0;
       let successful = false;
@@ -192,8 +192,8 @@ function runsIntegrationSuite(
             testResults = new TestResults();
           }
           const suiteRoot = await makeProperTestDir(dirName);
-          const suiteOptions = <any>loadOptionsFile(
-              path.join('test', 'fixtures', 'integration', dirName));
+          const suiteOptions = loadOptionsFile(
+              path.join('test', 'fixtures', 'integration', dirName)) as any;
           // Filter the list of browsers within the suite's options by the
           // global overrides if they are present.
           if (suiteOptions.plugins !== undefined) {
@@ -215,19 +215,19 @@ function runsIntegrationSuite(
           }
           const allOptions: config.Config = Object.assign(
               {
-                output: <any>{write: log.push.bind(log)},
+                output: {write: log.push.bind(log)} as any,
                 ttyOutput: false,
                 root: suiteRoot,
-                browserOptions: <any>{
+                browserOptions: {
                   name: 'web-component-tester',
                   tags: ['org:Polymer', 'repo:web-component-tester'],
-                },
+                } as any,
               },
               options, suiteOptions);
           const context = new Context(allOptions);
 
           const addEventHandler = (name: string, handler: Function) => {
-            context.on(name, function() {
+            context.on(name, () => {
               try {
                 handler.apply(null, arguments);
               } catch (error) {
@@ -246,14 +246,14 @@ function runsIntegrationSuite(
                 const browserName = getBrowserName(browserDef);
                 variantResults.stats[browserName] = stats;
 
-                let testNode = <TestNode>(
+                let testNode = (
                     variantResults.tests[browserName] =
-                        variantResults.tests[browserName] || {});
+                        variantResults.tests[browserName] || {}) as TestNode;
                 let errorNode = variantResults.testErrors[browserName] =
                     variantResults.testErrors[browserName] || {};
                 for (let i = 0; i < data.test.length; i++) {
                   const name = data.test[i];
-                  testNode = <TestNode>(testNode[name] = testNode[name] || {});
+                  testNode = (testNode[name] = testNode[name] || {}) as TestNode;
                   if (i < data.test.length - 1) {
                     errorNode = errorNode[name] = errorNode[name] || {};
                   } else if (data.error) {
@@ -312,8 +312,8 @@ function runsIntegrationSuite(
 }
 
 if (testLocalBrowsers || testRemoteBrowsers) {
-  describe('Browser Tests', function() {
-    const pluginConfig = <any>{};
+  describe('Browser Tests', () => {
+    const pluginConfig = {} as any;
     if (testLocalBrowsers) {
       pluginConfig.local = {
         browsers: testLocalBrowsersList,
@@ -342,7 +342,9 @@ function assertPassed(context: TestResults) {
         context.testRunnerError.stack || context.testRunnerError.message ||
         context.testRunnerError);
   }
+  // tslint:disable-next-line:no-unused-expression
   expect(context.runError).to.not.be.ok;
+  // tslint:disable-next-line:no-unused-expression
   expect(context.testRunnerError).to.not.be.ok;
   // expect(context.errors).to.deep.equal(repeatBrowsers(context, null));
 }
@@ -370,7 +372,7 @@ function assertTests(context: VariantResults, expected: TestNode) {
 /** Asserts that all browsers emitted the given errors. */
 function assertTestErrors(
     context: VariantResults, expected: TestErrorExpectation) {
-  lodash.each(context.testErrors, function(actual: any, browser) {
+  lodash.each(context.testErrors, (actual: any, browser) => {
     expect(Object.keys(expected))
         .to.have.members(
             Object.keys(actual),
@@ -378,7 +380,7 @@ function assertTestErrors(
                 `: expected ${JSON.stringify(Object.keys(expected))} - got ${
                     JSON.stringify(Object.keys(actual))}`);
 
-    lodash.each(actual, function(errors: any, file: any) {
+    lodash.each(actual, (errors: any, file: any) => {
       const expectedErrors = expected[file];
       // Currently very dumb for simplicity: We don't support suites.
       expect(Object.keys(expectedErrors))
@@ -386,7 +388,7 @@ function assertTestErrors(
               Object.keys(errors),
               `Test failure mismatch for ${file} on ${browser}`);
 
-      lodash.each(errors, function(error: Error, test: string) {
+      lodash.each(errors, (error: Error, test: string) => {
         const locationInfo = `for ${file} - "${test}" on ${browser}`;
         const expectedError = expectedErrors[test];
         const stackLines = error.stack.split('\n');
@@ -413,17 +415,17 @@ function assertTestErrors(
 function assertVariantResultsConformToGolden(
     golden: VariantResultGolden, variantResults: VariantResults) {
   // const variantResults = testResults.getVariantResults('');
-  it('records the correct result stats', function() {
+  it('records the correct result stats', () => {
     try {
       assertStats(
           variantResults, golden.passing, golden.pending, golden.failing,
-          <any>golden.status);
+          golden.status as any);
     } catch (_) {
       // mocha reports twice the failures because reasons
       // https://github.com/mochajs/mocha/issues/2083
       assertStats(
           variantResults, golden.passing, golden.pending, golden.failing * 2,
-          <any>golden.status);
+          golden.status as any);
     }
   });
 
@@ -431,12 +433,12 @@ function assertVariantResultsConformToGolden(
     return;
   }
 
-  it('runs the correct tests', function() {
+  it('runs the correct tests', () => {
     assertTests(variantResults, golden.tests);
   });
 
   if (golden.errors || golden.failing > 0) {
-    it('emits well formed errors', function() {
+    it('emits well formed errors', () => {
       assertTestErrors(variantResults, golden.errors);
     });
   }
@@ -472,24 +474,24 @@ function repeatBrowsers<T>(
 }
 
 describe('define:webserver hook', () => {
-  it('supports substituting given app', async function() {
+  it('supports substituting given app', async () => {
     const suiteRoot = await makeProperTestDir('define-webserver-hook');
     const log: string[] = [];
     const requestedUrls: string[] = [];
     const options: config.Config = {
-      output: <any>{write: log.push.bind(log)},
+      output: {write: log.push.bind(log)} as any,
       ttyOutput: false,
       root: suiteRoot,
-      browserOptions: <any>{
+      browserOptions: {
         name: 'web-component-tester',
         tags: ['org:Polymer', 'repo:web-component-tester'],
-      },
-      plugins: <any>{
+      } as any,
+      plugins: {
         local: {
           browsers: testLocalBrowsersList,
           skipSeleniumInstall: true,
         }
-      },
+      } as any,
     };
     const context = new Context(options);
     context.hook(
@@ -518,20 +520,20 @@ describe('define:webserver hook', () => {
 
 describe('early failures', () => {
   it(`wct doesn't start testing if it's not bower installed locally`,
-     async function() {
+     async () => {
        const log: string[] = [];
        const options: config.Config = {
-         output: <any>{write: log.push.bind(log)},
+         output: {write: log.push.bind(log)} as any,
          ttyOutput: false,
          root: path.join(
              __dirname, '..', 'fixtures', 'integration', 'components_dir'),
-         browserOptions: <any>{
+         browserOptions: {
            name: 'web-component-tester',
            tags: ['org:Polymer', 'repo:web-component-tester'],
-         },
-         plugins: <any>{
+         } as any,
+         plugins: {
            local: {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
-         },
+         } as any,
        };
        const context = new Context(options);
        try {
@@ -544,19 +546,19 @@ describe('early failures', () => {
      });
 
   it('fails if the client side library is out of allowed version range',
-     async function() {
+     async () => {
        const log: string[] = [];
        const options: config.Config = {
-         output: <any>{write: log.push.bind(log)},
+         output: {write: log.push.bind(log)} as any,
          ttyOutput: false,
          root: path.join(__dirname, '..', 'fixtures', 'early-failure'),
-         browserOptions: <any>{
+         browserOptions: {
            name: 'web-component-tester',
            tags: ['org:Polymer', 'repo:web-component-tester'],
-         },
-         plugins: <any>{
+         } as any,
+         plugins: {
            local: {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
-         },
+         } as any,
        };
        const context = new Context(options);
        try {

@@ -19,12 +19,12 @@ import {Context} from '../../runner/context';
 
 const expect = chai.expect;
 
-describe('config', function() {
-  describe('.merge', function() {
-    it('avoids modifying the input', function() {
-      const one = <any>{foo: 1};
-      const two = <any>{foo: 2};
-      const merged = <any>config.merge(one, two);
+describe('config', () => {
+  describe('.merge', () => {
+    it('avoids modifying the input', () => {
+      const one = {foo: 1} as any;
+      const two = {foo: 2} as any;
+      const merged = config.merge(one, two) as any;
 
       expect(one.foo).to.eq(1);
       expect(two.foo).to.eq(2);
@@ -32,19 +32,19 @@ describe('config', function() {
       expect(merged).to.not.equal(two);
     });
 
-    it('honors false as an explicit blacklisting', function() {
+    it('honors false as an explicit blacklisting', () => {
       const merged = config.merge(
-          <any>{plugins: {foo: {}}}, <any>{plugins: {foo: false}},
-          <any>{plugins: {foo: {}, bar: {}}});
+          {plugins: {foo: {}}} as any, {plugins: {foo: false}} as any,
+          {plugins: {foo: {}, bar: {}}} as any);
 
       expect(merged).to.deep.equal({plugins: {foo: false, bar: {}}});
     });
   });
 
-  describe('.expand', function() {
-    describe('deprecated options', function() {
-      it('expands local string browsers', function() {
-        const context = new Context(<any>{browsers: ['chrome']});
+  describe('.expand', () => {
+    describe('deprecated options', () => {
+      it('expands local string browsers', () => {
+        const context = new Context({browsers: ['chrome']} as any);
         return config.expand(context).then(() => {
           expect(context.options.plugins['local'].browsers).to.have.members([
             'chrome'
@@ -52,8 +52,8 @@ describe('config', function() {
         });
       });
 
-      it('expands sauce string browsers', function() {
-        const context = new Context(<any>{browsers: ['linux/firefox']});
+      it('expands sauce string browsers', () => {
+        const context = new Context({browsers: ['linux/firefox']} as any);
         return config.expand(context).then(() => {
           expect(context.options.plugins['sauce'].browsers).to.have.members([
             'linux/firefox'
@@ -61,9 +61,9 @@ describe('config', function() {
         });
       });
 
-      it('expands local object browsers', function() {
+      it('expands local object browsers', () => {
         const context =
-            new Context(<any>{browsers: [{browserName: 'firefox'}]});
+            new Context({browsers: [{browserName: 'firefox'}]} as any);
         return config.expand(context).then(() => {
           expect(context.options.plugins['local'].browsers)
               .to.deep['have']
@@ -71,9 +71,9 @@ describe('config', function() {
         });
       });
 
-      it('expands sauce object browsers', function() {
+      it('expands sauce object browsers', () => {
         const context = new Context(
-            <any>{browsers: [{browserName: 'safari', platform: 'OS X'}]});
+            {browsers: [{browserName: 'safari', platform: 'OS X'}]} as any);
         return config.expand(context).then(() => {
           expect(context.options.plugins['sauce'].browsers)
               .to.deep['have']
@@ -83,11 +83,11 @@ describe('config', function() {
     });
   });
 
-  describe('npm pathing', function() {
-    describe('Resolves simple names to paths', function() {
+  describe('npm pathing', () => {
+    describe('Resolves simple names to paths', () => {
       const localPackagePath =
           path.join(__dirname, '../fixtures/fake-packages/singleton-dep');
-      const options = <config.Config>{root: localPackagePath};
+      const options = {root: localPackagePath} as config.Config;
       const npmPackages: config.NPMPackage[] = [
         {name: 'dependency', jsEntrypoint: 'index.js'},
         {name: 'dependency', jsEntrypoint: 'arbitraryJsFile.js'}
@@ -99,10 +99,10 @@ describe('config', function() {
       expect(resolvedEntrypoints[1]).to.equal('dependency/arbitraryJsFile.js');
     });
 
-    it('Resolves duplicated names to paths', function() {
+    it('Resolves duplicated names to paths', () => {
       const localPackagePath =
           path.join(__dirname, '../fixtures/fake-packages/duplicated-dep');
-      const options = <config.Config>{root: localPackagePath};
+      const options = {root: localPackagePath} as config.Config;
       const npmPackages: config.NPMPackage[] = [
         {name: 'dependency', jsEntrypoint: 'index.js'},
         {name: 'dependency', jsEntrypoint: 'arbitraryJsFile.js'}

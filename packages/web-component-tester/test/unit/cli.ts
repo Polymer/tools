@@ -56,24 +56,24 @@ describe('cli', () => {
   describe('.run', () => {
     const expectRun = async (args: string[], logInput?: string[]) => {
       const log = logInput || [];
-      const stream = <NodeJS.WritableStream><any>{write: log.push.bind(log)};
+      const stream = {write: log.push.bind(log)} as any as NodeJS.WritableStream;
       try {
         await cli.run({}, args, stream);
       } catch (error) {
         log.forEach((line) => process.stderr.write(line));
         throw error;
       }
-      const call = <{args: [context.Context]}>steps.runTests['getCall'](0);
+      const call = steps.runTests['getCall'](0) as {args: [context.Context]};
       return call.args[0];
     };
 
     it('honors --version flags', async () => {
-      const version: String = require('../../package.json').version;
-      let output: String;
+      const version: string = require('../../package.json').version;
+      let output: string;
 
-      await cli.run({}, ['--version'], <any>{write: (o: String) => output = o});
+      await cli.run({}, ['--version'], {write: (o: string) => output = o} as any);
       expect(output).to.eq(`${version}\n`);
-      await cli.run({}, ['-V'], <any>{write: (o: String) => output = o});
+      await cli.run({}, ['-V'], {write: (o: string) => output = o} as any);
       expect(output).to.eq(`${version}\n`);
     });
 
@@ -135,7 +135,7 @@ describe('cli', () => {
 
     it('throws an error if no suites could be found', async () => {
       try {
-        await cli.run({}, ['404'], <any>{write: () => {}});
+        await cli.run({}, ['404'], {write: () => {}} as any);
       } catch (error) {
         expect(error).to.match(/no.*suites.*found/i);
         return;
@@ -159,7 +159,7 @@ describe('cli', () => {
 
     // TODO(nevir): Remove after deprecation period.
     it('throws an error when --webRunner is set', () => {
-      return cli.run({}, ['--webRunner', 'foo'], <any>{write: () => {}})
+      return cli.run({}, ['--webRunner', 'foo'], {write: () => {}} as any)
           .then(
               () => {
                 throw new Error('cli.run should have failed');

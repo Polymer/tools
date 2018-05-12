@@ -66,8 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // We need the socket built prior to building its reporter.
   CLISocket.init(function(error, socket) {
-    if (error)
-      throw error;
+    if (error) throw error;
 
     // Are we a child of another run?
     const current = ChildRunner.current();
@@ -84,10 +83,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // We need the reporter so that we can report errors during load.
     suites.loadJsSuites(reporter, function(error) {
       // Let our parent know that we're about to start the tests.
-      if (current)
-        current.ready(error);
-      if (error)
-        throw error;
+      if (current) current.ready(error);
+      if (error) throw error;
 
       // Emit any errors we've encountered up til now
       errors.globalErrors.forEach(function onError(error) {
@@ -96,10 +93,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
       suites.runSuites(reporter, childSuites, function(error) {
         // Make sure to let our parent know that we're done.
-        if (current)
-          current.done();
-        if (error)
-          throw error;
+        if (current) current.done();
+        if (error) throw error;
       });
     });
   });

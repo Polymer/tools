@@ -1,5 +1,5 @@
 declare module 'server-destroy' {
-  import * as http from 'http';
+import * as http from 'http';
 
   /**
    * Monkey-patches the destroy() method onto the given server.

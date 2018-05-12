@@ -70,6 +70,7 @@ export async function test(options: Config|Context): Promise<void> {
   // We assume that any options related to logging are passed in via the initial
   // `options`.
   if (context.options.output) {
+    // tslint:disable-next-line:no-unused-expression
     new CliReporter(context, context.options.output, context.options);
   }
 

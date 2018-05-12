@@ -171,8 +171,7 @@ export default class ChildRunner {
     this.ready();
     this.signalRunComplete();
 
-    if (!this.iframe)
-      return;
+    if (!this.iframe) return;
     // Be safe and avoid potential browser crashes when logic attempts to
     // interact with the removed iframe.
     setTimeout(function() {
@@ -182,8 +181,7 @@ export default class ChildRunner {
   }
 
   signalRunComplete(error?: any) {
-    if (!this.onRunComplete)
-      return;
+    if (!this.onRunComplete) return;
     this.state = 'complete';
     this.onRunComplete(error);
     this.onRunComplete = null;

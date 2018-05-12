@@ -16,7 +16,6 @@ const glob = require('glob');
 const gulp = require('gulp');
 const bower = require('gulp-bower');
 const mocha = require('gulp-spawn-mocha');
-const tslint = require('gulp-tslint');
 const ts = require('gulp-typescript');
 const lazypipe = require('lazypipe');
 const path = require('path');
@@ -30,8 +29,6 @@ const mochaConfig = { reporter: 'spec', retries: 3, timeout: 90000 };
 const commonTools = {
   depcheck: commonDepCheck
 };
-
-gulp.task('lint', ['tslint', 'depcheck']);
 
 // Meta tasks
 
@@ -75,7 +72,6 @@ gulp.task('clean', (done) => {
 gulp.task('test', function (done) {
   runSequence(
     'build:typescript-server',
-    'lint',
     'test:unit',
     'test:integration',
     done);
@@ -166,15 +162,6 @@ gulp.task('test:integration', ['bower'], function () {
   return gulp.src('test/integration/*.js', { read: false })
     .pipe(mocha(mochaConfig));
 });
-
-gulp.task('tslint', () =>
-  gulp.src([
-    'runner/**/*.ts', '!runner/**/*.d.ts',
-    'test/**/*.ts', '!test/**/*.d.ts',
-    'custom_typings/*.d.ts', 'browser/**/*.ts', '!browser/**/*.ts'
-  ])
-    .pipe(tslint())
-    .pipe(tslint.report({ formatter: 'verbose' })));
 
 // Flows
 
