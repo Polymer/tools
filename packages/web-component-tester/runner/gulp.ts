@@ -32,11 +32,11 @@ export function init(gulp: Gulp, dependencies?: string[]): void {
   gulp.task('wct', ['wct:local']);
 
   gulp.task('wct:local', dependencies, () => {
-    return test(<any>{plugins: {local: {}, sauce: false}}).catch(cleanError);
+    return test({plugins: {local: {}, sauce: false}} as any).catch(cleanError);
   });
 
   gulp.task('wct:sauce', dependencies, () => {
-    return test(<any>{plugins: {local: false, sauce: {}}}).catch(cleanError);
+    return test({plugins: {local: false, sauce: {}}} as any).catch(cleanError);
   });
 }
 

@@ -145,7 +145,7 @@ export class Context extends events.EventEmitter {
     boundHooks =
         hooks.map((hook) => hook.bind.apply(hook, [null].concat(hookArgs)));
     if (!boundHooks) {
-      boundHooks = <any>hooks;
+      boundHooks = hooks as any;
     }
 
     // A hook may return a promise or it may call a callback. We want to
@@ -205,7 +205,7 @@ export class Context extends events.EventEmitter {
   enabledPlugins(): string[] {
     // Plugins with falsy configuration or disabled: true are _not_ loaded.
     const pairs = _.reject(
-        (<any>_).pairs(this.options.plugins),
+        (_ as any).pairs(this.options.plugins),
         (p: [string, {disabled: boolean}]) => !p[1] || p[1].disabled);
     return _.map(pairs, (p) => p[0]);
   }

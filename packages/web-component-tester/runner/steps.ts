@@ -87,9 +87,9 @@ export async function runTests(context: Context): Promise<void> {
 
   context._socketIOServers = context._httpServers.map((httpServer) => {
     const socketIOServer = socketIO(httpServer);
-    socketIOServer.on('connection', function(socket) {
+    socketIOServer.on('connection', (socket) => {
       context.emit('log:debug', 'Test client opened sideband socket');
-      socket.on('client-event', function(data: ClientMessage<any>) {
+      socket.on('client-event', (data: ClientMessage<any>) => {
         const runner = runners[data.browserId];
         if (!runner) {
           throw new Error(
@@ -109,7 +109,7 @@ export function cancelTests(context: Context): void {
   if (!context._testRunners) {
     return;
   }
-  context._testRunners.forEach(function(tr) {
+  context._testRunners.forEach((tr) => {
     tr.quit();
   });
 }
@@ -134,7 +134,7 @@ function runBrowsers(context: Context) {
 
   const errors: any[] = [];
 
-  const promises: Promise<void>[] = [];
+  const promises: Array<Promise<void>> = [];
 
   const runners: BrowserRunner[] = [];
   let id = 0;
@@ -173,7 +173,7 @@ function runBrowsers(context: Context) {
 
   return {
     runners,
-    completionPromise: (async function() {
+    completionPromise: (async () => {
       await Promise.all(promises);
       const error = errors.length > 0 ? _.union(errors).join(', ') : null;
       context.emit('run-end', error);
@@ -183,6 +183,6 @@ function runBrowsers(context: Context) {
       if (error) {
         throw new Error(error);
       }
-    }())
+    })(),
   };
 }

@@ -32,22 +32,22 @@ const LOCAL_BROWSERS = {
   firefox: {browserName: 'firefox', version: '4'},
 };
 
-describe('grunt', function() {
+describe('grunt', () => {
   // Sinon doesn't stub process.env very well.
   let origEnv: any, origArgv: any;
-  beforeEach(function() {
+  beforeEach(() => {
     origEnv = _.clone(process.env);
     origArgv = process.argv;
   });
-  afterEach(function() {
+  afterEach(() => {
     _.assign(process.env, origEnv);
-    _.difference(_.keys(process.env), _.keys(origEnv)).forEach(function(key) {
+    _.difference(_.keys(process.env), _.keys(origEnv)).forEach((key) => {
       delete process.env[key];
     });
     process.argv = origArgv;
   });
 
-  before(function() {
+  before(() => {
     grunt.initConfig({
       'wct-test': {
         'passthrough': {
@@ -67,13 +67,14 @@ describe('grunt', function() {
       grunt.task.run('wct-test:' + task)['start']();
     });
     // We shouldn't error before hitting it.
+    // tslint:disable-next-line:no-unused-expression
     expect(steps.runTests).to.have.been.calledOnce;
-    return <{args: [Context]}>steps.runTests['getCall'](0);
+    return steps.runTests['getCall'](0) as {args: [Context]};
   }
 
-  describe('wct-test', function() {
+  describe('wct-test', () => {
     let sandbox: sinon.SinonSandbox;
-    beforeEach(function() {
+    beforeEach(() => {
       sandbox = sinon.sandbox.create();
       sandbox.stub(steps, 'prepare')
           .callsFake(async(_context: Context): Promise<void> => undefined);
@@ -86,12 +87,12 @@ describe('grunt', function() {
       process.chdir(path.resolve(__dirname, '../fixtures/cli/standard'));
     });
 
-    afterEach(function() {
+    afterEach(() => {
       sandbox.restore();
     });
 
-    describe('with a passing suite', function() {
-      beforeEach(function() {
+    describe('with a passing suite', () => {
+      beforeEach(() => {
         sandbox.stub(steps, 'runTests')
             .callsFake(async(): Promise<void> => undefined);
       });
@@ -102,10 +103,10 @@ describe('grunt', function() {
       });
     });
 
-    describe('with a failing suite', function() {
-      beforeEach(function() {
+    describe('with a failing suite', () => {
+      beforeEach(() => {
         sandbox.stub(steps, 'runTests').callsFake(async () => {
-          throw 'failures';
+          throw new Error('failures');
         });
       });
 

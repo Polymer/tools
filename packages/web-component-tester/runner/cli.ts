@@ -28,7 +28,7 @@ const noopNotifier = {
 };
 let updateNotifier = noopNotifier;
 
-(function() {
+(() => {
 try {
   updateNotifier = require('update-notifier')({pkg: PACKAGE_INFO});
 } catch (error) {
@@ -53,10 +53,10 @@ async function _run(args: string[], output: NodeJS.WritableStream) {
   // configuration so that we know which plugins to load, etc:
   let options = config.preparseArgs(args) as config.Config;
   // Depends on values from the initial merge:
-  options = config.merge(options, <config.Config>{
-    output: output,
+  options = config.merge(options, {
+    output,
     ttyOutput: !process.env.CI && output['isTTY'] && !options.simpleOutput,
-  });
+  } as config.Config);
   const context = new Context(options);
 
   if (options.skipUpdateCheck) {
@@ -95,7 +95,8 @@ async function _runSauceTunnel(args: string[], output: NodeJS.WritableStream) {
   wctSauce.expandOptions(options);
 
   const emitter = new events.EventEmitter();
-  new CliReporter(emitter, output, <config.Config>{});
+  // tslint:disable-next-line:no-unused-expression
+  new CliReporter(emitter, output, {} as config.Config);
   const tunnelId = await new Promise<string>((resolve, reject) => {
     wctSauce.startTunnel(
         options, emitter,

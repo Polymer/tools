@@ -16,8 +16,8 @@ import * as path from 'path';
 
 import * as paths from '../../runner/paths';
 
-describe('paths', function() {
-  describe('.expand', function() {
+describe('paths', () => {
+  describe('.expand', () => {
     const baseDir = path.resolve(__dirname, '../fixtures/paths');
 
     async function expectExpands(patterns: string[], expected: string[]) {

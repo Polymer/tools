@@ -62,7 +62,7 @@ const ENVIRONMENT_SCRIPTS: NPMPackage[] = [
 export function webserver(wct: Context): void {
   const options = wct.options;
 
-  wct.hook('configure', async function() {
+  wct.hook('configure', async () => {
     // For now, you should treat all these options as an implementation detail
     // of WCT. They may be opened up for public configuration, but we need to
     // spend some time rationalizing interactions with external webservers.
@@ -113,7 +113,7 @@ export function webserver(wct: Context): void {
         Object.assign({browserScript, a11ySuiteScript}, options));
   });
 
-  wct.hook('prepare', async function() {
+  wct.hook('prepare', async () => {
     const wsOptions = options.webserver;
     const additionalRoutes = new Map<string, RequestHandler>();
 
@@ -169,7 +169,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       }
 
       let hasWarnedBrowserJs = false;
-      additionalRoutes.set('/browser.js', function(request, response) {
+      additionalRoutes.set('/browser.js', (request, response) => {
         if (!hasWarnedBrowserJs) {
           console.warn(`
 
@@ -285,7 +285,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       // close the socket IO server directly if it is spun up
       for (const io of (wct._socketIOServers || [])) {
         // we will close the underlying server ourselves
-        (<any>io).httpServer = null;
+        (io as any).httpServer = null;
         io.close();
       }
       await Promise.all(onDestroyHandlers.map((f) => f()));

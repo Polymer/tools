@@ -109,17 +109,17 @@ export function parseUrl(url: string) {
  * @return {string}
  */
 export function expandUrl(url: string, base: string) {
-  if (!base)
-    return url;
-  if (url.match(/^(\/|https?:\/\/)/))
-    return url;
+  if (!base) return url;
+  if (url.match(/^(\/|https?:\/\/)/)) return url;
   if (base.substr(base.length - 1) !== '/') {
     base = base + '/';
   }
   return base + url;
 }
 
-export interface Params { [param: string]: string[]; }
+export interface Params {
+  [param: string]: string[];
+}
 
 /**
  * @param {string=} opt_query A query string to parse.
@@ -134,8 +134,7 @@ export function getParams(query?: string): Params {
   if (query.slice(-1) === '/') {
     query = query.substring(0, query.length - 1);
   }
-  if (query === '')
-    return {};
+  if (query === '') return {};
 
   const result: {[param: string]: string[]} = {};
   query.split('&').forEach(function(part) {

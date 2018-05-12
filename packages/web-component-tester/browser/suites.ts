@@ -90,8 +90,7 @@ export function runSuites(
       reporter.emit('childRunner start', childRunner);
       childRunner.run(function(error) {
         reporter.emit('childRunner end', childRunner);
-        if (error)
-          reporter.emitOutOfBandTest(file, error);
+        if (error) reporter.emitOutOfBandTest(file, error);
         next();
       });
     });
@@ -141,10 +140,8 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
   if (navigator.userAgent.match(/chrome/i)) {
     window.onerror = null;
     window.addEventListener('error', function(event) {
-      if (!event.error)
-        return;
-      if (event.error.ignore)
-        return;
+      if (!event.error) return;
+      if (event.error.ignore) return;
       if (window.uncaughtErrorFilter && window.uncaughtErrorFilter(event)) {
         event.preventDefault();
         return;

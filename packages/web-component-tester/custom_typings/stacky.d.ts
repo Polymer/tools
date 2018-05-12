@@ -10,8 +10,8 @@ declare module 'stacky' {
     maxMethodPadding?: number;
     indent?: string;
     methodPlaceholder?: string;
-    locationStrip?: (string|RegExp)[];
-    unimportantLocation?: (string|RegExp)[];
+    locationStrip?: Array<string|RegExp>;
+    unimportantLocation?: Array<string|RegExp>;
     filter?: (line: ParsedStackFrame) => boolean;
     styles?: {
       method?: StyleFunction;

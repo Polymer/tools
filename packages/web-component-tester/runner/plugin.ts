@@ -52,7 +52,7 @@ export class Plugin {
       const plugin = require(this.packageName);
       plugin(context, context.pluginOptions(this.name), this);
     } catch (error) {
-      throw `Failed to load plugin "${this.name}": ${error}`;
+      throw new Error(`Failed to load plugin "${this.name}": ${error}`);
     }
   }
 
@@ -71,10 +71,10 @@ export class Plugin {
     const loaded = _.compact(names.map(_tryLoadPluginPackage));
     if (loaded.length > 1) {
       const prettyNames = loaded.map((p) => p.packageName).join(' ');
-      throw `Loaded conflicting WCT plugin packages: ${prettyNames}`;
+      throw new Error(`Loaded conflicting WCT plugin packages: ${prettyNames}`);
     }
     if (loaded.length < 1) {
-      throw `Could not find WCT plugin named "${name}"`;
+      throw new Error(`Could not find WCT plugin named "${name}"`);
     }
 
     return loaded[0];
@@ -108,7 +108,7 @@ const _loadedPlugins: {[name: string]: Plugin} = {};
  * @return {Plugin}
  */
 function _tryLoadPluginPackage(packageName: string) {
-  let packageInfo: Object;
+  let packageInfo: {};
   try {
     packageInfo = require(path.join(packageName, 'package.json'));
   } catch (error) {

@@ -168,7 +168,7 @@ export class CliReporter {
     // state:  The state that the run is in (running, etc).
     // status: A string representation of above.
     const statuses = Object.keys(this.browserStats).map((browserIdStr) => {
-      const browserId = parseInt(browserIdStr, 10);
+      const browserId = Number(browserIdStr);
       const pretty = this.prettyBrowsers[browserId];
       const stats = this.browserStats[browserId];
 
@@ -176,13 +176,13 @@ export class CliReporter {
       const counts = [stats.passing, stats.pending, stats.failing];
       if (counts[0] > 0 || counts[1] > 0 || counts[2] > 0) {
         if (counts[0] > 0) {
-          counts[0] = <any>chalk.green(counts[0].toString());
+          counts[0] = chalk.green(counts[0].toString()) as any;
         }
         if (counts[1] > 0) {
-          counts[1] = <any>chalk.yellow(counts[1].toString());
+          counts[1] = chalk.yellow(counts[1].toString()) as any;
         }
         if (counts[2] > 0) {
-          counts[2] = <any>chalk.red(counts[2].toString());
+          counts[2] = chalk.red(counts[2].toString()) as any;
         }
         status = counts.join('/');
       }
@@ -283,7 +283,7 @@ export class CliReporter {
     }
 
     const lines = [''];
-    const width = (<tty.WriteStream>this.stream).columns || 0;
+    const width = (this.stream as tty.WriteStream).columns || 0;
     for (const block of blocks) {
       const line = lines[lines.length - 1];
       const combined = line + separator + block;
