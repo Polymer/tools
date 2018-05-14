@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Fix names of `uncompiled-bundled` and `uncompiled-unbundled` build presets.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [4.0.1] - 2018-05-09
+* Fix names of `uncompiled-bundled` and `uncompiled-unbundled` build presets.
 
 ## [4.0.0] - 2018-05-08
 * Change the default value of `--module-resolution` to "node".

@@ -1,12 +1,14 @@
 # Changelog
 
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased items here. -->
+
+## v1.7.2 [05-11-2018]
 * Fix bug in `polymer-3-element` init template where `polymer/dom-module.js`
   could be loaded twice when serving from the polyserve `/components/`
   directory.
 * Fix names of `uncompiled-bundled` and `uncompiled-unbundled` build presets.
-<!-- Add new, unreleased items here. -->
 
 ## v1.7.1 [05-09-2018]
 * Workaround an NPM shrinkwrap bug which was causing users to install the CLI's
