@@ -14,8 +14,8 @@
 import * as chai from 'chai';
 import * as path from 'path';
 
-import * as config from '../../runner/config';
-import {Context} from '../../runner/context';
+import * as config from '../../src/config';
+import {Context} from '../../src/context';
 
 const expect = chai.expect;
 

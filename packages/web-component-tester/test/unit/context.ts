@@ -15,8 +15,8 @@ import * as chai from 'chai';
 import * as sinon from 'sinon';
 import * as sinonChai from 'sinon-chai';
 
-import {Context} from '../../runner/context';
-import {Plugin} from '../../runner/plugin';
+import {Context} from '../../src/context';
+import {Plugin} from '../../src/plugin';
 
 const expect = chai.expect;
 chai.use(sinonChai);

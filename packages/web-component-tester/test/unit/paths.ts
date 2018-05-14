@@ -14,7 +14,7 @@
 import {expect} from 'chai';
 import * as path from 'path';
 
-import * as paths from '../../runner/paths';
+import * as paths from '../../src/paths';
 
 describe('paths', function() {
   describe('.expand', function() {

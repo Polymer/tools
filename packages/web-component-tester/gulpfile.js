@@ -33,10 +33,6 @@ const commonTools = {
 
 gulp.task('lint', ['tslint', 'depcheck']);
 
-// Meta tasks
-
-gulp.task('default', ['test']);
-
 function removeFile(path) {
   try {
     fs.unlinkSync(path);
@@ -54,7 +50,7 @@ function removeFile(path) {
 gulp.task('clean', (done) => {
   removeFile('browser.js');
   removeFile('browser.js.map');
-  const patterns = ['runner/*.js', 'browser/**/*.js', 'browser/**/*.js.map'];
+  const patterns = ['browser/**/*.js', 'browser/**/*.js.map'];
   for (const pattern of patterns) {
     glob(pattern, (err, files) => {
       if (err) {
@@ -72,28 +68,11 @@ gulp.task('clean', (done) => {
   done();
 });
 
-gulp.task('test', function (done) {
-  runSequence(
-    'build:typescript-server',
-    'lint',
-    'test:unit',
-    'test:integration',
-    done);
-});
-
 gulp.task('build-all', (done) => {
   runSequence('clean', 'lint', 'build', done);
 });
 
-gulp.task('build',
-  ['build:typescript-server', 'build:browser', 'build:wct-browser-legacy']);
-
-const tsProject = ts.createProject('tsconfig.json', { typescript });
-gulp.task('build:typescript-server', function () {
-  // Ignore typescript errors, because gulp-typescript, like most things
-  // gulp, can't be trusted.
-  return tsProject.src().pipe(tsProject(ts.reporter.nullReporter())).js.pipe(gulp.dest('./'));
-});
+gulp.task('build', ['build:browser', 'build:wct-browser-legacy']);
 
 const browserTsProject = ts.createProject('browser/tsconfig.json', {
   typescript
@@ -152,24 +131,13 @@ gulp.task('build:wct-browser-legacy', [
   'build:wct-browser-legacy:browser',
 ]);
 
-
-gulp.task('test:unit', function () {
-  return gulp.src('test/unit/*.js', { read: false, timeout: 5000, })
-    .pipe(mocha(mochaConfig));
-});
-
 gulp.task('bower', function () {
   return bower();
 });
 
-gulp.task('test:integration', ['bower'], function () {
-  return gulp.src('test/integration/*.js', { read: false })
-    .pipe(mocha(mochaConfig));
-});
-
 gulp.task('tslint', () =>
   gulp.src([
-    'runner/**/*.ts', '!runner/**/*.d.ts',
+    'src/**/*.ts',
     'test/**/*.ts', '!test/**/*.d.ts',
     'custom_typings/*.d.ts', 'browser/**/*.ts', '!browser/**/*.ts'
   ])
@@ -226,11 +194,3 @@ function commonDepCheck(options) {
     });
   });
 }
-
-gulp.task('prepublish', function (done) {
-  // We can't run the integration tests here because on travis we may not
-  // be running with an x instance when we do `npm install`. We can change
-  // this to just `test` from `test:unit` once all supported npm versions
-  // no longer run `prepublish` on install.
-  runSequence('build-all', 'test:unit', done);
-});

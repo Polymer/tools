@@ -16,11 +16,11 @@ import * as gulp from 'gulp';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
-import {Config} from '../../runner/config';
-import {Context} from '../../runner/context';
-import * as wctGulp from '../../runner/gulp';
-import {Plugin} from '../../runner/plugin';
-import * as steps from '../../runner/steps';
+import {Config} from '../../src/config';
+import {Context} from '../../src/context';
+import * as wctGulp from '../../src/gulp';
+import {Plugin} from '../../src/plugin';
+import * as steps from '../../src/steps';
 
 const expect = chai.expect;
 chai.use(require('sinon-chai'));

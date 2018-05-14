@@ -17,8 +17,8 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
-import {Context} from '../../runner/context';
-import * as steps from '../../runner/steps';
+import {Context} from '../../src/context';
+import * as steps from '../../src/steps';
 
 
 const wctLocalBrowsers = require('wct-local/lib/browsers');

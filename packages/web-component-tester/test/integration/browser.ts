@@ -18,11 +18,11 @@ import * as lodash from 'lodash';
 import * as path from 'path';
 
 import {ExpressAppMapper, ServerOptions} from 'polyserve/lib/start_server';
-import {BrowserDef, Stats} from '../../runner/browserrunner';
-import {CompletedState, TestEndData} from '../../runner/clireporter';
-import * as config from '../../runner/config';
-import {Context} from '../../runner/context';
-import {test} from '../../runner/test';
+import {BrowserDef, Stats} from '../../src/browserrunner';
+import {CompletedState, TestEndData} from '../../src/clireporter';
+import * as config from '../../src/config';
+import {Context} from '../../src/context';
+import {test} from '../../src/test';
 import {makeProperTestDir} from './setup_test_dir';
 
 function parseList(stringList?: string): string[] {

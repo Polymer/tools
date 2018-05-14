@@ -17,9 +17,9 @@ import * as _ from 'lodash';
 import * as path from 'path';
 import * as sinon from 'sinon';
 
-import * as cli from '../../runner/cli';
-import * as context from '../../runner/context';
-import * as steps from '../../runner/steps';
+import * as cli from '../../src/cli';
+import * as context from '../../src/context';
+import * as steps from '../../src/steps';
 
 const expect = chai.expect;
 

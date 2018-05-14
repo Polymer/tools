@@ -9,7 +9,7 @@
  */
 var chalk  = require('chalk');
 
-var test = require('../runner/test');
+var test = require('../src/test');
 
 module.exports = function(grunt) {
   grunt.registerMultiTask('wct-test', 'Runs tests via web-component-tester', function() {

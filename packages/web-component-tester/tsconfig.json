@@ -1,18 +1,13 @@
 {
-    "extends": "../../tsconfig-base.json",
-    "compilerOptions": {
-        "noUnusedLocals": false,
-        "noImplicitThis": false,
-        "strictNullChecks": false,
-        "suppressImplicitAnyIndexErrors": true,
-    },
-    "exclude": [
-        "node_modules"
-    ],
-    "include": [
-        "runner/*.ts",
-        "test/**/*.ts",
-        "custom_typings/*.d.ts",
-        "node_modules/@types/mocha/index.d.ts"
-    ]
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "noImplicitThis": false,
+    "noUnusedLocals": false,
+    "outDir": "lib",
+    "rootDir": "src",
+    "strictNullChecks": false,
+    "suppressImplicitAnyIndexErrors": true
+  },
+  "files": ["src/index.ts"],
+  "include": ["@types"]
 }

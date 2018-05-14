@@ -7,10 +7,10 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-module.exports = {
-  cli:    require('./runner/cli'),
-  config: require('./runner/config'),
-  gulp:   require('./runner/gulp'),
-  steps:  require('./runner/steps'),
-  test:   require('./runner/test'),
-};
+import * as cli from './cli';
+import * as config from './config';
+import * as gulp from './gulp';
+import * as steps from './steps';
+import * as test from './test';
+
+export { cli, config, gulp, steps, test };
