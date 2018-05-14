@@ -62,7 +62,7 @@
     "mz": "^2.6.0",
     "plylog": "^0.5.0",
     "polymer-analyzer": "^3.0.1",
-    "polymer-build": "^3.0.0",
+    "polymer-build": "^3.0.1",
     "polymer-bundler": "^4.0.1",
     "polymer-linter": "^3.0.0",
     "polymer-project-config": "^4.0.1",
