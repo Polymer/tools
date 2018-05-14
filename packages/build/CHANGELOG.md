@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.0.1] - 2018-05-14
 * Pin dependency babel-plugin-minify-guarded-expressions of
   babel-preset-minify to known working version 0.4.1.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0] - 2018-05-08
 * Updated dependencies.
