@@ -24,7 +24,7 @@ import yeoGen = require('yeoman-generator');
 function createTestGenerator(
     generatorOptions: {owner: string, repo: string, semverRange?: string},
     generatorWillRun: (generator: yeoGen) => void) {
-  return function TestGenerator(args: string[]|string, options?: {}) {
+  return function TestGenerator(args: string[]|string, options: {} = {}) {
     const GithubGenerator = createGithubGenerator(generatorOptions);
     const githubGenerator = new GithubGenerator(args, options);
     generatorWillRun(githubGenerator);

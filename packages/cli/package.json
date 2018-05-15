@@ -1,6 +1,6 @@
 {
   "name": "polymer-cli",
-  "version": "1.7.0",
+  "version": "1.7.2",
   "description": "A commandline tool for Polymer projects",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/cli",
   "repository": "github:Polymer/tools",
@@ -43,7 +43,7 @@
     "@types/update-notifier": "^1.0.0",
     "@types/vinyl": "^2.0.0",
     "@types/vinyl-fs": "0.0.28",
-    "@types/yeoman-generator": "^1.0.0",
+    "@types/yeoman-generator": "^2.0.3",
     "bower": "1.8.2",
     "bower-json": "^0.8.1",
     "bower-logger": "^0.2.2",
@@ -61,11 +61,11 @@
     "merge-stream": "^1.0.1",
     "mz": "^2.6.0",
     "plylog": "^0.5.0",
-    "polymer-analyzer": "^3.0.0",
-    "polymer-build": "^3.0.0",
-    "polymer-bundler": "^4.0.0",
+    "polymer-analyzer": "^3.0.1",
+    "polymer-build": "^3.0.1",
+    "polymer-bundler": "^4.0.1",
     "polymer-linter": "^3.0.0",
-    "polymer-project-config": "^4.0.0",
+    "polymer-project-config": "^4.0.1",
     "polyserve": "^0.27.11",
     "request": "^2.72.0",
     "rimraf": "^2.6.1",
@@ -78,7 +78,7 @@
     "vinyl-fs": "^2.4.3",
     "web-component-tester": "^6.6.0",
     "yeoman-environment": "^1.5.2",
-    "yeoman-generator": "^1.0.1"
+    "yeoman-generator": "^2.0.1"
   },
   "devDependencies": {
     "@polymer/tools-common": "^2.0.0",

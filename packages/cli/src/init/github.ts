@@ -24,6 +24,11 @@ export interface GithubGeneratorOptions {
   repo: string;
   semverRange?: string;
   branch?: string;
+  installDependencies?: {
+    bower?: boolean;
+    npm?: boolean;
+    yarn?: boolean;
+  };
 }
 
 export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
@@ -33,12 +38,13 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
   const repo = githubOptions.repo;
   const semverRange = githubOptions.semverRange || '*';
   const branch = githubOptions.branch;
+  const installDependencies = githubOptions.installDependencies;
 
   return class GithubGenerator extends Generator {
     _github: Github;
 
     constructor(args: string|string[], options: {}|null|undefined) {
-      super(args, options);
+      super(args, options||{});
       this._github = new Github({owner, repo, githubToken});
     }
 
@@ -69,12 +75,15 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
     }
 
     async writing(): Promise<void> {
-      const done = this.async();
+      // TODO(usergenic): Cast here to any because the yeoman-generator typings
+      // for 2.x are not surfacing the async() method placed onto the Generator
+      // in the constructor.
+      const done = (this as any).async();
       this._writing().then(() => done(), (err) => done(err));
     }
 
     install() {
-      this.installDependencies();
+      this.installDependencies(installDependencies);
     }
   };
 }

@@ -1,4 +1,4 @@
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
+import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
 
 /**
  * `<%= name %>`
@@ -10,7 +10,7 @@ import {PolymerElement} from '@polymer/polymer/polymer-element.js';
  */
 class <%= elementClassName %> extends PolymerElement {
   static get template() {
-    return `
+    return html`
       <style>
         :host {
           display: block;

@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## 4.0.1 - 2018-05-11
+* Added missing `babel-types` to dependencies instead of relying on it transitively.
+
 ## 4.0.0 - 2018-05-08
 * Fixed inline module scripts which used bare name specifiers to correctly resolve them using the module resolutions of the Analyzer.
 

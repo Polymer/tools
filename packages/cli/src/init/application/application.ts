@@ -92,9 +92,9 @@ export function createApplicationGenerator(templateName: string):
       const elementName = this.props.elementName;
 
       this.fs.copyTpl(
-          `${this.templatePath()}/**/?(.)!(_)*`,
+          `${this.templatePath()}/**/?(.)*`,
           this.destinationPath(),
-          this.props);
+          this.props, undefined, {globOptions: {ignore: ['**/_*']}});
 
       this.fs.copyTpl(
           this.templatePath('src/_element/_element.html'),
@@ -145,9 +145,9 @@ export function createApplicationGenerator(templateName: string):
       const elementName = this.props.elementName;
 
       this.fs.copyTpl(
-          `${this.templatePath()}/**/?(.)!(_)*`,
+          `${this.templatePath()}/**/?(.)*`,
           this.destinationPath(),
-          this.props);
+          this.props, undefined, {globOptions: {ignore: ['**/_*']}});
 
       this.fs.copyTpl(
           this.templatePath('src/_element/_element.js'),

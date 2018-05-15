@@ -25,7 +25,7 @@ import * as supertest from 'supertest';
 import * as tmp from 'tmp';
 
 import {getApp, ServerOptions} from '../start_server';
-import {MainlineServer, startServer, startServers} from '../start_server';
+import {MainlineServer, startServer, startServers, assertNotString} from '../start_server';
 
 
 chai.use(chaiAsPromised);
@@ -257,7 +257,7 @@ suite('startServer', () => {
                root: __dirname,
                proxy: {
                  path: path,
-                 target: `http://localhost:${app.address().port}/`
+                 target: `http://localhost:${assertNotString(app.address()).port}/`
                }
              });
     }
@@ -608,10 +608,10 @@ suite('startServers', () => {
           await dispatchTester.get('/api/serverInfo').expect(200);
       assert.deepEqual(JSON.parse(apiResponse.text), {
         packageName: 'variants-test',
-        mainlineServer: {port: mainlineServer.server.address().port},
+        mainlineServer: {port: assertNotString(mainlineServer.server.address()).port},
         variants: [
-          {name: 'bar', port: barServer.server.address().port},
-          {name: 'foo', port: fooServer.server.address().port}
+          {name: 'bar', port: assertNotString(barServer.server.address()).port},
+          {name: 'foo', port: assertNotString(fooServer.server.address()).port}
         ]
       });
       const pageResponse = await dispatchTester.get('/').expect(200);
@@ -664,10 +664,10 @@ suite('startServers', () => {
               await dispatchTester.get('/api/serverInfo').expect(200);
           assert.deepEqual(JSON.parse(apiResponse.text), {
             packageName: 'variants-bowerrc-test',
-            mainlineServer: {port: mainlineServer.server.address().port},
+            mainlineServer: {port: assertNotString(mainlineServer.server.address()).port},
             variants: [
-              {name: 'bar', port: barServer.server.address().port},
-              {name: 'foo', port: fooServer.server.address().port}
+              {name: 'bar', port: assertNotString(barServer.server.address()).port},
+              {name: 'foo', port: assertNotString(fooServer.server.address()).port}
             ]
           });
           const pageResponse = await dispatchTester.get('/').expect(200);

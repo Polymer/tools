@@ -4,6 +4,18 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.2 [05-11-2018]
+* Fix bug in `polymer-3-element` init template where `polymer/dom-module.js`
+  could be loaded twice when serving from the polyserve `/components/`
+  directory.
+* Fix names of `uncompiled-bundled` and `uncompiled-unbundled` build presets.
+
+## v1.7.1 [05-09-2018]
+* Workaround an NPM shrinkwrap bug which was causing users to install the CLI's
+  250MB of devDependencies unnecessarily.
+* Fixed polymer 3.x application and element templates to use the `html` tagged
+  template literal function.
+
 ## v1.7.0 [05-08-2018]
 * Fix bug with `init` templates and missing `.gitignore` files due to npm
   renaming them to `.npmignore` on install of cli.
