@@ -172,20 +172,12 @@ export class CliReporter {
       const pretty = this.prettyBrowsers[browserId];
       const stats = this.browserStats[browserId];
 
-      let status = '';
-      const counts = [stats.passing, stats.pending, stats.failing];
-      if (counts[0] > 0 || counts[1] > 0 || counts[2] > 0) {
-        if (counts[0] > 0) {
-          counts[0] = Number(chalk.green(counts[0].toString()));
-        }
-        if (counts[1] > 0) {
-          counts[1] = Number(chalk.yellow(counts[1].toString()));
-        }
-        if (counts[2] > 0) {
-          counts[2] = Number(chalk.red(counts[2].toString()));
-        }
-        status = counts.join('/');
-      }
+      const colors = ['green', 'yellow', 'red'];
+      const statuses = [stats.passing, stats.pending, stats.failing];
+      const maybeColor = (value: number, idx: number) =>
+          (value > 0 ? chalk[colors[idx]] : _.identity)(value.toString());
+      let status = statuses.map(maybeColor).join('/');
+
       if (stats.status === 'error') {
         status = status + (status === '' ? '' : ' ') + chalk.red('error');
       }
