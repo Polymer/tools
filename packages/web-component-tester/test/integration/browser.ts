@@ -227,9 +227,9 @@ function runsIntegrationSuite(
           const context = new Context(allOptions);
 
           const addEventHandler = (name: string, handler: Function) => {
-            context.on(name, () => {
+            context.on(name, (...args) => {
               try {
-                handler.apply(null, arguments);
+                handler.apply(null, args);
               } catch (error) {
                 console.error(
                     `Error inside ${name} handler in integration tests:`);
