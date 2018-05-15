@@ -1,6 +1,6 @@
 {
   "name": "polymer-build",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A library of Gulp build tasks",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/build",
   "repository": "github:Polymer/tools",
