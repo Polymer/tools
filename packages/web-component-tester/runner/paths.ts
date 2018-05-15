@@ -36,7 +36,7 @@ export async function expand(
  */
 async function unglob(baseDir: string, patterns: string[]): Promise<string[]> {
   const strs: string[][] = [];
-  const pGlob: any = promisify(glob);
+  const pGlob: Function = promisify(glob);
   for (const pattern of patterns) {
     strs.push(await pGlob(String(pattern), {cwd: baseDir, root: baseDir}));
   }
