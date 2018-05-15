@@ -27,11 +27,14 @@ import {Plugin} from './plugin';
 const JSON_MATCHER = 'wct.conf.json';
 const CONFIG_MATCHER = 'wct.conf.*';
 
+// tslint:disable:no-any
 export type Handler =
-    ((...args: any[]) => Promise<any>)|((done: (err?: any) => void) => void)|
-    ((arg1: any, done: (err?: any) => void) => void)|
-    ((arg1: any, arg2: any, done: (err?: any) => void) => void)|
-    ((arg1: any, arg2: any, arg3: any, done: (err?: any) => void) => void);
+    ((...args: any[]) => Promise<any>)|((done: (err?: Error) => void) => void)|
+    ((arg1: any, done: (err?: Error) => void) => void)|
+    ((arg1: any, arg2: any, done: (err?: Error) => void) => void)|
+
+    ((arg1: any, arg2: any, arg3: any, done: (err?: Error) => void) => void);
+// tslint:enable:no-any
 
 /**
  * Exposes the current state of a WCT run, and emits events/hooks for anyone
@@ -119,23 +122,26 @@ export class Context extends events.EventEmitter {
       // mounting the polyserve app on a custom app to handle requests or mount
       // middleware that needs to sit in front of polyserve's own handlers.
       mapper: (app: Express.Application) => void, options: ServerOptions,
-      done?: (err?: any) => void): Promise<void>;
+      done?: (err?: Error) => void): Promise<void>;
   emitHook(
       name: 'prepare:webserver', app: express.Express,
-      done?: (err?: any) => void): Promise<void>;
-  emitHook(name: 'configure', done?: (err?: any) => void): Promise<void>;
-  emitHook(name: 'prepare', done?: (err?: any) => void): Promise<void>;
-  emitHook(name: 'cleanup', done?: (err?: any) => void): Promise<void>;
-  emitHook(name: string, done?: (err?: any) => void): Promise<void>;
+      done?: (err?: Error) => void): Promise<void>;
+  emitHook(name: 'configure', done?: (err?: Error) => void): Promise<void>;
+  emitHook(name: 'prepare', done?: (err?: Error) => void): Promise<void>;
+  emitHook(name: 'cleanup', done?: (err?: Error) => void): Promise<void>;
+  emitHook(name: string, done?: (err?: Error) => void): Promise<void>;
+
+  // tslint:disable-next-line:no-any
   emitHook(name: string, ...args: any[]): Promise<void>;
 
+  // tslint:disable-next-line:no-any
   async emitHook(name: string, ...args: any[]): Promise<void> {
     this.emit('log:debug', 'hook:', name);
 
     const hooks = (this._hookHandlers[name] || []);
-    type BoundHook = (cb: (err: any) => void) => (void|Promise<any>);
+    type BoundHook = (cb: (err: Error) => void) => (void|Promise<string>);
     let boundHooks: BoundHook[];
-    let done: (err?: any) => void = (_err: any) => {};
+    let done: (err?: Error) => void = (_err: Error) => {};
     let argsEnd = args.length - 1;
     if (args[argsEnd] instanceof Function) {
       done = args[argsEnd];
@@ -145,7 +151,7 @@ export class Context extends events.EventEmitter {
     boundHooks =
         hooks.map((hook) => hook.bind.apply(hook, [null].concat(hookArgs)));
     if (!boundHooks) {
-      boundHooks = hooks as any;
+      boundHooks = hooks as BoundHook[];
     }
 
     // A hook may return a promise or it may call a callback. We want to
@@ -205,7 +211,7 @@ export class Context extends events.EventEmitter {
   enabledPlugins(): string[] {
     // Plugins with falsy configuration or disabled: true are _not_ loaded.
     const pairs = _.reject(
-        (_ as any).pairs(this.options.plugins),
+        _.pairs(this.options.plugins),
         (p: [string, {disabled: boolean}]) => !p[1] || p[1].disabled);
     return _.map(pairs, (p) => p[0]);
   }

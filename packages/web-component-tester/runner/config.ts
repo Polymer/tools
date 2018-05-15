@@ -31,7 +31,10 @@ const HOME_DIR = path.resolve(
 const JSON_MATCHER = 'wct.conf.json';
 const CONFIG_MATCHER = 'wct.conf.*';
 
-export type Browser = string|{browserName: string, platform: string};
+export interface Browser extends String {
+  browserName?: string;
+  platform?: string;
+}
 
 export interface Config {
   suites?: string[];
@@ -49,7 +52,8 @@ export interface Config {
       {root?: string; verbose?: boolean; environmentScripts?: string[]};
   activeBrowsers?: BrowserDef[];
   browserOptions?: {[name: string]: Capabilities};
-  plugins?: Array<string|boolean>|{[key: string]: ({disabled: boolean} | boolean)};
+  plugins?: Array<string|boolean>|
+      {[key: string]: ({disabled: boolean} | boolean)};
   registerHooks?: (wct: Context) => void;
   enforceJsonConf?: boolean;
   webserver?: {
@@ -101,14 +105,18 @@ export interface NPMPackage {
   jsEntrypoint: string;
 }
 
+interface Args extends Config {
+  _?: string[];
+}
+
 /**
  * config helper: A basic function to synchronously read JSON,
  * log any errors, and return null if no file or invalid JSON
  * was found.
  */
-function readJsonSync(filename: string, dir?: string): any|null {
+function readJsonSync(filename: string, dir?: string): {}|null {
   const configPath = path.resolve(dir || '', filename);
-  let config: any;
+  let config: string;
   try {
     config = fs.readFileSync(configPath, 'utf-8');
   } catch (e) {
@@ -134,7 +142,7 @@ export function getPackageName(options: Config): string|undefined {
     return options.packageName;
   }
   const manifestName = (options.npm ? 'package.json' : 'bower.json');
-  const manifest = readJsonSync(manifestName, options.root);
+  const manifest = readJsonSync(manifestName, options.root) as {name: string};
   if (manifest !== null) {
     return manifest.name;
   }
@@ -477,7 +485,7 @@ export function preparseArgs(args: string[]): PreparsedArgs {
   args = _.difference(args, ['--help', '-h']);
 
   const parser = nomnom();
-  parser.options(ARG_CONFIG as any);
+  parser.options(ARG_CONFIG);
   parser.printer(() => undefined);  // No-op output & errors.
   const options = parser.parse(args);
 
@@ -495,11 +503,11 @@ export async function parseArgs(
     context: Context, args: string[]): Promise<void> {
   const parser = nomnom();
   parser.script('wct');
-  parser.options(ARG_CONFIG as any);
+  parser.options(ARG_CONFIG);
 
   const plugins = await context.plugins();
   plugins.forEach(_configurePluginOptions.bind(null, parser));
-  const options = _expandOptionPaths(normalize(parser.parse(args))) as any;
+  const options = _expandOptionPaths(normalize(parser.parse(args))) as Args;
   if (options._ && options._.length > 0) {
     options.suites = options._;
   }
@@ -510,7 +518,7 @@ export async function parseArgs(
 function _configurePluginOptions(
     parser: NomnomInternal.Parser, plugin: Plugin) {
   /** HACK(rictic): this looks wrong, cliConfig shouldn't have a length. */
-  if (!plugin.cliConfig || (plugin.cliConfig as any).length === 0) {
+  if (!plugin.cliConfig || (plugin.cliConfig as Config[]).length === 0) {
     return;
   }
 
@@ -529,7 +537,7 @@ function _configurePluginOptions(
   });
 }
 
-function _expandOptionPaths(options: {[key: string]: any}): any {
+function _expandOptionPaths(options: Config): {} {
   const result = {};
   _.each(options, (value, key) => {
     let target = result;
@@ -570,7 +578,8 @@ export function normalize(config: Config): Config {
   if (_.isArray(config.plugins)) {
     const pluginConfigs = {} as {[key: string]: {disabled: boolean}};
     // A named plugin is explicitly enabled (e.g. --plugin foo).
-    config.plugins.forEach(name => pluginConfigs[name as string] = {disabled: false});
+    config.plugins.forEach(
+        name => pluginConfigs[name as string] = {disabled: false});
     config.plugins = pluginConfigs;
   }
 
@@ -610,9 +619,9 @@ function expandDeprecated(context: Context) {
   // We collect configuration fragments to be merged into the options object.
   const fragments = [];
 
-  let browsers: Browser[] = (
-      _.isArray(options.browsers) ? options.browsers : [options.browsers]) as any;
-  browsers = _.compact(browsers as any) as any;
+  let browsers: Browser[] =
+      (_.isArray(options.browsers) ? options.browsers : [options.browsers]);
+  browsers = _.compact(browsers);
   if (browsers.length > 0) {
     context.emit(
         'log:warn',
@@ -625,10 +634,9 @@ function expandDeprecated(context: Context) {
     fragments.push(fragment);
 
     for (const browser of browsers) {
-      const name = (browser as any).browserName || browser;
-      const plugin = (browser as any).platform || name.indexOf('/') !== -1 ?
-          'sauce' :
-          'local';
+      const name = browser.browserName || browser;
+      const plugin =
+          browser.platform || name.indexOf('/') !== -1 ? 'sauce' : 'local';
       fragment.plugins[plugin].browsers =
           fragment.plugins[plugin].browsers || [];
       fragment.plugins[plugin].browsers.push(browser);

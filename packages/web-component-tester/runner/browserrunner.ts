@@ -18,6 +18,10 @@ import * as _ from 'lodash';
 import * as wd from 'wd';
 import {Config} from './config';
 
+export interface ClientEventData extends String {
+  state?: string;
+}
+
 export interface Stats {
   status: string;
   passing?: number;
@@ -52,7 +56,7 @@ export class BrowserRunner {
   url: string;
 
   private _resolve: () => void;
-  private _reject: (err: any) => void;
+  private _reject: (err: wd.BrowserError) => void;
 
   /**
    * @param emitter The emitter to send updates about test progress to.
@@ -102,11 +106,11 @@ export class BrowserRunner {
         });
       });
 
-      this.browser.on('command', (method: any, context: any) => {
+      this.browser.on('command', (method: string, context: string) => {
         emitter.emit('log:debug', this.def, chalk.cyan(method), context);
       });
 
-      this.browser.on('http', (method: any, path: any, data: any) => {
+      this.browser.on('http', (method: string, path: string, data: string) => {
         if (data) {
           emitter.emit(
               'log:debug', this.def, chalk.magenta(method), chalk.cyan(path),
@@ -117,10 +121,12 @@ export class BrowserRunner {
         }
       });
 
-      this.browser.on('connection', (code: any, message: any, error: any) => {
-        emitter.emit(
-            'log:warn', this.def, 'Error code ' + code + ':', message, error);
-      });
+      this.browser.on(
+          'connection', (code: string, message: string, error: Error|null) => {
+            emitter.emit(
+                'log:warn', this.def, 'Error code ' + code + ':', message,
+                error);
+          });
 
       this.emitter.emit('browser-init', this.def, this.stats);
 
@@ -142,7 +148,7 @@ export class BrowserRunner {
     });
   }
 
-  _init(error: any, sessionId: string) {
+  _init(error: wd.BrowserError, sessionId: string) {
     if (!this.browser) {
       return;  // When interrupted.
     }
@@ -186,7 +192,7 @@ export class BrowserRunner {
     });
   }
 
-  onEvent(event: string, data: any) {
+  onEvent(event: string, data: ClientEventData) {
     this.extendTimeout();
     if (event === 'browser-start') {
       // Always assign, to handle re-runs (no browser-init).
@@ -207,7 +213,7 @@ export class BrowserRunner {
     }
   }
 
-  done(error: any) {
+  done(error: wd.BrowserError) {
     // No quitting for you!
     if (this.options.persistent) {
       return;

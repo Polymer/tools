@@ -15,7 +15,7 @@ import * as http from 'http';
 import * as _ from 'lodash';
 import * as socketIO from 'socket.io';
 
-import {BrowserRunner} from './browserrunner';
+import {BrowserRunner, ClientEventData} from './browserrunner';
 import * as config from './config';
 import {Context} from './context';
 import {Plugin} from './plugin';
@@ -89,7 +89,7 @@ export async function runTests(context: Context): Promise<void> {
     const socketIOServer = socketIO(httpServer);
     socketIOServer.on('connection', (socket) => {
       context.emit('log:debug', 'Test client opened sideband socket');
-      socket.on('client-event', (data: ClientMessage<any>) => {
+      socket.on('client-event', (data: ClientMessage<ClientEventData>) => {
         const runner = runners[data.browserId];
         if (!runner) {
           throw new Error(
@@ -132,7 +132,7 @@ function runBrowsers(context: Context) {
 
   context.emit('run-start', options);
 
-  const errors: any[] = [];
+  const errors: Error[] = [];
 
   const promises: Array<Promise<void>> = [];
 

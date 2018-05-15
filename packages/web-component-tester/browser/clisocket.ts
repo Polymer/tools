@@ -53,7 +53,7 @@ export default class CLISocket {
       this.emitEvent('test-end', {
         state: getState(test),
         test: getTitles(test),
-        duration: (test as any).duration,
+        duration: test.duration,
         error: (test as any).err,
       });
     });

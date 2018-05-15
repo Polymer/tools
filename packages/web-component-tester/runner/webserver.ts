@@ -26,6 +26,10 @@ import * as serverDestroy from 'server-destroy';
 import {getPackageName, NPMPackage, resolveWctNpmEntrypointNames} from './config';
 import {Context} from './context';
 
+interface SocketIOServer extends SocketIO.Server {
+  httpServer?: {};
+}
+
 // Template for generated indexes.
 const INDEX_TEMPLATE = _.template(fs.readFileSync(
     path.resolve(__dirname, '../data/index.html'), {encoding: 'utf-8'}));
@@ -225,6 +229,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
 
     const onDestroyHandlers: Array<() => Promise<void>> = [];
     const registerServerTeardown = (serverInfo: PolyserveServer) => {
+      // tslint:disable-next-line:no-any
       const destroyableServer = serverInfo.server as any;
       serverDestroy(destroyableServer);
       onDestroyHandlers.push(() => {
@@ -285,7 +290,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       // close the socket IO server directly if it is spun up
       for (const io of (wct._socketIOServers || [])) {
         // we will close the underlying server ourselves
-        (io as any).httpServer = null;
+        (io as SocketIOServer).httpServer = null;
         io.close();
       }
       await Promise.all(onDestroyHandlers.map((f) => f()));
