@@ -22,6 +22,7 @@ import * as vfs from 'vinyl-fs';
 import {LocalFsPath} from '../path-transformers';
 import {PolymerProject} from '../polymer-project';
 import * as serviceWorker from '../service-worker';
+import { WorkboxConfig } from 'workbox-build';
 
 const temp = require('temp').track();
 const mergeStream = require('merge-stream');
@@ -56,7 +57,7 @@ suite('service-worker', () => {
     });
   });
 
-  teardown((done) => {
+  teardown(done => {
     temp.cleanup(done);
   });
 
@@ -83,8 +84,7 @@ suite('service-worker', () => {
       });
       assert.equal(config.navigateFallback, 'index.html');
       assert.deepEqual(
-          config.navigateFallbackWhitelist, [serviceWorker.hasNoFileExtension]);
-      assert.equal(config.directoryIndex, '');
+        config.navigateFallbackWhitelist, [serviceWorker.hasNoFileExtension]);
     });
   });
 
@@ -134,30 +134,17 @@ suite('service-worker', () => {
     });
 
     test('should not modify the options object provided when called', () => {
-      const swPrecacheConfig = {staticFileGlobs: <string[]>[]};
+      const workboxConfig = { globPatterns: <string[]>[] };
       return serviceWorker
-          .generateServiceWorker({
-            project: defaultProject,
-            buildRoot: testBuildRoot,
-            swPrecacheConfig: swPrecacheConfig,
-          })
-          .then(() => {
-            assert.equal(swPrecacheConfig.staticFileGlobs.length, 0);
-          });
-    });
-
-    test(
-        'should resolve with a Buffer representing the generated service worker code',
-        () => {
-          return serviceWorker
-              .generateServiceWorker({
-                project: defaultProject,
-                buildRoot: testBuildRoot,
-              })
-              .then((swCode: Buffer) => {
-                assert.ok(swCode instanceof Buffer);
-              });
+        .generateServiceWorkerConfig({
+          project: defaultProject,
+          buildRoot: testBuildRoot,
+          workboxConfig: workboxConfig,
+        })
+        .then((config: WorkboxConfig) => {
+          assert.equal(config.globPatterns.length, 0);
         });
+    });
 
     test(
         'should add unbundled precached assets when options.unbundled is not provided',
@@ -174,56 +161,19 @@ suite('service-worker', () => {
                 assert.include(fileContents, '"bower_components/dep.html"');
                 assert.notInclude(fileContents, '"source-dir/my-app.html"');
               });
-        });
-
-    test(
-        'should add bundled precached assets when options.bundled is provided',
-        () => {
-          return serviceWorker
-              .generateServiceWorker({
-                project: defaultProject,
-                buildRoot: testBuildRoot,
-                bundled: true,
-              })
-              .then((swFile: Buffer) => {
-                const fileContents = swFile.toString();
-                assert.include(fileContents, '"index.html"');
-                assert.include(fileContents, '"shell.html"');
-                assert.notInclude(fileContents, '"bower_components/dep.html"');
-                assert.notInclude(fileContents, '"source-dir/my-app.html"');
-              });
-        });
-
-    test('should add provided staticFileGlobs paths to the final list', () => {
-      return serviceWorker
-          .generateServiceWorker({
-            project: defaultProject,
-            buildRoot: testBuildRoot,
-            bundled: true,
-            swPrecacheConfig: {
-              staticFileGlobs: ['/bower_components/dep.html'],
-            },
-          })
-          .then((swFile: Buffer) => {
-            const fileContents = swFile.toString();
-            assert.include(fileContents, '"index.html"');
-            assert.include(fileContents, '"shell.html"');
-            assert.include(fileContents, '"bower_components/dep.html"');
-            assert.notInclude(fileContents, '"source-dir/my-app.html"');
-          });
     });
 
     test('basePath should prefix resources', () => {
       return serviceWorker
-          .generateServiceWorker({
-            project: defaultProject,
-            buildRoot: testBuildRoot,
-            basePath: '/my/base/path' as LocalFsPath,
-          })
-          .then((swFile: Buffer) => {
-            const fileContents = swFile.toString();
-            assert.include(fileContents, '"/my/base/path/index.html"');
-          });
+        .generateServiceWorker({
+          project: defaultProject,
+          buildRoot: testBuildRoot,
+          basePath: '/my/base/path' as LocalFsPath
+        })
+        .then((swFile: Buffer) => {
+          const fileContents = swFile.toString();
+          assert.include(fileContents, '"/my/base/path/index.html"');
+        });
     });
 
     test('basePath prefixes should not have double delimiters', () => {
@@ -253,7 +203,7 @@ suite('service-worker', () => {
                 path.join(testBuildRoot, 'service-worker.js'), 'utf-8');
             assert.include(
                 content,
-                '// This generated service worker JavaScript will precache your site\'s resources.');
+                'Welcome to your Workbox-powered service worker!');
           });
     });
   });
