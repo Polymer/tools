@@ -92,6 +92,7 @@ gulp.task('depcheck', function() {
              'stream',
              'html-minifier',
              '@polymer/esm-amd-loader',
+             'babel-plugin-minify-guarded-expressions',
            ]
          })
       .then((result) => {
