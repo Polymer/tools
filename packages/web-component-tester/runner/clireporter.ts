@@ -175,7 +175,7 @@ export class CliReporter {
       const colors = ['green', 'yellow', 'red'];
       const statuses = [stats.passing, stats.pending, stats.failing];
       const maybeColor = (value: number, idx: number) =>
-        (value > 0 ? chalk[colors[idx]] : _.identity)(value.toString());
+          (value > 0 ? chalk[colors[idx]] : _.identity)(value.toString());
       let status = statuses.map(maybeColor).join('/');
 
       if (stats.status === 'error') {
