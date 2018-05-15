@@ -20,7 +20,7 @@ import * as stacky from 'stacky';
 import * as tty from 'tty';
 import * as util from 'util';
 
-import {BrowserDef, Stats} from './browserrunner';
+import { BrowserDef, Stats } from './browserrunner';
 import * as config from './config';
 
 const STACKY_CONFIG = {
@@ -34,8 +34,8 @@ const STACKY_CONFIG = {
   ]
 };
 
-export type State = 'passing'|'pending'|'failing'|'unknown'|'error';
-export type CompletedState = 'passing'|'failing'|'pending'|'unknown';
+export type State = 'passing' | 'pending' | 'failing' | 'unknown' | 'error';
+export type CompletedState = 'passing' | 'failing' | 'pending' | 'unknown';
 type Formatter = (value: string) => string;
 
 const STATE_ICONS = {
@@ -45,7 +45,7 @@ const STATE_ICONS = {
   unknown: '?',
 };
 
-const STATE_COLORS: {[state: string]: Formatter} = {
+const STATE_COLORS: { [state: string]: Formatter } = {
   passing: chalk.green,
   pending: chalk.yellow,
   failing: chalk.red,
@@ -73,8 +73,8 @@ export interface TestEndData {
 }
 
 export class CliReporter {
-  prettyBrowsers: {[id: number]: string} = {};
-  browserStats: {[id: number]: Stats} = {};
+  prettyBrowsers: { [id: number]: string } = {};
+  browserStats: { [id: number]: Stats } = {};
   emitter: events.EventEmitter;
   stream: NodeJS.WritableStream;
   options: config.Config;
@@ -85,8 +85,8 @@ export class CliReporter {
   private linesWritten: number;
 
   constructor(
-      emitter: events.EventEmitter, stream: NodeJS.WritableStream,
-      options: config.Config) {
+    emitter: events.EventEmitter, stream: NodeJS.WritableStream,
+    options: config.Config) {
     this.emitter = emitter;
     this.stream = stream;
     this.options = options;
@@ -114,35 +114,35 @@ export class CliReporter {
     });
 
     emitter.on(
-        'browser-start',
-        (browser: BrowserDef, data: {url: string}, stats: Stats) => {
-          this.browserStats[browser.id] = stats;
-          this.log(browser, 'Beginning tests via', chalk.magenta(data.url));
-          this.updateStatus();
-        });
+      'browser-start',
+      (browser: BrowserDef, data: { url: string }, stats: Stats) => {
+        this.browserStats[browser.id] = stats;
+        this.log(browser, 'Beginning tests via', chalk.magenta(data.url));
+        this.updateStatus();
+      });
 
     emitter.on(
-        'test-end', (browser: BrowserDef, data: TestEndData, stats: Stats) => {
-          this.browserStats[browser.id] = stats;
-          if (data.state === 'failing') {
-            this.writeTestError(browser, data);
-          } else if (this.options.expanded || this.options.verbose) {
-            this.log(
-                browser, this.stateIcon(data.state), this.prettyTest(data));
-          }
+      'test-end', (browser: BrowserDef, data: TestEndData, stats: Stats) => {
+        this.browserStats[browser.id] = stats;
+        if (data.state === 'failing') {
+          this.writeTestError(browser, data);
+        } else if (this.options.expanded || this.options.verbose) {
+          this.log(
+            browser, this.stateIcon(data.state), this.prettyTest(data));
+        }
 
-          this.updateStatus();
-        });
+        this.updateStatus();
+      });
 
     emitter.on(
-        'browser-end', (browser: BrowserDef, error: Error, stats: Stats) => {
-          this.browserStats[browser.id] = stats;
-          if (error) {
-            this.log(chalk.red, browser, 'Tests failed:', error);
-          } else {
-            this.log(chalk.green, browser, 'Tests passed');
-          }
-        });
+      'browser-end', (browser: BrowserDef, error: Error, stats: Stats) => {
+        this.browserStats[browser.id] = stats;
+        if (error) {
+          this.log(chalk.red, browser, 'Tests failed:', error);
+        } else {
+          this.log(chalk.green, browser, 'Tests passed');
+        }
+      });
 
     emitter.on('run-end', (error: Error) => {
       if (error) {
@@ -175,7 +175,7 @@ export class CliReporter {
       const colors = ['green', 'yellow', 'red'];
       const statuses = [stats.passing, stats.pending, stats.failing];
       const maybeColor = (value: number, idx: number) =>
-          (value > 0 ? chalk[colors[idx]] : _.identity)(value.toString());
+        (value > 0 ? chalk[colors[idx]] : _.identity)(value.toString());
       let status = statuses.map(maybeColor).join('/');
 
       if (stats.status === 'error') {
@@ -246,7 +246,7 @@ export class CliReporter {
 
   // General Output Formatting
 
-  log(...values: Array<Function|string|{}>): void;
+  log(...values: Array<Function | string | {}>): void;
   log() {
     let values = Array.from(arguments);
     let format: (line: string) => string;
@@ -259,9 +259,9 @@ export class CliReporter {
     }
 
     let line =
-        _.toArray(values)
-            .map((value) => _.isString(value) ? value : util.inspect(value))
-            .join(' ');
+      _.toArray(values)
+        .map((value) => _.isString(value) ? value : util.inspect(value))
+        .join(' ');
     line = line.replace(/[\s\n\r]+$/, '');
     if (format) {
       line = format(line);
