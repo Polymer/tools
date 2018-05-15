@@ -14,6 +14,7 @@
 
 import * as chalk from 'chalk';
 import {Gulp} from 'gulp';
+import {Context} from 'vm';
 
 import {Config} from './config';
 import {test} from './test';
@@ -32,16 +33,19 @@ export function init(gulp: Gulp, dependencies?: string[]): void {
   gulp.task('wct', ['wct:local']);
 
   gulp.task('wct:local', dependencies, () => {
-    return test({plugins: {local: {}, sauce: false}} as any).catch(cleanError);
+    return test({plugins: {local: {}, sauce: false}} as Context)
+        .catch(cleanError);
   });
 
   gulp.task('wct:sauce', dependencies, () => {
-    return test({plugins: {local: false, sauce: {}}} as any).catch(cleanError);
+    return test({plugins: {local: false, sauce: {}}} as Context)
+        .catch(cleanError);
   });
 }
 
 // Utility
 
+// tslint:disable-next-line:no-any
 function cleanError(error: any) {
   // Pretty error for gulp.
   error = new Error(chalk.red(error.message || error));

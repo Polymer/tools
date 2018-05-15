@@ -35,12 +35,13 @@ function capWords(s: string) {
 
 function formatRequest(req: express.Request) {
   const headers = {};
-  Object.keys(req.headers).forEach(key => headers[capWords(key)] = req.headers[key]);
+  Object.keys(req.headers)
+      .forEach(key => headers[capWords(key)] = req.headers[key]);
   const formatted = {
     headers,
     url: req.originalUrl,
     data: req.body,
-    files: (req as any).files,
+    files: (req as express.Request).files,
     form: {},
     json: {},
   };
@@ -90,6 +91,7 @@ async function main() {
   const port = await findPort([7777, 7000, 8000, 8080, 8888]);
 
   server.listen(port);
+  // tslint:disable-next-line:no-any
   (server as any).port = port;
   serverDestroy(server);
   cleankill.onInterrupt(() => {
