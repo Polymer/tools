@@ -1,16 +1,21 @@
 
 
 declare module 'wd' {
-  interface NodeCB<T> {
-    (err: any, value: T): void;
+  interface NodeCB<E, T> {
+    (err: E, value: T): void;
+  }
+  interface BrowserError extends String {
+    data?: string;
   }
   export interface Browser {
     configureHttp(options: {retries: number}): void;
-    attach(sessionId: string, callback: NodeCB<Capabilities>): void;
-    init(capabilities: Capabilities, callback: NodeCB<string>): void;
+    attach(sessionId: string, callback: NodeCB<BrowserError, Capabilities>):
+        void;
+    init(capabilities: Capabilities, callback: NodeCB<BrowserError, string>):
+        void;
 
-    get(url: string, callback: NodeCB<void>): void;
-    quit(callback: NodeCB<void>): void;
+    get(url: string, callback: NodeCB<BrowserError, void>): void;
+    quit(callback: NodeCB<BrowserError, void>): void;
 
     on(eventName: string, handler: Function): void;
   }
