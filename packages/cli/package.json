@@ -17,8 +17,7 @@
   "scripts": {
     "lint": "tslint -p ./ && node scripts/depcheck.js",
     "clean": "rm -rf lib/",
-    "copy": "node scripts/copy.js",
-    "build": "npm run clean && tsc && npm run copy",
+    "build": "npm run clean && tsc",
     "test": "npm run build && npm run test:unit && npm run lint",
     "prepublishOnly": "ls npm-shrinkwrap.json",
     "test:smoke": "gulp test",
@@ -27,6 +26,8 @@
     "test:unit": "mocha \"lib/test/unit/**/*_test.js\"",
     "format": "find src gulpfile.js \\( -iname \"*.ts\" -o -iname \"*.js\" \\) -not -path \"*fixtures*\" | xargs clang-format --style=file -i",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
+    "test:watch:unit": "tsc-then -- mocha \"lib/test/unit/**/*_test.js\"",
+    "test:watch:integration": "tsc-then -- mocha \"lib/test/integration/**/*_test.js\"",
     "update-goldens": "tsc && UPDATE_POLYMER_CLI_GOLDENS=true mocha lib/test/integration/build_test.js || echo ''"
   },
   "dependencies": {
