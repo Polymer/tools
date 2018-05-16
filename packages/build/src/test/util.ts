@@ -100,6 +100,7 @@ export async function interceptOutput(captured: () => Promise<void>):
   const originalError = console.error;
   const originalWarn = console.warn;
   const buffer: string[] = [];
+  // tslint:disable-next-line:no-any This is genuinely the API.
   const capture = (...args: any[]) => {
     buffer.push(args.join(' '));
   };
