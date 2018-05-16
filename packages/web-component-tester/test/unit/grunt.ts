@@ -72,27 +72,25 @@ describe('grunt', function() {
   }
 
   describe('wct-test', function() {
-    let sandbox: sinon.SinonSandbox;
     beforeEach(function() {
-      sandbox = sinon.sandbox.create();
-      sandbox.stub(steps, 'prepare')
+      sinon.stub(steps, 'prepare')
           .callsFake(async(_context: Context): Promise<void> => undefined);
 
-      sandbox.stub(wctLocalBrowsers, 'detect')
+      sinon.stub(wctLocalBrowsers, 'detect')
           .callsFake(async () => LOCAL_BROWSERS);
-      sandbox.stub(wctLocalBrowsers, 'supported')
+      sinon.stub(wctLocalBrowsers, 'supported')
           .callsFake(() => _.keys(LOCAL_BROWSERS));
 
       process.chdir(path.resolve(__dirname, '../fixtures/cli/standard'));
     });
 
     afterEach(function() {
-      sandbox.restore();
+      sinon.restore();
     });
 
     describe('with a passing suite', function() {
       beforeEach(function() {
-        sandbox.stub(steps, 'runTests')
+        sinon.stub(steps, 'runTests')
             .callsFake(async(): Promise<void> => undefined);
       });
 
@@ -104,7 +102,7 @@ describe('grunt', function() {
 
     describe('with a failing suite', function() {
       beforeEach(function() {
-        sandbox.stub(steps, 'runTests').callsFake(async () => {
+        sinon.stub(steps, 'runTests').callsFake(async () => {
           throw 'failures';
         });
       });

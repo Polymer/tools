@@ -35,22 +35,20 @@ const LOCAL_BROWSERS = {
 };
 
 describe('cli', () => {
-  let sandbox: sinon.SinonSandbox;
   beforeEach(() => {
-    sandbox = sinon.sandbox.create();
-    sandbox.stub(steps, 'prepare')
+    sinon.stub(steps, 'prepare')
         .callsFake(async(): Promise<void> => undefined);
-    sandbox.stub(steps, 'runTests')
+    sinon.stub(steps, 'runTests')
         .callsFake(async(): Promise<void> => undefined);
 
-    sandbox.stub(wctLocalBrowsers, 'detect')
+    sinon.stub(wctLocalBrowsers, 'detect')
         .callsFake(async () => _.omit(LOCAL_BROWSERS, 'aurora'));
-    sandbox.stub(wctLocalBrowsers, 'supported')
+    sinon.stub(wctLocalBrowsers, 'supported')
         .callsFake(() => _.keys(LOCAL_BROWSERS));
   });
 
   afterEach(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   describe('.run', () => {

@@ -18,21 +18,18 @@ suite('serve', () => {
 
   suite('--npm and --component-dir', () => {
 
-    let sandbox: sinon.SinonSandbox;
     let startServersStub: sinon.SinonStub;
     let getServerUrlsStub: sinon.SinonStub;
 
     setup(() => {
-      sandbox = sinon.sandbox.create();
-
       startServersStub =
-          sandbox.stub(polyserve, 'startServers').returns(Promise.resolve());
+          sinon.stub(polyserve, 'startServers').returns(Promise.resolve());
       startServersStub.returns({
         kind: 'mainline',
       });
 
       getServerUrlsStub =
-          sandbox.stub(polyserve, 'getServerUrls').returns(Promise.resolve());
+          sinon.stub(polyserve, 'getServerUrls').returns(Promise.resolve());
       getServerUrlsStub.returns({
         serverUrl: 'http://applications.example.com/',
         componentUrl: 'http://components.example.com/',
@@ -40,7 +37,7 @@ suite('serve', () => {
     });
 
     teardown(() => {
-      sandbox.restore();
+      sinon.restore();
     });
 
     test(

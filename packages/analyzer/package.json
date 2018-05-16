@@ -40,7 +40,7 @@
     "merge-stream": "^1.0.0",
     "performance-now": "^2.1.0",
     "run-sequence": "^1.2.0",
-    "sinon": "^1.17.4",
+    "sinon": "^5.0.7",
     "source-map-support": "^0.4.2",
     "temp": "^0.8.3",
     "tsc-then": "^1.0.1"
