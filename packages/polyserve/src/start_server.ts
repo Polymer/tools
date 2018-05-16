@@ -306,10 +306,13 @@ export async function startControlServer(
     res.send(JSON.stringify({
       packageName: options.packageName,
       mainlineServer: {
-        port: mainlineInfo.server.address().port,
+        port: assertNotString(mainlineInfo.server.address()).port,
       },
       variants: variantInfos.map((info) => {
-        return {name: info.variantName, port: info.server.address().port};
+        return {
+          name: info.variantName,
+          port: assertNotString(info.server.address()).port,
+        };
       })
     }));
     res.end();
@@ -454,7 +457,7 @@ function isHttps(protocol: string): boolean {
  */
 export function getServerUrls(options: ServerOptions, server: http.Server) {
   options = applyDefaultServerOptions(options);
-  const address = server.address();
+  const address = assertNotString(server.address());
   const serverUrl: url.Url = {
     protocol: isHttps(options.protocol) ? 'https' : 'http',
     hostname: address.address,
@@ -554,4 +557,14 @@ async function tryStartWithPort(
       resolve(null);
     });
   });
+}
+
+// TODO(usergenic): Something changed in the typings of net.Server.address() in that
+// it can now return AddressInfo OR string.  I don't know the circumstances where the
+// the address() returns a string or how to handle it, so I made this assert function
+// when calling on the address to fix compilation errors and have a runtime error as
+// soon as the address is fetched.
+export function assertNotString<T>(value: string|T): T {
+  assert(typeof value !== 'string');
+  return value as T;
 }

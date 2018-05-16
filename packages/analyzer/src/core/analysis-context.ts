@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {isCancel} from 'cancel-token';
 import * as path from 'path';
 
 import {ForkOptions, LazyEdgeMap, NoKnownParserError, Options, ScannerTable} from '../core/analyzer';
@@ -30,6 +31,7 @@ import {JavaScriptImportScanner} from '../javascript/javascript-import-scanner';
 import {JavaScriptParser} from '../javascript/javascript-parser';
 import {NamespaceScanner} from '../javascript/namespace-scanner';
 import {JsonParser} from '../json/json-parser';
+import {Result} from '../model/analysis';
 import {Document, InlineDocInfo, LocationOffset, ScannedDocument, ScannedElement, ScannedImport, ScannedInlineDocument, Severity, Warning, WarningCarryingException} from '../model/model';
 import {PackageRelativeUrl, ResolvedUrl} from '../model/url';
 import {ParsedDocument, UnparsableParsedDocument} from '../parser/document';
@@ -159,8 +161,8 @@ export class AnalysisContext {
       Promise<AnalysisContext> {
     const resolvedUrls = this.resolveUserInputUrls(urls);
 
-    // 1. Await current analysis if there is one, so we can check to see if has
-    // all of the requested URLs.
+    // 1. Await current analysis if there is one, so we can check to see if it
+    // has all of the requested URLs.
     await this._analysisComplete;
 
     // 2. Check to see if we have all of the requested documents
@@ -185,29 +187,33 @@ export class AnalysisContext {
       cancelToken: MinimalCancelToken): Promise<AnalysisContext> {
     const analysisComplete = (async () => {
       // 1. Load and scan all root documents
-      const scannedDocumentsOrWarnings =
+      const maybeScannedDocuments =
           await Promise.all(resolvedUrls.map(async (url) => {
             try {
               const scannedResult = await this.scan(url, cancelToken);
-              this._cache.failedDocuments.delete(url);
-              return scannedResult;
-            } catch (e) {
-              if (e instanceof WarningCarryingException) {
-                this._cache.failedDocuments.set(url, e.warning);
+              if (scannedResult.successful === true) {
+                this._cache.failedDocuments.delete(url);
+                return scannedResult.value;
+              } else {
+                this._cache.failedDocuments.set(url, scannedResult.error);
+                return undefined;
               }
-              // We don't have the info to produce a good warning here,
-              // so we'll have go just fail at getDocument() :(
+            } catch (e) {
+              if (isCancel(e)) {
+                return;
+              }
+              // This is a truly unexpected error. We should fail.
+              throw e;
             }
           }));
-      const scannedDocuments = scannedDocumentsOrWarnings.filter(
-                                   (d) => d != null) as ScannedDocument[];
+      const scannedDocuments = maybeScannedDocuments.filter(
+                                   (d) => d !== undefined) as ScannedDocument[];
       // 2. Run per-document resolution
       const documents = scannedDocuments.map((d) => this.getDocument(d.url));
       // TODO(justinfagnani): instead of the above steps, do:
       // 1. Load and run prescanners
       // 2. Run global analyzers (_languageAnalyzers now, but it doesn't need to
-      // be
-      //    separated by file type)
+      //    be separated by file type)
       // 3. Run per-document scanners and resolvers
       return documents;
     })();
@@ -310,12 +316,20 @@ export class AnalysisContext {
    * imports, exports and other syntactic structures.
    */
   private async _scanLocal(
-      resolvedUrl: ResolvedUrl,
-      cancelToken: MinimalCancelToken): Promise<ScannedDocument> {
+      resolvedUrl: ResolvedUrl, cancelToken: MinimalCancelToken):
+      Promise<Result<ScannedDocument, Warning>> {
     return this._cache.scannedDocumentPromises.getOrCompute(
         resolvedUrl, async () => {
+          const parsedDocResult = await this._parse(resolvedUrl, cancelToken);
+          if (parsedDocResult.successful === false) {
+            this._cache.dependencyGraph.rejectDocument(
+                resolvedUrl,
+                new WarningCarryingException(parsedDocResult.error));
+            return parsedDocResult;
+          }
+          const parsedDoc = parsedDocResult.value;
+
           try {
-            const parsedDoc = await this._parse(resolvedUrl, cancelToken);
             const scannedDocument = await this._scanDocument(parsedDoc);
 
             const imports =
@@ -329,10 +343,23 @@ export class AnalysisContext {
                     this.resolver.resolve(parsedDoc.baseUrl, i.url, i)));
             this._cache.dependencyGraph.addDocument(resolvedUrl, importUrls);
 
-            return scannedDocument;
+            return {successful: true, value: scannedDocument};
           } catch (e) {
-            this._cache.dependencyGraph.rejectDocument(resolvedUrl, e);
-            throw e;
+            const message = (e && e.message) || `Unknown error during scan.`;
+            const warning = new Warning({
+              code: 'could-not-scan',
+              message,
+              parsedDocument: parsedDoc,
+              severity: Severity.ERROR,
+              sourceRange: {
+                file: resolvedUrl,
+                start: {column: 0, line: 0},
+                end: {column: 0, line: 0}
+              }
+            });
+            this._cache.dependencyGraph.rejectDocument(
+                resolvedUrl, new WarningCarryingException(warning));
+            return {successful: false, error: warning};
           }
         }, cancelToken);
   }
@@ -341,11 +368,15 @@ export class AnalysisContext {
    * Scan a toplevel document and all of its transitive dependencies.
    */
   async scan(resolvedUrl: ResolvedUrl, cancelToken: MinimalCancelToken):
-      Promise<ScannedDocument> {
+      Promise<Result<ScannedDocument, Warning>> {
     return this._cache.dependenciesScannedPromises.getOrCompute(
         resolvedUrl, async () => {
-          const scannedDocument =
+          const scannedDocumentResult =
               await this._scanLocal(resolvedUrl, cancelToken);
+          if (scannedDocumentResult.successful === false) {
+            return scannedDocumentResult;
+          }
+          const scannedDocument = scannedDocumentResult.value;
           const imports =
               scannedDocument.getNestedFeatures().filter(
                   (e) => e instanceof ScannedImport) as ScannedImport[];
@@ -365,16 +396,22 @@ export class AnalysisContext {
             // Request a scan of `importUrl` but do not wait for the results to
             // avoid deadlock in the case of cycles. Later we use the
             // DependencyGraph to wait for all transitive dependencies to load.
-            this.scan(importUrl, cancelToken).catch((error) => {
-              if (error == null || error.message == null) {
-                scannedImport.error = new Error(`Internal error.`);
-              } else {
-                scannedImport.error = error;
-              }
-            });
+            this.scan(importUrl, cancelToken)
+                .then((result) => {
+                  if (result.successful === true) {
+                    return;
+                  }
+                  scannedImport.error = result.error;
+                })
+                .catch((e) => {
+                  if (isCancel(e)) {
+                    return;
+                  }
+                  throw e;
+                });
           }
           await this._cache.dependencyGraph.whenReady(resolvedUrl);
-          return scannedDocument;
+          return scannedDocumentResult;
         }, cancelToken);
   }
 
@@ -484,24 +521,73 @@ export class AnalysisContext {
    * are used instead of hitting the UrlLoader (e.g. when you have in-memory
    * contents that should override disk).
    */
-  async load(resolvedUrl: ResolvedUrl): Promise<string> {
+  async load(resolvedUrl: ResolvedUrl): Promise<Result<string, string>> {
     if (!this.canLoad(resolvedUrl)) {
-      throw new Error(`Can't load URL: ${resolvedUrl}`);
+      return {
+        successful: false,
+        error: `Configured URL Loader can not load URL ${resolvedUrl}`
+      };
     }
-    return await this.loader.load(resolvedUrl);
+    try {
+      const value = await this.loader.load(resolvedUrl);
+      return {successful: true, value};
+    } catch (e) {
+      const message = (e && e.message) || `Unknown failure while loading.`;
+      return {successful: false, error: message};
+    }
   }
 
   /**
    * Caching + loading wrapper around _parseContents.
    */
   private async _parse(
-      resolvedUrl: ResolvedUrl,
-      cancelToken: MinimalCancelToken): Promise<ParsedDocument> {
+      resolvedUrl: ResolvedUrl, cancelToken: MinimalCancelToken):
+      Promise<Result<ParsedDocument, Warning>> {
     return this._cache.parsedDocumentPromises.getOrCompute(
         resolvedUrl, async () => {
-          const content = await this.load(resolvedUrl);
+          const result = await this.load(resolvedUrl);
+          if (!result.successful) {
+            return {
+              successful: false,
+              error: new Warning({
+                code: 'could-not-load',
+                parsedDocument: new UnparsableParsedDocument(resolvedUrl, ''),
+                severity: Severity.ERROR,
+                sourceRange: {
+                  file: resolvedUrl,
+                  start: {column: 0, line: 0},
+                  end: {column: 0, line: 0}
+                },
+                message: result.error
+              })
+            };
+          }
           const extension = path.extname(resolvedUrl).substring(1);
-          return this._parseContents(extension, content, resolvedUrl);
+          try {
+            const parsedDoc =
+                this._parseContents(extension, result.value, resolvedUrl);
+            return {successful: true, value: parsedDoc};
+          } catch (e) {
+            if (e instanceof WarningCarryingException) {
+              return {successful: false, error: e.warning};
+            }
+            const message = (e && e.message) || `Unknown error while parsing.`;
+            return {
+              successful: false,
+              error: new Warning({
+                code: 'could-not-parse',
+                parsedDocument:
+                    new UnparsableParsedDocument(resolvedUrl, result.value),
+                severity: Severity.ERROR,
+                sourceRange: {
+                  file: resolvedUrl,
+                  start: {column: 0, line: 0},
+                  end: {column: 0, line: 0}
+                },
+                message
+              })
+            };
+          }
         }, cancelToken);
   }
 

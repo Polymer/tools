@@ -2,12 +2,15 @@
   "lerna": "2.10.1",
   "packages": [
     "packages/*",
-    "packages/esm-amd-loader/test"
+    "packages/esm-amd-loader/test",
+    "packages/web-component-tester/wct-browser-legacy"
   ],
   "version": "independent",
   "command": {
     "publish": {
-      "allowBranch": ["master"],
+      "allowBranch": [
+        "master"
+      ],
       "ignoreChanges": [
         ".clang-format",
         ".gitignore",

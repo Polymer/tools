@@ -127,8 +127,13 @@ export async function runScanner(
     url: string): Promise<{features: ScannedFeature[], warnings: Warning[]}> {
   const context = await analyzer['_analysisComplete'];
   const resolvedUrl = analyzer.resolveUrl(url)!;
-  const parsedDocument = await context['_parse'](resolvedUrl, neverCancels);
-  return scan(parsedDocument, [scanner]);
+  const parsedDocumentResult =
+      await context['_parse'](resolvedUrl, neverCancels);
+  if (parsedDocumentResult.successful === false) {
+    throw new Error(
+        `Error parsing document: ${parsedDocumentResult.error.message}`);
+  }
+  return scan(parsedDocumentResult.value, [scanner]);
 }
 
 /**

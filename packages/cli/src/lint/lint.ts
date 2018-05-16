@@ -14,7 +14,6 @@
 
 import * as chalk from 'chalk';
 import * as chokidar from 'chokidar';
-import * as globby from 'globby';
 import * as fs from 'mz/fs';
 import * as path from 'path';
 import * as logging from 'plylog';
@@ -26,7 +25,7 @@ import {ProjectConfig} from 'polymer-project-config';
 
 import {CommandResult} from '../commands/command';
 import {Options} from '../commands/lint';
-import {indent, prompt} from '../util';
+import {indent, prompt, getProjectSources} from '../util';
 
 const logger = logging.getLogger('cli.lint');
 
@@ -103,9 +102,9 @@ async function run(
     filter: WarningFilter,
     editActionsToAlwaysApply = new Set(options.edits || []),
     watcher?: FilesystemChangeStream) {
-  const {warnings, analysis} = options.input === undefined ?
-      await linter.lintPackage() :
-      await linter.lint(await globby(options.input));
+  const sources = await getProjectSources(options, config);
+  const { warnings, analysis } = sources !== undefined ?
+    await linter.lint(sources) : await linter.lintPackage();
 
   const filtered = warnings.filter((w) => !filter.shouldIgnore(w));
 

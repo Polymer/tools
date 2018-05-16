@@ -31,7 +31,7 @@ import {Document, ScannedImport, ScannedInlineDocument, Severity, Warning} from 
 import {FsUrlLoader} from '../../url-loader/fs-url-loader';
 import {InMemoryOverlayUrlLoader} from '../../url-loader/overlay-loader';
 import {UrlLoader} from '../../url-loader/url-loader';
-import {CodeUnderliner, createForDirectory, fixtureDir, invertPromise, resolvedUrl} from '../test-utils';
+import {CodeUnderliner, createForDirectory, fixtureDir, resolvedUrl} from '../test-utils';
 
 import chaiAsPromised = require('chai-as-promised');
 import chaiSubset = require('chai-subset');
@@ -182,6 +182,15 @@ suite('Analyzer', () => {
       assert.deepEqual(
           behaviors.map((b) => b.className),
           ['MyNamespace.SubBehavior', 'MyNamespace.SimpleBehavior']);
+    });
+
+    testName = 'gives a useful warning when analyzing a nonexistant file';
+    test(testName, async () => {
+      const analysis =
+          await analyzer.analyze(['static/analysis/does-not-exist.html']);
+      const warnings = analysis.getWarnings();
+      assert.deepEqual(warnings.map((w) => w.code), ['could-not-load']);
+      assert.match(warnings[0].message, /^No such file: /);
     });
 
     testName = `creates "missing behavior" warnings on imported ` +
@@ -465,7 +474,7 @@ suite('Analyzer', () => {
     });
 
     test(`warns for files that don't exist`, async () => {
-      const url = '/static/does_not_exist';
+      const url = '/static/does_not_exist.html';
       const analysis = await analyzer.analyze([url]);
       const result = analysis.getDocument(url);
       if (result.successful) {
@@ -600,8 +609,12 @@ suite('Analyzer', () => {
   suite('_parse()', () => {
     test('loads and parses an HTML document', async () => {
       const context = await getContext(analyzer);
-      const doc = await context['_parse'](
+      const docResult = await context['_parse'](
           analyzer.resolveUrl(`static/html-parse-target.html`)!, neverCancels);
+      if (docResult.successful !== true) {
+        throw new Error(`Expected doc result to be successful.`);
+      }
+      const doc = docResult.value;
       assert.instanceOf(doc, ParsedHtmlDocument);
       assert.equal(
           doc.url, analyzer.resolveUrl(`static/html-parse-target.html`)!);
@@ -609,16 +622,23 @@ suite('Analyzer', () => {
 
     test('loads and parses a JavaScript document', async () => {
       const context = await getContext(analyzer);
-      const doc = await context['_parse'](
+      const docResult = await context['_parse'](
           analyzer.resolveUrl(`static/js-elements.js`)!, neverCancels);
+      if (docResult.successful !== true) {
+        throw new Error(`Expected doc result to be successful.`);
+      }
+      const doc = docResult.value;
       assert.instanceOf(doc, JavaScriptDocument);
       assert.equal(doc.url, analyzer.resolveUrl(`static/js-elements.js`));
     });
 
-    test('returns a Promise that rejects for non-existant files', async () => {
+    test('returns a Promise of a Warning for non-existant files', async () => {
       const context = await getContext(analyzer);
-      await invertPromise(context['_parse'](
-          analyzer.resolveUrl(`static/not-found`)!, neverCancels));
+      const result = await context['_parse'](
+          analyzer.resolveUrl(`static/not-found`)!, neverCancels);
+      if (result.successful === true) {
+        throw new Error(`Expected result to be unsuccessful`);
+      }
     });
   });
 

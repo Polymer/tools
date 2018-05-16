@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.0.1] - 2018-05-11
+* Better support for handling errors early on in the analysis process (load,
+  parse, scan). This should solve the vast majority of Internal Error warnings.
+
+## [3.0.0] - 2018-05-08
+* `Analyzer#analyze` when called with an explicit list of files, will ignore
+  any files that do not have a known file extension, as it will not know
+  how to parse them.
+
 ## [3.0.0-pre.25] - 2018-05-03
 * Dropped support for node v6. This is a soft break, as we aren't
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)

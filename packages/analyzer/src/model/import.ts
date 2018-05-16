@@ -105,13 +105,14 @@ export class ScannedImport implements Resolvable {
   protected addCouldNotLoadWarning(document: Document, warning?: Warning) {
     const error = this.error && this.error.message || this.error ||
         warning && warning.message || '';
-    document.warnings.push(new Warning({
-      code: 'could-not-load',
-      message: `Unable to load import: ${error}`,
-      sourceRange: (this.urlSourceRange || this.sourceRange)!,
-      severity: Severity.ERROR,
-      parsedDocument: document.parsedDocument,
-    }));
+    if (error)
+      document.warnings.push(new Warning({
+        code: 'could-not-load',
+        message: `Unable to load import: ${error}`,
+        sourceRange: (this.urlSourceRange || this.sourceRange)!,
+        severity: Severity.ERROR,
+        parsedDocument: document.parsedDocument,
+      }));
   }
 
   /**

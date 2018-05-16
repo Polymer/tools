@@ -1,6 +1,6 @@
 {
   "name": "polymer-bundler",
-  "version": "4.0.0-pre.7",
+  "version": "4.0.1",
   "description": "Process Web Components into one output file",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/bundler",
   "repository": "github:Polymer/tools",
@@ -24,6 +24,7 @@
     "acorn-import-meta": "^0.2.1",
     "babel-generator": "^6.26.1",
     "babel-traverse": "^6.26.0",
+    "babel-types": "^6.26.0",
     "clone": "^2.1.0",
     "command-line-args": "^3.0.1",
     "command-line-usage": "^3.0.3",
@@ -32,7 +33,7 @@
     "magic-string": "^0.22.4",
     "mkdirp": "^0.5.1",
     "parse5": "^2.2.2",
-    "polymer-analyzer": "=3.0.0-pre.25",
+    "polymer-analyzer": "^3.0.1",
     "rollup": "^0.58.2",
     "source-map": "^0.5.6",
     "vscode-uri": "^1.0.1"

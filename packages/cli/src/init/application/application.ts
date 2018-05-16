@@ -92,9 +92,9 @@ export function createApplicationGenerator(templateName: string):
       const elementName = this.props.elementName;
 
       this.fs.copyTpl(
-          `${this.templatePath()}/**/?(.)!(_)*`,
+          `${this.templatePath()}/**/?(.)*`,
           this.destinationPath(),
-          this.props);
+          this.props, undefined, {globOptions: {ignore: ['**/_*']}});
 
       this.fs.copyTpl(
           this.templatePath('src/_element/_element.html'),
@@ -106,8 +106,9 @@ export function createApplicationGenerator(templateName: string):
           `test/${elementName}/${elementName}_test.html`,
           this.props);
 
-      this.fs.copyTpl(
-          this.templatePath('.gitignore'), '.gitignore', this.props);
+      this.fs.move(
+          this.destinationPath('gitignore'),
+          this.destinationPath('.gitignore'));
     }
 
     install() {
@@ -144,9 +145,9 @@ export function createApplicationGenerator(templateName: string):
       const elementName = this.props.elementName;
 
       this.fs.copyTpl(
-          `${this.templatePath()}/**/?(.)!(_)*`,
+          `${this.templatePath()}/**/?(.)*`,
           this.destinationPath(),
-          this.props);
+          this.props, undefined, {globOptions: {ignore: ['**/_*']}});
 
       this.fs.copyTpl(
           this.templatePath('src/_element/_element.js'),
@@ -158,8 +159,9 @@ export function createApplicationGenerator(templateName: string):
           `test/${elementName}/${elementName}_test.html`,
           this.props);
 
-      this.fs.copyTpl(
-          this.templatePath('.gitignore'), '.gitignore', this.props);
+      this.fs.move(
+          this.destinationPath('gitignore'),
+          this.destinationPath('.gitignore'));
     }
 
     install() {

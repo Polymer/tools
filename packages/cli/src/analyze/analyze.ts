@@ -12,10 +12,10 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as globby from 'globby';
 import {AnalysisFormat, generateAnalysis} from 'polymer-analyzer';
 import {Feature} from 'polymer-analyzer/lib/model/model';
 import {ProjectConfig} from 'polymer-project-config';
+import { getProjectSources } from '../util';
 
 export async function analyze(config: ProjectConfig, inputs: string[]):
     Promise<AnalysisFormat|undefined> {
@@ -25,11 +25,13 @@ export async function analyze(config: ProjectConfig, inputs: string[]):
   const isNotTest = (f: Feature) =>
       f.sourceRange != null && !isInTests.test(f.sourceRange.file);
 
-  if (inputs == null || inputs.length === 0) {
+  const projectSourceFiles = await getProjectSources({ input: inputs }, config);
+
+  if (projectSourceFiles == null) {
     const _package = await analyzer.analyzePackage();
     return generateAnalysis(_package, analyzer.urlResolver, isNotTest);
   } else {
-    const analysis = await analyzer.analyze(await globby(inputs));
+    const analysis = await analyzer.analyze(projectSourceFiles);
     return generateAnalysis(analysis, analyzer.urlResolver, isNotTest);
   }
 }
