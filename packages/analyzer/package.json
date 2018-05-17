@@ -17,7 +17,8 @@
   ],
   "scripts": {
     "clean": "touch lib && rm -rf lib && mkdir lib",
-    "build": "tsc && node scripts/generate-json-schema.js",
+    "build": "tsc && npm run generate-json-schema",
+    "generate-json-schema": "typescript-json-schema --required --ignoreErrors src/analysis-format/analysis-format.ts -o lib/analysis.schema.json Analysis",
     "lint": "tslint -p ./ && node ./scripts/depcheck.js",
     "tslint": "tslint -p .",
     "test": "npm run clean && npm run build && npm run lint && mocha \"lib/test/**/*_test.js\"",
@@ -49,8 +50,7 @@
     "sinon": "^1.17.4",
     "source-map-support": "^0.4.2",
     "temp": "^0.8.3",
-    "tsc-then": "^1.0.1",
-    "typescript-json-schema": "^0.21.0"
+    "tsc-then": "^1.0.1"
   },
   "dependencies": {
     "@babel/generator": "^7.0.0-beta.42",
