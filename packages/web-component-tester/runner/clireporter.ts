@@ -172,11 +172,24 @@ export class CliReporter {
       const pretty = this.prettyBrowsers[browserId];
       const stats = this.browserStats[browserId];
 
-      const colors = ['green', 'yellow', 'red'];
-      const statuses = [stats.passing, stats.pending, stats.failing];
-      const maybeColor = (value: number, idx: number) =>
-          (value > 0 ? chalk[colors[idx]] : _.identity)(value.toString());
-      let status = statuses.map(maybeColor).join('/');
+      type TestStats = 'passing'|'pending'|'failing';
+      interface ColorizedSelector {
+        formatter: chalk.ChalkChain;
+        property: TestStats;
+      }
+      const statsSelectors: ColorizedSelector[] = [
+        {formatter: chalk.green, property: 'passing'},
+        {formatter: chalk.yellow, property: 'pending'},
+        {formatter: chalk.red, property: 'failing'}
+      ];
+
+      const format = (formatter: chalk.ChalkChain, value: number) =>
+          (value > 0 ? formatter(value.toString()) : value.toString());
+
+      let status = statsSelectors
+                       .map(({formatter,
+                              property}) => format(formatter, stats[property]))
+                       .join('/');
 
       if (stats.status === 'error') {
         status = status + (status === '' ? '' : ' ') + chalk.red('error');
