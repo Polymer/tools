@@ -126,7 +126,6 @@
     "run-sequence": "^1.0.1",
     "source-map-support": "^0.5.4",
     "tslint": "^5.9.1",
-    "typescript": "^2.1.4",
     "watch": "^0.18.0",
     "wct-local": "^2.1.0",
     "wct-sauce": "^2.0.0"
