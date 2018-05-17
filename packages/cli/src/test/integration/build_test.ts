@@ -16,7 +16,7 @@ import {fs} from 'mz';
 import * as fsExtra from 'fs-extra';
 import * as tmp from 'tmp';
 import {runCommand} from './run-command';
-import { fixtureDir } from '../util';
+import {fixtureDir} from '../util';
 
 tmp.setGracefulCleanup();
 

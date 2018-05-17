@@ -15,7 +15,7 @@ import * as path from 'path';
 import * as tmp from 'tmp';
 import * as fs from 'fs-extra';
 import {runCommand} from './run-command';
-import { fixtureDir } from '../util';
+import {fixtureDir} from '../util';
 
 const fixturePath = path.join(fixtureDir, 'install-variants');
 
