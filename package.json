@@ -29,6 +29,7 @@
     "node": ">=8"
   },
   "dependencies": {
+    "tslint": "^5.10.0",
     "typescript": "^2.8.3"
   }
 }

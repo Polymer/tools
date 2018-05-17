@@ -23,8 +23,7 @@
   },
   "devDependencies": {
     "babel-minify": "^0.4.0",
-    "clang-format": "^1.2.3",
-    "tslint": "^5.9.1"
+    "clang-format": "^1.2.3"
   },
   "dependencies": {}
 }
