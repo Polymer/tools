@@ -10,14 +10,17 @@
  */
 import * as util from './util.js';
 
-const DOM_CONTENT_LOADED_EVENT_NAME = 'DOMContentLoaded';
-const IFRAME_ERROR_EVENT_NAME = 'error';
-
 // TODO(thedeeno): Consider renaming subsuite. IIRC, childRunner is entirely
 // distinct from mocha suite, which tripped me up badly when trying to add
 // plugin support. Perhaps something like 'batch', or 'bundle'. Something that
 // has no mocha correlate. This may also eliminate the need for root/non-root
 // suite distinctions.
+
+interface EventListenerDescriptor {
+  listener: EventListenerOrEventListenerObject;
+  target: EventTarget;
+  type: string;
+}
 
 export interface SharedState {}
 
@@ -26,17 +29,16 @@ export interface SharedState {}
  * are part of the current context.
  */
 export default class ChildRunner {
-  public parentScope: Window;
-
   private container?: HTMLDivElement;
-  private domContentLoadedCallback: (e: Event) => void;
+  private eventListenersToRemoveOnClean: EventListenerDescriptor[] = [];
   private iframe?: HTMLIFrameElement;
-  private iframeErrorCallback: (e: Event) => void;
   private onRunComplete: (error?: any) => void;
   private share: SharedState;
   private state: 'initializing' | 'loading' | 'complete';
   private timeoutId?: number;
   private url: string;
+
+  public parentScope: Window;
 
   constructor(url: string, parentScope: Window) {
     this.parentScope = parentScope;
@@ -48,17 +50,39 @@ export default class ChildRunner {
     );
     delete urlBits.params.cli_browser_id;
 
-    const urlWithMergedParams = (this.url =
-      urlBits.base + util.paramsToQuery(urlBits.params));
-
-    this.initializeCallbacks(urlWithMergedParams);
+    this.url = `${urlBits.base}${util.paramsToQuery(urlBits.params)}`;
     this.state = 'initializing';
   }
 
-  private initializeCallbacks(url: string) {
-    this.iframeErrorCallback = () =>
-      this.loaded(new Error('Failed to load document ' + url));
-    this.domContentLoadedCallback = () => this.loaded();
+  /**
+   * Listeners added using this method will be removed on done()
+   *
+   * @param type event type
+   * @param listener object which receives a notification
+   * @param target event target
+   */
+  private addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    target: EventTarget
+  ): void {
+    target.addEventListener(type, listener);
+    const descriptor: EventListenerDescriptor = {
+      target,
+      type,
+      listener
+    };
+    this.eventListenersToRemoveOnClean.push(descriptor);
+  }
+
+  /**
+   * Removes all event listeners added by a method addEventListener defined
+   * on an instance of ChildRunner.
+   */
+  private removeAllEventListeners(): void {
+    this.eventListenersToRemoveOnClean.forEach(({ target, type, listener }) =>
+      target.removeEventListener(type, listener)
+    );
   }
 
   // ChildRunners get a pretty generous load timeout by default.
@@ -121,28 +145,29 @@ export default class ChildRunner {
     const { container } = this;
 
     const iframe = (this.iframe = document.createElement('iframe'));
-    this.iframe.classList.add('subsuite');
-    this.iframe.src = this.url;
+    iframe.classList.add('subsuite');
+    iframe.src = this.url;
     // Let the iframe expand the URL for us.
-    const url = (this.url = this.iframe.src);
+    const url = (this.url = iframe.src);
 
     container.appendChild(iframe as Node);
 
     ChildRunner.byUrl[url] = this;
 
     this.timeoutId = setTimeout(
-      this.loaded.bind(this, new Error('Timed out loading ' + this.url)),
+      () => this.loaded(new Error('Timed out loading ' + url)),
       ChildRunner.loadTimeout
     );
 
-    this.iframe.addEventListener(
-      IFRAME_ERROR_EVENT_NAME,
-      this.iframeErrorCallback
+    this.addEventListener(
+      'error',
+      () => this.loaded(new Error('Failed to load document ' + this.url)),
+      iframe
     );
-
-    this.iframe.contentWindow.addEventListener(
-      DOM_CONTENT_LOADED_EVENT_NAME,
-      this.domContentLoadedCallback
+    this.addEventListener(
+      'DOMContentLoaded',
+      () => this.loaded(),
+      iframe.contentWindow
     );
   }
 
@@ -202,15 +227,9 @@ export default class ChildRunner {
       // Be safe and avoid potential browser crashes when logic attempts to
       // interact with the removed iframe.
       setTimeout(() => {
+        this.removeAllEventListeners();
+
         const { iframe } = this;
-        iframe.removeEventListener(
-          IFRAME_ERROR_EVENT_NAME,
-          this.iframeErrorCallback
-        );
-        iframe.contentWindow.removeEventListener(
-          DOM_CONTENT_LOADED_EVENT_NAME,
-          this.domContentLoadedCallback
-        );
         this.container.removeChild(iframe as Node);
         this.iframe = undefined;
       }, 0);
