@@ -505,7 +505,7 @@
   },
   "web-component-tester": {
     "npm": "wct-browser-legacy",
-    "semver": "^0.0.1-pre.11"
+    "semver": "^1.0.1"
   },
   "web-animations-js": {
     "npm": "web-animations-js",
