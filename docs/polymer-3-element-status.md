@@ -18,7 +18,7 @@ This table contains the status of every Polymer 3.0 element being run through au
 | repo | `npm install`\* | Chrome | Safari | Firefox | reason? |
 |------|-----------------|--------|--------|---------|---------|
 | app-layout | ✅ | ✅ | ✅ | ✅ | |
-| app-localize-behavior | ✅ | ✅ | ✅ | ✅ | polyfill does not support modules needs to be moved out of element and into tests |
+| app-localize-behavior | ✅ | ❌ | ❌ | ❌ | polyfill does not support modules needs to be moved out of element and into tests |
 | app-media | ✅ | ✅ | ✅ | ✅ |  |
 | app-route | ✅ | ✅ | ✅ | ✅ | |
 | app-storage | ✅ | ✅| ✅ | ✅ | |
