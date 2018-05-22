@@ -26,13 +26,13 @@ function getOnlyItem<T>(items: Iterable<T>): T {
   return arr[0];
 }
 
-suite.skip('ScannedReference', () => {
+suite('ScannedReference', () => {
   let analyzer: Analyzer;
   suiteSetup(async () => {
     analyzer = (await createForDirectory(fixtureDir)).analyzer;
   });
 
-  test('resolves exports', async () => {
+  test.skip('resolves exports', async () => {
     const filename = 'javascript/exported-class.js';
 
     const analysis = await analyzer.analyze([filename]);
