@@ -2,7 +2,14 @@
   "extends": "../../tsconfig-base.json",
   "compilerOptions": {
     "strictPropertyInitialization": false,
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "baseUrl": "./",
+    "paths": {
+      "ua-parser-js": [
+        "node_modules/@types/ua-parser-js",
+        "*"
+      ]
+    }
   },
   "include": [
     "custom_typings/**/*.d.ts",

@@ -53,9 +53,7 @@
     "mocha": "^5.1.1",
     "rewire": "^2.5.2",
     "source-map-support": "^0.4.2",
-    "tsc-then": "^1.1.0",
-    "tslint": "^5.9.1",
-    "typescript": "^2.2.0"
+    "tsc-then": "^1.1.0"
   },
   "scripts": {
     "build": "tsc",
