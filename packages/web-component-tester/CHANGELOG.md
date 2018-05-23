@@ -6,9 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Updated Mocha to v5
 * Use `gts` for code formatting and linting
 * Lint and format with NPM scripts instead of `gulp`
-* Updated Mocha to v5
 
 ## 6.6.0 - 2018-05-08
 * Dropped support for node v6. This is a soft break, as we aren't
