@@ -16,6 +16,7 @@ interface Window {
   define: ((deps: string[], moduleBody: OnExecutedCallback) => void)&{
     _reset?: () => void;
   };
+  HTMLImports: { importForElement: (element: Element) => HTMLLinkElement | undefined }
 }
 
 type OnExecutedCallback = (...args: Array<{}>) => void;
@@ -421,14 +422,15 @@ window.define = function(deps: string[], moduleBody?: OnExecutedCallback) {
     return [deps, moduleBody];
   };
 
-  // Case #2: We are a top-level script in the HTML document. Our URL is the
-  // document's base URL. We can discover this case by waiting a tick, and if
-  // we haven't already been defined by the "onload" handler from case #1,
-  // then this must be case #2.
+  // Case #2: We are a top-level script in the HTML document or a HTML import.
+  // Resolve the URL relative to the document url. We can discover this case
+  // by waiting a tick, and if we haven't already been defined by the "onload"
+  // handler from case #1, then this must be case #2.
+  const documentUrl = getDocumentUrl();
   setTimeout(() => {
     if (defined === false) {
       pendingDefine = undefined;
-      const url = baseUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
+      const url = documentUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
       // It's actually Initialized, but we're skipping over the Loading
       // state, because this is a top level document and it's already loaded.
       const mod = getModule(url) as ModuleG<StateEnum.Loading>;
@@ -544,5 +546,38 @@ function getBaseUrl(): NormalizedUrl {
   return (document.baseURI ||
           (document.querySelector('base') || window.location).href) as
       NormalizedUrl;
+}
+
+/**
+ * Get the url of the current document. If the document is the main document, the base
+ * url is returned. Otherwise if the module was imported by a HTML import we need to
+ * resolve the URL relative to the HTML import.
+ *
+ * document.currentScript does not work in IE11, but the HTML import polyfill mocks it
+ * when executing an import so for this case that's ok
+ */
+function getDocumentUrl() {
+  const { currentScript } = document;
+  // On IE11 document.currentScript is not defined when not in a HTML import
+  if (!currentScript) {
+    return baseUrl;
+  }
+
+  if (window.HTMLImports) {
+    // When the HTMLImports polyfill is active, we can take the path from the link element
+    const htmlImport = window.HTMLImports.importForElement(currentScript);
+    if (!htmlImport) {
+      // If there is no import for the current script, we are in the index.html. Take the base url.
+      return baseUrl;
+    }
+    // Take the import href and strip off the filename
+    return htmlImport.href.substring(0, htmlImport.href.lastIndexOf('/') + 1);
+  } else {
+    // On chrome's native implementation it's not possible to get a direct reference to the link element,
+    // create a new script and let the browser resolve the url.
+    const script = currentScript.ownerDocument.createElement('script');
+    script.src = './';
+    return script.src;
+  }
 }
 })();
