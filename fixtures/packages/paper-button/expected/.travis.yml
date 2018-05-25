@@ -1,8 +1,6 @@
 language: node_js
 sudo: required
-before_script:
-  - npm install -g polymer-cli
-  - 'npm run update-types && git diff --exit-code || (echo -e ''\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run update-types".'' && false)'
+before_script: npm install -g polymer-cli
 env:
   global:
     - secure: YhRb8f1f4y3Rjs5wnp4sCzIcEcL07HOBoJcEp6U/KVgIIk/sBxkxMVmZsoUeABrNbKcdE6Gn6OS2K1lFq4VThKppJ0yjvESa1p0FjmQ0Nf1xCYxc46n936xj87khZy3rrTGHxwcOY5vAa5mvNzXI4BYxjmSjmqRsQwsJBsJHWVw=

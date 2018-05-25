@@ -11,7 +11,6 @@ cache:
 before_script:
   - npm install -g gulp-cli@1
   - gulp lint-eslint
-  - 'npm run update-types && git diff --exit-code || (echo -e ''\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run update-types".'' && false)'
 script:
   - wct --module-resolution=node --npm -l chrome -l firefox
   - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then travis_wait 30 ./util/travis-sauce-test.sh; fi'
