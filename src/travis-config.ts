@@ -66,6 +66,14 @@ function removeBowerAndPolymerInstall(scripts: string[]): string[] {
       .filter((s) => !!s);
 }
 
+function removeTypingsAndFormattingChecks(scripts: string[]): string[] {
+  return scripts.filter((script) => {
+    const isUpdateTypes = script.indexOf('npm run update-types') > -1;
+    const isFormat = script.indexOf('npm run format') > -1;
+    return !isUpdateTypes && !isFormat;
+  });
+}
+
 function configToArray(yamlPart: string|string[]|undefined): string[] {
   if (!yamlPart) {
     return [];
@@ -132,6 +140,9 @@ export async function transformTravisConfig(
   beforeScripts = removeBowerAndPolymerInstall(beforeScripts);
   testScripts = removeBowerAndPolymerInstall(testScripts);
   installScripts = removeBowerAndPolymerInstall(installScripts);
+
+  // remove TS and formatting checks
+  beforeScripts = removeTypingsAndFormattingChecks(beforeScripts);
 
   // use `--npm` in `polymer test` and `wct` commands
   testScripts = addNPMFlag(testScripts);
