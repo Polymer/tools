@@ -18,17 +18,19 @@ import {Github} from '../github/github';
 
 const logger = logging.getLogger('cli.init');
 
+export interface InstallOptions {
+  bower?: boolean;
+  npm?: boolean;
+  yarn?: boolean;
+}
+
 export interface GithubGeneratorOptions {
   githubToken?: string;
   owner: string;
   repo: string;
   semverRange?: string;
   branch?: string;
-  installDependencies?: {
-    bower?: boolean;
-    npm?: boolean;
-    yarn?: boolean;
-  };
+  installDependencies?: InstallOptions;
 }
 
 export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
@@ -44,7 +46,7 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
     _github: Github;
 
     constructor(args: string|string[], options: {}|null|undefined) {
-      super(args, options||{});
+      super(args, options || {});
       this._github = new Github({owner, repo, githubToken});
     }
 
@@ -78,6 +80,7 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
       // TODO(usergenic): Cast here to any because the yeoman-generator typings
       // for 2.x are not surfacing the async() method placed onto the Generator
       // in the constructor.
+      // tslint:disable-next-line
       const done = (this as any).async();
       this._writing().then(() => done(), (err) => done(err));
     }
