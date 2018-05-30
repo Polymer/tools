@@ -439,6 +439,6 @@ suite('html imports', () => {
       window.testImportMeta = (url) => {
           assert.match(url, /https?:\/\/.+\/html-import\/import-meta\.html/);
           done();
-      }
+      };
   });
 });
