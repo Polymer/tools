@@ -407,8 +407,9 @@ suite('html imports', () => {
   }
 
   function testImport(href: string, expectedOrder: string[], done: () => void) {
-      importHref(href);
-
+      // Each time and amd module in the chain is executed, it registers itself.
+      // If we've reached the length of modules we are expecing to be loaded,
+      // we check if the right modules were loaded in the expected order
       window.addExcutedForImport = (name: string) => {
           window.executionOrder.push(name);
           if (window.executionOrder.length === expectedOrder.length) {
@@ -416,6 +417,8 @@ suite('html imports', () => {
               done();
           }
       };
+
+      importHref(href);
   }
 
   test('modules in root level html import', (done) => {
@@ -431,14 +434,11 @@ suite('html imports', () => {
   });
 
   test('import with meta', (done) => {
-      const link = document.createElement('link');
-      link.rel = 'import';
-      link.href = '../html-import/meta/import-meta.html';
-      document.head.appendChild(link);
-
       window.testImportMeta = (url) => {
           assert.match(url, /https?:\/\/.+\/html-import\/meta/);
           done();
       };
+
+      importHref('../html-import/meta/import-meta.html');
   });
 });
