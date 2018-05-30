@@ -572,8 +572,9 @@ function getDocumentUrl() {
       // If there is no import for the current script, we are in the index.html. Take the base url.
       return baseUrl;
     }
-    // Take the import href and strip off the filename
-    return htmlImport.href.substring(0, htmlImport.href.lastIndexOf('/') + 1);
+
+    // Return the import href
+    return htmlImport.href;
   } else {
     // On chrome's native implementation it's not possible to get a direct reference to the link element,
     // create an anchor and let the browser resolve the url.
