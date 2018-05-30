@@ -264,7 +264,9 @@ function loadDeps(
       args.push({
         // We append "#<script index>" to top-level scripts so that they have
         // unique keys in the registry. We don't want to see that here.
-        url: (module.isTopLevel === true) ? baseUrl : module.url
+        url: (module.isTopLevel === true)
+          ? module.url.substring(0, module.url.lastIndexOf('#'))
+          : module.url
       });
       continue;
     }

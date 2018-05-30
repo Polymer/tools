@@ -437,7 +437,7 @@ suite('html imports', () => {
       document.head.appendChild(link);
 
       window.testImportMeta = (url) => {
-          assert.match(url, /https?:\/\/.+\/html-import\/import-meta\.html/);
+          assert.match(url, /https?:\/\/.+\/html-import\/meta/);
           done();
       };
   });
