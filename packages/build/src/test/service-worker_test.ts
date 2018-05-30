@@ -163,6 +163,26 @@ suite('service-worker', () => {
               });
     });
 
+    test('should add provided globPatterns paths to the final list', () => {
+      return serviceWorker
+          .generateServiceWorker({
+            project: defaultProject,
+            buildRoot: testBuildRoot,
+            bundled: true,
+            workboxConfig: {
+              globPatterns: ['**/*.html'],
+            },
+          })
+          .then((swFile: Buffer) => {
+            const fileContents = swFile.toString();
+            assert.include(fileContents, '"index.html"');
+            assert.include(fileContents, '"shell.html"');
+            assert.include(fileContents, '"bower_components/dep.html"');
+            assert.notInclude(fileContents, '"gulpfile.js"');
+          });
+      }
+    );
+
     test('basePath should prefix resources', () => {
       return serviceWorker
         .generateServiceWorker({

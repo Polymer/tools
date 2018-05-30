@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../custom_typings/workbox.d.ts" />
-
 import * as assert from 'assert';
 import {writeFile} from 'fs';
 import * as path from 'path';
@@ -33,15 +31,6 @@ export interface AddServiceWorkerOptions {
   path?: LocalFsPath;
   workboxConfig?: WorkboxConfig|null;
   basePath?: LocalFsPath;
-}
-
-/**
- * Given a user-provided AddServiceWorkerOptions object, check for deprecated
- * options. When one is found, warn the user and fix if possible.
- */
-// tslint:disable-next-line: no-any Turned off for user input.
-function fixDeprecatedOptions(options: any): AddServiceWorkerOptions {
-  return options;
 }
 
 /**
@@ -85,7 +74,6 @@ export async function generateServiceWorkerConfig(
   assert(!!options, '`project` & `buildRoot` options are required');
   assert(!!options.project, '`project` option is required');
   assert(!!options.buildRoot, '`buildRoot` option is required');
-  options = fixDeprecatedOptions(options);
 
   options = Object.assign({}, options);
   const project = options.project;
