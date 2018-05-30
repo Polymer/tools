@@ -16,7 +16,7 @@ interface Window {
   define: ((deps: string[], moduleBody: OnExecutedCallback) => void)&{
     _reset?: () => void;
   };
-  HTMLImports: { importForElement: (element: Element) => HTMLLinkElement | undefined }
+  HTMLImports?: { importForElement: (element: Element) => HTMLLinkElement | undefined };
 }
 
 type OnExecutedCallback = (...args: Array<{}>) => void;
