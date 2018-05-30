@@ -576,10 +576,10 @@ function getDocumentUrl() {
     return htmlImport.href.substring(0, htmlImport.href.lastIndexOf('/') + 1);
   } else {
     // On chrome's native implementation it's not possible to get a direct reference to the link element,
-    // create a new script and let the browser resolve the url.
-    const script = currentScript.ownerDocument.createElement('script');
-    script.src = './';
-    return script.src;
+    // create an anchor and let the browser resolve the url.
+    const a = currentScript.ownerDocument.createElement('a');
+    a.href = './';
+    return a.href;
   }
 }
 })();
