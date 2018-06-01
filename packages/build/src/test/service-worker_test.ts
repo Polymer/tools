@@ -163,6 +163,24 @@ suite('service-worker', () => {
               });
     });
 
+    test(
+      'should add bundled precached assets when options.bundled is provided',
+      () => {
+        return serviceWorker
+            .generateServiceWorker({
+              project: defaultProject,
+              buildRoot: testBuildRoot,
+              bundled: true,
+            })
+            .then((swFile: Buffer) => {
+              const fileContents = swFile.toString();
+              assert.include(fileContents, '"index.html"');
+              assert.include(fileContents, '"shell.html"');
+              assert.notInclude(fileContents, '"bower_components/dep.html"');
+              assert.notInclude(fileContents, '"source-dir/my-app.html"');
+            });
+      });
+
     test('should add provided globPatterns paths to the final list', () => {
       return serviceWorker
           .generateServiceWorker({
