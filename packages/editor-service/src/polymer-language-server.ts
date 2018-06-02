@@ -21,7 +21,7 @@ interface Options {
   logToFile?: string;
 }
 
-const options = commandLineArgs(optionDescriptors, {});
+const options = commandLineArgs(optionDescriptors, {}) as Options;
 
 /**
  * Implements the [language server protocol][1] v3.0 for Web Components and

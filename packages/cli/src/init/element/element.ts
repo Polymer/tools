@@ -94,7 +94,9 @@ export function createElementGenerator(templateName: string):
       this.fs.copyTpl(
           `${this.templatePath()}/**/?(.)*`,
           this.destinationPath(),
-          this.props, undefined, {globOptions: {ignore: ['**/_*']}});
+          this.props,
+          undefined,
+          {globOptions: {ignore: ['**/_*']}});
 
       this.fs.copyTpl(
           this.templatePath('_element.html'), `${name}.html`, this.props);
@@ -148,7 +150,9 @@ export function createElementGenerator(templateName: string):
       this.fs.copyTpl(
           `${this.templatePath()}/**/?(.)*`,
           this.destinationPath(),
-          this.props, undefined, {globOptions: {ignore: ['**/_*']}});
+          this.props,
+          undefined,
+          {globOptions: {ignore: ['**/_*']}});
 
       this.fs.copyTpl(
           this.templatePath('_element.js'), `${name}.js`, this.props);

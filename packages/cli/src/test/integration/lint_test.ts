@@ -15,11 +15,8 @@ import * as os from 'os';
 import {assert} from 'chai';
 import * as path from 'path';
 import {runCommand} from './run-command';
-import {invertPromise} from '../util';
+import {invertPromise, fixtureDir as fixturePath} from '../util';
 import {child_process} from 'mz';
-
-const fixturePath =
-    path.join(__dirname, '../../../src/test/integration/fixtures/');
 
 suite('polymer lint', function() {
 

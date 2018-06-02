@@ -9,6 +9,10 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import * as path from 'path';
+
+export const fixtureDir = path.join(__dirname, '..', '..', 'test', 'fixtures');
+
 export async function invertPromise(p: Promise<{}|null|undefined|void>):
     Promise<null|undefined|Partial<Error>> {
   let result;

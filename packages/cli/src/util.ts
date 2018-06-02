@@ -15,11 +15,11 @@
 // Be mindful of adding imports here, as this is on the hot path of all
 // commands.
 
+import * as fs from 'fs';
 import * as inquirer from 'inquirer';
 import {execSync} from 'mz/child_process';
-import { ProjectConfig } from 'polymer-project-config';
 import * as path from 'path';
-import * as fs from 'fs';
+import {ProjectConfig} from 'polymer-project-config';
 
 /**
  * Check if the current shell environment is MinGW. MinGW can't handle some
@@ -84,16 +84,18 @@ export function dashToCamelCase(text: string): string {
  *
  * Returned file paths are relative from config.root.
  */
-export async function getProjectSources(options: { input?: Array<string> }, config: ProjectConfig): Promise<string[] | undefined> {
+export async function getProjectSources(
+    options: {input?: Array<string>},
+    config: ProjectConfig): Promise<string[]|undefined> {
   const globby = await import('globby');
 
   if (options.input !== undefined && options.input.length > 0) {
     // Files specified from the command line are relative to the current
     //   working directory (which is usually, but not always, config.root).
-    const absPaths = await globby(options.input, { root: process.cwd() });
+    const absPaths = await globby(options.input, {root: process.cwd()});
     return absPaths.map((p) => path.relative(config.root, p));
   }
-  const candidateFiles = await globby(config.sources, { root: config.root });
+  const candidateFiles = await globby(config.sources, {root: config.root});
   candidateFiles.push(...config.fragments);
   if (config.shell) {
     candidateFiles.push(config.shell);
@@ -109,13 +111,15 @@ export async function getProjectSources(options: { input?: Array<string> }, conf
    *     exists on disk.
    */
   if (candidateFiles.length > 0 && config.entrypoint) {
-    if (!config.entrypoint.endsWith('index.html') || fs.existsSync(config.entrypoint)) {
+    if (!config.entrypoint.endsWith('index.html') ||
+        fs.existsSync(config.entrypoint)) {
       candidateFiles.push(config.entrypoint);
     }
   }
   if (candidateFiles.length > 0) {
     // Files in the project config are all absolute paths.
-    return [...new Set(candidateFiles.map((absFile) => path.relative(config.root, absFile)))];
+    return [...new Set(
+        candidateFiles.map((absFile) => path.relative(config.root, absFile)))];
   }
   return undefined;
 }

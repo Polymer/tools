@@ -17,7 +17,7 @@ import * as tempMod from 'temp';
 import chaiSubset = require('chai-subset');
 
 import {Github, GithubResponseError} from '../../../github/github';
-import {invertPromise} from '../../util';
+import {invertPromise, fixtureDir} from '../../util';
 
 use(chaiSubset);
 
@@ -46,7 +46,7 @@ suite('github/github', () => {
       const mockRequestApi = (options: {url: string}) => {
         requestedUrl = options.url;
         return fs.createReadStream(
-            path.join(__dirname, 'github-test-data/test_tarball.tgz'));
+            path.join(fixtureDir, 'github-test-data/test_tarball.tgz'));
       };
       const github = new Github({
         owner: 'TEST_OWNER',

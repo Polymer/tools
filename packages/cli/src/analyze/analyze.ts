@@ -15,7 +15,7 @@
 import {AnalysisFormat, generateAnalysis} from 'polymer-analyzer';
 import {Feature} from 'polymer-analyzer/lib/model/model';
 import {ProjectConfig} from 'polymer-project-config';
-import { getProjectSources } from '../util';
+import {getProjectSources} from '../util';
 
 export async function analyze(config: ProjectConfig, inputs: string[]):
     Promise<AnalysisFormat|undefined> {
@@ -25,7 +25,7 @@ export async function analyze(config: ProjectConfig, inputs: string[]):
   const isNotTest = (f: Feature) =>
       f.sourceRange != null && !isInTests.test(f.sourceRange.file);
 
-  const projectSourceFiles = await getProjectSources({ input: inputs }, config);
+  const projectSourceFiles = await getProjectSources({input: inputs}, config);
 
   if (projectSourceFiles == null) {
     const _package = await analyzer.analyzePackage();
