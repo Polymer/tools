@@ -422,23 +422,22 @@ suite('html imports', () => {
   }
 
   test('modules in root level html import', (done) => {
-      testImport('root-html-import.html', ['x', 'y', 'root-html-import'], done);
+    testImport('root-html-import.html', ['x', 'root-html-import'], done);
   });
 
   test('modules inside deeper level html import', (done) => {
-      testImport('../html-import/y/deep-import.html', ['x', 'y', 'z', 'deep-import'], done);
+    testImport('../html-import/y/deep-import.html', ['x', 'z', 'y', 'deep-import'], done);
   });
 
   test('imports with child imports', (done) => {
-      testImport('../html-import/parent-import.html', ['y', 'z', 'child-import', 'x', 'parent-import'], done);
+    testImport('../html-import/parent-import.html', ['z', 'y', 'child-import', 'x', 'parent-import'], done);
   });
 
   test('import with meta', (done) => {
-      window.testImportMeta = (url) => {
-          assert.match(url, /https?:\/\/.+\/html-import\/meta/);
-          done();
-      };
-
-      importHref('../html-import/meta/import-meta.html');
+    window.testImportMeta = (url) => {
+        assert.match(url, /https?:\/\/.+\/html-import\/meta/);
+        done();
+    };
+    importHref('../html-import/meta/import-meta.html');
   });
 });
