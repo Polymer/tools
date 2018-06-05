@@ -14,7 +14,6 @@
 
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import * as chai from 'chai';
 
@@ -26,9 +25,7 @@ const assert = chai.assert;
 
 
 suite('URL Utils', () => {
-
   suite('stripUrlFileSearchAndHash', () => {
-
     test('Strips "man.html" basename off URL', () => {
       assert.equal(
           urlUtils.stripUrlFileSearchAndHash('shark://alligator/man.html'),
@@ -64,7 +61,6 @@ suite('URL Utils', () => {
   });
 
   suite('Rewrite imported relative paths', () => {
-
     function rewrite(
         href: string, oldBaseUrl: string, newBaseUrl: string): string {
       return urlUtils.rewriteHrefBaseUrl(

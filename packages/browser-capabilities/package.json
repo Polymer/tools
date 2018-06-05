@@ -22,10 +22,8 @@
   },
   "devDependencies": {
     "@types/chai": "^4.0.2",
-    "@types/mocha": "^2.2.41",
     "chai": "^4.1.1",
     "clang-format": "^1.0.53",
-    "mocha": "^5.1.1",
     "source-map-support": "^0.4.15",
     "tsc-then": "^1.1.0"
   },
