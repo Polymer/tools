@@ -1,21 +1,14 @@
 {
+  "extends": "../../tsconfig-base.json",
   "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "declaration": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "lib": [
-      "es2017"
-    ],
-    "outDir": "./lib",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "./lib"
   },
   "include": [
-    "src/**/*.ts",
+    "src/**/*.ts"
   ]
 }

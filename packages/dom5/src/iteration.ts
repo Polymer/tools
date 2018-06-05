@@ -30,7 +30,7 @@ export function*
         getChildNodes?: GetChildNodes): IterableIterator<U> {
   for (const child of depthFirst(node, getChildNodes)) {
     yield* mapfn(child);
-  };
+  }
 }
 
 
