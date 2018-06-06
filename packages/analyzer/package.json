@@ -31,10 +31,8 @@
     "prepublishOnly": "tsc && npm test"
   },
   "devDependencies": {
-    "@types/chai": "^4.0.10",
     "@types/chai-as-promised": "^7.1.0",
     "bower": "^1.7.9",
-    "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.3.0",
     "clang-format": "=1.1.1",
