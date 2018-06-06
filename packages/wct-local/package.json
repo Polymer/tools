@@ -7,13 +7,10 @@
     "web-component-tester",
     "plugin"
   ],
-  "homepage": "https://github.com/Polymer/wct-local",
-  "bugs": "https://github.com/Polymer/wct-local/issues",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/wct-local",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "repository": "github:Polymer/tools",
   "license": "BSD-3-Clause",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Polymer/wct-local.git"
-  },
   "main": "lib/plugin.js",
   "typings": "lib/plugin.d.ts",
   "scripts": {
