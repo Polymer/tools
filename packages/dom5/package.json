@@ -12,10 +12,10 @@
     "build": "tsc",
     "prepublishOnly": "npm run test",
     "test": "npm run build && npm run lint && npm run test:unit",
-    "test:unit": "mocha -c --ui tdd 'lib/test/*_test.js'",
-    "format": "clang-format --style=file -i 'src/**/*.ts'",
+    "test:unit": "mocha -c --ui tdd \"lib/test/*_test.js\"",
+    "format": "clang-format --style=file -i \"src/**/*.ts\"",
     "lint": "tslint 'src/**/*.ts'",
-    "test:watch": "tsc-then -- mocha -c --ui tdd 'lib/test/*_test.js'"
+    "test:watch": "tsc-then -- mocha -c --ui tdd \"lib/test/*_test.js\""
   },
   "dependencies": {
     "@types/parse5": "^2.2.34",
