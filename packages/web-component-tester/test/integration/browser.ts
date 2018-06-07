@@ -49,7 +49,7 @@ function loadOptionsFile(dir: string): config.Config {
 
 const testLocalBrowsers = !process.env.SKIP_LOCAL_BROWSERS;
 const testLocalBrowsersList = parseList(process.env.TEST_LOCAL_BROWSERS);
-const testRemoteBrowsers = process.env.WCT_SAUCE;
+const testRemoteBrowsers = process.env.WCT_SAUCE === 'true';
 if (testRemoteBrowsers &&
     !(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
   throw new Error(
