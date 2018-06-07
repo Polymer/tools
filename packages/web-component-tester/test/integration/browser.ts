@@ -49,8 +49,12 @@ function loadOptionsFile(dir: string): config.Config {
 
 const testLocalBrowsers = !process.env.SKIP_LOCAL_BROWSERS;
 const testLocalBrowsersList = parseList(process.env.TEST_LOCAL_BROWSERS);
-const testRemoteBrowsers = !process.env.SKIP_REMOTE_BROWSERS &&
-    process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
+const testRemoteBrowsers = process.env.WCT_SAUCE;
+if (testRemoteBrowsers &&
+    !(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
+  throw new Error(
+      'Must set SAUCE_USERNAME and SAUCE_ACCESS_KEY when WCT_SAUCE is set.');
+}
 const testRemoteBrowsersList = parseList(process.env.TEST_REMOTE_BROWSERS);
 if (testRemoteBrowsersList.length === 0) {
   testRemoteBrowsersList.push('default');
