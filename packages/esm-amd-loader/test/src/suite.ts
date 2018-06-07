@@ -400,25 +400,25 @@ suite('cyclical dependencies', () => {
 
 suite('html imports', () => {
   function importHref(href: string) {
-      const link = document.createElement('link');
-      link.rel = 'import';
-      link.href = href;
-      document.head.appendChild(link);
+    const link = document.createElement('link');
+    link.rel = 'import';
+    link.href = href;
+    document.head.appendChild(link);
   }
 
   function testImport(href: string, expectedOrder: string[], done: () => void) {
-      // Each time an amd module in the chain is executed, it registers itself.
-      // If we've reached the length of modules we are expecing to be loaded,
-      // we check if the right modules were loaded in the expected order
-      window.addExecutedForImport = (name: string) => {
-          window.executionOrder.push(name);
-          if (window.executionOrder.length === expectedOrder.length) {
-              assert.deepEqual(window.executionOrder, expectedOrder);
-              done();
-          }
-      };
+     // Each time an amd module in the chain is executed, it registers itself.
+     // If we've reached the length of modules we are expecing to be loaded,
+     // we check if the right modules were loaded in the expected order
+     window.addExecutedForImport = (name: string) => {
+       window.executionOrder.push(name);
+       if (window.executionOrder.length === expectedOrder.length) {
+         assert.deepEqual(window.executionOrder, expectedOrder);
+         done();
+       }
+     };
 
-      importHref(href);
+    importHref(href);
   }
 
   test('modules in root level html import', (done) => {
@@ -435,8 +435,8 @@ suite('html imports', () => {
 
   test('import with meta', (done) => {
     window.testImportMeta = (url) => {
-        assert.match(url, /https?:\/\/.+\/html-import\/meta\/import-meta.html/);
-        done();
+      assert.match(url, /https?:\/\/.+\/html-import\/meta\/import-meta.html/);
+      done();
     };
     importHref('../html-import/meta/import-meta.html');
   });
