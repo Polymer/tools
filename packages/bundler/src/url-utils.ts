@@ -26,11 +26,10 @@ import constants from './constants';
  * Produces:
  *     'file:///something/something.html_omg.js?ponies'
  */
-export function appendUrlPath(url_: string, extension: string): string {
-  const uri = Uri.parse(url_);
-  const newUri =
-      Uri.from(Object.assign(uri, {path: `${uri.path}${extension}`}));
-  return newUri.toString();
+export function appendUrlPath(url: string, extension: string): string {
+  const {scheme, authority, path, query, fragment} = Uri.parse(url);
+  return Uri.from({scheme, authority, path: path + extension, query, fragment})
+      .toString();
 }
 /**
  * Given a string representing a relative path of some form, ensure a `./`
