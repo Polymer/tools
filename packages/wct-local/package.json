@@ -16,7 +16,7 @@
   "scripts": {
     "lint": "gulp lint",
     "build": "tsc",
-    "prepublish": "tsc",
+    "prepublishOnly": "tsc",
     "postinstall": "node scripts/postinstall.js"
   },
   "wct-plugin": {
@@ -40,12 +40,6 @@
         "flag": true
       }
     }
-  },
-  "devDependencies": {
-    "gulp": "^3.8.10",
-    "tools-common": "github:Polymer/tools-common#aa1c22d",
-    "tslint": "^3.14.0",
-    "typescript": "2.3.2"
   },
   "dependencies": {
     "@types/express": "^4.0.30",

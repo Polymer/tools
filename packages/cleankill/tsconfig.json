@@ -16,12 +16,10 @@
         "node_modules"
     ],
     "filesGlob": [
-        "index.ts",
-        "typings/index.d.ts"
+        "index.ts"
     ],
     "files": [
-        "index.ts",
-        "typings/index.d.ts"
+        "index.ts"
     ],
     "atom": {
         "rewriteTsconfig": true
