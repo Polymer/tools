@@ -2,7 +2,8 @@
   "npm": true,
   "moduleResolution": "node",
   "suites": [
-    "static/**/*.html"
+    "static/y/suite.html",
+    "static/y/suite-min.html"
   ],
   "plugins": {
     "local": {

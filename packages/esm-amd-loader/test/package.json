@@ -13,6 +13,7 @@
     "@polymer/esm-amd-loader": "^1.0.0",
     "@types/chai": "^4.1.3",
     "@types/mocha": "^5.2.0",
+    "@webcomponents/webcomponentsjs": "^1.2.0",
     "clang-format": "^1.2.3",
     "wct-browser-legacy": "^1.0.0",
     "web-component-tester": "^6.6.0"
