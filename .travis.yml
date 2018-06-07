@@ -46,7 +46,6 @@ matrix:
       firefox: latest
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
-    - SKIP_REMOTE_BROWSERS=true
 
   - node_js: '9'
     addons:
@@ -55,3 +54,4 @@ matrix:
       sauce_connect: true
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
+    - WCT_SAUCE=true

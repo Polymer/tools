@@ -4,5 +4,31 @@
   "suites": [
     "static/y/suite.html",
     "static/y/suite-min.html"
-  ]
+  ],
+  "plugins": {
+    "local": {
+      "disabled": false,
+      "browsers": ["all"]
+    },
+    "sauce": {
+      "disabled": true,
+      "browsers": [
+        {
+          "browserName": "internet explorer",
+          "platform": "Windows 8.1",
+          "version": "11"
+        },
+        {
+          "browserName": "microsoftedge",
+          "platform": "Windows 10",
+          "version": "latest"
+        },
+        {
+          "browserName": "safari",
+          "platform": "OS X 10.13",
+          "version": "latest"
+        }
+      ]
+    }
+  }
 }
