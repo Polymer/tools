@@ -1,3 +1,3 @@
 define([], function () {
-  window.addExcutedForImport('x');
+  window.addExecutedForImport('x');
 });

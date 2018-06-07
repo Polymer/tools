@@ -1,3 +1,3 @@
 define(['./z/z.js'], () => {
-  window.addExcutedForImport('y');
+  window.addExecutedForImport('y');
 });

@@ -1,3 +1,3 @@
 define([], () => {
-  window.addExcutedForImport('z');
+  window.addExecutedForImport('z');
 });

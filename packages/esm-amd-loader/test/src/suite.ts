@@ -52,7 +52,7 @@ interface Window {
   executed: {[url: string]: true};
   checkExecuted: (key: string) => void;
   executionOrder: string[];
-  addExcutedForImport?: (key: string) => void;
+  addExecutedForImport?: (key: string) => void;
   testImportMeta?: (url: string) => void;
 }
 
@@ -67,7 +67,7 @@ setup(() => {
   define._reset!();
   window.executed = {};
   window.executionOrder = [];
-  window.addExcutedForImport = undefined;
+  window.addExecutedForImport = undefined;
   window.testImportMeta = undefined;
 });
 
@@ -407,10 +407,10 @@ suite('html imports', () => {
   }
 
   function testImport(href: string, expectedOrder: string[], done: () => void) {
-      // Each time and amd module in the chain is executed, it registers itself.
+      // Each time an amd module in the chain is executed, it registers itself.
       // If we've reached the length of modules we are expecing to be loaded,
       // we check if the right modules were loaded in the expected order
-      window.addExcutedForImport = (name: string) => {
+      window.addExecutedForImport = (name: string) => {
           window.executionOrder.push(name);
           if (window.executionOrder.length === expectedOrder.length) {
               assert.deepEqual(window.executionOrder, expectedOrder);
