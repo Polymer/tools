@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "tslint": "^5.10.0",
-    "typescript": "^2.8.3",
+    "typescript": "~2.8.3",
     "typescript-json-schema": "^0.23.0"
   }
 }
