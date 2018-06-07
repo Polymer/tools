@@ -28,7 +28,8 @@ import constants from './constants';
  */
 export function appendUrlPath(url_: string, extension: string): string {
   const uri = Uri.parse(url_);
-  const newUri = Uri.from(Object.assign(uri, { path: `${uri.path}${extension}` });
+  const newUri =
+      Uri.from(Object.assign(uri, {path: `${uri.path}${extension}`}));
   return newUri.toString();
 }
 /**
