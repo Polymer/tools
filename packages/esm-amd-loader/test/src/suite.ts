@@ -435,7 +435,7 @@ suite('html imports', () => {
 
   test('import with meta', (done) => {
     window.testImportMeta = (url) => {
-        assert.match(url, /https?:\/\/.+\/html-import\/meta/);
+        assert.match(url, /https?:\/\/.+\/html-import\/meta\/import-meta.html/);
         done();
     };
     importHref('../html-import/meta/import-meta.html');
