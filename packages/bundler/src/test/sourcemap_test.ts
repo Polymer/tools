@@ -13,7 +13,6 @@
  */
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import * as chai from 'chai';
 import * as dom5 from 'dom5';
 import * as path from 'path';
@@ -34,22 +33,22 @@ const assert = chai.assert;
 suite('Bundler', () => {
   let bundler: Bundler;
 
-  async function bundle(inputPath: string, opts?: BundlerOptions):
-      Promise<BundledHtmlDocument> {
-        // Don't modify options directly because test-isolation problems occur.
-        const bundlerOpts = Object.assign({}, opts || {});
-        if (!bundlerOpts.analyzer) {
-          bundlerOpts.analyzer = new Analyzer(
-              {urlLoader: new FsUrlLoader(path.dirname(inputPath))});
-          inputPath = path.basename(inputPath);
-        }
-        bundler = new Bundler(bundlerOpts);
-        const manifest = await bundler.generateManifest(
-            [bundler.analyzer.resolveUrl(inputPath as PackageRelativeUrl)!]);
-        const {documents} = await bundler.bundle(manifest);
-        return documents.get(bundler.analyzer.resolveUrl(inputPath)!)! as
-            BundledHtmlDocument;
-      }
+  async function bundle(
+      inputPath: string, opts?: BundlerOptions): Promise<BundledHtmlDocument> {
+    // Don't modify options directly because test-isolation problems occur.
+    const bundlerOpts = Object.assign({}, opts || {});
+    if (!bundlerOpts.analyzer) {
+      bundlerOpts.analyzer =
+          new Analyzer({urlLoader: new FsUrlLoader(path.dirname(inputPath))});
+      inputPath = path.basename(inputPath);
+    }
+    bundler = new Bundler(bundlerOpts);
+    const manifest = await bundler.generateManifest(
+        [bundler.analyzer.resolveUrl(inputPath as PackageRelativeUrl)!]);
+    const {documents} = await bundler.bundle(manifest);
+    return documents.get(bundler.analyzer.resolveUrl(inputPath)!)! as
+        BundledHtmlDocument;
+  }
 
   function getLine(original: string, lineNum: number) {
     const lines = original.split('\n');

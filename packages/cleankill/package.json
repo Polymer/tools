@@ -1,0 +1,19 @@
+{
+  "name": "cleankill",
+  "version": "2.0.0",
+  "description": "Hook SIGINT and cleanly shut down your async code",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/cleankill",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "license": "BSD-3-Clause",
+  "repository": "github:Polymer/tools",
+  "scripts": {
+    "build": "npm run clean && tsc",
+    "clean": "rm -f *.js *.d.ts"
+  },
+  "main": "index.js",
+  "typings": "./index.d.ts",
+  "engine": ">=4",
+  "dependencies": {
+    "@types/node": "^8.10.19"
+  }
+}

@@ -13,7 +13,6 @@
  */
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import * as chai from 'chai';
 import {execSync} from 'child_process';
 import * as fs from 'fs';
@@ -45,8 +44,7 @@ suite('polymer-bundler CLI', () => {
     const stdout =
         execSync([
           `node ${
-                  cliPath
-                } --root test/html --inline-scripts --inline-css absolute-paths.html`,
+              cliPath} --root test/html --inline-scripts --inline-css absolute-paths.html`,
         ].join(' && '))
             .toString();
     assert.include(stdout, '.absolute-paths-style');
