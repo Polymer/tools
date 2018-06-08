@@ -55,3 +55,11 @@ matrix:
       sauce_connect: true
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
+
+  - node_js: '10'
+    addons:
+      chrome: stable
+      firefox: latest
+      sauce_connect: true
+    env:
+    - TEST_COMMAND="xvfb-run npm run test:integration"
