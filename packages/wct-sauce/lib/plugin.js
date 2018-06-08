@@ -12,6 +12,7 @@ var request = require('request');
 
 var browsers = require('./browsers');
 var sauce    = require('./sauce');
+var travis   = require('./travis');
 
 /** WCT plugin that enables support for remote browsers via Sauce Labs. */
 module.exports = function(wct, pluginOptions) {
@@ -112,7 +113,7 @@ function expandOptions(options) {
     jobName: process.env.TRAVIS_REPO_SLUG,
     visibility: 'public'
   });
-  if (sauce.isTravisSauceConnectRunning()) {
+  if (travis.isTravisSauceConnectRunning()) {
     _.defaults(options, {
       // Under Travis CI, the tunnel id is $TRAVIS_JOB_NUMBER: https://docs.travis-ci.com/user/sauce-connect
       tunnelId: process.env.TRAVIS_JOB_NUMBER
