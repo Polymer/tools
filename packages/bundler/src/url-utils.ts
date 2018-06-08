@@ -31,6 +31,7 @@ export function appendUrlPath(url: string, extension: string): string {
   return Uri.from({scheme, authority, path: path + extension, query, fragment})
       .toString();
 }
+
 /**
  * Given a string representing a relative path of some form, ensure a `./`
  * leader if it doesn't already start with dot-based path leader or a scheme
