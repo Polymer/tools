@@ -4,10 +4,9 @@
   "description": "Utilities for working with parse5 ASTs",
   "license": "BSD-3-Clause",
   "author": "The Polymer Authors",
-  "bugs": {
-    "url": "https://github.com/Polymer/dom5/issues"
-  },
-  "homepage": "https://github.com/Polymer/dom5",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/dom5",
+  "repository": "github:Polymer/tools",
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run test",
@@ -36,6 +35,5 @@
   "typings": "lib/index.d.ts",
   "directories": {
     "test": "test"
-  },
-  "repository": "github:Polymer/tools"
+  }
 }

@@ -2,8 +2,7 @@
   "lerna": "2.10.1",
   "packages": [
     "packages/*",
-    "packages/esm-amd-loader/test",
-    "packages/web-component-tester/wct-browser-legacy"
+    "packages/esm-amd-loader/test"
   ],
   "version": "independent",
   "command": {
