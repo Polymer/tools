@@ -26,8 +26,8 @@ import constants from './constants';
  * Produces:
  *     'file:///something/something.html_omg.js?ponies'
  */
-export function appendUrlPath(url_: string, extension: string): string {
-  const {scheme, authority, path, query, fragment} = Uri.parse(url_);
+export function appendUrlPath(url: string, extension: string): string {
+  const {scheme, authority, path, query, fragment} = Uri.parse(url);
   return Uri.from({scheme, authority, path: path + extension, query, fragment})
       .toString();
 }
