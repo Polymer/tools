@@ -123,7 +123,7 @@ Most optimizations are disabled by default. To make sure the correct build enhan
 
 Run `polymer help build` for the full list of available options & optimizations.
 
-If you need support for something that is missing from the CLI, check out the [polymer-build](https://github.com/Polymer/polymer-build) library. Is the JS library that powers the CLI, and calling it directly gives you much greater control than the CLI can provide. Visit the repo for usage information and examples.
+If you need support for something that is missing from the CLI, check out the [polymer-build](https://github.com/Polymer/tools/tree/master/packages/build) library. Is the JS library that powers the CLI, and calling it directly gives you much greater control than the CLI can provide. Visit the repo for usage information and examples.
 
 
 ### `polymer analyze [files...]`
