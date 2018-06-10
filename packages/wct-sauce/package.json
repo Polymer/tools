@@ -68,11 +68,9 @@
     "uuid": "^2.0.1"
   },
   "devDependencies": {
-    "chai": "^3.3.0",
     "gulp": "^3.8.10",
     "gulp-jshint": "^2.0.0",
     "jshint": "^2.8.0",
-    "jshint-stylish": "^2.0.1",
-    "mocha": "^2.2.4"
+    "jshint-stylish": "^2.0.1"
   }
 }

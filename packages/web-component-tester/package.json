@@ -103,7 +103,6 @@
     "@types/rimraf": "0.0.28",
     "@types/semver": "^5.3.30",
     "@types/sinon": "^1.16.31",
-    "@types/sinon-chai": "^2.7.27",
     "@types/socket.io": "^1.4.27",
     "@types/spdy": "^3.4.4",
     "bower": "^1.7.9",
