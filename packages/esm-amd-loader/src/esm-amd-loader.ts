@@ -24,6 +24,10 @@ type onFailedCallback = (error: Error) => void;
 type NormalizedUrl = string&{_normalized: never};
 
 (function() {
+if (window.define) {
+  /* The loader was already loaded, make sure we don't reset it's state. */
+  return;
+}
 
 // Set to true for more logging. Anything guarded by an
 // `if (debugging)` check will not appear in the final output.
