@@ -52,6 +52,8 @@ interface Window {
   executed: {[url: string]: true};
   checkExecuted: (key: string) => void;
   executionOrder: string[];
+  addExecutedForImport?: (key: string) => void;
+  testImportMeta?: (url: string) => void;
 }
 
 window.checkExecuted = (key) => {
@@ -65,6 +67,8 @@ setup(() => {
   define._reset!();
   window.executed = {};
   window.executionOrder = [];
+  window.addExecutedForImport = undefined;
+  window.testImportMeta = undefined;
 });
 
 test('define an empty module', (done) => {
@@ -391,5 +395,49 @@ suite('cyclical dependencies', () => {
       assert.deepEqual(b.usesAAtExecution, 'a');
       done();
     });
+  });
+});
+
+suite('html imports', () => {
+  function importHref(href: string) {
+    const link = document.createElement('link');
+    link.rel = 'import';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
+  function testImport(href: string, expectedOrder: string[], done: () => void) {
+     // Each time an amd module in the chain is executed, it registers itself.
+     // If we've reached the length of modules we are expecing to be loaded,
+     // we check if the right modules were loaded in the expected order
+     window.addExecutedForImport = (name: string) => {
+       window.executionOrder.push(name);
+       if (window.executionOrder.length === expectedOrder.length) {
+         assert.deepEqual(window.executionOrder, expectedOrder);
+         done();
+       }
+     };
+
+    importHref(href);
+  }
+
+  test('modules in root level html import', (done) => {
+    testImport('root-html-import.html', ['x', 'root-html-import'], done);
+  });
+
+  test('modules inside deeper level html import', (done) => {
+    testImport('../html-import/y/deep-import.html', ['x', 'z', 'y', 'deep-import'], done);
+  });
+
+  test('imports with child imports', (done) => {
+    testImport('../html-import/parent-import.html', ['z', 'y', 'child-import', 'x', 'parent-import'], done);
+  });
+
+  test('import with meta', (done) => {
+    window.testImportMeta = (url) => {
+      assert.match(url, /https?:\/\/.+\/html-import\/meta\/import-meta.html/);
+      done();
+    };
+    importHref('../html-import/meta/import-meta.html');
   });
 });

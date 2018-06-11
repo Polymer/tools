@@ -122,7 +122,7 @@ gulp.task('build:browser', ['build:typescript-browser'], function (done) {
 gulp.task('build:wct-browser-legacy:a11ySuite', function () {
   return gulp.src(['data/a11ySuite-npm-header.txt', 'data/a11ySuite.js'])
     .pipe(concat('a11ySuite.js'))
-    .pipe(gulp.dest('wct-browser-legacy/'));
+    .pipe(gulp.dest('../wct-browser-legacy/'));
 });
 
 gulp.task('build:wct-browser-legacy:browser', ['build:typescript-browser'], function (done) {
@@ -134,7 +134,7 @@ gulp.task('build:wct-browser-legacy:browser', ['build:typescript-browser'], func
       format: 'iife',
       banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
       intro: 'window.__wctUseNpm = true;',
-      dest: 'wct-browser-legacy/browser.js',
+      dest: '../wct-browser-legacy/browser.js',
       sourceMap: true,
       sourceMapFile: path.resolve('browser.js.map')
     }).then(function () {

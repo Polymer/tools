@@ -30,6 +30,12 @@
 		{
 			"path": "packages/project-config"
 		},
+    {
+      "path": "packages/wct-browser-legacy"
+    },
+    {
+      "path": "packages/wct-local"
+    },
 		{
 			"path": "packages/web-component-tester"
 		},

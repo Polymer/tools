@@ -46,7 +46,6 @@ matrix:
       firefox: latest
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
-    - SKIP_REMOTE_BROWSERS=true
 
   - node_js: '9'
     addons:
@@ -55,3 +54,8 @@ matrix:
       sauce_connect: true
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
+    # We can't run Sauce without credentials. PRs from forks don't get secure
+    # environment variables. Only run Sauce if we have those vars. Note this
+    # means that community PRs never run on Sauce, even when the builds show
+    # all green.
+    - WCT_SAUCE=$TRAVIS_SECURE_ENV_VARS

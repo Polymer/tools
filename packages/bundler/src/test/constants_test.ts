@@ -13,16 +13,13 @@
  */
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import * as chai from 'chai';
 import constants from '../constants';
 
 const assert = chai.assert;
 
 suite('Constants', () => {
-
   suite('URLs', () => {
-
     test('absolute urls', () => {
       const abs = constants.ABS_URL;
 

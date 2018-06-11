@@ -14,7 +14,6 @@
  */
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import * as chai from 'chai';
 import {Analyzer, FsUrlLoader, FsUrlResolver, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 
@@ -24,7 +23,6 @@ import {inMemoryAnalyzer} from './test-utils';
 chai.config.showDiff = true;
 
 suite('Bundler', () => {
-
   function serializeMap(map: Map<string, Set<string>>): string {
     let s = '';
     for (const key of Array.from(map.keys()).sort()) {
@@ -38,7 +36,6 @@ suite('Bundler', () => {
   }
 
   suite('Deps index tests', () => {
-
     let analyzer: Analyzer;
     function resolve(url: string) {
       return analyzer.resolveUrl(url as PackageRelativeUrl)! ||
@@ -125,7 +122,6 @@ suite('Bundler', () => {
     });
 
     suite('module imports', () => {
-
       setup(() => {
         analyzer = inMemoryAnalyzer({
           'multiple-external-modules.html': `

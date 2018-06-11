@@ -13,7 +13,6 @@
  */
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import {assert} from 'chai';
 
 import {Bundle, mergeBundles} from '../bundle-manifest';
@@ -22,7 +21,6 @@ import {bundle} from '../es6-module-bundler';
 import {heredoc, inMemoryAnalyzer} from './test-utils';
 
 suite('Es6ModuleBundler', () => {
-
   const analyzer = inMemoryAnalyzer({
     'multiple-inline-modules.html': `
       <script type="module">

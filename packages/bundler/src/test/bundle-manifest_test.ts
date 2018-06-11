@@ -13,7 +13,6 @@
  */
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import * as chai from 'chai';
 import {ResolvedUrl} from 'polymer-analyzer';
 import {resolvedUrl as r} from 'polymer-analyzer/lib/test/test-utils';
@@ -25,7 +24,6 @@ chai.config.showDiff = true;
 const assert = chai.assert;
 
 suite('BundleManifest', () => {
-
   /**
    * Convenience method to load a bundle from the serialized form:
    * `[entrypoint1,entrypoint2]->[file1,file2]`
@@ -52,7 +50,6 @@ suite('BundleManifest', () => {
   }
 
   suite('mergeBundles()', () => {
-
     test('can not work unless at least one Bundle provided', () => {
       assert.throws(() => mergeBundles([]));
     });
@@ -76,7 +73,6 @@ suite('BundleManifest', () => {
   });
 
   suite('constructor and generated maps', () => {
-
     const bundles = [
       '[A]->[A,C]',  //
       '[B]->[B,D]',
@@ -111,7 +107,6 @@ suite('BundleManifest', () => {
   });
 
   suite('generateBundles', () => {
-
     test('produces an array of bundles from dependencies index', () => {
       const depsIndex = new Map<ResolvedUrl, Set<ResolvedUrl>>();
       depsIndex.set(r`A`, new Set([r`A`, r`B`, r`C`, r`G`]));
@@ -156,9 +151,7 @@ suite('BundleManifest', () => {
   });
 
   suite('BundleStrategy', () => {
-
     test('composeStrategies', () => {
-
       const bundles: Bundle[] = [
         '[A]->[1,A]',
         '[B]->[2,B]',
@@ -193,7 +186,6 @@ suite('BundleManifest', () => {
     });
 
     suite('generateEagerMergeStrategy', () => {
-
       suite('simple dependency graph', () => {
         const bundles: Bundle[] = [
           '[A]->[1,A]',
@@ -286,7 +278,6 @@ suite('BundleManifest', () => {
     });
 
     suite('generateSharedDepsMergeStrategy', () => {
-
       const bundles: Bundle[] = [
         '[A]->[A,1]',
         '[A,B]->[2]',
@@ -356,7 +347,6 @@ suite('BundleManifest', () => {
       // could do something smarter for the case where groups of deps are
       // exclusive.  Leaving this test here as a future behavior to consider.
       test.skip('generates distinct bundles for exclusive graphs', () => {
-
         const bundlesSplit: Bundle[] = [
           // group [A,B,C]
           '[A]->[1,A]',
@@ -390,7 +380,6 @@ suite('BundleManifest', () => {
     });
 
     suite('generateShellMergeStrategy', () => {
-
       test('will merge shop-style shell app dependencies into shell', () => {
         const bundles = [
           '[CART]->[1,CART]',
@@ -466,9 +455,7 @@ suite('BundleManifest', () => {
   });
 
   suite('Shop example', () => {
-
     test('generates expected maximal sharding based on dependencies', () => {
-
       const depsIndex: TransitiveDependenciesMap = new Map();
 
       depsIndex.set(r`app-shell.html`, new Set([r`app-shell.html`]));

@@ -13,7 +13,6 @@
  */
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import {assert} from 'chai';
 import {PackageRelativeUrl} from 'polymer-analyzer';
 
@@ -63,7 +62,6 @@ suite('Es6 Module Bundling', () => {
   });
 
   suite('rewriting export specifiers', () => {
-
     // TODO(usergenic): If we want to support `export x from './something.js'`
     // then Rollup returns the following message: "This experimental syntax
     // requires enabling the parser plugin: 'exportDefaultFrom' (1:7)"

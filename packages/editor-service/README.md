@@ -8,7 +8,7 @@ These editor plugins use the editor service:
 
  * Atom: https://github.com/Polymer/atom-plugin
  * VSCode: https://github.com/Polymer/vscode-plugin
- * Sublime Text: https://github.com/Polymer/polymer-editor-service/wiki/Sublime-Text
+ * Sublime Text: [docs/sublime.md](docs/sublime.md)
 
 ## More Information
 

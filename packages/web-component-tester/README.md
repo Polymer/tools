@@ -214,11 +214,27 @@ Note that by specifying a plugin's configuration, you are letting WCT know that
 it should load that plugin. If you wish to provide default configuration for a
 plugin, but not enable it, you can have it default to disabled:
 
+Requesting that plugin via `--plugin` on the command line (or overriding the
+plugin's configuration to `disabled: false`) will cause the plugin to kick in.
+
+### Sauce
+
+The **sauce** plugin runs your tests on [Sauce](https://saucelabs.com/).
+
+To use the sauce plugin you need to include credentials. To do this, either
+set the `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables, or
+set the `username` and `accessKey` fields in the `plugins.sauce` section of
+your `wct.conf.json`.
+
+You can configure the browsers that Sauce will run by setting the `browsers`
+array in the plugin configuration. The options are the same as the ones documented
+on the Sauce Wiki [here](https://wiki.saucelabs.com/display/DOCS/Test+Configuration+Options#TestConfigurationOptions-RequiredSeleniumTestConfigurationSettings).
+For example:
+
 ```js
 {
   "plugins": {
     "sauce": {
-      "disabled": true,
       "browsers": [{
           "browserName": "microsoftedge",
           "platform": "Windows 10",
@@ -238,11 +254,6 @@ plugin, but not enable it, you can have it default to disabled:
   }
 }
 ```
-
-For more information on Sauce configuration, [see their Wiki](https://wiki.saucelabs.com/display/DOCS/Test+Configuration+Options#TestConfigurationOptions-RequiredSeleniumTestConfigurationSettings)
-
-Requesting that plugin via `--plugin` on the command line (or overriding the
-plugin's configuration to `disabled: false`) will cause the plugin to kick in.
 
 ## Variant dependencies
 
