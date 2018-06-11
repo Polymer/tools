@@ -50,11 +50,11 @@ const PolymerProject = require('polymer-build').PolymerProject;
 
 const project = new PolymerProject({
   entrypoint: 'index.html',
-  shell: 'src/my-app.html',
+  shell: 'src/my-app.js',
   fragments: [
-    'src/my-view1.html',
-    'src/my-view2.html',
-    'src/my-view3.html'
+    'src/my-view1.js',
+    'src/my-view2.js',
+    'src/my-view3.js'
   ]
 });
 ```
