@@ -277,8 +277,11 @@ suite('dynamic require', () => {
       num404s++;
       if (num404s === 2) {
         window.removeEventListener('error', on404);
-        assert.equal(numCallbackCalls, 1);
-        done();
+        // Need a tick to ensure the loader error handlers have fired.
+        setTimeout(() => {
+          assert.equal(numCallbackCalls, 1);
+          done();
+        });
       }
     }
 
