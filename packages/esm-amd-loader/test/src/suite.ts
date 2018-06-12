@@ -407,16 +407,16 @@ suite('html imports', () => {
   }
 
   function testImport(href: string, expectedOrder: string[], done: () => void) {
-     // Each time an amd module in the chain is executed, it registers itself.
-     // If we've reached the length of modules we are expecing to be loaded,
-     // we check if the right modules were loaded in the expected order
-     window.addExecutedForImport = (name: string) => {
-       window.executionOrder.push(name);
-       if (window.executionOrder.length === expectedOrder.length) {
-         assert.deepEqual(window.executionOrder, expectedOrder);
-         done();
-       }
-     };
+    // Each time an amd module in the chain is executed, it registers itself.
+    // If we've reached the length of modules we are expecing to be loaded,
+    // we check if the right modules were loaded in the expected order
+    window.addExecutedForImport = (name: string) => {
+      window.executionOrder.push(name);
+      if (window.executionOrder.length === expectedOrder.length) {
+        assert.deepEqual(window.executionOrder, expectedOrder);
+        done();
+      }
+    };
 
     importHref(href);
   }
@@ -426,11 +426,17 @@ suite('html imports', () => {
   });
 
   test('modules inside deeper level html import', (done) => {
-    testImport('../html-import/y/deep-import.html', ['x', 'z', 'y', 'deep-import'], done);
+    testImport(
+        '../html-import/y/deep-import.html',
+        ['x', 'z', 'y', 'deep-import'],
+        done);
   });
 
   test('imports with child imports', (done) => {
-    testImport('../html-import/parent-import.html', ['z', 'y', 'child-import', 'x', 'parent-import'], done);
+    testImport(
+        '../html-import/parent-import.html',
+        ['z', 'y', 'child-import', 'x', 'parent-import'],
+        done);
   });
 
   test('import with meta', (done) => {
