@@ -71,7 +71,7 @@ export let _config: Config = {
 /**
  * Merges initial `options` into WCT's global configuration.
  *
- * @param {Object} options The options to merge. See `browser/config.js` for a
+ * @param {Object} options The options to merge. See `browser/config.ts` for a
  *     reference.
  */
 export function setup(options: Config) {
