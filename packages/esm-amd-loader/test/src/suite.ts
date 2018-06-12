@@ -268,19 +268,25 @@ suite('dynamic require', () => {
   });
 
   test('calls error callback only once on multiple 404s', (done) => {
-    let numErrors = 0;
+    let num404s = 0;
+    let numCallbackCalls = 0;
+
+    window.addEventListener('error', on404, true);
+
+    function on404() {
+      if (++num404s === 2) {
+        window.removeEventListener('error', on404);
+        assert.equal(numCallbackCalls, 1);
+        done();
+      }
+    }
 
     define(['require'], (require: any) => {
       require(
           ['./not-found-a.js', './not-found-b.js'],
           () => assert.fail(),
-          () => numErrors++);
+          () => numCallbackCalls++);
     });
-
-    setTimeout(() => {
-      assert.equal(numErrors, 1);
-      done();
-    }, 1000);
   });
 });
 
