@@ -274,7 +274,8 @@ suite('dynamic require', () => {
     window.addEventListener('error', on404, true);
 
     function on404() {
-      if (++num404s === 2) {
+      num404s++;
+      if (num404s === 2) {
         window.removeEventListener('error', on404);
         assert.equal(numCallbackCalls, 1);
         done();
