@@ -16,6 +16,7 @@ import * as path from 'path';
 import {Analyzer, Import, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {buildDepsIndex} from 'polymer-bundler/lib/deps-index';
 import {ProjectConfig} from 'polymer-project-config';
+import Uri from 'vscode-uri';
 
 import File = require('vinyl');
 
@@ -124,8 +125,8 @@ function createPushEntryFromImport(importFeature: Import): PushManifestEntry {
  * to be added to the overall push manifest.
  */
 async function generatePushManifestEntryForUrl(
-    analyzer: Analyzer,
-    url: ResolvedUrl): Promise<PushManifestEntryCollection> {
+    analyzer: Analyzer, url: ResolvedUrl, root: LocalFsPath):
+    Promise<PushManifestEntryCollection> {
   const analysis = await analyzer.analyze([url]);
   const result = analysis.getDocument(url);
 
@@ -151,7 +152,8 @@ async function generatePushManifestEntryForUrl(
     // Probably an issue more generally with all URLs analyzed out of
     // documents, but base tags are somewhat rare.
     const analyzedImportUrl = analyzedImport.url;
-    const relativeImportUrl = analyzer.urlResolver.relative(analyzedImportUrl);
+    const relativeImportUrl =
+        urlFromPath(root, Uri.parse(analyzedImportUrl).path as LocalFsPath);
     const analyzedImportEntry = pushManifestEntries[relativeImportUrl];
     if (!analyzedImportEntry) {
       pushManifestEntries[relativeImportUrl] =
@@ -233,8 +235,8 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     for (const fragment of allFragments) {
       const absoluteFragmentUrl =
           '/' + this.analyzer.urlResolver.relative(fragment);
-      pushManifest[absoluteFragmentUrl] =
-          await generatePushManifestEntryForUrl(this.analyzer, fragment);
+      pushManifest[absoluteFragmentUrl] = await generatePushManifestEntryForUrl(
+          this.analyzer, fragment, this.config.root as LocalFsPath);
     }
 
     // The URLs we got may be absolute or relative depending on how they were
