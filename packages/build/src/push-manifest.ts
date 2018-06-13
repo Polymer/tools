@@ -13,10 +13,9 @@
  */
 
 import * as path from 'path';
-import {Analyzer, Import, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
+import {Analyzer, FsUrlResolver, Import, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {buildDepsIndex} from 'polymer-bundler/lib/deps-index';
 import {ProjectConfig} from 'polymer-project-config';
-import Uri from 'vscode-uri';
 
 import File = require('vinyl');
 
@@ -125,8 +124,8 @@ function createPushEntryFromImport(importFeature: Import): PushManifestEntry {
  * to be added to the overall push manifest.
  */
 async function generatePushManifestEntryForUrl(
-    analyzer: Analyzer, url: ResolvedUrl, root: LocalFsPath):
-    Promise<PushManifestEntryCollection> {
+    analyzer: Analyzer,
+    url: ResolvedUrl): Promise<PushManifestEntryCollection> {
   const analysis = await analyzer.analyze([url]);
   const result = analysis.getDocument(url);
 
@@ -152,8 +151,7 @@ async function generatePushManifestEntryForUrl(
     // Probably an issue more generally with all URLs analyzed out of
     // documents, but base tags are somewhat rare.
     const analyzedImportUrl = analyzedImport.url;
-    const relativeImportUrl =
-        urlFromPath(root, Uri.parse(analyzedImportUrl).path as LocalFsPath);
+    const relativeImportUrl = analyzer.urlResolver.relative(analyzedImportUrl);
     const analyzedImportEntry = pushManifestEntries[relativeImportUrl];
     if (!analyzedImportEntry) {
       pushManifestEntries[relativeImportUrl] =
@@ -183,7 +181,10 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     super({objectMode: true});
     this.files = new Map();
     this.config = config;
-    this.analyzer = new Analyzer({urlLoader: new FileMapUrlLoader(this.files)});
+    this.analyzer = new Analyzer({
+      urlLoader: new FileMapUrlLoader(this.files),
+      urlResolver: new FsUrlResolver(config.root),
+    });
     this.outPath =
         path.join(this.config.root, outPath || 'push-manifest.json') as
         LocalFsPath;
@@ -237,8 +238,8 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     for (const fragment of allFragments) {
       const absoluteFragmentUrl =
           '/' + this.analyzer.urlResolver.relative(fragment);
-      pushManifest[absoluteFragmentUrl] = await generatePushManifestEntryForUrl(
-          this.analyzer, fragment, this.config.root as LocalFsPath);
+      pushManifest[absoluteFragmentUrl] =
+          await generatePushManifestEntryForUrl(this.analyzer, fragment);
     }
 
     // The URLs we got may be absolute or relative depending on how they were
