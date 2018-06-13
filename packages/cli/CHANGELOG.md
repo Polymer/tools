@@ -4,6 +4,9 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.4 [06-13-2018]
+* Regenerate shrinkwrap to pick up latest dependencies.
+
 ## v1.7.3 [06-11-2018]
 * Regenerate shrinkwrap to pick up latest dependencies.
 
