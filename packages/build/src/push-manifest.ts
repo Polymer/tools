@@ -214,13 +214,15 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     // Bundler's buildDepsIndex code generates an index with all fragments and
     // all lazy-imports encountered are the keys, so we'll use that function to
     // produce the set of all fragments to generate push-manifest entries for.
-    const allFragments = new Set(
-        (await buildDepsIndex(
-             this.config.allFragments.map(
-                 (path) => this.analyzer.resolveUrl(urlFromPath(
-                     this.config.root as LocalFsPath, path as LocalFsPath))!),
-             this.analyzer))
-            .keys());
+    const depsIndex = await buildDepsIndex(
+        this.config.allFragments.map(
+            (path) => this.analyzer.resolveUrl(urlFromPath(
+                this.config.root as LocalFsPath, path as LocalFsPath))!),
+        this.analyzer);
+    // Don't include bundler's fake "sub-bundle" URLs (e.g.
+    // "foo.html>external#1>bar.js").
+    const allFragments =
+        new Set([...depsIndex.keys()].filter((url) => !url.includes('>')));
 
     // If an app-shell exists, use that as our main push URL because it has a
     // reliable URL. Otherwise, support the single entrypoint URL.
