@@ -63,7 +63,7 @@ suite('resolve', () => {
 
   test('non-component root to bower_components', async () => {
     assert.equal(
-        resolve('shallow2', rootMain, 'bower_components'), './bower_components/shallow2/shallow2.js');
+        resolve('bower_dep', rootMain, 'bower_components'), './bower_components/bower_dep/bower_dep.js');
   });
 
   test('shallow dep to scoped dep', async () => {
