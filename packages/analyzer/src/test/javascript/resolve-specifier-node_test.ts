@@ -61,44 +61,49 @@ suite('resolve', () => {
         './node_modules/@scope/scoped/scoped.js');
   });
 
+  test('non-component root to bower_components', async () => {
+    assert.equal(
+        resolve('shallow2', rootMain, 'bower_components'), './bower_components/shallow2/shallow2.js');
+  });
+
   test('shallow dep to scoped dep', async () => {
     assert.equal(
-        resolve('@scope/scoped', shallowDepMain, shallowRootComponentInfo),
+        resolve('@scope/scoped', shallowDepMain, 'node_modules', shallowRootComponentInfo),
         '../@scope/scoped/scoped.js');
   });
 
   test('scoped dep to shallow dep', async () => {
     assert.equal(
-        resolve('shallow', scopedDepMain, shallowRootComponentInfo),
+        resolve('shallow', scopedDepMain, 'node_modules', shallowRootComponentInfo),
         '../../shallow/shallow.js');
   });
 
   test('component-root to path', async () => {
     assert.equal(
-        resolve('./root.js', rootMain, shallowRootComponentInfo), './root.js');
+        resolve('./root.js', rootMain, 'node_modules', shallowRootComponentInfo), './root.js');
   });
 
   test('component-root to shallow dep', async () => {
     assert.equal(
-        resolve('shallow', rootMain, shallowRootComponentInfo),
+        resolve('shallow', rootMain, 'node_modules', shallowRootComponentInfo),
         '../shallow/shallow.js');
   });
 
   test('component-root to scoped dep', async () => {
     assert.equal(
-        resolve('@scope/scoped', rootMain, shallowRootComponentInfo),
+        resolve('@scope/scoped', rootMain, 'node_modules', shallowRootComponentInfo),
         '../@scope/scoped/scoped.js');
   });
 
   test('scoped-component-root to shallow dep', async () => {
     assert.equal(
-        resolve('shallow', rootMain, scopedRootComponentInfo),
+        resolve('shallow', rootMain, 'node_modules', scopedRootComponentInfo),
         '../../shallow/shallow.js');
   });
 
   test('scoped-component-root to scoped dep', async () => {
     assert.equal(
-        resolve('@scope/scoped', rootMain, scopedRootComponentInfo),
+        resolve('@scope/scoped', rootMain, 'node_modules', scopedRootComponentInfo),
         '../scoped/scoped.js');
   });
 });

@@ -35,7 +35,7 @@ const isPathSpecifier = (s: string) => /^\.{0,2}\//.test(s);
  *   this parameter causes relative paths to be returns for this style.
  */
 export const resolve =
-    (specifier: string, documentPath: string, componentInfo?: {
+    (specifier: string, documentPath: string, moduleDirectory = 'node_modules', componentInfo?: {
       packageName: string,
       rootDir: string,
       componentDir: string
@@ -48,7 +48,7 @@ export const resolve =
 
       const dependencyFilepath = nodeResolve.sync(specifier, {
         basedir: dirname(importerFilepath),
-
+        moduleDirectory,
         // It's invalid to load a .json or .node file as a module on the web,
         // but this is what Node's resolution algorithm does
         // (https://nodejs.org/api/modules.html#modules_all_together), so we
