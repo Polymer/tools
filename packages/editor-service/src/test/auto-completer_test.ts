@@ -187,9 +187,7 @@ const attributeCompletions: CompletionItem[] = [
   },
 ];
 
-// TODO(https://github.com/Polymer/tools/issues/170): these tests are slightly
-//     flaky, skip for now.
-suite.skip('AutoCompleter', () => {
+suite('AutoCompleter', () => {
   const indexFile = path.join('editor-service', 'index.html');
   const indexContents = readFileSync(path.join(fixtureDir, indexFile), 'utf-8');
   const tagPosition = {line: 7, column: 9};
