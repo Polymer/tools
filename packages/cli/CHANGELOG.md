@@ -1,7 +1,8 @@
 # Changelog
 
-
-<!-- ## Unreleased -->
+## Unreleased
+* Fix incorrect relative paths to the component directory in push manifests.
+* Fix push manifest generation crash with ES module projects.
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.3 [06-11-2018]
