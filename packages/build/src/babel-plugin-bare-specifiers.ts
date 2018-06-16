@@ -91,7 +91,12 @@ const maybeResolve = (
         rootDir: rootDir!,
       };
     }
-    return resolve(specifier, filePath, componentInfo);
+
+    let moduleDirectory = 'node_modules';
+    if (componentDir) {
+      moduleDirectory = componentDir.substring(componentDir.lastIndexOf('/'), componentDir.length);
+    }
+    return resolve(specifier, filePath, moduleDirectory, componentInfo);
   } catch (e) {
     // `require` and `meta` are fake imports that our other build tooling
     // injects, so we should not warn for them.
