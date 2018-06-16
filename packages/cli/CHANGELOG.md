@@ -6,6 +6,8 @@
 
 ## v1.7.4 [06-13-2018]
 * Regenerate shrinkwrap to pick up latest dependencies.
+* Fix issue caused by previous update where `polymer test -s` flag could not
+  be used multiple times.
 
 ## v1.7.3 [06-11-2018]
 * Regenerate shrinkwrap to pick up latest dependencies.
