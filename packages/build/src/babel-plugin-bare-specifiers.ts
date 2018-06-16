@@ -92,7 +92,7 @@ const maybeResolve = (
       };
     }
 
-    let moduleDirectory;
+    let moduleDirectory = 'node_modules';
     if (componentDir) {
       moduleDirectory = componentDir.substring(componentDir.lastIndexOf('/'), componentDir.length);
     }
