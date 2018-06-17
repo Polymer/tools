@@ -9,7 +9,7 @@
  */
 import * as launchpad from 'launchpad';
 import * as wd from 'wd';
-import * as promisify from 'promisify-node';
+import {promisify} from 'util';
 
 type LaunchpadToWebdriver = (browser: launchpad.Browser, browserOptions?: string[]) => wd.Capabilities;
 const LAUNCHPAD_TO_SELENIUM: {[browser: string]: LaunchpadToWebdriver} = {
@@ -77,8 +77,8 @@ export async function expand(names: string[], browserOptions: {[name: string]: s
  * Exported and declared as `let` variables for testabilty in wct.
  */
 export let detect = async function detect(browserOptions: {[name: string]: string[]}): Promise<{[browser: string]: wd.Capabilities}> {
-  const launcher = await promisify(launchpad.local)();
-  const browsers = await promisify(launcher.browsers)();
+  const launcher = await promisify<launchpad.Launcher>(launchpad.local)();
+  const browsers = await promisify<launchpad.Browser[]>(launcher.browsers)();
 
   const results: {[browser: string]: wd.Capabilities} = {};
   for (const browser of browsers) {

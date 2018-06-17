@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as glob from 'glob';
 import * as _ from 'lodash';
 import * as path from 'path';
-import * as promisify from 'promisify-node';
+import {promisify} from 'util';
 
 /**
  * Expands a series of path patterns (globs, files, directories) into a set of
