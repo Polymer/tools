@@ -2,7 +2,7 @@
 
 <!-- ## Unreleased -->
 
-## 2.0.2 - 2018-06-13
+## 2.0.2 - 2018-06-18
 
 - Moved isTravisSauceConnectRunning function from lib/sauce.js to lib/travis.js.
 
