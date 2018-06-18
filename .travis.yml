@@ -35,8 +35,11 @@ matrix:
     env:
     - TEST_COMMAND="npm run test:unit"
 
-  # TODO(https://github.com/Polymer/tools/issues/280): update to node 10
   - node_js: '9'
+    env:
+    - TEST_COMMAND="npm run test:unit"
+
+  - node_js: '10'
     env:
     - TEST_COMMAND="npm run test:unit"
 
@@ -48,6 +51,19 @@ matrix:
     - TEST_COMMAND="xvfb-run npm run test:integration"
 
   - node_js: '9'
+    addons:
+      chrome: stable
+      firefox: latest
+      sauce_connect: true
+    env:
+    - TEST_COMMAND="xvfb-run npm run test:integration"
+    # We can't run Sauce without credentials. PRs from forks don't get secure
+    # environment variables. Only run Sauce if we have those vars. Note this
+    # means that community PRs never run on Sauce, even when the builds show
+    # all green.
+    - WCT_SAUCE=$TRAVIS_SECURE_ENV_VARS
+
+  - node_js: '10'
     addons:
       chrome: stable
       firefox: latest
