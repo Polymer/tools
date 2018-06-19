@@ -231,8 +231,8 @@ function createSelectPrompt(env: YeomanEnvironment) {
  * error will be thrown.
  */
 export async function runGenerator(
-    // tslint:disable-next-line: no-any typings issues in yeoman
     generatorName: string,
+    // tslint:disable-next-line: no-any typings issues in yeoman
     options: {[name: string]: any} = {}): Promise<void> {
   const templateName = options['templateName'] || generatorName;
 

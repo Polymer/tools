@@ -56,7 +56,6 @@ suite('init', () => {
   });
 
   suite('runGenerator', () => {
-
     test('runs the given generator', async () => {
       const GENERATOR_NAME = 'TEST-GENERATOR';
       const yeomanEnv = createFakeEnv();
@@ -91,11 +90,9 @@ suite('init', () => {
       assert.equal(
           error!.message, `Template ${UNKNOWN_GENERATOR_NAME} not found`);
     });
-
   });
 
   suite('promptGeneratorSelection', () => {
-
     let yeomanEnvMock: FakeEnv;
     interface Generator {
       generatorName: string;
@@ -238,7 +235,8 @@ suite('init', () => {
             foo: 'TEST',
           }));
       helpers.registerDependencies(yeomanEnv, [[
-                                     <any>function() {}, 
+                                     // tslint:disable-next-line
+                                     function() {} as any,
                                      'polymer-init-custom-template:app',
                                    ]]);
       try {
@@ -285,7 +283,5 @@ suite('init', () => {
         assert.equal(promptStub.firstCall.args[0][0].type, 'rawlist');
       });
     }
-
   });
-
 });

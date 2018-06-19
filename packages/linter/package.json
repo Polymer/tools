@@ -37,12 +37,10 @@
     "chai": "^3.5.0",
     "clang-format": "1.0.48",
     "knuth-shuffle": "^1.0.1",
-    "mocha": "^3.1.0",
+    "mocha": "^5.1.1",
     "polymer-project-config": "^4.0.0",
     "source-map-support": "^0.4.3",
-    "tsc-then": "^1.0.1",
-    "tslint": "^5.9.1",
-    "typescript": "^2.7.1"
+    "tsc-then": "^1.0.1"
   },
   "scripts": {
     "prepublishOnly": "npm run build",
