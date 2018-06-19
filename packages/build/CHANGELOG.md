@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## [3.0.2] - 2018-06-18
+## [3.0.2] - 2018-06-19
 * Fix incorrect relative paths to the component directory in push manifests.
 * Fix push manifest generation crash with ES module projects.
 

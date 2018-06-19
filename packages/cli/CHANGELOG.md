@@ -1,14 +1,14 @@
 # Changelog
 
-## Unreleased
-* Fix incorrect relative paths to the component directory in push manifests.
-* Fix push manifest generation crash with ES module projects.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
-## v1.7.4 [06-13-2018]
+## v1.7.4 [06-19-2018]
 * Regenerate shrinkwrap to pick up latest dependencies.
 * Fix issue caused by previous update where `polymer test -s` flag could not
   be used multiple times.
+* Fix incorrect relative paths to the component directory in push manifests.
+* Fix push manifest generation crash with ES module projects.
 
 ## v1.7.3 [06-11-2018]
 * Regenerate shrinkwrap to pick up latest dependencies.

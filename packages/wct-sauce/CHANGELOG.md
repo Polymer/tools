@@ -1,8 +1,9 @@
 # Changelog
 
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
 
-## 2.0.2 - 2018-06-18
+## 2.0.2 - 2018-06-19
 
 - Moved isTravisSauceConnectRunning function from lib/sauce.js to lib/travis.js.
 
