@@ -47,6 +47,7 @@ PolymerElements/iron-resizable-behavior
 PolymerElements/iron-scroll-target-behavior
 PolymerElements/iron-scroll-threshold
 PolymerElements/iron-selector
+PolymerElements/iron-swipeable-container
 PolymerElements/iron-test-helpers
 PolymerElements/iron-validatable-behavior
 PolymerElements/iron-validator-behavior
