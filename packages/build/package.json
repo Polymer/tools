@@ -103,6 +103,6 @@
     "temp": "^0.8.3",
     "tsc-then": "^1.1.0",
     "vinyl-fs-fake": "^1.1.0",
-    "workbox-build": "^3.2.0"
+    "workbox-build": "^3.3.0"
   }
 }
