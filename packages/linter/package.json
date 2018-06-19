@@ -31,13 +31,11 @@
     "@types/babel-types": "^6.25.1",
     "@types/chai": "^3.4.34",
     "@types/clone": "^0.1.30",
-    "@types/mocha": "^2.2.32",
     "@types/node": "^8.10.11",
     "bower": "^1.8.0",
     "chai": "^3.5.0",
     "clang-format": "1.0.48",
     "knuth-shuffle": "^1.0.1",
-    "mocha": "^5.1.1",
     "polymer-project-config": "^4.0.0",
     "source-map-support": "^0.4.3",
     "tsc-then": "^1.0.1"

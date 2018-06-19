@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 * Updated Mocha to v5
+* Fixed incorrect CLI arguments
 
 ## 6.6.0 - 2018-05-08
 * Dropped support for node v6. This is a soft break, as we aren't

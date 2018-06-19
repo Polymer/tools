@@ -11,7 +11,8 @@
   "builds": [
     {
       "name": "unbundled-es",
-      "bundle": false
+      "bundle": false,
+      "addPushManifest": true
     },
     {
       "name": "unbundled-amd",

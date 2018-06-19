@@ -14,7 +14,6 @@
 
 /// <reference path="../../node_modules/@types/chai/index.d.ts" />
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 
 import * as chai from 'chai';
 import * as clone from 'clone';
@@ -27,13 +26,14 @@ import * as ast from '../parse5-utils';
 const assert = chai.assert;
 
 suite('AST Utils', function() {
-
   test('inSourceOrder', () => {
-    const html = parse5.parseFragment(`
+    const html = parse5.parseFragment(
+        `
           <span>oh</span><span>hi</span>
           <span>good</span>
         <span>bye</span>
-      `, {locationInfo: true});
+      `,
+        {locationInfo: true});
     const spans = dom5.queryAll(html, dom5.predicates.hasTagName('span'));
     assert.isTrue(ast.inSourceOrder(spans[0], spans[1]), 'oh -> hi');
     assert.isTrue(ast.inSourceOrder(spans[0], spans[3]), 'oh -> bye');

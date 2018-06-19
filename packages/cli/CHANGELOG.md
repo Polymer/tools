@@ -1,8 +1,12 @@
 # Changelog
 
-
-<!-- ## Unreleased -->
+## Unreleased
+* Fix incorrect relative paths to the component directory in push manifests.
+* Fix push manifest generation crash with ES module projects.
 <!-- Add new, unreleased items here. -->
+
+## v1.7.3 [06-11-2018]
+* Regenerate shrinkwrap to pick up latest dependencies.
 
 ## v1.7.2 [05-11-2018]
 * Fix bug in `polymer-3-element` init template where `polymer/dom-module.js`
