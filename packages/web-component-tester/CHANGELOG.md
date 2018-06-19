@@ -5,8 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased items here. -->
+
+## 6.7.0 - 2018-06-19
 * Updated Mocha to v5
+* Updated wct-st to *not* force-exit process after `runSauceTunnel()` promise is rejected/resolved. 
 * Fixed incorrect CLI arguments
 
 ## 6.6.0 - 2018-05-08
