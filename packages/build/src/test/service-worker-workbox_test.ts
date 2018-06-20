@@ -91,7 +91,7 @@ suite('service-worker', () => {
   suite('generateWorkboxServiceWorker()', () => {
     test('should throw when options are not provided', () => {
       // tslint:disable-next-line: no-any testing type unsafe code
-      return (serviceWorker.generateServiceWorker as any)().then(
+      return (serviceWorker.generateWorkboxServiceWorker as any)().then(
         () => {
           assert.fail(
             'generateWorkboxServiceWorker() resolved, expected rejection!');
@@ -105,7 +105,7 @@ suite('service-worker', () => {
 
     test('should throw when options.project is not provided', () => {
       // tslint:disable-next-line: no-any testing type unsafe code
-      const unsafeForm = (serviceWorker.generateServiceWorker as any);
+      const unsafeForm = (serviceWorker.generateWorkboxServiceWorker as any);
       return unsafeForm({ buildRoot: testBuildRoot })
         .then(
           () => {
@@ -120,7 +120,7 @@ suite('service-worker', () => {
 
     test('should throw when options.buildRoot is not provided', () => {
       // tslint:disable-next-line: no-any testing type unsafe code
-      const unsafeForm = (serviceWorker.generateServiceWorker as any);
+      const unsafeForm = (serviceWorker.generateWorkboxServiceWorker as any);
       return unsafeForm({ project: defaultProject })
         .then(
           () => {
