@@ -45,6 +45,24 @@ export interface ProjectBuildOptions {
    * sure that this is suitable for your application.
    */
   addServiceWorker?: boolean;
+  
+  /**
+   * Generate a service worker via Workbox for your application to cache all files and
+   * assets on the client.
+   *
+   * Polymer CLI will generate a service worker for your build using the
+   * [workbox library](https://github.com/GoogleChrome/workbox). To
+   * customize your service worker, create a workbox-config.js file in your
+   * project directory that exports your configuration. See the [workbox
+   * README](https://github.com/GoogleChrome/workbox) for a list of all
+   * supported options.
+   *
+   * Note that the workbox library uses a cache-first strategy for maximum
+   * speed and makes some other assumptions about how your service worker should
+   * behave. Read the "Considerations" section of the sw-precache README to make
+   * sure that this is suitable for your application.
+   */
+  addWorkboxServiceWorker?: boolean;
 
   /**
    * If `true`, generate an [HTTP/2 Push
@@ -64,6 +82,18 @@ export interface ProjectBuildOptions {
    * Defaults to `"sw-precache-config.js`.
    */
   swPrecacheConfig?: string;
+  
+  /**
+   * A config file that's passed to the [workbox
+   * library](https://github.com/GoogleChrome/workbox). See [its
+   * README](https://github.com/GoogleChrome/workbox) for details of the
+   * format of this file.
+   *
+   * Ignored if `addWorkboxServiceWorker` is not `true`.
+   *
+   * Defaults to `"workbox-config.js`.
+   */
+  workboxConfig?: string;
 
   /**
    * Insert prefetch link elements into your fragments so that all dependencies
