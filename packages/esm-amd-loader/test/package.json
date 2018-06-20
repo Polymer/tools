@@ -16,7 +16,7 @@
     "@webcomponents/webcomponentsjs": "^1.2.0",
     "clang-format": "^1.2.3",
     "wct-browser-legacy": "^1.0.0",
-    "web-component-tester": "^6.6.0"
+    "web-component-tester": "^6.7.0"
   },
   "dependencies": {}
 }
