@@ -195,7 +195,7 @@ export async function build(
     await addWorkboxServiceWorker({
       buildRoot: buildDirectory as LocalFsPath,
       project: polymerProject,
-      workboxPrecacheConfig: workboxConfig || undefined,
+      workboxConfig: workboxConfig || undefined,
       bundled: bundled,
     });
   }

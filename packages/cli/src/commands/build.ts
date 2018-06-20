@@ -93,6 +93,12 @@ export class BuildCommand implements Command {
           'cache all files and assets on the client.'
     },
     {
+      name: 'add-workbox-service-worker',
+      type: Boolean,
+      description: 'Generate a service worker via Workbox for your application to ' +
+          'cache all files and assets on the client.'
+    },
+    {
       name: 'add-push-manifest',
       type: Boolean,
       description: 'Generate a push manifest for your application for http2' +
