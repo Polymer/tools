@@ -18,12 +18,12 @@ import * as logging from 'plylog';
 import {dest} from 'vinyl-fs';
 
 import mergeStream = require('merge-stream');
-import {forkStream, PolymerProject, addServiceWorker, SWConfig, HtmlSplitter} from 'polymer-build';
+import {forkStream, PolymerProject, addServiceWorker, addWorkboxServiceWorker, SWConfig, WorkboxConfig, HtmlSplitter} from 'polymer-build';
 
 import {getOptimizeStreams} from 'polymer-build';
 import {ProjectBuildOptions} from 'polymer-project-config';
 import {waitFor, pipeStreams} from './streams';
-import {loadServiceWorkerConfig} from './load-config';
+import {loadServiceWorkerConfig, loadWorkboxServiceWorkerConfig} from './load-config';
 import {LocalFsPath} from 'polymer-build/lib/path-transformers';
 
 const logger = logging.getLogger('cli.build.build');
@@ -172,6 +172,30 @@ export async function build(
       buildRoot: buildDirectory as LocalFsPath,
       project: polymerProject,
       swPrecacheConfig: swConfig || undefined,
+      bundled: bundled,
+    });
+  }
+
+  if (options.addWorkboxServiceWorker) {
+    const workboxConfigPath = path.resolve(
+      polymerProject.config.root,
+      options.workboxConfig || 'workbox-config.js');
+    let workboxConfig: WorkboxConfig|null = null;
+    if (options.addWorkboxServiceWorker) {
+      workboxConfig = await loadWorkboxServiceWorkerConfig(workboxConfigPath);
+    }
+    logger.debug(`Generating service worker via Workbox...`);
+    if (workboxConfig) {
+      logger.debug(`Service worker config found`, workboxConfig);
+    } else {
+      logger.debug(
+          `No service worker configuration found at ` +
+          `${swPrecacheConfigPath}, continuing with defaults`);
+    }
+    await addWorkboxServiceWorker({
+      buildRoot: buildDirectory as LocalFsPath,
+      project: polymerProject,
+      workboxPrecacheConfig: workboxConfig || undefined,
       bundled: bundled,
     });
   }

@@ -24,7 +24,7 @@ import {PolymerProject} from './polymer-project';
 
 const logger = logging.getLogger('polymer-build.service-worker');
 
-export interface AddServiceWorkerOptions {
+export interface AddServiceWorkerWorkboxOptions {
   project: PolymerProject;
   buildRoot: LocalFsPath;
   bundled?: boolean;
@@ -70,7 +70,7 @@ export const hasNoFileExtension = /\/[^\/\.]*(\?|$)/;
  * configuration.
  */
 export async function generateServiceWorkerConfig(
-    options: AddServiceWorkerOptions): Promise<WorkboxConfig> {
+    options: AddServiceWorkerWorkboxOptions): Promise<WorkboxConfig> {
   assert(!!options, '`project` & `buildRoot` options are required');
   assert(!!options.project, '`project` option is required');
   assert(!!options.buildRoot, '`buildRoot` option is required');
@@ -128,7 +128,7 @@ export async function generateServiceWorkerConfig(
  * Returns a promise that resolves with a generated service worker (the file
  * contents), based off of the options provided.
  */
-export async function generateServiceWorker(options: AddServiceWorkerOptions):
+export async function generateWorkboxServiceWorker(options: AddServiceWorkerWorkboxOptions):
     Promise<Buffer> {
   const workboxConfig = await generateServiceWorkerConfig(options);
   return await <Promise<Buffer>>(new Promise((resolve) => {
@@ -142,13 +142,13 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
 
 /**
  * Returns a promise that resolves when a service worker has been generated
- * and written to the build directory. This uses generateServiceWorker() to
+ * and written to the build directory. This uses generateWorkboxServiceWorker() to
  * generate a service worker, which it then writes to the file system based on
  * the buildRoot & path (if provided) options.
  */
-export async function addServiceWorker(options: AddServiceWorkerOptions):
+export async function addWorkboxServiceWorker(options: AddServiceWorkerWorkboxOptions):
     Promise<void> {
-  return generateServiceWorker(options).then((fileContents: Buffer) => {
+  return generateWorkboxServiceWorker(options).then((fileContents: Buffer) => {
     return new Promise<void>((resolve, reject) => {
       const serviceWorkerPath =
           path.join(options.buildRoot, options.path || 'service-worker.js');

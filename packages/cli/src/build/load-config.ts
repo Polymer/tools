@@ -15,7 +15,7 @@
 
 import * as fs from 'fs';
 import * as logging from 'plylog';
-import {SWConfig} from 'polymer-build';
+import {SWConfig, WorkboxConfig} from 'polymer-build';
 
 const logger = logging.getLogger('cli.build.load-config');
 
@@ -24,6 +24,26 @@ export function loadServiceWorkerConfig(configFile: string):
   return new Promise<SWConfig|null>((resolve, _reject) => {
     fs.stat(configFile, (statError) => {
       let config: SWConfig|null = null;
+      // only log if the config file exists at all
+      if (!statError) {
+        try {
+          config = require(configFile);
+        } catch (loadError) {
+          logger.warn(
+              `${configFile} file was found but could not be loaded`,
+              {loadError});
+        }
+      }
+      resolve(config);
+    });
+  });
+}
+
+export function loadWorkboxServiceWorkerConfig(configFile: string):
+    Promise<WorkboxConfig|null> {
+  return new Promise<WorkboxConfig|null>((resolve, _reject) => {
+    fs.stat(configFile, (statError) => {
+      let config: WorkboxConfig|null = null;
       // only log if the config file exists at all
       if (!statError) {
         try {

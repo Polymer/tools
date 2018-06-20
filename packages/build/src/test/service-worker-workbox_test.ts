@@ -88,13 +88,13 @@ suite('service-worker', () => {
     });
   });
 
-  suite('generateServiceWorker()', () => {
+  suite('generateWorkboxServiceWorker()', () => {
     test('should throw when options are not provided', () => {
       // tslint:disable-next-line: no-any testing type unsafe code
       return (serviceWorker.generateServiceWorker as any)().then(
         () => {
           assert.fail(
-            'generateServiceWorker() resolved, expected rejection!');
+            'generateWorkboxServiceWorker() resolved, expected rejection!');
         },
         (error: Error) => {
           assert.include(error.name, 'AssertionError');
@@ -110,7 +110,7 @@ suite('service-worker', () => {
         .then(
           () => {
             assert.fail(
-              'generateServiceWorker() resolved, expected rejection!');
+              'generateWorkboxServiceWorker() resolved, expected rejection!');
           },
           (error: Error) => {
             assert.include(error.name, 'AssertionError');
@@ -125,7 +125,7 @@ suite('service-worker', () => {
         .then(
           () => {
             assert.fail(
-              'generateServiceWorker() resolved, expected rejection!');
+              'generateWorkboxServiceWorker() resolved, expected rejection!');
           },
           (error: Error) => {
             assert.include(error.name, 'AssertionError');
@@ -151,7 +151,7 @@ suite('service-worker', () => {
       'should add unbundled precached assets when options.unbundled is not provided',
       () => {
         return serviceWorker
-          .generateServiceWorker({
+          .generateWorkboxServiceWorker({
             project: defaultProject,
             buildRoot: testBuildRoot,
           })
@@ -168,7 +168,7 @@ suite('service-worker', () => {
       'should add bundled precached assets when options.bundled is provided',
       () => {
         return serviceWorker
-          .generateServiceWorker({
+          .generateWorkboxServiceWorker({
             project: defaultProject,
             buildRoot: testBuildRoot,
             bundled: true,
@@ -184,7 +184,7 @@ suite('service-worker', () => {
 
     test('should add provided globPatterns paths to the final list', () => {
       return serviceWorker
-        .generateServiceWorker({
+        .generateWorkboxServiceWorker({
           project: defaultProject,
           buildRoot: testBuildRoot,
           bundled: true,
@@ -204,7 +204,7 @@ suite('service-worker', () => {
 
     test('basePath should prefix resources', () => {
       return serviceWorker
-        .generateServiceWorker({
+        .generateWorkboxServiceWorker({
           project: defaultProject,
           buildRoot: testBuildRoot,
           basePath: '/my/base/path' as LocalFsPath
@@ -217,7 +217,7 @@ suite('service-worker', () => {
 
     test('basePath prefixes should not have double delimiters', () => {
       return serviceWorker
-        .generateServiceWorker({
+        .generateWorkboxServiceWorker({
           project: defaultProject,
           buildRoot: testBuildRoot,
           basePath: '/my/base/path/' as LocalFsPath,
@@ -230,10 +230,10 @@ suite('service-worker', () => {
     });
   });
 
-  suite('addServiceWorker()', () => {
+  suite('addWorkboxServiceWorker()', () => {
     test('should write generated service worker to file system', () => {
       return serviceWorker
-        .addServiceWorker({
+        .addWorkboxServiceWorker({
           project: defaultProject,
           buildRoot: testBuildRoot,
         })

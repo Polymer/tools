@@ -1,4 +1,5 @@
 export {SWConfig} from 'sw-precache';
+export {WorkboxConfig} from 'workbox-build';
 export {BuildAnalyzer, DepsIndex} from './analyzer';
 export {resolveBareSpecifiers} from './babel-plugin-bare-specifiers';
 export {BuildBundler} from './bundle';
@@ -11,3 +12,5 @@ export {getOptimizeStreams, OptimizeOptions} from './optimize-streams';
 export {PolymerProject} from './polymer-project';
 export {addServiceWorker, generateServiceWorker} from './service-worker';
 export {AddServiceWorkerOptions} from './service-worker';
+export {addWorkboxServiceWorker, generateWorkboxServiceWorker} from './service-worker-workbox';
+export {AddServiceWorkerWorkboxOptions} from './service-worker-workbox';
