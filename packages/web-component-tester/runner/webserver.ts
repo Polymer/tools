@@ -95,14 +95,12 @@ export function webserver(wct: Context): void {
       const packageName = getPackageName(options);
       const isPackageScoped = packageName && packageName[0] === '@';
 
-      // concat options.clientOptions.environmentScripts with resolved
+      // Use options.clientOptions.environmentScripts or resolved
       // ENVIRONMENT_SCRIPTS
       options.clientOptions = options.clientOptions || {};
       options.clientOptions.environmentScripts =
-          options.clientOptions.environmentScripts || [];
-      options.clientOptions.environmentScripts =
-          options.clientOptions.environmentScripts.concat(
-              resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
+        options.clientOptions.environmentScripts ||
+        resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS);
 
       if (isPackageScoped) {
         browserScript = `../${browserScript}`;
