@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Converted from promisify-node to native Node version of promisify.  Officially breaks support for node v6.
 <!-- Add new, unreleased items here. -->
 
 ## 6.7.0 - 2018-06-19
