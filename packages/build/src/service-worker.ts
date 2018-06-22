@@ -194,7 +194,7 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
             // and parentheses.  To ensure the output is consistent across
             // versions, we will correctively insert missing space here.
             fileContents = fileContents.replace(/\bfunction\(/g, 'function (');
-            resolve(new Buffer(fileContents));
+            resolve(Buffer.from(fileContents));
           }
         });
   }));

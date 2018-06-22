@@ -105,7 +105,7 @@ suite('HtmlSplitter', () => {
       cwd: root,
       base: root,
       path: filepath,
-      contents: new Buffer(source),
+      contents: Buffer.from(source),
     });
 
     sourceStream.pipe(htmlSplitter.split())

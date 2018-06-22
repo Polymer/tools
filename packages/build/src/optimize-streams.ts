@@ -94,7 +94,7 @@ export class GenericOptimizeTransform extends Transform {
       try {
         let contents = file.contents.toString();
         contents = this.optimizer(contents, file);
-        file.contents = new Buffer(contents);
+        file.contents = Buffer.from(contents);
       } catch (error) {
         logger.warn(
             `${this.optimizerName}: Unable to optimize ${file.path}`,
