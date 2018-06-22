@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Service Worker generation uses a consistent spacing for anonymous
+  functions (i.e. space between keyword and parentheses `function ()`)
+  ensuring Node 8 and 10 output are identical.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.2] - 2018-06-19

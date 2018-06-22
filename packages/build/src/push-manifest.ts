@@ -207,7 +207,7 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     // Push the new push manifest into the stream.
     yield new File({
       path: this.outPath,
-      contents: new Buffer(pushManifestContents),
+      contents: Buffer.from(pushManifestContents),
     });
   }
 

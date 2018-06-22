@@ -39,7 +39,7 @@ export class CustomElementsEs5AdapterInjector extends
         yield file;
       } else {
         const updatedFile = file.clone();
-        updatedFile.contents = new Buffer(updatedContents, 'utf-8');
+        updatedFile.contents = Buffer.from(updatedContents, 'utf-8');
         yield updatedFile;
       }
     }
