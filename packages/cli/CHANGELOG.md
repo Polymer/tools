@@ -4,7 +4,8 @@
 <!-- Add new, unreleased items here. -->
 
 ## v1.7.5 [06-25-2018]
-* Converted promisify-node to native promisify, which is not available in
+* Node 10.5+ now supported!
+* Breaks Node 6; using Node's built-in promisify, which is not available in
   versions of Node prior to 8.
 
 ## v1.7.4 [06-19-2018]
