@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased items here. -->
+
+## v1.7.5 [06-25-2018]
 * Converted promisify-node to native promisify, which is not available in
   versions of Node prior to 8.
-<!-- Add new, unreleased items here. -->
 
 ## v1.7.4 [06-19-2018]
 * Regenerate shrinkwrap to pick up latest dependencies.
