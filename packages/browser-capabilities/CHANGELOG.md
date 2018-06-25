@@ -1,6 +1,7 @@
 # Change Log
 
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
 
 ## [1.1.0] - 2018-05-03
 * Added new capabilities for es2016, es2017, and es2018.

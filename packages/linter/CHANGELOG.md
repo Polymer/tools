@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
 
 ## [3.0.0] - 2018-05-08
 * Dropped support for node v6. This is a soft break, as we aren't

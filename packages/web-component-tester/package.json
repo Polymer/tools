@@ -1,6 +1,6 @@
 {
   "name": "web-component-tester",
-  "version": "6.7.0",
+  "version": "6.7.1",
   "--private-wct--": {
     "client-side-version-range": "4 - 6 || ^6.6.0",
     "wct-browser-legacy-version-range": "^1.0.0"
@@ -82,7 +82,7 @@
   },
   "optionalDependencies": {
     "update-notifier": "^2.2.0",
-    "wct-local": "^2.1.0",
+    "wct-local": "^2.1.1",
     "wct-sauce": "^2.0.2"
   },
   "devDependencies": {
@@ -123,7 +123,7 @@
     "run-sequence": "^1.0.1",
     "source-map-support": "^0.5.4",
     "watch": "^0.18.0",
-    "wct-local": "^2.1.0",
+    "wct-local": "^2.1.1",
     "wct-sauce": "^2.0.2"
   },
   "engines": {
