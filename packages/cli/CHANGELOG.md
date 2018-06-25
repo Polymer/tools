@@ -3,7 +3,7 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
-## v1.7.5 [06-25-2018]
+## v1.7.6 [06-25-2018]
 * Node 10.5+ now supported!
 * Breaks Node 6; using Node's built-in promisify, which is not available in
   versions of Node prior to 8.
