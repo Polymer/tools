@@ -51,6 +51,17 @@ const browserPredicates: {
   'Chrome': chrome,
   'Chromium': chrome,
   'Chrome Headless': chrome,
+  'ChromeiOS': {
+    // TODO(aomarks) Capabilities for Chrome on iOS. We probably need to use the
+    // WebKit version (engine) rather than the Chrome version. Or both.
+    es2015: () => false,
+    es2016: () => false,
+    es2017: () => false,
+    es2018: () => false,
+    push: () => false,
+    serviceworker: () => false,
+    modules: () => false,
+  },
   'OPR': {
     es2015: since(36),
     es2016: since(45),
@@ -133,7 +144,12 @@ const browserPredicates: {
 export function browserCapabilities(userAgent: string): Set<BrowserCapability> {
   const ua = new UAParser(userAgent);
   const capabilities = new Set<BrowserCapability>();
-  const predicates = browserPredicates[ua.getBrowser().name || ''] || {};
+  let browserName = ua.getBrowser().name || '';
+  if (browserName === 'Chrome' && ua.getOS().name === 'iOS') {
+    // Chrome on iOS is really Safari and needs its own entry.
+    browserName = 'ChromeiOS';
+  }
+  const predicates = browserPredicates[browserName] || {};
   for (const capability of Object.keys(predicates) as BrowserCapability[]) {
     if (predicates[capability](ua)) {
       capabilities.add(capability);
