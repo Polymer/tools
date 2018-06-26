@@ -101,7 +101,6 @@
     "source-map-support": "^0.5.4",
     "strip-indent": "^2.0.0",
     "temp": "^0.8.3",
-    "tsc-then": "^1.1.0",
-    "vinyl-fs-fake": "^1.1.0"
+    "tsc-then": "^1.1.0"
   }
 }
