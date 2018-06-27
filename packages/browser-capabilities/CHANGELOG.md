@@ -1,6 +1,9 @@
 # Change Log
 
-<!-- ## Unreleased -->
+## Unreleased
+* Chrome for iOS is now handled correctly, by delegating to the corresponding
+  Safari feature matrix.
+* Safari for iOS is handled more accurately, using iOS version.
 <!-- Add new, unreleased changes here. -->
 
 ## [1.1.0] - 2018-05-03
