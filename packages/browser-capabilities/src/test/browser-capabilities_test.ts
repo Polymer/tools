@@ -77,8 +77,14 @@ suite('capabilities', function() {
 
   test('chrome on iOS is treated like safari mobile', () => {
     assertBrowserCapabilities(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 9_3_3 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/62.0.3202.70 Mobile/13G34 Safari/601.1.46 ',
+        ['push']);
+    assertBrowserCapabilities(
         'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1',
         ['es2015', 'es2016', 'es2017', 'push']);
+    assertBrowserCapabilities(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 11_3 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) CriOS/63.0.3239.73 Mobile/15E5167f Safari/604.1',
+        ['es2015', 'es2016', 'es2017', 'push', 'serviceworker', 'modules']);
   });
 
   test('parseVersion parses with fallback to -1', () => {
