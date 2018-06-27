@@ -51,17 +51,6 @@ const browserPredicates: {
   'Chrome': chrome,
   'Chromium': chrome,
   'Chrome Headless': chrome,
-  'ChromeiOS': {
-    // TODO(aomarks) Capabilities for Chrome on iOS. We probably need to use the
-    // WebKit version (engine) rather than the Chrome version. Or both.
-    es2015: () => false,
-    es2016: () => false,
-    es2017: () => false,
-    es2018: () => false,
-    push: () => false,
-    serviceworker: () => false,
-    modules: () => false,
-  },
   'OPR': {
     es2015: since(36),
     es2016: since(45),
@@ -86,16 +75,13 @@ const browserPredicates: {
   // least the OS bit). Be sure to actually test real user agents rather than
   // making assumptions based on release notes.
   'Mobile Safari': {
-    es2015: since(10),
-    es2016: since(10, 3),
-    es2017: since(10, 3),
+    es2015: sinceOS(10),
+    es2016: sinceOS(10, 3),
+    es2017: sinceOS(10, 3),
     es2018: () => false,  // No async iterators
-    push: since(9, 2),
-    serviceworker: since(11, 3),
-    modules: (ua) => {
-      return versionAtLeast([11], parseVersion(ua.getBrowser().version)) &&
-          versionAtLeast([11, 3], parseVersion(ua.getOS().version));
-    },
+    push: sinceOS(9, 2),
+    serviceworker: sinceOS(11, 3),
+    modules: sinceOS(11, 3),
   },
   'Safari': {
     es2015: since(10),
@@ -146,8 +132,8 @@ export function browserCapabilities(userAgent: string): Set<BrowserCapability> {
   const capabilities = new Set<BrowserCapability>();
   let browserName = ua.getBrowser().name || '';
   if (browserName === 'Chrome' && ua.getOS().name === 'iOS') {
-    // Chrome on iOS is really Safari and needs its own entry.
-    browserName = 'ChromeiOS';
+    // Chrome on iOS is really Safari.
+    browserName = 'Mobile Safari';
   }
   const predicates = browserPredicates[browserName] || {};
   for (const capability of Object.keys(predicates) as BrowserCapability[]) {
@@ -194,4 +180,11 @@ export function versionAtLeast(atLeast: number[], version: number[]): boolean {
  */
 function since(...atLeast: number[]): UserAgentPredicate {
   return (ua) => versionAtLeast(atLeast, parseVersion(ua.getBrowser().version));
+}
+
+/**
+ * Make a predicate that checks if the OS version is at least this high.
+ */
+function sinceOS(...atLeast: number[]): UserAgentPredicate {
+  return (ua) => versionAtLeast(atLeast, parseVersion(ua.getOS().version));
 }

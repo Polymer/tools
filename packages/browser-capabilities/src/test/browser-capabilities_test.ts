@@ -75,13 +75,10 @@ suite('capabilities', function() {
         ['es2015', 'es2016', 'es2017', 'push']);
   });
 
-  test('safari mobile modules capability is predicated on iOS version', () => {
+  test('chrome on iOS is treated like safari mobile', () => {
     assertBrowserCapabilities(
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 11_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1',
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1',
         ['es2015', 'es2016', 'es2017', 'push']);
-    assertBrowserCapabilities(
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 11_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.0 Mobile/15E148 Safari/604.1',
-        ['es2015', 'es2016', 'es2017', 'push', 'modules']);
   });
 
   test('parseVersion parses with fallback to -1', () => {
