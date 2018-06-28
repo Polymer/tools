@@ -122,6 +122,17 @@ function resolveScopedAt<K extends keyof FeatureKindMap>(
     const exportedIdentifier = getExportedIdentifier(path.node, identifier);
     return resolveThroughImport(path, exportedIdentifier, document, kind);
   }
+
+  // Handle cases like `export {Foo as Bar}`.
+  if (babel.isExportNamedDeclaration(path.node) && !path.node.source) {
+    for (const specifier of path.node.specifiers) {
+      if (specifier.exported.name !== specifier.local.name &&
+          specifier.exported.name === identifier) {
+        return resolveScopedAt(path, specifier.local.name, document, kind);
+      }
+    }
+  }
+
   const statement = esutil.getCanonicalStatement(path);
   if (statement === undefined) {
     return {successful: false, error: undefined};

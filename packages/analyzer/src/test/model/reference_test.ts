@@ -32,7 +32,7 @@ suite('ScannedReference', () => {
     analyzer = (await createForDirectory(fixtureDir)).analyzer;
   });
 
-  test.skip('resolves exports', async () => {
+  test('resolves exports', async () => {
     const filename = 'javascript/exported-class.js';
 
     const analysis = await analyzer.analyze([filename]);
@@ -63,6 +63,7 @@ suite('ScannedReference', () => {
     assert.deepEqual(actual, [
       ['Foo', 'Foo'],
       ['FooAlias', 'Foo'],
+      ['Bar', 'Bar'],
     ]);
   });
 });
