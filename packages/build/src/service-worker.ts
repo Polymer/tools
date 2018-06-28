@@ -188,7 +188,13 @@ export async function generateServiceWorker(options: AddServiceWorkerOptions):
           if (err || fileContents == null) {
             reject(err || 'No file contents provided.');
           } else {
-            resolve(new Buffer(fileContents));
+            // Note: Node 10 Function.prototype.toString() produces output
+            // like `function() { }` where earlier versions produce
+            // `function () { }` (note the space between function keyword)
+            // and parentheses.  To ensure the output is consistent across
+            // versions, we will correctively insert missing space here.
+            fileContents = fileContents.replace(/\bfunction\(/g, 'function (');
+            resolve(Buffer.from(fileContents));
           }
         });
   }));

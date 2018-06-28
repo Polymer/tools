@@ -12,13 +12,38 @@
 import {assert} from 'chai';
 import * as path from 'path';
 import stripIndent = require('strip-indent');
-import * as vfs from 'vinyl-fs-fake';
+import * as stream from 'stream';
 import * as Vinyl from 'vinyl';
 
 import {getOptimizeStreams} from '../optimize-streams';
 import {HtmlSplitter} from '../html-splitter';
 import {pipeStreams} from '../streams';
 import {assertMapEqualIgnoringWhitespace} from './util';
+
+interface FakeFile {
+  contents: string;
+  path: string;
+  cwd?: string;
+  base?: string;
+}
+
+function createFakeFileStream(files: FakeFile[]) {
+  const srcStream = new stream.Readable({ objectMode: true });
+
+  srcStream._read = function() {
+    for (const file of files) {
+      this.push(new Vinyl({
+        contents: new Buffer(file.contents),
+        cwd:      file.cwd,
+        base:     file.base,
+        path:     file.path
+      }));
+    }
+    this.push(null);
+  };
+
+  return srcStream;
+}
 
 suite('optimize-streams', () => {
   const fixtureRoot =
@@ -47,7 +72,7 @@ suite('optimize-streams', () => {
   suite('JS compilation', () => {
     test('compiles to ES5 if compile=true', async () => {
       const expected = `var apple = 'apple';\nvar banana = 'banana';`;
-      const sourceStream = vfs.src([
+      const sourceStream = createFakeFileStream([
         {
           path: 'foo.js',
           contents: `const apple = 'apple'; let banana = 'banana';`,
@@ -59,7 +84,7 @@ suite('optimize-streams', () => {
     });
 
     test('compiles ES2017 to ES2015', async () => {
-      const sourceStream = vfs.src([
+      const sourceStream = createFakeFileStream([
         {
           path: 'foo.js',
           contents: `async function test() { await 0; }`,
@@ -75,7 +100,7 @@ suite('optimize-streams', () => {
 
     test('does not compile webcomponents.js files (windows)', async () => {
       const es6Contents = `const apple = 'apple';`;
-      const sourceStream = vfs.src([
+      const sourceStream = createFakeFileStream([
         {
           path:
               'A:\\project\\bower_components\\webcomponentsjs\\webcomponents-es5-loader.js',
@@ -89,7 +114,7 @@ suite('optimize-streams', () => {
 
     test('does not compile webcomponents.js files (unix)', async () => {
       const es6Contents = `const apple = 'apple';`;
-      const sourceStream = vfs.src([
+      const sourceStream = createFakeFileStream([
         {
           path:
               '/project/bower_components/webcomponentsjs/webcomponents-es5-loader.js',
@@ -118,7 +143,7 @@ suite('optimize-streams', () => {
       `);
 
       const result = await getOnlyFile(pipeStreams([
-        vfs.src([{path: filePath, contents}]),
+        createFakeFileStream([{path: filePath, contents}]),
         getOptimizeStreams({js: {moduleResolution: 'node'}}),
       ]));
       assert.deepEqual(result.trim(), expected.trim());
@@ -152,7 +177,7 @@ suite('optimize-streams', () => {
 
       const htmlSplitter = new HtmlSplitter();
       const result = await getOnlyFile(pipeStreams([
-        vfs.src([{path: filePath, contents}]),
+        createFakeFileStream([{path: filePath, contents}]),
         htmlSplitter.split(),
         getOptimizeStreams({js: {moduleResolution: 'node'}}),
         htmlSplitter.rejoin()
@@ -197,7 +222,7 @@ suite('optimize-streams', () => {
 
       const htmlSplitter = new HtmlSplitter();
       const result = await getFileMap(pipeStreams([
-        vfs.src(files),
+        createFakeFileStream(files),
         htmlSplitter.split(),
         getOptimizeStreams(opts),
         htmlSplitter.rejoin()
@@ -258,7 +283,7 @@ suite('optimize-streams', () => {
 
       const htmlSplitter = new HtmlSplitter();
       const result = await getFileMap(pipeStreams([
-        vfs.src(files),
+        createFakeFileStream(files),
         htmlSplitter.split(),
         getOptimizeStreams(opts),
         htmlSplitter.rejoin()
@@ -268,7 +293,7 @@ suite('optimize-streams', () => {
   });
 
   test('minify js', async () => {
-    const sourceStream = vfs.src([
+    const sourceStream = createFakeFileStream([
       {
         path: 'foo.js',
         contents: 'var foo = 3',
@@ -281,7 +306,7 @@ suite('optimize-streams', () => {
   });
 
   test('minify js (es6)', async () => {
-    const sourceStream = vfs.src([
+    const sourceStream = createFakeFileStream([
       {
         path: 'foo.js',
         contents: '[1,2,3].map(n => n + 1);',
@@ -328,7 +353,7 @@ suite('optimize-streams', () => {
     const expected = new Map<string, string>(
         files.map((file): [string, string] => [file.path, file.expected]));
     const result = await getFileMap(pipeStreams([
-      vfs.src(files),
+      createFakeFileStream(files),
       getOptimizeStreams(opts),
     ]));
     assert.deepEqual([...result.entries()], [...expected.entries()]);
@@ -338,7 +363,7 @@ suite('optimize-streams', () => {
     const expected = `<!DOCTYPE html><style>foo {
             background: blue;
           }</style><script>document.registerElement(\'x-foo\', XFoo);</script><x-foo>bar</x-foo>`;
-    const sourceStream = vfs.src(
+    const sourceStream = createFakeFileStream(
         [
           {
             path: 'foo.html',
@@ -357,15 +382,14 @@ suite('optimize-streams', () => {
         </x-foo>
         `,
           },
-        ],
-        {cwdbase: true});
+        ]);
     const op =
         pipeStreams([sourceStream, getOptimizeStreams({html: {minify: true}})]);
     assert.equal(await getOnlyFile(op), expected);
   });
 
   test('minify css', async () => {
-    const sourceStream = vfs.src([
+    const sourceStream = createFakeFileStream([
       {
         path: 'foo.css',
         contents: '/* comment */ selector { property: value; }',
@@ -378,7 +402,7 @@ suite('optimize-streams', () => {
 
   test('minify css (inlined)', async () => {
     const expected = `<style>foo{background:blue;}</style>`;
-    const sourceStream = vfs.src(
+    const sourceStream = createFakeFileStream(
         [
           {
             path: 'foo.html',
@@ -396,8 +420,7 @@ suite('optimize-streams', () => {
           </html>
         `,
           },
-        ],
-        {cwdbase: true});
+        ]);
     const op =
         pipeStreams([sourceStream, getOptimizeStreams({css: {minify: true}})]);
 

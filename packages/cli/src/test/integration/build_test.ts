@@ -139,6 +139,18 @@ suite('polymer build', function() {
         path.join(fixtureDir, 'polymer-2-project', 'expected/default'));
   });
 
+  test('handles polymer 2.x push manifest', async () => {
+    const tmpDir = tmp.dirSync();
+    copyDir(path.join(fixtureDir, 'polymer-2-project', 'source'), tmpDir.name);
+
+    await runCommand(binPath, ['build', '--name=push', '--add-push-manifest'], {
+      cwd: tmpDir.name
+    });
+    assertDirsEqual(
+        path.join(tmpDir.name, 'build/push'),
+        path.join(fixtureDir, 'polymer-2-project', 'expected/push'));
+  });
+
   test('handles bundle tagged-template literals in ES5', async () => {
     const tmpDir = tmp.dirSync();
     copyDir(

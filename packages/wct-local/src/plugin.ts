@@ -11,7 +11,7 @@ import * as browsers from './browsers';
 import * as selenium from './selenium';
 import * as wd from 'wd';
 import * as wct from 'wct';
-import * as promisify from 'promisify-node';
+import {promisify} from 'util';
 
 interface PluginOptions {
   seleniumArgs?: string[];

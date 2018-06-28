@@ -110,6 +110,7 @@ async function _runSauceTunnel(args: string[], output: NodeJS.WritableStream) {
       'To use this tunnel for other WCT runs, export the following:\n');
   output.write('\n');
   output.write(chalk.cyan('export SAUCE_TUNNEL_ID=' + tunnelId) + '\n');
+  output.write('Press CTRL+C to close the sauce tunnel\n');
 }
 
 async function wrapResult(

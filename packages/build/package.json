@@ -1,6 +1,6 @@
 {
   "name": "polymer-build",
-  "version": "3.0.1",
+  "version": "3.0.3",
   "description": "A library of Gulp build tasks",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/build",
   "repository": "github:Polymer/tools",
@@ -99,7 +99,6 @@
     "source-map-support": "^0.5.4",
     "strip-indent": "^2.0.0",
     "temp": "^0.8.3",
-    "tsc-then": "^1.1.0",
-    "vinyl-fs-fake": "^1.1.0"
+    "tsc-then": "^1.1.0"
   }
 }

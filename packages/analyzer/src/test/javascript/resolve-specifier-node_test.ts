@@ -61,6 +61,12 @@ suite('resolve', () => {
         './node_modules/@scope/scoped/scoped.js');
   });
 
+  test('non-component bower dependency', async () => {
+    assert.equal(
+        resolve('bower_dep', rootMain),
+        './bower_components/bower_dep/bower_dep.js');
+  });
+
   test('shallow dep to scoped dep', async () => {
     assert.equal(
         resolve('@scope/scoped', shallowDepMain, shallowRootComponentInfo),

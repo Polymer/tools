@@ -111,7 +111,7 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
         path: pathFromUrl(
             this.config.root as LocalFsPath,
             this._bundler.analyzer.urlResolver.relative(url)),
-        contents: new Buffer(document.content),
+        contents: Buffer.from(document.content),
       }));
     }
   }

@@ -48,6 +48,7 @@ export const resolve =
 
       const dependencyFilepath = nodeResolve.sync(specifier, {
         basedir: dirname(importerFilepath),
+        moduleDirectory: ['bower_components', 'node_modules'],
 
         // It's invalid to load a .json or .node file as a module on the web,
         // but this is what Node's resolution algorithm does

@@ -50,11 +50,11 @@ const PolymerProject = require('polymer-build').PolymerProject;
 
 const project = new PolymerProject({
   entrypoint: 'index.html',
-  shell: 'src/my-app.html',
+  shell: 'src/my-app.js',
   fragments: [
-    'src/my-view1.html',
-    'src/my-view2.html',
-    'src/my-view3.html'
+    'src/my-view1.js',
+    'src/my-view2.js',
+    'src/my-view3.js'
   ]
 });
 ```
@@ -122,7 +122,7 @@ mergeStream(project.sources(), project.dependencies())
   .pipe(gulp.dest('build/'));
 ```
 
-The bundler() method accepts an options object to configure bundling.  See [Using polymer-bundler programmatically](https://github.com/polymer/polymer-bundler#using-polymer-bundler-programmatically) for a detailed list of accepted options.
+The bundler() method accepts an options object to configure bundling.  See [Using polymer-bundler programmatically](https://github.com/Polymer/tools/tree/master/packages/bundler#using-polymer-bundler-programmatically) for a detailed list of accepted options.
 
 ```js
 const {generateCountingSharedBundleUrlMapper,

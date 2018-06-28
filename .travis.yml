@@ -35,8 +35,7 @@ matrix:
     env:
     - TEST_COMMAND="npm run test:unit"
 
-  # TODO(https://github.com/Polymer/tools/issues/280): update to node 10
-  - node_js: '9'
+  - node_js: '10'
     env:
     - TEST_COMMAND="npm run test:unit"
 
@@ -47,7 +46,7 @@ matrix:
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
 
-  - node_js: '9'
+  - node_js: '10'
     addons:
       chrome: stable
       firefox: latest

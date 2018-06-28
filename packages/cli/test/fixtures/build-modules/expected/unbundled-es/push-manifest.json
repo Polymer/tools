@@ -1,0 +1,16 @@
+{
+  "index.html": {
+    "mod1.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "mod2.js": {
+      "type": "script",
+      "weight": 1
+    },
+    "node_modules/dep1/dep1.js": {
+      "type": "script",
+      "weight": 1
+    }
+  }
+}

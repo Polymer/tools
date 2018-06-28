@@ -268,19 +268,29 @@ suite('dynamic require', () => {
   });
 
   test('calls error callback only once on multiple 404s', (done) => {
-    let numErrors = 0;
+    let num404s = 0;
+    let numCallbackCalls = 0;
+
+    window.addEventListener('error', on404, true);
+
+    function on404() {
+      num404s++;
+      if (num404s === 2) {
+        window.removeEventListener('error', on404);
+        // Need a tick to ensure the loader error handlers have fired.
+        setTimeout(() => {
+          assert.equal(numCallbackCalls, 1);
+          done();
+        });
+      }
+    }
 
     define(['require'], (require: any) => {
       require(
           ['./not-found-a.js', './not-found-b.js'],
           () => assert.fail(),
-          () => numErrors++);
+          () => numCallbackCalls++);
     });
-
-    setTimeout(() => {
-      assert.equal(numErrors, 1);
-      done();
-    }, 1000);
   });
 });
 
@@ -407,16 +417,16 @@ suite('html imports', () => {
   }
 
   function testImport(href: string, expectedOrder: string[], done: () => void) {
-     // Each time an amd module in the chain is executed, it registers itself.
-     // If we've reached the length of modules we are expecing to be loaded,
-     // we check if the right modules were loaded in the expected order
-     window.addExecutedForImport = (name: string) => {
-       window.executionOrder.push(name);
-       if (window.executionOrder.length === expectedOrder.length) {
-         assert.deepEqual(window.executionOrder, expectedOrder);
-         done();
-       }
-     };
+    // Each time an amd module in the chain is executed, it registers itself.
+    // If we've reached the length of modules we are expecing to be loaded,
+    // we check if the right modules were loaded in the expected order
+    window.addExecutedForImport = (name: string) => {
+      window.executionOrder.push(name);
+      if (window.executionOrder.length === expectedOrder.length) {
+        assert.deepEqual(window.executionOrder, expectedOrder);
+        done();
+      }
+    };
 
     importHref(href);
   }
@@ -426,11 +436,17 @@ suite('html imports', () => {
   });
 
   test('modules inside deeper level html import', (done) => {
-    testImport('../html-import/y/deep-import.html', ['x', 'z', 'y', 'deep-import'], done);
+    testImport(
+        '../html-import/y/deep-import.html',
+        ['x', 'z', 'y', 'deep-import'],
+        done);
   });
 
   test('imports with child imports', (done) => {
-    testImport('../html-import/parent-import.html', ['z', 'y', 'child-import', 'x', 'parent-import'], done);
+    testImport(
+        '../html-import/parent-import.html',
+        ['z', 'y', 'child-import', 'x', 'parent-import'],
+        done);
   });
 
   test('import with meta', (done) => {

@@ -90,7 +90,7 @@ export function pushResources(
             res.push(filename, {
                  request: {accept: '*/*'},
                  response: {
-                   'content-type': mime.lookup(filename),
+                   'content-type': mime.getType(filename),
 
                    // Add an X-header to the pushed request so we don't trigger
                    // pushes for pushes

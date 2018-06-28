@@ -48,7 +48,7 @@ export class BaseTagUpdater extends AsyncTransformStream<File, File> {
       dom5.setAttribute(base, 'href', this.newHref);
       dom5.removeFakeRootElements(parsed);
       const updatedFile = file.clone();
-      updatedFile.contents = new Buffer(parse5.serialize(parsed), 'utf-8');
+      updatedFile.contents = Buffer.from(parse5.serialize(parsed), 'utf-8');
       yield updatedFile;
     }
   }

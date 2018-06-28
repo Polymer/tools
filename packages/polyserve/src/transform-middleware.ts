@@ -45,7 +45,7 @@ export function transformResponse(transformer: ResponseTransformer):
 
       if (shouldTransform()) {
         const buffer = (typeof chunk === 'string') ?
-            new Buffer(chunk, cbOrEncoding as string) :
+            Buffer.from(chunk, cbOrEncoding as string) :
             chunk;
         chunks.push(buffer);
         return true;
@@ -68,7 +68,7 @@ export function transformResponse(transformer: ResponseTransformer):
         if (Buffer.isBuffer(cbOrChunk)) {
           chunks.push(cbOrChunk);
         } else if (typeof cbOrChunk === 'string') {
-          chunks.push(new Buffer(cbOrChunk, cbOrEncoding as string));
+          chunks.push(Buffer.from(cbOrChunk, cbOrEncoding as string));
         }
         const body = Buffer.concat(chunks).toString('utf8');
         let newBody = body;

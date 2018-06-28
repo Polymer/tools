@@ -1,6 +1,6 @@
 {
   "name": "@polymer/esm-amd-loader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Minimal AMD-style loader for replicating ES module behavior.",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader",
   "repository": "github:Polymer/tools",

@@ -93,6 +93,7 @@ export class TestCommand implements Command {
       name: 'sauce',
       alias: 's',
       description: 'Remote Sauce Labs browsers to run tests on, or \'default\'',
+      multiple: true,
       type: String,
     },
     {
