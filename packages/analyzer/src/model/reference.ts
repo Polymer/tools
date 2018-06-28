@@ -123,11 +123,12 @@ function resolveScopedAt<K extends keyof FeatureKindMap>(
     return resolveThroughImport(path, exportedIdentifier, document, kind);
   }
 
-  // Handle cases like `export {Foo as Bar}`.
   if (babel.isExportNamedDeclaration(path.node) && !path.node.source) {
     for (const specifier of path.node.specifiers) {
       if (specifier.exported.name !== specifier.local.name &&
           specifier.exported.name === identifier) {
+        // In cases like `export {foo as bar}`, we need to look for a feature
+        // called `foo` instead of `bar`.
         return resolveScopedAt(path, specifier.local.name, document, kind);
       }
     }
