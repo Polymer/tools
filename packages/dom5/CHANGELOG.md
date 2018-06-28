@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [v3.0.1] (2018-06-28)
+- Fix NPM audit warnings.
+
 ## [v3.0.0](https://github.com/Polymer/dom5/tree/v3.0.0) (2018-02-12)
 - [BREAKING] Updated to parse5 v4. See:
   - http://inikulin.github.io/parse5/#4-0-0 and
