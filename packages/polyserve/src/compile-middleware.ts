@@ -38,6 +38,8 @@ const compileMimeTypes = [htmlMimeType, ...javaScriptMimeTypes];
 // but not their tests.
 export const isPolyfill = /(^|\/)webcomponentsjs\/[^\/]+$/;
 
+const shouldNotCompile = /\?nocompile$/;
+
 function getContentType(response: Response) {
   const contentTypeHeader = response.get('Content-Type');
   return contentTypeHeader && parseContentType(contentTypeHeader).type;
@@ -70,6 +72,9 @@ export function babelCompile(
       // We must never compile the Custom Elements ES5 Adapter or other
       // polyfills/shims.
       if (isPolyfill.test(request.url)) {
+        return false;
+      }
+      if (shouldNotCompile.test(request.url)) {
         return false;
       }
       if (!compileMimeTypes.includes(getContentType(response))) {
