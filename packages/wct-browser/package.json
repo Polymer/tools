@@ -4,13 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd test/ && npm test"
   },
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "chai": "^4.1.2",
-    "mocha": "^5.2.0",
-    "web-component-tester": "^6.7.1"
-  }
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/wct-browser",
+  "repository": "github:Polymer/tools",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause"
 }
