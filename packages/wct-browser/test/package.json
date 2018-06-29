@@ -1,0 +1,6 @@
+{
+  "name": "wct-browser-test",
+  "scripts": {
+    "test": "wct --npm --wct-package-name wct-browser"
+  }
+}
