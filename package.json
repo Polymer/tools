@@ -1,6 +1,6 @@
 {
   "name": "@polymer/gen-typescript-declarations",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Generate TypeScript type declarations for Polymer components.",
   "main": "lib/gen-ts.js",
   "types": "lib/gen-ts.d.ts",
@@ -19,15 +19,15 @@
     "command-line-usage": "^5.0.2",
     "doctrine": "^2.0.0",
     "escodegen": "^1.9.0",
-    "fs-extra": "^5.0.0",
+    "fs-extra": "^6.0.1",
     "glob": "^7.1.2",
     "minimatch": "^3.0.4",
-    "polymer-analyzer": "=3.0.0-pre.25",
+    "polymer-analyzer": "^3.0.2",
     "vscode-uri": "^1.0.3"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.43",
+    "@types/mocha": "^5.2.3",
     "bower": "^1.8.2",
     "chai": "^4.1.2",
     "clang-format": "^1.1.0",
@@ -40,7 +40,7 @@
   "scripts": {
     "clean": "rimraf lib",
     "format": "find src -name '*.ts' -not -path 'src/test/fixtures/*' -not -path 'src/test/goldens/*' | xargs clang-format --style=file -i",
-    "build": "npm run clean && tsc",
+    "build": "rm -f node_modules/parse5/lib/index.d.ts && npm run clean && tsc",
     "build:watch": "tsc --watch",
     "prepack": "npm run build",
     "prepublishOnly": "npm run test",

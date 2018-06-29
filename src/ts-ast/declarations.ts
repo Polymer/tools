@@ -201,7 +201,7 @@ export class Interface {
 }
 
 export abstract class FunctionLike {
-  kind: string;
+  kind?: 'method'|'function';
   name: string;
   description: string;
   params: ParamType[];
