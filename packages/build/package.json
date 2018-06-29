@@ -88,10 +88,8 @@
     "vinyl-fs": "^2.4.4"
   },
   "devDependencies": {
-    "@types/chai": "^3.4.34",
     "@types/fs-extra": "0.0.37",
     "@types/sinon": "^1.16.33",
-    "chai": "^4.1.2",
     "clang-format": "^1.0.52",
     "depcheck": "^0.6.3",
     "fs-extra": "^5.0.0",
