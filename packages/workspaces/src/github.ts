@@ -131,7 +131,7 @@ function createGithubRepoReferenceFromPattern(pattern: string):
  * consumption.
  */
 export class GitHubConnection {
-  private _cache: Map<string, GitHubRepoData>;
+  private _cache!: Map<string, GitHubRepoData>;
   private _github: GitHubApi;
 
   constructor(token: string) {
