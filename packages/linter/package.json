@@ -1,6 +1,6 @@
 {
   "name": "polymer-linter",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Lint Polymer!",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/linter",
   "repository": "github:Polymer/tools",

@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.0.4] - 2018-06-28
+* Fix NPM audit warnings.
+
 ## [3.0.3] - 2018-06-25
 * Service Worker generation uses a consistent spacing for anonymous
   functions (i.e. space between keyword and parentheses `function ()`)

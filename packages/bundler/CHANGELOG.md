@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## 4.0.2 - 2018-06-28
+* Fix NPM audit warnings.
+
 ## 4.0.1 - 2018-05-11
 * Added missing `babel-types` to dependencies instead of relying on it transitively.
 
