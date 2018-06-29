@@ -40,7 +40,7 @@
   "scripts": {
     "clean": "rimraf lib",
     "format": "find src -name '*.ts' -not -path 'src/test/fixtures/*' -not -path 'src/test/goldens/*' | xargs clang-format --style=file -i",
-    "build": "rm -f node_modules/parse5/lib/index.d.ts && npm run clean && tsc",
+    "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
     "prepack": "npm run build",
     "prepublishOnly": "npm run test",

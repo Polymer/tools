@@ -16,7 +16,15 @@
     "declaration": true,
     "sourceMap": true,
     "pretty": true,
-    "outDir": "./lib"
+    "outDir": "./lib",
+
+    "baseUrl": ".",
+    "paths": {
+      "parse5": [
+        "node_modules/@types/parse5",
+        "*"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts"
