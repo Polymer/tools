@@ -39,11 +39,11 @@ const DEFAULT_HEADERS = {
 // scripts to be injected into the running test
 const ENVIRONMENT_SCRIPTS: NPMPackage[] = [
   {name: 'stacky', jsEntrypoint: 'browser.js'},
-  {name: 'async', jsEntrypoint: 'lib/async.js'},
-  {name: 'lodash', jsEntrypoint: 'index.js'},
+  {name: 'async', jsEntrypoint: 'dist/async.js'},
+  {name: 'lodash', jsEntrypoint: 'lodash.js'},
   {name: 'mocha', jsEntrypoint: 'mocha.js'},
   {name: 'chai', jsEntrypoint: 'chai.js'},
-  {name: '@polymer/sinonjs', jsEntrypoint: 'sinon.js'},
+  {name: 'sinon', jsEntrypoint: 'pkg/sinon.js'},
   {name: 'sinon-chai', jsEntrypoint: 'lib/sinon-chai.js'},
   {
     name: 'accessibility-developer-tools',
