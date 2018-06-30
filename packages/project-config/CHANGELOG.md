@@ -5,10 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [4.0.2] - 2018-06-28
 * Add `modules` to the browser capabilities of the `uncompiled-bundled` and 
   `uncompiled-unbundled` build presets.
+* Fix NPM audit warnings.
 
 ## [4.0.1] - 2018-05-09
 * Fix names of `uncompiled-bundled` and `uncompiled-unbundled` build presets.

@@ -1,6 +1,6 @@
 {
   "name": "polyserve",
-  "version": "0.27.11",
+  "version": "0.27.12",
   "description": "A simple dev server for bower components",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/polyserve",
   "repository": "github:Polymer/tools",
@@ -62,14 +62,10 @@
     "spdy": "^3.3.3"
   },
   "devDependencies": {
-    "@types/chai": "^3.4.34",
-    "@types/chai-as-promised": "0.0.29",
     "@types/lru-cache": "^2.5.32",
     "@types/sinon": "^1.16.31",
     "@types/supertest": "^2.0.1",
     "@types/tmp": "0.0.31",
-    "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
     "clang-format": "1.0.52",
     "intercept-stdout": "^0.1.2",
     "rimraf": "^2.6.2",

@@ -1,6 +1,6 @@
 {
   "name": "polymer-editor-service",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Static analysis for the web in your text editor!",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/editor-service",
   "repository": "github:Polymer/tools",
@@ -21,12 +21,9 @@
     "format": "find src test | grep \"\\.js$\\|\\.ts$\" | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
   "devDependencies": {
-    "@types/chai": "=4.0.5",
     "@types/clone": "^0.1.30",
     "@types/command-line-args": "^5.0.0",
     "@types/fuzzaldrin": "^2.1.0",
-    "chai": "^4",
-    "chai-subset": "^1.3.0",
     "clang-format": "=1.0.45",
     "clone": "^2.1.1",
     "memory-streams": "^0.1.0",

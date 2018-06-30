@@ -40,6 +40,9 @@
 			"path": "packages/web-component-tester"
 		},
 		{
+			"path": "packages/workspaces"
+		},
+		{
 			"path": "."
 		}
 	],
