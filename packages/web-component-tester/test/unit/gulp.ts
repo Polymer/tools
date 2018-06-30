@@ -36,7 +36,7 @@ describe('gulp', function() {
     orch = new gulp['Gulp']();
     wctGulp.init(orch);
 
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
     sandbox.stub(steps, 'prepare')
         .callsFake(async(_context: Context): Promise<void> => undefined);
     sandbox.stub(steps, 'runTests').callsFake(async (context: Context) => {

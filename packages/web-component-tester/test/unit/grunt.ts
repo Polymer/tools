@@ -74,7 +74,7 @@ describe('grunt', function() {
   describe('wct-test', function() {
     let sandbox: sinon.SinonSandbox;
     beforeEach(function() {
-      sandbox = sinon.sandbox.create();
+      sandbox = sinon.createSandbox();
       sandbox.stub(steps, 'prepare')
           .callsFake(async(_context: Context): Promise<void> => undefined);
 

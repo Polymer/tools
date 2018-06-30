@@ -37,7 +37,7 @@ const LOCAL_BROWSERS = {
 describe('cli', () => {
   let sandbox: sinon.SinonSandbox;
   beforeEach(() => {
-    sandbox = sinon.sandbox.create();
+    sandbox = sinon.createSandbox();
     sandbox.stub(steps, 'prepare')
         .callsFake(async(): Promise<void> => undefined);
     sandbox.stub(steps, 'runTests')

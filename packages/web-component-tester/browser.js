@@ -1441,7 +1441,7 @@ function loadSync() {
         debug('Loading environment script:', url);
         // Synchronous load.
         document.write('<script src="' + encodeURI(url) +
-            '"></script>'); // jshint ignore:line
+            '?nocompile"></script>'); // jshint ignore:line
     });
     debug('Environment scripts loaded');
     var imports = get('environmentImports');

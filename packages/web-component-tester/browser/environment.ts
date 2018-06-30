@@ -35,7 +35,7 @@ export function loadSync() {
     // Synchronous load.
     document.write(
         '<script src="' + encodeURI(url) +
-        '"></script>');  // jshint ignore:line
+        '?nocompile"></script>');  // jshint ignore:line
   });
   util.debug('Environment scripts loaded');
 
