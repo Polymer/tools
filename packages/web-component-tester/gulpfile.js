@@ -21,7 +21,6 @@ const ts = require('gulp-typescript');
 const lazypipe = require('lazypipe');
 const path = require('path');
 const rollup = require('rollup');
-const runSequence = require('run-sequence');
 const typescript = require('typescript');
 
 const mochaConfig = { reporter: 'spec', retries: 3, timeout: 90000 };
@@ -30,12 +29,6 @@ const mochaConfig = { reporter: 'spec', retries: 3, timeout: 90000 };
 const commonTools = {
   depcheck: commonDepCheck
 };
-
-gulp.task('lint', ['tslint', 'depcheck']);
-
-// Meta tasks
-
-gulp.task('default', ['test']);
 
 function removeFile(path) {
   try {
@@ -72,24 +65,8 @@ gulp.task('clean', (done) => {
   done();
 });
 
-gulp.task('test', function (done) {
-  runSequence(
-    'build:typescript-server',
-    'lint',
-    'test:unit',
-    'test:integration',
-    done);
-});
-
-gulp.task('build-all', (done) => {
-  runSequence('clean', 'lint', 'build', done);
-});
-
-gulp.task('build',
-  ['build:typescript-server', 'build:browser', 'build:wct-browser-legacy']);
-
 const tsProject = ts.createProject('tsconfig.json', { typescript });
-gulp.task('build:typescript-server', function () {
+gulp.task('build:typescript-server', () => {
   // Ignore typescript errors, because gulp-typescript, like most things
   // gulp, can't be trusted.
   return tsProject.src().pipe(tsProject(ts.reporter.nullReporter())).js.pipe(gulp.dest('./'));
@@ -98,14 +75,14 @@ gulp.task('build:typescript-server', function () {
 const browserTsProject = ts.createProject('browser/tsconfig.json', {
   typescript
 });
-gulp.task('build:typescript-browser', function () {
-  return browserTsProject.src().pipe(
-    browserTsProject(ts.reporter.nullReporter())).js.pipe(gulp.dest('./browser/'));
-});
+gulp.task('build:typescript-browser', () =>
+  browserTsProject.src().pipe(
+    browserTsProject(ts.reporter.nullReporter())).js.pipe(gulp.dest('./browser/'))
+);
 
 // Specific tasks
 
-gulp.task('build:browser', ['build:typescript-browser'], function (done) {
+gulp.task('build:browser', gulp.series('build:typescript-browser', (done) => {
   rollup.rollup({
     entry: 'browser/index.js',
   }).then(function (bundle) {
@@ -121,15 +98,15 @@ gulp.task('build:browser', ['build:typescript-browser'], function (done) {
       done();
     });
   }).catch(done);
-});
+}));
 
-gulp.task('build:wct-browser-legacy:a11ySuite', function () {
-  return gulp.src(['data/a11ySuite-npm-header.txt', 'data/a11ySuite.js'])
+gulp.task('build:wct-browser-legacy:a11ySuite', () =>
+  gulp.src(['data/a11ySuite-npm-header.txt', 'data/a11ySuite.js'])
     .pipe(concat('a11ySuite.js'))
-    .pipe(gulp.dest('../wct-browser-legacy/'));
-});
+    .pipe(gulp.dest('../wct-browser-legacy/'))
+);
 
-gulp.task('build:wct-browser-legacy:browser', ['build:typescript-browser'], function (done) {
+gulp.task('build:wct-browser-legacy:browser', gulp.series('build:typescript-browser', (done) => {
   rollup.rollup({
     entry: 'browser/index.js',
   }).then(function (bundle) {
@@ -145,27 +122,25 @@ gulp.task('build:wct-browser-legacy:browser', ['build:typescript-browser'], func
       done();
     });
   }).catch(done);
-});
+}));
 
-gulp.task('build:wct-browser-legacy', [
+gulp.task('build:wct-browser-legacy', gulp.series(
   'build:wct-browser-legacy:a11ySuite',
   'build:wct-browser-legacy:browser',
-]);
+));
 
 
-gulp.task('test:unit', function () {
-  return gulp.src('test/unit/*.js', { read: false, timeout: 5000, })
-    .pipe(mocha(mochaConfig));
-});
+gulp.task('test:unit', () =>
+  gulp.src('test/unit/*.js', { read: false, timeout: 5000, })
+    .pipe(mocha(mochaConfig))
+);
 
-gulp.task('bower', function () {
-  return bower();
-});
+gulp.task('bower', () => bower());
 
-gulp.task('test:integration', ['bower'], function () {
-  return gulp.src('test/integration/*.js', { read: false })
-    .pipe(mocha(mochaConfig));
-});
+gulp.task('test:integration', gulp.series('bower', () =>
+  gulp.src('test/integration/*.js', { read: false })
+    .pipe(mocha(mochaConfig))
+));
 
 gulp.task('tslint', () =>
   gulp.src([
@@ -174,7 +149,8 @@ gulp.task('tslint', () =>
     'custom_typings/*.d.ts', 'browser/**/*.ts', '!browser/**/*.ts'
   ])
     .pipe(tslint())
-    .pipe(tslint.report({ formatter: 'verbose' })));
+    .pipe(tslint.report({ formatter: 'verbose' }))
+);
 
 // Flows
 
@@ -227,10 +203,36 @@ function commonDepCheck(options) {
   });
 }
 
-gulp.task('prepublish', function (done) {
+// Meta tasks
+
+gulp.task('lint', gulp.series(
+  'tslint',
+  'depcheck'
+));
+
+gulp.task('build', gulp.series(
+  'build:typescript-server',
+  'build:browser',
+  'build:wct-browser-legacy'
+));
+
+gulp.task('test', gulp.series(
+  'build:typescript-server',
+  'lint',
+  'test:unit',
+  'test:integration'
+));
+
+gulp.task('build-all', gulp.series(
+  'clean', 'lint', 'build'
+));
+
+gulp.task('prepublish', gulp.series(
   // We can't run the integration tests here because on travis we may not
   // be running with an x instance when we do `npm install`. We can change
   // this to just `test` from `test:unit` once all supported npm versions
   // no longer run `prepublish` on install.
-  runSequence('build-all', 'test:unit', done);
-});
+  'build-all', 'test:unit'
+));
+
+gulp.task('default', gulp.series('test'));
