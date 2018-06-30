@@ -1,10 +1,10 @@
 {
   "name": "wct-browser",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "cd test/ && npm test"
+    "test": "cd test/ && npm test",
+    "test:integration": "cd test/ && npm run test:integration"
   },
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/wct-browser",
   "repository": "github:Polymer/tools",
