@@ -1,6 +1,14 @@
 {
   "name": "wct-browser-test",
   "scripts": {
-    "test": "wct --npm --wct-package-name wct-browser"
+    "test": "npm run test:integration",
+    "test:integration": "wct --npm --wct-package-name wct-browser"
+  },
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0"
+  },
+  "devDependencies": {
+    "wct-browser": "^1.0.0",
+    "web-component-tester": "^6.7.1"
   }
 }
