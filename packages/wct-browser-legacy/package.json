@@ -4,9 +4,7 @@
   "description": "Client-side dependencies for web-component-tester tests installed via npm.",
   "main": "browser.js",
   "license": "http://polymer.github.io/LICENSE.txt",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/polymer/web-component-tester.git"
@@ -26,16 +24,15 @@
   "homepage": "https://github.com/polymer/web-component-tester#readme",
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
-    "@polymer/sinonjs": "^1.14.1",
     "@polymer/test-fixture": "^3.0.0-pre.1",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "@webcomponents/webcomponentsjs": "^2.0.2",
     "accessibility-developer-tools": "^2.12.0",
-    "async": "^1.5.2",
-    "chai": "^3.5.0",
-    "lodash": "^3.10.1",
-    "mocha": "^3.4.2",
-    "sinon": "^1.17.1",
-    "sinon-chai": "^2.10.0",
+    "async": "^2.6.1",
+    "chai": "^4.1.2",
+    "lodash": "^4.17.10",
+    "mocha": "^5.2.0",
+    "sinon": "^6.0.0",
+    "sinon-chai": "^3.2.0",
     "stacky": "^1.3.1"
   }
 }
