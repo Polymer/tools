@@ -1,3 +1,5 @@
-/packages/*/node_modules
-/node_modules
+/packages/*/node_modules/
+/packages/*/test/node_modules/
+/node_modules/
+/.vscode/
 lerna-debug.log
