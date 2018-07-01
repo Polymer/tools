@@ -48,7 +48,7 @@
     "test": "tsc && gulp test",
     "prepublishOnly": "gulp prepublish",
     "test:unit": "mocha \"test/unit/**/*.js\"",
-    "test:integration": "gulp bower && mocha \"test/integration/**/*.js\" --timeout 90000",
+    "test:integration": "bower install && mocha \"test/integration/**/*.js\" --timeout 90000",
     "test:watch": "watch \"mocha \\\"test/unit/**/*.js\\\"\" runner/ browser/ bin/ test/ tasks/",
     "format": "find runner test | grep \"\\.js$\\|\\.ts$\" | xargs ./node_modules/.bin/clang-format --style=file -i"
   },
@@ -110,7 +110,6 @@
     "depcheck": "^0.6.3",
     "grunt": "^1.0.3",
     "gulp": "^4.0.0",
-    "gulp-bower": "0.0.14",
     "gulp-concat": "^2.6.1",
     "gulp-spawn-mocha": "^5.0.1",
     "gulp-tslint": "^8.1.2",

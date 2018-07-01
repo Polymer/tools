@@ -14,7 +14,6 @@ const depcheck = require('depcheck');
 const fs = require('fs');
 const glob = require('glob');
 const gulp = require('gulp');
-const bower = require('gulp-bower');
 const mocha = require('gulp-spawn-mocha');
 const tslint = require('gulp-tslint');
 const ts = require('gulp-typescript');
@@ -127,19 +126,6 @@ gulp.task('build:wct-browser-legacy:browser', gulp.series('build:typescript-brow
 gulp.task('build:wct-browser-legacy', gulp.series(
   'build:wct-browser-legacy:a11ySuite',
   'build:wct-browser-legacy:browser',
-));
-
-
-gulp.task('test:unit', () =>
-  gulp.src('test/unit/*.js', { read: false, timeout: 5000, })
-    .pipe(mocha(mochaConfig))
-);
-
-gulp.task('bower', () => bower());
-
-gulp.task('test:integration', gulp.series('bower', () =>
-  gulp.src('test/integration/*.js', { read: false })
-    .pipe(mocha(mochaConfig))
 ));
 
 gulp.task('tslint', () =>
