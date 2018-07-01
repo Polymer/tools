@@ -45,9 +45,10 @@
   "scripts": {
     "lint": "gulp lint",
     "build": "tsc && gulp build",
-    "test": "tsc && gulp test",
-    "prepublishOnly": "gulp prepublish",
-    "test:unit": "mocha \"test/unit/**/*.js\"",
+    "build-all": "gulp clean && npm run lint && npm run build",
+    "test": "tsc && gulp build:typescript-server && npm run lint && npm run test:unit && npm run test:integration",
+    "prepublishOnly": "npm run build-all && npm run test:unit",
+    "test:unit": "npm run build && mocha \"test/unit/**/*.js\"",
     "test:integration": "bower install && mocha \"test/integration/**/*.js\" --timeout 90000",
     "test:watch": "watch \"mocha \\\"test/unit/**/*.js\\\"\" runner/ browser/ bin/ test/ tasks/",
     "format": "find runner test | grep \"\\.js$\\|\\.ts$\" | xargs ./node_modules/.bin/clang-format --style=file -i"

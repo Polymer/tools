@@ -202,23 +202,4 @@ gulp.task('build', gulp.series(
   'build:wct-browser-legacy'
 ));
 
-gulp.task('test', gulp.series(
-  'build:typescript-server',
-  'lint',
-  'test:unit',
-  'test:integration'
-));
-
-gulp.task('build-all', gulp.series(
-  'clean', 'lint', 'build'
-));
-
-gulp.task('prepublish', gulp.series(
-  // We can't run the integration tests here because on travis we may not
-  // be running with an x instance when we do `npm install`. We can change
-  // this to just `test` from `test:unit` once all supported npm versions
-  // no longer run `prepublish` on install.
-  'build-all', 'test:unit'
-));
-
-gulp.task('default', gulp.series('test'));
+gulp.task('default', gulp.series('build'));
