@@ -1,6 +1,5 @@
 import './sub/style-import.js';
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = `<dom-module id="shared-style">
   <template>

@@ -1,5 +1,4 @@
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = `<style is="custom-style">
   html {

@@ -1,7 +1,6 @@
 import { Polymer } from '../../../../lib/legacy/polymer-fn.js';
 import { html } from '../../../../lib/utils/html-tag.js';
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = `<dom-module id="simple-layout-styles">
   <template>

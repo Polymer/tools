@@ -530,7 +530,7 @@ export function createDomNodeInsertStatements(
   };
   const templateValue = serializeNodeToTemplateLiteral(fragment as any, false);
 
-  const createElementDiv = jsc.variableDeclaration(
+  const createElementTemplate = jsc.variableDeclaration(
       'const',
       [jsc.variableDeclarator(
           jsc.identifier(varName),
@@ -546,7 +546,7 @@ export function createDomNodeInsertStatements(
           templateValue));
   if (activeInBody) {
     return [
-      createElementDiv,
+      createElementTemplate,
       setDocumentContainerStatement,
       jsc.expressionStatement(jsc.callExpression(
           jsc.memberExpression(
@@ -557,13 +557,8 @@ export function createDomNodeInsertStatements(
               jsc.identifier(varName), jsc.identifier('content'))]))
     ];
   }
-  const setDisplayNoneStatement = jsc.expressionStatement(jsc.callExpression(
-      jsc.memberExpression(
-          jsc.identifier(varName), jsc.identifier('setAttribute')),
-      [jsc.literal('style'), jsc.literal('display: none;')]));
   return [
-    createElementDiv,
-    setDisplayNoneStatement,
+    createElementTemplate,
     setDocumentContainerStatement,
     jsc.expressionStatement(jsc.callExpression(
         jsc.memberExpression(

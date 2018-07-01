@@ -1724,13 +1724,11 @@ Polymer({
         'test.js': `
 import './foo.js';
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<custom-style><style>foo{}</style></custom-style>\`;
 document.head.appendChild($_documentContainer.content);
 `,
         'foo.js': `
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>hello world!</div>\`;
 document.head.appendChild($_documentContainer.content);
 `
@@ -1960,7 +1958,6 @@ class BarElem extends Element {}
         'test.js': `
 import { Element } from './polymer.js';
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Top</div><div>Middle</div><div>Bottom</div>\`;
 document.head.appendChild($_documentContainer.content);
 class FooElem extends Element {}
@@ -2001,7 +1998,6 @@ class BarElem extends Element {}
         'test.js': `
 import { Element } from './polymer.js';
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = \`<div>Random footer</div>\`;
 document.head.appendChild($_documentContainer.content);
 customElements.define('foo-elem', class FooElem extends Element {
@@ -2579,7 +2575,6 @@ Polymer({
           {
             'test.js': `
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<dom-module>
             <template>
@@ -2713,7 +2708,6 @@ console.log(foo$4);
         -->
     <script type="module">
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<style>
             body { color: red; }
@@ -2723,7 +2717,6 @@ document.head.appendChild($_documentContainer.content);
 </script>
           <script type="module">
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<style is="custom-style" include="foo-bar">
             body { font-size: 10px; }
@@ -2971,7 +2964,6 @@ export const bar = (function() {
       assertSources(await convert(), {
         'test.js': `
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = \`<dom-module id="dom-module-attr" attr=""></dom-module><dom-module id="multiple-templates">
             <template></template>

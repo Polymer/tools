@@ -86,7 +86,6 @@ import { PaperButtonBehavior, PaperButtonBehaviorImpl } from '../../@polymer/pap
 import '../../@polymer/paper-styles/element-styles/paper-material-styles.js';
 import { Polymer } from '../../@polymer/polymer/lib/legacy/polymer-fn.js';
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 
 $_documentContainer.innerHTML = `<dom-module id="paper-button">
   <template strip-whitespace="">

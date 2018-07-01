@@ -11,7 +11,6 @@ import { html } from '../../../lib/utils/html-tag.js';
 
 import { PolymerElement } from '../../../polymer-element.js';
 const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
 $_documentContainer.innerHTML = `<dom-module id="p-r-ap" assetpath="../../assets/"></dom-module>`;
 document.head.appendChild($_documentContainer.content);
 class PR extends PolymerElement {
