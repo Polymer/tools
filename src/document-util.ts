@@ -544,26 +544,14 @@ export function createDomNodeInsertStatements(
           jsc.memberExpression(
               jsc.identifier(varName), jsc.identifier('innerHTML')),
           templateValue));
-  if (activeInBody) {
-    return [
-      createElementTemplate,
-      setDocumentContainerStatement,
-      jsc.expressionStatement(jsc.callExpression(
-          jsc.memberExpression(
-              jsc.memberExpression(
-                  jsc.identifier('document'), jsc.identifier('body')),
-              jsc.identifier('appendChild')),
-          [jsc.memberExpression(
-              jsc.identifier(varName), jsc.identifier('content'))]))
-    ];
-  }
+  const targetNode = activeInBody ? 'body' : 'head';
   return [
     createElementTemplate,
     setDocumentContainerStatement,
     jsc.expressionStatement(jsc.callExpression(
         jsc.memberExpression(
             jsc.memberExpression(
-                jsc.identifier('document'), jsc.identifier('head')),
+                jsc.identifier('document'), jsc.identifier(targetNode)),
             jsc.identifier('appendChild')),
         [jsc.memberExpression(
             jsc.identifier(varName), jsc.identifier('content'))]))
