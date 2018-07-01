@@ -28,7 +28,7 @@
     "node": ">=8.0.0"
   },
   "dependencies": {
-    "@types/chai": "^3.5.2",
+    "@types/chai": "^4.1.4",
     "@types/esprima": "^2.1.33",
     "@types/fs-extra": "^5.0.0",
     "@types/glob": "^5.0.35",
@@ -40,7 +40,7 @@
     "@types/rimraf": "2.0.2",
     "@types/semver": "^5.3.32",
     "ast-types": "^0.9.11",
-    "chai": "^3.5.0",
+    "chai": "^4.1.2",
     "chalk": "^2.3.0",
     "command-line-args": "^4.0.6",
     "command-line-usage": "^4.0.0",
@@ -71,7 +71,7 @@
     "dir-compare": "^1.4.0",
     "mocha": "^5.2.0",
     "tsc-then": "^1.1.0",
-    "tslint": "^5.5.0",
+    "tslint": "^5.10.0",
     "typescript": "^2.8.1"
   }
 }
