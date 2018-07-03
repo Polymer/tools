@@ -29,20 +29,22 @@ const FIXTURES = path.resolve(__dirname, '../fixtures/cli');
 
 describe('gulp', function() {
   let pluginsCalled: string[];
+  let sandbox: sinon.SinonSandbox;
   let orch: gulp.Gulp;
   let options: Config;
   beforeEach(function() {
     orch = new gulp['Gulp']();
     wctGulp.init(orch);
 
-    sinon.stub(steps, 'prepare')
+    sandbox = sinon.sandbox.create();
+    sandbox.stub(steps, 'prepare')
         .callsFake(async(_context: Context): Promise<void> => undefined);
-    sinon.stub(steps, 'runTests').callsFake(async (context: Context) => {
+    sandbox.stub(steps, 'runTests').callsFake(async (context: Context) => {
       options = context.options;
     });
 
     pluginsCalled = [];
-    sinon.stub(Plugin.prototype, 'execute')
+    sandbox.stub(Plugin.prototype, 'execute')
         .callsFake(async function(context: Context) {
           pluginsCalled.push(this.name);
           context.options.activeBrowsers.push(
@@ -51,7 +53,7 @@ describe('gulp', function() {
   });
 
   afterEach(function() {
-    sinon.restore();
+    sandbox.restore();
   });
 
   async function runGulpTask(name: string) {

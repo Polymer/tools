@@ -22,14 +22,19 @@ const expect = chai.expect;
 chai.use(sinonChai);
 
 describe('Context', () => {
+  let sandbox: sinon.SinonSandbox;
+  beforeEach(() => {
+    sandbox = sinon.sandbox.create();
+  });
+
   afterEach(() => {
-    sinon.restore();
+    sandbox.restore();
   });
 
   describe('.plugins', () => {
     it('excludes plugins with a falsy config', async () => {
       const context = new Context(<any>{plugins: {local: false, sauce: {}}});
-      const stub = sinon.stub(Plugin, 'get').callsFake((name: string) => {
+      const stub = sandbox.stub(Plugin, 'get').callsFake((name: string) => {
         return Promise.resolve(name);
       });
 
@@ -42,7 +47,7 @@ describe('Context', () => {
     it('excludes plugins disabled: true', async () => {
       const context =
           new Context(<any>{plugins: {local: {}, sauce: {disabled: true}}});
-      const stub = sinon.stub(Plugin, 'get').callsFake((name: string) => {
+      const stub = sandbox.stub(Plugin, 'get').callsFake((name: string) => {
         return Promise.resolve(name);
       });
 
