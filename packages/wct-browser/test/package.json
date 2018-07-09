@@ -8,6 +8,8 @@
     "@polymer/polymer": "^3.0.0"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
     "wct-browser": "^1.0.0",
     "web-component-tester": "^6.7.1"
   }

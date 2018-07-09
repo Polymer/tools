@@ -12,8 +12,8 @@ class MyTestElement extends PolymerElement {
     return {
       title: {
         type: String
-      };
-    }
+      }
+    };
   }
 
   constructor() {

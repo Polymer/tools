@@ -81,17 +81,21 @@ export function webserver(wct: Context): void {
     // package and will use its "browser.js" if present.
     let browserScript = 'web-component-tester/browser.js';
     if (options.npm) {
-      try {
-        const wctBrowserLegacyPath =
-            path.join(options.root, 'node_modules', 'wct-browser-legacy');
-        const version =
-            require(path.join(wctBrowserLegacyPath, 'package.json')).version;
-        if (version) {
-          browserScript = 'wct-browser-legacy/browser.js';
-        }
-      } catch (e) {
-        // Safely ignore.
-      }
+			if (options.wctPackageName === 'wct-browser') {
+				browserScript = 'wct-browser/browser.js';
+			} else {
+				try {
+					const wctBrowserLegacyPath =
+							path.join(options.root, 'node_modules', 'wct-browser-legacy');
+					const version =
+							require(path.join(wctBrowserLegacyPath, 'package.json')).version;
+					if (version) {
+						browserScript = 'wct-browser-legacy/browser.js';
+					}
+				} catch (e) {
+					// Safely ignore.
+				}
+			}
       const packageName = getPackageName(options);
       const isPackageScoped = packageName && packageName[0] === '@';
 
@@ -100,9 +104,13 @@ export function webserver(wct: Context): void {
       options.clientOptions = options.clientOptions || {};
       options.clientOptions.environmentScripts =
           options.clientOptions.environmentScripts || [];
-      options.clientOptions.environmentScripts =
-          options.clientOptions.environmentScripts.concat(
-              resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
+
+      if (['web-component-tester', 'wct-browser-legacy'].includes(
+              options.wctPackageName)) {
+        options.clientOptions.environmentScripts =
+            options.clientOptions.environmentScripts.concat(
+                resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
+      }
 
       if (isPackageScoped) {
         browserScript = `../${browserScript}`;
@@ -125,7 +133,7 @@ export function webserver(wct: Context): void {
     // Non-npm case.
     if (!options.npm) {
       componentDir = bowerConfig.read(options.root).directory;
-      const pathToLocalWct =
+     const pathToLocalWct =
           path.join(options.root, componentDir, 'web-component-tester');
       let version: string|undefined = undefined;
       const mdFilenames = ['package.json', 'bower.json', '.bower.json'];
