@@ -28,12 +28,12 @@ export function formatComment(comment: string, depth: number): string {
   // comment sequence if it is contained in the comment. Escape it as `*\/`
   // instead. One way this sequence could get here is if an HTML comment
   // embedded a JavaScript style block comment.
-  comment = comment.replace(/\*\//g, '*\\/')
+  comment = comment.replace(/\*\//g, '*\\/');
 
   // Indent the comment one space so that it doesn't touch the `*` we add next,
   // but only if there is a character there. If we also indented blank lines by
   // one space, then they would have an unneccessary space after the `*`.
-  comment = comment.replace(/^(.)/gm, ' $1')
+  comment = comment.replace(/^(.)/gm, ' $1');
 
   // Indent to the given level and add the `*` character.
   const i = indent(depth);

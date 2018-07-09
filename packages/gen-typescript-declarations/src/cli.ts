@@ -15,8 +15,8 @@ import * as path from 'path';
 
 import {Config, generateDeclarations} from './gen-ts';
 
-const commandLineArgs = require('command-line-args') as any;
-const commandLineUsage = require('command-line-usage') as any;
+import commandLineArgs = require('command-line-args');
+import commandLineUsage = require('command-line-usage');
 
 const argDefs = [
   {
@@ -55,7 +55,7 @@ const argDefs = [
   },
 ];
 
-interface args {
+interface Args {
   help?: boolean;
   version?: boolean;
   root: string;
@@ -65,7 +65,7 @@ interface args {
 }
 
 async function run(argv: string[]) {
-  const args = commandLineArgs(argDefs, {argv}) as args;
+  const args = commandLineArgs(argDefs, {argv}) as Args;
 
   if (args.help) {
     console.log(commandLineUsage([

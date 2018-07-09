@@ -40,12 +40,12 @@ export class Namespace {
   }
 
   serialize(depth: number = 0): string {
-    let out = ''
+    let out = '';
     if (this.description) {
       out += formatComment(this.description, depth);
     }
-    const i = indent(depth)
-    out += i
+    const i = indent(depth);
+    out += i;
     if (depth === 0) {
       out += 'declare ';
     }
@@ -118,7 +118,7 @@ export class Class {
         out += `\n${i2}${mixin}(`;
       }
       out += `\n${i2}${this.extends || 'Object'}`;
-      out += ')'.repeat(this.mixins.length)
+      out += ')'.repeat(this.mixins.length);
 
     } else if (this.extends) {
       out += ' extends ' + this.extends;
@@ -232,7 +232,7 @@ export abstract class FunctionLike {
   }
 
   serialize(depth: number = 0): string {
-    let out = ''
+    let out = '';
     const i = indent(depth);
 
     const annotations = [];
@@ -275,11 +275,11 @@ export abstract class FunctionLike {
     }
     out += '(';
     out += this.params.map((p) => p.serialize()).join(', ');
-    out += `)`
+    out += `)`;
     if (this.returns) {
       out += `: ${this.returns.serialize()}`;
     }
-    out += `;\n`
+    out += `;\n`;
     return out;
   }
 }

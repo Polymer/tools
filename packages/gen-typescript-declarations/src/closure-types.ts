@@ -216,7 +216,7 @@ function nullableByDefault(node: doctrine.Type): boolean {
       case 'number':
       case 'boolean':
       case 'void':
-        return false
+        return false;
     }
     return true;
   }
@@ -283,7 +283,9 @@ function convertFunction(
     return new ts.FunctionType(
         params,
         // Cast because type is wrong: `FunctionType.result` is not an array.
-        node.result ? convert(node.result as any, templateTypes) : ts.anyType);
+        node.result ?
+            convert(node.result as {} as doctrine.Type, templateTypes) :
+            ts.anyType);
   }
 }
 
@@ -294,7 +296,7 @@ function convertRecord(node: doctrine.type.RecordType, templateTypes: string[]):
     if (field.type !== 'FieldType') {
       return ts.anyType;
     }
-    let fieldType =
+    const fieldType =
         field.value ? convert(field.value, templateTypes) : ts.anyType;
 
     // In Closure you can't declare a record field optional, instead you

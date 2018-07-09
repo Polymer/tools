@@ -31,7 +31,7 @@ suite('generateDeclarations', () => {
       const actual =
           await generateDeclarations(path.join(fixtures, fixture), config);
       const golden = readDirAsMap(path.join(goldens, fixture));
-      (assert as any).hasAllKeys(actual, [...golden.keys()]);
+      assert.hasAllKeys(actual, [...golden.keys()]);
       for (const filename of actual.keys()) {
         assert.equal(actual.get(filename), golden.get(filename), filename);
       }

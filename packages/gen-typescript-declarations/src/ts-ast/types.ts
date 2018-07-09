@@ -22,7 +22,7 @@ export class NameType {
 
   constructor(name: string) {
     this.name = name;
-  };
+  }
 
   * traverse(): Iterable<Node> {
     yield this;
@@ -314,7 +314,8 @@ export class IndexableObjectType {
   }
 
   serialize(): string {
-    return `{[key: ${this.keyType.serialize()}]: ${this.valueType.serialize()}}`
+    return `{[key: ${this.keyType.serialize()}]: ${
+        this.valueType.serialize()}}`;
   }
 }
 

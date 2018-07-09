@@ -83,7 +83,7 @@ export async function generateDeclarations(
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();
   for (const tsDoc of analyzerToAst(analysis, config, rootDir)) {
-    outFiles.set(tsDoc.path, tsDoc.serialize())
+    outFiles.set(tsDoc.path, tsDoc.serialize());
   }
   return outFiles;
 }
@@ -217,7 +217,7 @@ ${sourceUrls.map((url) => '  ' + url).join('\n')}`;
 }
 
 interface MaybePrivate {
-  privacy?: 'public'|'private'|'protected'
+  privacy?: 'public'|'private'|'protected';
 }
 
 /**
@@ -460,7 +460,7 @@ function handleMixin(
         methods: handleMethods(feature.methods.values()),
       }),
   );
-};
+}
 
 /**
  * Mixins can automatically apply other mixins, indicated by the @appliesMixin
@@ -633,7 +633,7 @@ function documentationHasSuppressTypeCheck(annotation: jsdoc.Annotation|
     return false;
   }
 
-  const annotationValue = annotation.tags.find(e => e.title === 'suppress');
+  const annotationValue = annotation.tags.find((e) => e.title === 'suppress');
   return annotationValue && annotationValue.description === '{checkTypes}' ||
       false;
 }
