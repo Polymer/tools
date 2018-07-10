@@ -10,9 +10,5 @@
   "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "author": "The Polymer Project Authors",
-  "license": "BSD-3-Clause",
-  "dependencies": {
-    "mocha": ">=5.2.0",
-    "stacky": "^1.3.1"
-  }
+  "license": "BSD-3-Clause"
 }

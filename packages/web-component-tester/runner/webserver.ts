@@ -100,7 +100,6 @@ export function webserver(wct: Context): void {
         browserScript = npmPackageMainPath.slice(
           npmPackageRootPath.length - npmPackageName.length);
         options.clientOptions.environmentScripts.push('mocha/mocha.js');
-        options.clientOptions.environmentScripts.push('stacky/browser.js');
       } catch (e) {
         // Safely ignore.
       }

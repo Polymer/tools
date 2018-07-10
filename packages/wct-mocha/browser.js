@@ -1095,13 +1095,14 @@
       if (extraArgs[0]) {
         extraArgs[0] = this.showRootSuite(extraArgs[0]);
       }
-      // Normalize errors
-      if (eventName === 'fail') {
-        extraArgs[1] = Stacky.normalize(extraArgs[1], STACKY_CONFIG);
-      }
-      if (extraArgs[0] && extraArgs[0].err) {
-        extraArgs[0].err = Stacky.normalize(extraArgs[0].err, STACKY_CONFIG);
-      }
+      // NO STACKY!
+      // // Normalize errors
+      // if (eventName === 'fail') {
+      //   extraArgs[1] = Stacky.normalize(extraArgs[1], STACKY_CONFIG);
+      // }
+      // if (extraArgs[0] && extraArgs[0].err) {
+      //   extraArgs[0].err = Stacky.normalize(extraArgs[0].err, STACKY_CONFIG);
+      // }
     };
     /**
      * We like to show the root suite's title, which requires a little bit of
