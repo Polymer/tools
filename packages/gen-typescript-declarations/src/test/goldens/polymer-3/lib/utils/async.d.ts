@@ -8,8 +8,6 @@
  *   lib/utils/async.js
  */
 
-/// <reference path="boot.d.ts" />
-
 /**
  * Async interface wrapper around `setTimeout`.
  */

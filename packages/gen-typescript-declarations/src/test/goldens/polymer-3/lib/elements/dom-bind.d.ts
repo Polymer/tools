@@ -8,11 +8,6 @@
  *   lib/elements/dom-bind.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../mixins/property-effects.d.ts" />
-/// <reference path="../mixins/mutable-data.d.ts" />
-/// <reference path="../mixins/gesture-event-listeners.d.ts" />
-
 /**
  * Custom element to allow using Polymer's template features (data binding,
  * declarative event listeners, etc.) in the main document without defining

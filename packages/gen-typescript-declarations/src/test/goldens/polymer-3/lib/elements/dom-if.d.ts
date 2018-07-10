@@ -8,13 +8,6 @@
  *   lib/elements/dom-if.js
  */
 
-/// <reference path="../../polymer-element.d.ts" />
-/// <reference path="../utils/templatize.d.ts" />
-/// <reference path="../utils/debounce.d.ts" />
-/// <reference path="../utils/flush.d.ts" />
-/// <reference path="../utils/async.d.ts" />
-/// <reference path="../utils/path.d.ts" />
-
 /**
  * The `<dom-if>` element will stamp a light-dom `<template>` child when
  * the `if` property becomes truthy, and the template can use Polymer

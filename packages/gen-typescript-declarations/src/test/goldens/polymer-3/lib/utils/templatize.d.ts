@@ -8,10 +8,6 @@
  *   lib/utils/templatize.js
  */
 
-/// <reference path="boot.d.ts" />
-/// <reference path="../mixins/property-effects.d.ts" />
-/// <reference path="../mixins/mutable-data.d.ts" />
-
 declare class TemplateInstanceBase extends
   PropertyEffects(
   Polymer.Element) {

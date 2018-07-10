@@ -8,11 +8,6 @@
  *   lib/elements/array-selector.js
  */
 
-/// <reference path="../../polymer-element.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-/// <reference path="../utils/array-splice.d.ts" />
-/// <reference path="../mixins/element-mixin.d.ts" />
-
 
 /**
  * Element mixin for recording dynamic associations between item paths in a

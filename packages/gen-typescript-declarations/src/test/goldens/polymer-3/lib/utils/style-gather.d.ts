@@ -8,8 +8,6 @@
  *   lib/utils/style-gather.js
  */
 
-/// <reference path="resolve-url.d.ts" />
-
 
 /**
  * Returns a list of <style> elements in a space-separated list of `dom-module`s.

@@ -8,9 +8,6 @@
  *   lib/mixins/dir-mixin.js
  */
 
-/// <reference path="property-accessors.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-
 
 /**
  * Element class mixin that allows elements to use the `:dir` CSS Selector to

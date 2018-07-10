@@ -8,11 +8,6 @@
  *   lib/utils/gestures.js
  */
 
-/// <reference path="boot.d.ts" />
-/// <reference path="async.d.ts" />
-/// <reference path="debounce.d.ts" />
-/// <reference path="settings.d.ts" />
-
 
 /**
  * Finds the element rendered on the screen at the provided coordinates.

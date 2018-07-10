@@ -8,8 +8,6 @@
  *   lib/utils/resolve-url.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Resolves the given URL against the provided `baseUri'.

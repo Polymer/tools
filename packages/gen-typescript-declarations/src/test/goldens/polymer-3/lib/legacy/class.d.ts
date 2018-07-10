@@ -8,9 +8,6 @@
  *   lib/legacy/class.js
  */
 
-/// <reference path="legacy-element-mixin.d.ts" />
-/// <reference path="../elements/dom-module.d.ts" />
-
 
 /**
  * Applies a "legacy" behavior or array of behaviors to the provided class.

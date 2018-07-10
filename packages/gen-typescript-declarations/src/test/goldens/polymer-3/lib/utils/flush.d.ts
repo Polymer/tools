@@ -8,8 +8,6 @@
  *   lib/utils/flush.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Adds a `Debouncer` to a list of globally flushable tasks.

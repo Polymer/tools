@@ -8,8 +8,6 @@
  *   lib/utils/render-status.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Enqueues a callback which will be run before the next render, at

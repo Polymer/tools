@@ -8,8 +8,6 @@
  *   paper-inky-focus-behavior.js
  */
 
-/// <reference path="paper-ripple-behavior.d.ts" />
-
 declare namespace Polymer {
 
   /**

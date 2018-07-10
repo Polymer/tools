@@ -8,14 +8,6 @@
  *   lib/mixins/property-effects.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-/// <reference path="../utils/path.d.ts" />
-/// <reference path="../utils/case-map.d.ts" />
-/// <reference path="property-accessors.d.ts" />
-/// <reference path="template-stamp.d.ts" />
-/// <reference path="../utils/settings.d.ts" />
-
 
 /**
  * Element class mixin that provides meta-programming for Polymer's template

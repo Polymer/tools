@@ -8,10 +8,6 @@
  *   lib/mixins/properties-mixin.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-/// <reference path="properties-changed.d.ts" />
-
 
 /**
  * Mixin that provides a minimal starting point to using the PropertiesChanged

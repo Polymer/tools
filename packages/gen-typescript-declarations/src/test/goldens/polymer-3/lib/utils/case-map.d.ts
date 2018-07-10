@@ -8,8 +8,6 @@
  *   lib/utils/case-map.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Converts "dash-case" identifier (e.g. `foo-bar-baz`) to "camelCase"

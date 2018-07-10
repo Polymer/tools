@@ -8,8 +8,6 @@
  *   lib/mixins/mutable-data.js
  */
 
-/// <reference path="../utils/mixin.d.ts" />
-
 
 /**
  * Element class mixin to skip strict dirty-checking for objects and arrays

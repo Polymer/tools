@@ -8,8 +8,6 @@
  *   lib/utils/path.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Returns true if the given string is a structured data path (has dots).

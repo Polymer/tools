@@ -249,7 +249,7 @@ function handleDocument(
       handleFunction(feature as AnalyzerFunction, root);
     } else if (feature.kinds.has('namespace')) {
       handleNamespace(feature as analyzer.Namespace, root);
-    } else if (feature.kinds.has('import')) {
+    } else if (feature.kinds.has('html-import')) {
       // Sometimes an Analyzer document includes an import feature that is
       // inbound (things that depend on me) instead of outbound (things I
       // depend on). For example, if an HTML file has a <script> tag for a JS

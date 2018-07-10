@@ -8,9 +8,6 @@
  *   lib/elements/dom-module.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/resolve-url.d.ts" />
-
 /**
  * The `dom-module` element registers the dom it contains to the name given
  * by the module's id attribute. It provides a unified database of dom

@@ -8,8 +8,6 @@
  *   paper-menu-button.js
  */
 
-/// <reference path="paper-menu-button-animations.d.ts" />
-
 declare function value(): any;
 
 declare function value(): any;

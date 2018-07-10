@@ -8,8 +8,6 @@
  *   lib/utils/mixin.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Wraps an ES6 class expression mixin such that the mixin is only applied

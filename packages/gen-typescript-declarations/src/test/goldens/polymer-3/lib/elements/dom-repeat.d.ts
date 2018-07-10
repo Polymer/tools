@@ -8,14 +8,6 @@
  *   lib/elements/dom-repeat.js
  */
 
-/// <reference path="../../polymer-element.d.ts" />
-/// <reference path="../utils/templatize.d.ts" />
-/// <reference path="../utils/debounce.d.ts" />
-/// <reference path="../utils/flush.d.ts" />
-/// <reference path="../mixins/mutable-data.d.ts" />
-/// <reference path="../utils/path.d.ts" />
-/// <reference path="../utils/async.d.ts" />
-
 /**
  * The `<dom-repeat>` element will automatically stamp and binds one instance
  * of template content to each object in a user-provided array.

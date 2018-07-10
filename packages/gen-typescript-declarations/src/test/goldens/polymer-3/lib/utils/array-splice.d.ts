@@ -8,8 +8,6 @@
  *   lib/utils/array-splice.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Returns an array of splice records indicating the minimum edits required

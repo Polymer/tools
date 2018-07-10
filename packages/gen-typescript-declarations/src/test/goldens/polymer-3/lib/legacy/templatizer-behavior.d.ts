@@ -8,8 +8,6 @@
  *   lib/legacy/templatizer-behavior.js
  */
 
-/// <reference path="../utils/templatize.d.ts" />
-
 /**
  * The `Templatizer` behavior adds methods to generate instances of
  * templates that are each managed by an anonymous `PropertyEffects`

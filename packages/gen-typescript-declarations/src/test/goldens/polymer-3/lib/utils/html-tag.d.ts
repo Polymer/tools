@@ -8,8 +8,6 @@
  *   lib/utils/html-tag.js
  */
 
-/// <reference path="boot.d.ts" />
-
 /**
  * Class representing a static string value which can be used to filter
  * strings by asseting that they have been created via this class. The

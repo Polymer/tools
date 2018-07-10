@@ -8,9 +8,6 @@
  *   lib/utils/settings.js
  */
 
-/// <reference path="boot.d.ts" />
-/// <reference path="resolve-url.d.ts" />
-
 
 /**
  * Sets the global rootPath property used by `ElementMixin` and
