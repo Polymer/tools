@@ -22,7 +22,13 @@
 			"path": "packages/editor-service"
 		},
 		{
+			"path": "packages/gen-typescript-declarations"
+		},
+		{
 			"path": "packages/linter"
+		},
+		{
+			"path": "packages/modulizer"
 		},
 		{
 			"path": "packages/polyserve"
@@ -30,12 +36,12 @@
 		{
 			"path": "packages/project-config"
 		},
-    {
-      "path": "packages/wct-browser-legacy"
-    },
-    {
-      "path": "packages/wct-local"
-    },
+		{
+			"path": "packages/wct-browser-legacy"
+		},
+		{
+			"path": "packages/wct-local"
+		},
 		{
 			"path": "packages/web-component-tester"
 		},

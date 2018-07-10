@@ -1,0 +1,26 @@
+language: node_js
+node_js:
+  - "4"
+  - "6"
+sudo: required
+before_script:
+- npm install -g web-component-tester mocha bower
+- bower install
+- npm run build
+env:
+  global:
+  - secure: X5NX0AXb+mMSzhFjvwwB/qwmH3bgiDn61XZIQjzNyM8rMvapfPOnWmYvODhwyE5jOcic7kD37uc0LjF/s8u+ZLp1UYyLNxeumIi+t6Z4fjpVGDD9MGFAHsPH4T+T3i5jFR4WMB/V8fFY4Ok/rxmJ0wbf0eOmIYKfCC1xA8lLBIQ=
+  - secure: aHvp2CDHPAHbv2QG/CBfDQBWbE2OkBH/TFJDoi2fLl0a9CDTxvxjUXPOZImnNoeLNIlN7KgOTPCQjVuvs9N5CKvJC0h3YQQ4UaAG5wQky3dXNxCUViGTn7ZHeBr9fJBzXJIwBo9ynrcAAJAWOI3ugdPewRUw92VJFbbAntQwAw0=
+addons:
+  firefox: '46.0'
+  apt:
+    sources:
+    - google-chrome
+    packages:
+    - google-chrome-stable
+  sauce_connect: true
+script:
+- mocha
+- if node --version | grep v6; then xvfb-run wct; fi
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && node --version | grep v6; then wct -s 'default'; fi
+dist: trusty

@@ -1,0 +1,39 @@
+[
+  [
+    [
+      "some-package/file-before.html",
+      {
+        "type": "js-module",
+        "originalUrl": "some-package/file-before.html",
+        "convertedUrl": "./@some-owner/some-package/file-after.js",
+        "convertedFilePath": "some-package/file-after.js",
+        "exportMigrationRecords": [
+          {
+            "oldNamespacedName": "NS.Export1",
+            "es6ExportName": "Export1"
+          },
+          {
+            "oldNamespacedName": "NS.Export2",
+            "es6ExportName": "Export2"
+          }
+        ]
+      }
+    ]
+  ],
+  [
+    [
+      "NS.Export1",
+      {
+        "url": "./@some-owner/some-package/file-after.js",
+        "name": "Export1"
+      }
+    ],
+    [
+      "NS.Export2",
+      {
+        "url": "./@some-owner/some-package/file-after.js",
+        "name": "Export2"
+      }
+    ]
+  ]
+]

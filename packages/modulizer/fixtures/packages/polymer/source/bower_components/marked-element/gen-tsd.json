@@ -1,0 +1,5 @@
+{
+  "removeReferences": [
+    "../marked/lib/marked.d.ts"
+  ]
+}
