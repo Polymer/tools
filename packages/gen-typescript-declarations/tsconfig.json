@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "outDir": "./lib",
+    "baseUrl": ".",
+    "paths": {
+      "parse5": [
+        "node_modules/@types/parse5",
+        "*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/test/goldens",
+    "src/test/fixtures"
+  ]
+}
