@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [0.4.1] - 2018-07-10
+
+* Fix error where package js-yaml couldn't be found
+* Remove `npm run format` and `npm run update-types` from Travis config
+* Fix npm audit warnings
+* Update wct-browser-legacy version
+* Don't set display: none on generated <template> elements
+
 ## [0.4.0] - 2018-05-11
 
 * In Polymer, 'polymer.html' is renamed during conversion to 'polymer-legacy.js'
