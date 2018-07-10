@@ -23,9 +23,12 @@ cd fixtures
 
 while read -r repo tag dir; do
   if [ -d $dir ]; then continue; fi  # Already set up.
-  git clone $repo $dir
+  git clone $repo --single-branch --depth 1 --branch $tag $dir
   cd $dir
-  git checkout $tag
-  bower install
+  if [ -e package.json ]; then
+    npm install --production
+  elif [ -e bower.json ]; then
+    bower install --production
+  fi
   cd -
 done < ../../../scripts/fixtures.txt
