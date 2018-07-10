@@ -186,6 +186,9 @@ declare class ArraySelector extends
   Polymer.Element) {
 }
 
-interface HTMLElementTagNameMap {
-  "array-selector": ArraySelector;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "array-selector": ArraySelector;
+  }
 }

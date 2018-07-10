@@ -13,8 +13,34 @@ import {formatComment, indent, quotePropertyName} from './formatting';
 import {Node} from './index';
 import {anyType, ParamType, Type} from './types';
 
-// An AST node that can appear directly in a document or namespace.
-export type Declaration = Namespace|Class|Interface|Function|ConstValue|Export;
+/** An AST node that can appear directly in a document or namespace. */
+export type Declaration =
+    GlobalNamespace|Namespace|Class|Interface|Function|ConstValue|Export;
+
+export class GlobalNamespace {
+  readonly kind = 'globalNamespace';
+  members: Declaration[];
+
+  constructor(members?: Declaration[]) {
+    this.members = members || [];
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const m of this.members) {
+      yield* m.traverse();
+    }
+    yield this;
+  }
+
+  serialize(_depth: number = 0): string {
+    let out = `declare global {\n`;
+    for (const member of this.members) {
+      out += '\n' + member.serialize(1);
+    }
+    out += `}\n`;
+    return out;
+  }
+}
 
 export class Namespace {
   readonly kind = 'namespace';

@@ -61,6 +61,9 @@ declare class CustomStyle extends HTMLElement {
   getStyle(): HTMLStyleElement|null;
 }
 
-interface HTMLElementTagNameMap {
-  "custom-style": CustomStyle;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "custom-style": CustomStyle;
+  }
 }

@@ -72,6 +72,9 @@ declare class DomModule extends HTMLElement {
   register(id?: string): void;
 }
 
-interface HTMLElementTagNameMap {
-  "dom-module": DomModule;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "dom-module": DomModule;
+  }
 }

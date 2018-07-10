@@ -267,6 +267,9 @@ declare class DomRepeat extends
   modelForElement(el: HTMLElement): TemplateInstanceBase|null;
 }
 
-interface HTMLElementTagNameMap {
-  "dom-repeat": DomRepeat;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "dom-repeat": DomRepeat;
+  }
 }

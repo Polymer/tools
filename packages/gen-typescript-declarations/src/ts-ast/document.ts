@@ -19,17 +19,20 @@ export class Document {
   members: Declaration[];
   referencePaths: Set<string>;
   header: string;
+  isEsModule: boolean;
 
   constructor(data: {
     path: string,
     members?: Declaration[],
     referencePaths?: Iterable<string>,
-    header?: string
+    header?: string,
+    isEsModule?: boolean,
   }) {
     this.path = data.path;
     this.members = data.members || [];
     this.referencePaths = new Set(Array.from(data.referencePaths || []));
     this.header = data.header || '';
+    this.isEsModule = data.isEsModule || false;
   }
 
   /**

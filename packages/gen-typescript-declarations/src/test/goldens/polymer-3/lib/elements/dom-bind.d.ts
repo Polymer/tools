@@ -34,6 +34,9 @@ declare class DomBind extends
   render(): void;
 }
 
-interface HTMLElementTagNameMap {
-  "dom-bind": DomBind;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "dom-bind": DomBind;
+  }
 }

@@ -12,11 +12,14 @@ interface PaperMenuGrowHeightAnimationElement extends Polymer.Element, NeonAnima
   configure(config: any): any;
 }
 
-interface HTMLElementTagNameMap {
-  "paper-menu-grow-height-animation": PaperMenuGrowHeightAnimationElement;
-  "paper-menu-grow-width-animation": PaperMenuGrowWidthAnimationElement;
-  "paper-menu-shrink-width-animation": PaperMenuShrinkWidthAnimationElement;
-  "paper-menu-shrink-height-animation": PaperMenuShrinkHeightAnimationElement;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "paper-menu-grow-height-animation": PaperMenuGrowHeightAnimationElement;
+    "paper-menu-grow-width-animation": PaperMenuGrowWidthAnimationElement;
+    "paper-menu-shrink-width-animation": PaperMenuShrinkWidthAnimationElement;
+    "paper-menu-shrink-height-animation": PaperMenuShrinkHeightAnimationElement;
+  }
 }
 
 interface PaperMenuGrowWidthAnimationElement extends Polymer.Element, NeonAnimationBehavior {

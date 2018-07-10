@@ -58,6 +58,9 @@ declare class DomIf extends PolymerElement {
   _showHideChildren(): void;
 }
 
-interface HTMLElementTagNameMap {
-  "dom-if": DomIf;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "dom-if": DomIf;
+  }
 }

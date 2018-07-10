@@ -17,6 +17,7 @@ import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/func
 import Uri from 'vscode-uri';
 
 import {closureParamToTypeScript, closureTypeToTypeScript} from './closure-types';
+import {isEsModuleDocument} from './es-modules';
 import * as ts from './ts-ast';
 
 /**
@@ -146,6 +147,11 @@ function analyzerToAst(
           analyzerDocs.map((d) => analyzerUrlToRelativePath(d.url, rootDir))
               .filter((url): url is string => url !== undefined)),
     });
+    for (const analyzerDoc of analyzerDocs) {
+      if (isEsModuleDocument(analyzerDoc)) {
+        tsDoc.isEsModule = true;
+      }
+    }
     for (const analyzerDoc of analyzerDocs) {
       handleDocument(
           analysis,
@@ -359,7 +365,9 @@ function handleElement(feature: analyzer.Element, root: ts.Document) {
   // `dom.createElement('my-foo')` returns a `MyFoo`. Augment the map with this
   // custom element.
   if (feature.tagName) {
-    const elementMap = findOrCreateInterface(root, 'HTMLElementTagNameMap');
+    const elementMap = findOrCreateInterface(
+        root.isEsModule ? findOrCreateGlobalNamespace(root) : root,
+        'HTMLElementTagNameMap');
     elementMap.properties.push(new ts.Property({
       name: feature.tagName,
       type: new ts.NameType(fullName),
@@ -704,11 +712,27 @@ function handleImport(
 }
 
 /**
+ * Find a document's global namespace declaration, or create one if it doesn't
+ * exist.
+ */
+function findOrCreateGlobalNamespace(doc: ts.Document): ts.GlobalNamespace {
+  for (const member of doc.members) {
+    if (member.kind === 'globalNamespace') {
+      return member;
+    }
+  }
+  const globalNamespace = new ts.GlobalNamespace();
+  doc.members.push(globalNamespace);
+  return globalNamespace;
+}
+
+/**
  * Traverse the given node to find the namespace AST node with the given path.
  * If it could not be found, add one and return it.
  */
 function findOrCreateNamespace(
-    root: ts.Document|ts.Namespace, path: string[]): ts.Document|ts.Namespace {
+    root: ts.Document|ts.Namespace|ts.GlobalNamespace,
+    path: string[]): ts.Document|ts.Namespace|ts.GlobalNamespace {
   if (!path.length) {
     return root;
   }
@@ -731,7 +755,8 @@ function findOrCreateNamespace(
  * If it could not be found, add one and return it.
  */
 function findOrCreateInterface(
-    root: ts.Document|ts.Namespace, reference: string): ts.Interface {
+    root: ts.Document|ts.Namespace|ts.GlobalNamespace,
+    reference: string): ts.Interface {
   const [namespacePath, name] = splitReference(reference);
   const namespace_ = findOrCreateNamespace(root, namespacePath);
   for (const member of namespace_.members) {
