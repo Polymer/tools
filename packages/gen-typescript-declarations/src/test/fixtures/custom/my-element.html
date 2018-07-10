@@ -1,0 +1,30 @@
+<!--
+I'm an HTML comment that contains JavaScript comments which must be escaped:
+
+  /** Danger! */
+
+  /** More danger! */*/
+-->
+<dom-module id="my-element">
+  <script>
+    Polymer({
+      is: 'my-element',
+    })
+  </script>
+</dom-module>
+
+<dom-module id="my-sub-element">
+  <script>
+    class MySubElement extends Polymer.Element {
+      static get is() { return 'my-sub-element'; }
+      /**
+       * Some description
+       * @suppress {checkTypes}
+       */
+      get() {
+
+      }
+    }
+    customElements.define(MySubElement.is, MySubElement);
+  </script>
+</dom-module>

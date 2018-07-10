@@ -1,0 +1,6 @@
+/node_modules
+/lib
+
+# All of the test fixtures are generated on install, except for "custom".
+/src/test/fixtures/*
+!/src/test/fixtures/custom

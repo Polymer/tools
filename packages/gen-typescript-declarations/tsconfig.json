@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "preserveConstEnums": true,
+
+    "lib": [
+      "es2017"
+    ],
+
+    "declaration": true,
+    "sourceMap": true,
+    "pretty": true,
+    "outDir": "./lib",
+
+    "baseUrl": ".",
+    "paths": {
+      "parse5": [
+        "node_modules/@types/parse5",
+        "*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "src/test/goldens",
+    "src/test/fixtures"
+  ]
+}

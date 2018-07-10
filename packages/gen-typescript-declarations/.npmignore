@@ -1,0 +1,6 @@
+test/
+src/test/
+lib/test/
+scripts/
+.clang-format
+.travis.yml
