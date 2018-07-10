@@ -285,7 +285,7 @@ export class PackageScanner {
         continue;
       }
 
-      const importDocumentUrl = this.urlHandler.getDocumentUrl(<any>htmlImport);
+      const importDocumentUrl = this.urlHandler.getDocumentUrl(htmlImport);
       const importPackageName =
           this.urlHandler.getOriginalPackageNameForUrl(importDocumentUrl);
 

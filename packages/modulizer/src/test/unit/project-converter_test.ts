@@ -37,7 +37,6 @@ A few conventions in these tests:
  */
 
 suite('AnalysisConverter', () => {
-
   suiteSetup(() => {
     saveDependencyMapping('some-package', 'some-package', '^1.2.34567890');
   });
@@ -57,7 +56,7 @@ suite('AnalysisConverter', () => {
       const originalConsoleWarn = console.warn;
       const originalConsoleErr = console.error;
 
-      console.warn = console.error = (...args: any[]) => {
+      console.warn = console.error = (...args: Array<{}>) => {
         warnings.push(args.join(''));
       };
 
@@ -3337,7 +3336,6 @@ export function methodOnFoo() {
 
     testName = 'regression test: do not delete header comments';
     test(testName, async () => {
-
       setSources({
         'test.html': `<!--
 @license

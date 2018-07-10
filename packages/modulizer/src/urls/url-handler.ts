@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {Import} from 'polymer-analyzer';
 import {Document} from 'polymer-analyzer/lib/model/document';
 
 import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} from './types';
@@ -24,7 +25,7 @@ import {ConvertedDocumentFilePath, ConvertedDocumentUrl, OriginalDocumentUrl} fr
  * See PackageUrlHandler, WorkspaceUrlHandler for example implementations.
  */
 export interface UrlHandler {
-  getDocumentUrl(document: Document): OriginalDocumentUrl;
+  getDocumentUrl(document: Document|Import): OriginalDocumentUrl;
   isImportInternal(fromUrl: ConvertedDocumentUrl, toUrl: ConvertedDocumentUrl):
       boolean;
   getOriginalPackageNameForUrl(url: OriginalDocumentUrl): string;

@@ -453,7 +453,7 @@ function replacePreservingComments(
     nodePath: NodePath, replacement: estree.Node) {
   const comments = getComments(nodePath);
   nodePath.replace(replacement);
-  (nodePath.node as any).comments = comments;
+  (nodePath.node as NodeWithComments).comments = comments;
 }
 
 type NodeWithComments = estree.Node&{comments?: estree.Comment[]};
@@ -462,8 +462,7 @@ type NodeWithComments = estree.Node&{comments?: estree.Comment[]};
 function getComments(nodePath: NodePath) {
   return getCommentsFromNode(nodePath.node);
 }
-function getCommentsFromNode(node: estree.Node&
-                             {comments?: estree.Comment[]}): estree.Comment[] {
+function getCommentsFromNode(node: NodeWithComments): estree.Comment[] {
   const results = [];
   if (node.comments) {
     results.push(...node.comments);

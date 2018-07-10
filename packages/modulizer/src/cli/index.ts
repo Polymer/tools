@@ -216,7 +216,7 @@ export interface CliOptions {
 }
 
 export async function run() {
-  const options: CliOptions = commandLineArgs(optionDefinitions) as any;
+  const options = commandLineArgs(optionDefinitions) as CliOptions;
 
   if (options['help']) {
     const getUsage = require('command-line-usage');

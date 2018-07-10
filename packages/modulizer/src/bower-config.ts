@@ -8,6 +8,7 @@ export interface BowerConfig {
   ignore?: string[];
   keywords?: string[];
   authors?: Array<BowerPerson|string>;
+  author?: string;
   homepage?: string;
   repository?: {type: string, url: string};
   dependencies?: {[pkg: string]: string};

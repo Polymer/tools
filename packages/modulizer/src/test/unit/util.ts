@@ -28,7 +28,7 @@ export async function interceptOutput(captured: () => Promise<void>):
   const originalError = console.error;
   const originalWarn = console.warn;
   const buffer: string[] = [];
-  const capture = (...args: any[]) => {
+  const capture = (...args: Array<{}>) => {
     buffer.push(args.join(' '));
   };
   console.log = capture;

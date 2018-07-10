@@ -27,7 +27,7 @@ export class Def {
     return this;
   }
 
-  field(name: string, type: TypeDef, default_?: any) {
+  field(name: string, type: TypeDef, default_?: {}) {
     this._fields.set(name, {
       name,
       type,
@@ -53,7 +53,7 @@ export class Or {
 export interface Field {
   name: string;
   type: TypeDef;
-  default?: any;
+  default?: ({});
 }
 
 type TypeDefSingle = Def|Or|string|StringConstructor|NumberConstructor|

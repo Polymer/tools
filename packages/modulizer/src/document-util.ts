@@ -527,8 +527,9 @@ export function createDomNodeInsertStatements(
     nodeName: '#document-fragment',
     attrs: [],
     childNodes: nodes,
+    __location: {} as parse5.ElementLocationInfo,
   };
-  const templateValue = serializeNodeToTemplateLiteral(fragment as any, false);
+  const templateValue = serializeNodeToTemplateLiteral(fragment, false);
 
   const createElementTemplate = jsc.variableDeclaration(
       'const',

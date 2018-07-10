@@ -14,7 +14,7 @@
 
 import * as fse from 'fs-extra';
 import * as path from 'path';
-import {Analyzer, Document} from 'polymer-analyzer';
+import {Analyzer, Document, Import} from 'polymer-analyzer';
 
 import {lookupDependencyMapping} from '../package-manifest';
 
@@ -70,7 +70,7 @@ export class WorkspaceUrlHandler implements UrlHandler {
    * OriginalDocumentUrl is relative to the project under conversion, unlike
    * the analyzer's ResolvedUrl, which is absolute to the file system.
    */
-  getDocumentUrl(document: Document): OriginalDocumentUrl {
+  getDocumentUrl(document: Document|Import): OriginalDocumentUrl {
     return this.analyzer.urlResolver.relative(document.url) as string as
         OriginalDocumentUrl;
   }

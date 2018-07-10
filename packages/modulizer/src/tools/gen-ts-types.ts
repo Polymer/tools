@@ -17,7 +17,7 @@ require('source-map-support').install();
 import {Type, typeString, Field, Def, nullable} from './lib/types';
 
 const fork = {
-  use(o: any) {
+  use(o: {}) {
     return o;
   },
 };

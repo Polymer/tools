@@ -78,7 +78,9 @@ export function lookupDependencyMapping(bowerPackageName: string) {
 }
 
 function setNpmDependencyFromBower(
-    obj: any, bowerPackageName: string, useLocal?: Map<string, string>) {
+    obj: {[pkg: string]: string},
+    bowerPackageName: string,
+    useLocal?: Map<string, string>) {
   const depInfo = lookupDependencyMapping(bowerPackageName);
   if (!depInfo) {
     return;
@@ -93,7 +95,7 @@ function setNpmDependencyFromBower(
 /**
  * helper function to serialize and parse JSON.
  */
-export function writeJson(json: any, ...pathPieces: string[]) {
+export function writeJson(json: object, ...pathPieces: string[]) {
   const jsonPath = path.resolve(...pathPieces);
   const jsonContents =
       JSON.stringify(json, undefined, 2).split('\n').join(EOL) + EOL;
@@ -208,7 +210,7 @@ export function generatePackageJson(
     const npmAuthors = [];
     // Some Polymer elements use `author` even though the bower.json spec only
     // specifies `authors`. Check both.
-    const bowerAuthors = bowerJson.authors || (bowerJson as any).author || [];
+    const bowerAuthors = bowerJson.authors || bowerJson.author || [];
     for (const bowerAuthor of bowerAuthors) {
       if (typeof bowerAuthor === 'string') {
         npmAuthors.push(bowerAuthor);

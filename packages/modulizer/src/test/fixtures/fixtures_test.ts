@@ -64,13 +64,22 @@ function formatDiffLine(line: string) {
   }
 }
 
+interface DiffEntry {
+  state: 'equal'|'left'|'right'|'distinct';
+  relativePath: string;
+  name1: string;
+  name2: string;
+  path1: string;
+  path2: string;
+}
+
 /**
  * Create a human-readable, pretty-printed report for the diff results of two
  * directories.
  */
-function createDiffConflictOutput(diffResult: any): string {
+function createDiffConflictOutput(diffResult: {diffSet: DiffEntry[]}): string {
   const errorOutputLines = ['Converted fixture does not match expected:', ''];
-  diffResult.diffSet.forEach(function(entry: any) {
+  diffResult.diffSet.forEach(function(entry) {
     switch (entry.state) {
       case 'equal':
         return;
