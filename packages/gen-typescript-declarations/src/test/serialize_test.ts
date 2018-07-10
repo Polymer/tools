@@ -203,4 +203,25 @@ declare class MyClass {
 }
 `);
   });
+
+  suite('export', () => {
+    test('locals with aliases', () => {
+      const n = new ts.Export({
+        identifiers: [
+          {identifier: 'Foo'},
+          {identifier: 'Bar', alias: 'BarAlias'},
+          {identifier: 'Baz', alias: 'Baz'},
+        ]
+      });
+      assert.equal(n.serialize(), `export {Foo, Bar as BarAlias, Baz};\n`);
+    });
+
+    test('re-export all', () => {
+      const n = new ts.Export({
+        identifiers: ts.AllIdentifiers,
+        fromModuleSpecifier: './foo.js',
+      });
+      assert.equal(n.serialize(), `export * from './foo.js';\n`);
+    });
+  });
 });
