@@ -40,7 +40,7 @@
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
     "tslint": "^5.10.0",
-    "typescript": "~2.8.3",
-    "typescript-json-schema": "^0.23.0"
+    "typescript": "^2.9.2",
+    "typescript-json-schema": "^0.25.1"
   }
 }

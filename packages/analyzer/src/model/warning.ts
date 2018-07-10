@@ -64,7 +64,7 @@ export class Warning {
       sourceRange: this.sourceRange,
       severity: this.severity,
       code: this.code,
-      parsedDocument: this._parsedDocument,
+      parsedDocument: this._parsedDocument
     } = init);
     this.fix = init.fix;
     this.actions = init.actions;

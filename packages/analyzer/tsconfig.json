@@ -2,7 +2,14 @@
   "extends": "../../tsconfig-base.json",
   "compilerOptions": {
     "strictFunctionTypes": false,
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "baseUrl": "./",
+    "paths": {
+      "parse5": [
+        "node_modules/@types/parse5",
+        "*"
+      ]
+    }
   },
   "include": [
     "custom_typings/**/*.d.ts",
