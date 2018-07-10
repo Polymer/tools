@@ -9,17 +9,12 @@ elements.
 
 ### Polymer
 
-Typings for Polymer 2 are planned for regular release starting with version
-2.4, and are available in the
-[`types/`](https://github.com/Polymer/polymer/tree/master/types) directory on
-the `master` branch now.
-
-Once Polymer 2.4 is released, to use the typings, install Polymer normally from
-Bower, and add a [triple-slash
+To use the typings, install Polymer normally from Bower (versions 2.4 and
+above), and add a [triple-slash
 directive](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html)
 anywhere in your TypeScript project for the typings you require. Each HTML
-import from Polymer has a corresponding typings file. For example, if you
-depend on `polymer-element.html`:
+import from Polymer has a corresponding typings file. For example, if you depend
+on `polymer-element.html`:
 
 ```ts
 /// <reference path="./bower_components/polymer/types/polymer-element.d.ts" />`
