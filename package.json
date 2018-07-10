@@ -19,7 +19,7 @@
     "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester --ignore @polymer/esm-amd-loader --parallel",
     "test:unit": "lerna run test:unit --stream",
     "test:unit:parallel": "lerna run test:unit --stream --parallel",
-    "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester",
+    "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester --ignore @polymer/gen-typescript-declarations",
     "update-goldens": "lerna run update-goldens --stream"
   },
   "devDependencies": {
