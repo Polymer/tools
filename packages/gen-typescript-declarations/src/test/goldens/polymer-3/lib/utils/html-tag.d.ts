@@ -82,3 +82,5 @@ declare function html(strings: TemplateStringsArray, ...values: any[]): HTMLTemp
  * @returns Constructed literal string
  */
 declare function htmlLiteral(strings: TemplateStringsArray, ...values: any[]): LiteralString;
+
+export {};

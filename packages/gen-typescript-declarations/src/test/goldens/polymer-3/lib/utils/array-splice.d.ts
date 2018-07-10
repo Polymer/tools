@@ -36,3 +36,5 @@
  * of items added at this location.
  */
 declare function calculateSplices(current: any[], previous: any[]): any[];
+
+export {};

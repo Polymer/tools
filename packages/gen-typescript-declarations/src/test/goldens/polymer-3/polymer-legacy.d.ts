@@ -8,3 +8,5 @@
  *   polymer-legacy.js
  */
 
+
+export {};

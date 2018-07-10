@@ -42,3 +42,5 @@ interface DisableUpgradeMixin {
   connectedCallback(): void;
   disconnectedCallback(): void;
 }
+
+export {};

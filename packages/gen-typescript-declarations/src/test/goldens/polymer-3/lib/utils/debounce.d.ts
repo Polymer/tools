@@ -74,3 +74,5 @@ declare class Debouncer {
    */
   isActive(): boolean;
 }
+
+export {};

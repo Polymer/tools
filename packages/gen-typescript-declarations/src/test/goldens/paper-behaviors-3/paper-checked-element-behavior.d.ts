@@ -44,3 +44,5 @@ declare function _checkedChanged(): void;
  *    
  */
 declare function _buttonStateChanged(): void;
+
+export {};

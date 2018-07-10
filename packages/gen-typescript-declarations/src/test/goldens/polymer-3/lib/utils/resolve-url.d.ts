@@ -37,3 +37,5 @@ declare function resolveCss(cssText: string, baseURI: string): string;
  * @returns resolved path
  */
 declare function pathFromUrl(url: string): string;
+
+export {};

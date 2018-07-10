@@ -32,3 +32,5 @@ declare function beforeNextRender(context: any, callback: (...p0: any[]) => void
  * event listeners and aria attributes.
  */
 declare function afterNextRender(context: any, callback: (...p0: any[]) => void, args?: any[]): void;
+
+export {};

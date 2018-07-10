@@ -23,3 +23,5 @@ declare global {
     "paper-button": PaperButtonElement;
   }
 }
+
+export {};

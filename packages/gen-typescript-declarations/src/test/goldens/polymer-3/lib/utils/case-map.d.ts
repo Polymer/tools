@@ -25,3 +25,5 @@ declare function dashToCamelCase(dash: string): string;
  * @returns Dash-case representation of the identifier
  */
 declare function camelToDashCase(camel: string): string;
+
+export {};

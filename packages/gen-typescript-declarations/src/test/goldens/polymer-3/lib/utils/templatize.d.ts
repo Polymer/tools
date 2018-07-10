@@ -173,3 +173,5 @@ declare function templatize(template: HTMLTemplateElement, owner?: Polymer.Prope
  *   binding scope for the element
  */
 declare function modelForElement(template: HTMLTemplateElement|null, node?: Node|null): TemplateInstanceBase|null;
+
+export {};

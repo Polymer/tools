@@ -40,3 +40,5 @@ declare global {
     "dom-bind": DomBind;
   }
 }
+
+export {};

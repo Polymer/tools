@@ -21,3 +21,5 @@ declare function enqueueDebouncer(debouncer: Debouncer): void;
  * - ShadyDOM distribution
  */
 declare function flush(): void;
+
+export {};

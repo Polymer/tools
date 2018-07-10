@@ -250,3 +250,5 @@ interface TemplateStamp {
    */
   _removeEventListenerFromNode(node: Node|null, eventName: string, handler: (p0: Event) => void): void;
 }
+
+export {};

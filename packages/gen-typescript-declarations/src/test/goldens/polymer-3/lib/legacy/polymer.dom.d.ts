@@ -163,3 +163,5 @@ declare class EventApi {
  * @returns Wrapper providing either node API or event API
  */
 declare function dom(obj?: Node|Event|null): DomApi|EventApi;
+
+export {};

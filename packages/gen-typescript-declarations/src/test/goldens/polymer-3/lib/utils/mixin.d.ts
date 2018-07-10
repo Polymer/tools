@@ -15,3 +15,5 @@
  * applications.
  */
 declare function dedupingMixin<T>(mixin: T): T;
+
+export {};

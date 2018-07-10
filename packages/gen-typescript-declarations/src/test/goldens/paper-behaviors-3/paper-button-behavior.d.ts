@@ -64,3 +64,5 @@ interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRi
 }
 
 const PaperButtonBehavior: object;
+
+export {};

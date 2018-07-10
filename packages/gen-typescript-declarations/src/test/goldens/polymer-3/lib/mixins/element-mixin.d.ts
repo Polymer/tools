@@ -240,3 +240,5 @@ declare function dumpRegistrations(): void;
  * These properties are retained unless a value of `null` is set.
  */
 declare function updateStyles(props?: object|null): void;
+
+export {};

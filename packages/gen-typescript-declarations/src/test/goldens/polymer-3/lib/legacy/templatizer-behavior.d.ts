@@ -144,3 +144,5 @@ declare function stamp(model?: object|null): TemplateInstanceBase|null;
  *   the element.
  */
 declare function modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
+
+export {};

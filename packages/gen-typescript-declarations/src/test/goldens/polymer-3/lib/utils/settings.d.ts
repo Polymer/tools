@@ -27,3 +27,5 @@ declare function setSanitizeDOMValue(newSanitizeDOMValue: ((p0: any, p1: string,
  * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
  */
 declare function setPassiveTouchGestures(usePassive: boolean): void;
+
+export {};

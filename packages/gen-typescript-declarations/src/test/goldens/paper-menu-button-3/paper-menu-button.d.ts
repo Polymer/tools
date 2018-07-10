@@ -68,3 +68,5 @@ declare function _openedChanged(opened: boolean, oldOpened: boolean): void;
  * dropdown.
  */
 declare function _disabledChanged(disabled: boolean): void;
+
+export {};

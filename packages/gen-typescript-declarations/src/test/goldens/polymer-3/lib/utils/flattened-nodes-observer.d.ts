@@ -94,3 +94,5 @@ declare class FlattenedNodesObserver {
    */
   flush(): boolean;
 }
+
+export {};

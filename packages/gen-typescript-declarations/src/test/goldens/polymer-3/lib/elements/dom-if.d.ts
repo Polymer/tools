@@ -64,3 +64,5 @@ declare global {
     "dom-if": DomIf;
   }
 }
+
+export {};

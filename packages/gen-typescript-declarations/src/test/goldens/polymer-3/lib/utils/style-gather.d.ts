@@ -87,3 +87,5 @@ declare function cssFromTemplate(template: HTMLTemplateElement, baseURI: string)
  * @returns Concatenated CSS content from links in specified `dom-module`
  */
 declare function cssFromModuleImports(moduleId: string): string;
+
+export {};

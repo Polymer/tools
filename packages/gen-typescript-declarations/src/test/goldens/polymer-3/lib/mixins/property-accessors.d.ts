@@ -142,3 +142,5 @@ interface PropertyAccessors {
    */
   _isPropertyPending(prop: string): boolean;
 }
+
+export {};

@@ -17,3 +17,5 @@ declare class PolymerElement extends
   ElementMixin(
   HTMLElement) {
 }
+
+export {};

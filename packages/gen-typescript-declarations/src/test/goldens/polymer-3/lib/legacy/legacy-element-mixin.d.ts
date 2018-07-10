@@ -602,3 +602,5 @@ interface LegacyElementMixin {
    */
   _logf(methodName: string, ...args: any[]): any[]|null;
 }
+
+export {};

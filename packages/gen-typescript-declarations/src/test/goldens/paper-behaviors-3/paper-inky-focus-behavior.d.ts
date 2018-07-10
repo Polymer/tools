@@ -25,3 +25,5 @@ declare namespace Polymer {
 declare function _focusedChanged(): void;
 
 declare function _createRipple(): any;
+
+export {};

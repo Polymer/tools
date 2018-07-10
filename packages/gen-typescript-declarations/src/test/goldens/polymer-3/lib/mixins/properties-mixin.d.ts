@@ -70,3 +70,5 @@ interface PropertiesMixin {
    */
   disconnectedCallback(): void;
 }
+
+export {};

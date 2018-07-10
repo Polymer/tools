@@ -296,3 +296,5 @@ interface PropertiesChanged {
    */
   _deserializeValue(value: string|null, type?: any): any;
 }
+
+export {};

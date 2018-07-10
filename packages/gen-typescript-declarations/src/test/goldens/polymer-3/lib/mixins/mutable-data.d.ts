@@ -140,3 +140,5 @@ interface OptionalMutableData {
    */
   _shouldPropertyChange(property: string, value: any, old: any): boolean;
 }
+
+export {};

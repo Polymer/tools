@@ -67,3 +67,5 @@ declare global {
     "custom-style": CustomStyle;
   }
 }
+
+export {};

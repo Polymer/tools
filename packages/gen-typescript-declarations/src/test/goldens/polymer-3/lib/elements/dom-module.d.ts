@@ -78,3 +78,5 @@ declare global {
     "dom-module": DomModule;
   }
 }
+
+export {};

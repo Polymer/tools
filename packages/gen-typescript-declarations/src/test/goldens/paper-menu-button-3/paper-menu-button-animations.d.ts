@@ -33,3 +33,5 @@ interface PaperMenuShrinkWidthAnimationElement extends Polymer.Element, NeonAnim
 interface PaperMenuShrinkHeightAnimationElement extends Polymer.Element, NeonAnimationBehavior {
   configure(config: any): any;
 }
+
+export {};

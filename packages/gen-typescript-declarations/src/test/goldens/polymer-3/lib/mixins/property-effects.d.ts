@@ -840,3 +840,5 @@ interface PropertyEffects {
    */
   _removeBoundDom(dom: StampedTemplate): void;
 }
+
+export {};

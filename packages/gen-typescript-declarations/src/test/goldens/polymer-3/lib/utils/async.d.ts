@@ -103,3 +103,5 @@ declare namespace microTask {
    */
   function cancel(handle: number): void;
 }
+
+export {};

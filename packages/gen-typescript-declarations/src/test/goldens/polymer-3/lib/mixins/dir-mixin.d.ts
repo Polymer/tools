@@ -48,3 +48,5 @@ interface DirMixin {
   connectedCallback(): void;
   disconnectedCallback(): void;
 }
+
+export {};

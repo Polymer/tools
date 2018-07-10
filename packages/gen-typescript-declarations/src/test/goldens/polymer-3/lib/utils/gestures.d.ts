@@ -67,3 +67,5 @@ declare function prevent(evName: string): void;
  * Calling this method in production may cause duplicate taps or other Gestures.
  */
 declare function resetMouseCanceller(): void;
+
+export {};

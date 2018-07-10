@@ -160,3 +160,5 @@ const OptionalMutableDataBehavior: object;
  * @returns Whether the property should be considered a change
  */
 declare function _shouldPropertyChange(property: string, value: any, old: any): boolean;
+
+export {};

@@ -108,3 +108,5 @@ declare class PolymerGenerated {
  * @returns Generated class
  */
 declare function Class(info: PolymerInit): {new(): HTMLElement};
+
+export {};

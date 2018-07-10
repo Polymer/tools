@@ -192,3 +192,5 @@ declare global {
     "array-selector": ArraySelector;
   }
 }
+
+export {};

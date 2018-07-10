@@ -144,3 +144,5 @@ declare function get(root: object|null, path: string|Array<string|number>, info?
  * @returns The normalized version of the input path
  */
 declare function set(root: object|null, path: string|Array<string|number>, value: any): string|undefined;
+
+export {};

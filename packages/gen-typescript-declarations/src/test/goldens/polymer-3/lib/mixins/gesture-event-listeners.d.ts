@@ -44,3 +44,5 @@ interface GestureEventListeners {
    */
   _removeEventListenerFromNode(node: Node, eventName: string, handler: (p0: Event) => void): void;
 }
+
+export {};

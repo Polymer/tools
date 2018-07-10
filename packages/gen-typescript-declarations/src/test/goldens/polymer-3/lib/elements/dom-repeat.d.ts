@@ -273,3 +273,5 @@ declare global {
     "dom-repeat": DomRepeat;
   }
 }
+
+export {};
