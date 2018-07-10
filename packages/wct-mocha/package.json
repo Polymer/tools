@@ -1,14 +1,18 @@
 {
-  "name": "wct-browser",
+  "name": "wct-mocha",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "browser.js",
   "scripts": {
     "test": "cd test/ && npm test",
     "test:integration": "cd test/ && npm run test:integration"
   },
-  "homepage": "https://github.com/Polymer/tools/tree/master/packages/wct-browser",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/wct-mocha",
   "repository": "github:Polymer/tools",
   "bugs": "https://github.com/Polymer/tools/issues",
   "author": "The Polymer Project Authors",
-  "license": "BSD-3-Clause"
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "mocha": ">=5.2.0",
+    "stacky": "^1.3.1"
+  }
 }

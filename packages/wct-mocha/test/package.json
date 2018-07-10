@@ -1,16 +1,15 @@
 {
-  "name": "wct-browser-test",
+  "name": "wct-mocha-test",
   "scripts": {
     "test": "npm run test:integration",
-    "test:integration": "wct --npm --wct-package-name wct-browser"
+    "test:integration": "wct --npm --wct-package-name wct-mocha"
   },
   "dependencies": {
     "@polymer/polymer": "^3.0.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "mocha": "^5.2.0",
-    "wct-browser": "^1.0.0",
+    "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.7.1"
   }
 }

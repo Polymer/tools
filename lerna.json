@@ -3,7 +3,7 @@
   "packages": [
     "packages/*",
     "packages/esm-amd-loader/test",
-    "packages/wct-browser/test"
+    "packages/wct-mocha/test"
   ],
   "version": "independent",
   "command": {

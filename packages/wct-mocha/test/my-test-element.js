@@ -1,4 +1,4 @@
-import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
+import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 
 class MyTestElement extends PolymerElement {
 
@@ -22,4 +22,3 @@ class MyTestElement extends PolymerElement {
   }
 
 }
-
