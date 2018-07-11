@@ -21,3 +21,37 @@ export function isEsModuleDocument(doc: analyzer.Document):
       (doc.parsedDocument as analyzer.ParsedJavaScriptDocument)
           .parsedAsSourceType === 'module';
 }
+
+/**
+ * Resolve an identifier being exported to the feature it refers to.
+ */
+export function resolveExportedFeature(
+    exportFeature: analyzer.Export, identifier: string, doc: analyzer.Document):
+    analyzer.Reference<ResolvedTypes>|undefined {
+  for (const kind of resolveKinds) {
+    const reference = new analyzer.ScannedReference(
+        kind,
+        identifier,
+        exportFeature.sourceRange,
+        exportFeature.astNode,
+        exportFeature.astNodePath);
+    const resolved = reference.resolve(doc);
+    if (resolved.feature !== undefined) {
+      return resolved as analyzer.Reference<ResolvedTypes>;
+    }
+  }
+  return undefined;
+}
+
+const resolveKinds: Array<keyof analyzer.FeatureKindMap> = [
+  'element',
+  'behavior',
+  'element-mixin',
+  'class',
+  'function',
+  'namespace',
+];
+
+export type ResolvedTypes = analyzer.Element|analyzer.PolymerBehavior|
+                            analyzer.ElementMixin|analyzer.Class|
+                            analyzer.Function|analyzer.Namespace;
