@@ -28,8 +28,7 @@
     "lint": "tslint -p ./",
     "format": "find bin src test | grep \"\\.js$\\|\\.ts$\" | xargs clang-format --style=file -i",
     "clean": "rm -rf ./lib/",
-    "prepublishOnly": "npm test",
-    "prepare": "npm run build"
+    "prepublishOnly": "npm test"
   },
   "engines": {
     "node": ">=8.0.0"
