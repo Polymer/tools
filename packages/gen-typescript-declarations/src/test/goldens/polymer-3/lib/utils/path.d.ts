@@ -8,8 +8,6 @@
  *   lib/utils/path.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Returns true if the given string is a structured data path (has dots).
@@ -146,3 +144,5 @@ declare function get(root: object|null, path: string|Array<string|number>, info?
  * @returns The normalized version of the input path
  */
 declare function set(root: object|null, path: string|Array<string|number>, value: any): string|undefined;
+
+export {};

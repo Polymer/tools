@@ -17,6 +17,11 @@ interface PaperButtonElement extends Polymer.Element, PaperButtonBehavior {
   _calculateElevation(): void;
 }
 
-interface HTMLElementTagNameMap {
-  "paper-button": PaperButtonElement;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "paper-button": PaperButtonElement;
+  }
 }
+
+export {};

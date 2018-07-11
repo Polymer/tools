@@ -8,10 +8,6 @@
  *   lib/utils/flattened-nodes-observer.js
  */
 
-/// <reference path="boot.d.ts" />
-/// <reference path="array-splice.d.ts" />
-/// <reference path="async.d.ts" />
-
 /**
  * Class that listens for changes (additions or removals) to
  * "flattened nodes" on a given `node`. The list of flattened nodes consists
@@ -98,3 +94,5 @@ declare class FlattenedNodesObserver {
    */
   flush(): boolean;
 }
+
+export {};

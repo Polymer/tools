@@ -8,11 +8,6 @@
  *   lib/mixins/strict-binding-parser.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/path.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-/// <reference path="property-effects.d.ts" />
-
 
 /**
  * Mixin that parses binding expressions and generates corresponding metadata.
@@ -62,3 +57,5 @@ interface StrictBindingParserConstructor {
 
 interface StrictBindingParser {
 }
+
+export {};

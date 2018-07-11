@@ -11,7 +11,7 @@
 
 import {Declaration} from './declarations';
 import {formatComment} from './formatting';
-import {Node} from './index';
+import {Export, Node} from './index';
 
 export class Document {
   readonly kind = 'document';
@@ -19,17 +19,20 @@ export class Document {
   members: Declaration[];
   referencePaths: Set<string>;
   header: string;
+  isEsModule: boolean;
 
   constructor(data: {
     path: string,
     members?: Declaration[],
     referencePaths?: Iterable<string>,
-    header?: string
+    header?: string,
+    isEsModule?: boolean,
   }) {
     this.path = data.path;
     this.members = data.members || [];
     this.referencePaths = new Set(Array.from(data.referencePaths || []));
     this.header = data.header || '';
+    this.isEsModule = data.isEsModule || false;
   }
 
   /**
@@ -66,6 +69,13 @@ export class Document {
       out += '\n';
     }
     out += this.members.map((m) => m.serialize()).join('\n');
+    // If these are typings for an ES module, we want to be sure that TypeScript
+    // will treat them as one too, which requires at least one import or export.
+    // TODO(aomarks) Also check for imports when defined.
+    if (this.isEsModule === true &&
+        !this.members.some((m) => m.kind === 'export')) {
+      out += '\n' + (new Export({identifiers: []})).serialize();
+    }
     return out;
   }
 }

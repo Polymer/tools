@@ -8,10 +8,6 @@
  *   lib/mixins/properties-changed.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-/// <reference path="../utils/async.d.ts" />
-
 
 /**
  * Element class mixin that provides basic meta-programming for creating one
@@ -300,3 +296,5 @@ interface PropertiesChanged {
    */
   _deserializeValue(value: string|null, type?: any): any;
 }
+
+export {};

@@ -8,8 +8,6 @@
  *   lib/utils/resolve-url.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Resolves the given URL against the provided `baseUri'.
@@ -39,3 +37,5 @@ declare function resolveCss(cssText: string, baseURI: string): string;
  * @returns resolved path
  */
 declare function pathFromUrl(url: string): string;
+
+export {};

@@ -8,9 +8,6 @@
  *   paper-checked-element-behavior.js
  */
 
-/// <reference path="paper-inky-focus-behavior.d.ts" />
-/// <reference path="paper-ripple-behavior.d.ts" />
-
 declare namespace Polymer {
 
   /**
@@ -47,3 +44,5 @@ declare function _checkedChanged(): void;
  *    
  */
 declare function _buttonStateChanged(): void;
+
+export {};

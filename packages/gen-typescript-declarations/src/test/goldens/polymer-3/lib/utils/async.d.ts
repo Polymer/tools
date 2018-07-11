@@ -8,8 +8,6 @@
  *   lib/utils/async.js
  */
 
-/// <reference path="boot.d.ts" />
-
 /**
  * Async interface wrapper around `setTimeout`.
  */
@@ -105,3 +103,5 @@ declare namespace microTask {
    */
   function cancel(handle: number): void;
 }
+
+export {};

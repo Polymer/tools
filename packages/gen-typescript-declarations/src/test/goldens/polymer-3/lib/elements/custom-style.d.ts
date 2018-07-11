@@ -8,8 +8,6 @@
  *   lib/elements/custom-style.js
  */
 
-/// <reference path="../utils/style-gather.d.ts" />
-
 /**
  * Custom element for defining styles in the main document that can take
  * advantage of [shady DOM](https://github.com/webcomponents/shadycss) shims
@@ -63,6 +61,11 @@ declare class CustomStyle extends HTMLElement {
   getStyle(): HTMLStyleElement|null;
 }
 
-interface HTMLElementTagNameMap {
-  "custom-style": CustomStyle;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "custom-style": CustomStyle;
+  }
 }
+
+export {};

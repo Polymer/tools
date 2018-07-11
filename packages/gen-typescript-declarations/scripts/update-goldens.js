@@ -12,7 +12,7 @@
  */
 
 /**
- * This script should be run from `npm run test:make-goldens`. It runs the
+ * This script should be run from `npm run update-goldens`. It runs the
  * TypeScript declarations generator across all repos in the
  * `test/src/fixtures` directory, and writes the output to
  * `test/src/goldens/<fixture>/expected.d.ts`. The results of this script

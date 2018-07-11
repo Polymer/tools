@@ -13,7 +13,7 @@
 # installs them for testing.
 #
 # To add a new repo for testing, add it to `fixtures.txt`, run `npm run
-# test:setup && npm run test:make-goldens`.
+# test:setup && npm run update-goldens`.
 
 set -e
 

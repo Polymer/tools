@@ -8,8 +8,6 @@
  *   lib/utils/style-gather.js
  */
 
-/// <reference path="resolve-url.d.ts" />
-
 
 /**
  * Returns a list of <style> elements in a space-separated list of `dom-module`s.
@@ -89,3 +87,5 @@ declare function cssFromTemplate(template: HTMLTemplateElement, baseURI: string)
  * @returns Concatenated CSS content from links in specified `dom-module`
  */
 declare function cssFromModuleImports(moduleId: string): string;
+
+export {};

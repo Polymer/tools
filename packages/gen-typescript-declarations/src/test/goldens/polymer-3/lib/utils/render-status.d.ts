@@ -8,8 +8,6 @@
  *   lib/utils/render-status.js
  */
 
-/// <reference path="boot.d.ts" />
-
 
 /**
  * Enqueues a callback which will be run before the next render, at
@@ -34,3 +32,5 @@ declare function beforeNextRender(context: any, callback: (...p0: any[]) => void
  * event listeners and aria attributes.
  */
 declare function afterNextRender(context: any, callback: (...p0: any[]) => void, args?: any[]): void;
+
+export {};

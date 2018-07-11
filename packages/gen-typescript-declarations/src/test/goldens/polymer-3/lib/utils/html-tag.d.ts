@@ -8,8 +8,6 @@
  *   lib/utils/html-tag.js
  */
 
-/// <reference path="boot.d.ts" />
-
 /**
  * Class representing a static string value which can be used to filter
  * strings by asseting that they have been created via this class. The
@@ -84,3 +82,5 @@ declare function html(strings: TemplateStringsArray, ...values: any[]): HTMLTemp
  * @returns Constructed literal string
  */
 declare function htmlLiteral(strings: TemplateStringsArray, ...values: any[]): LiteralString;
+
+export {};

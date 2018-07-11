@@ -52,6 +52,6 @@
     "test:unit": "npm run lint && npm run test:setup && npm run build && mocha",
     "test:watch": "tsc-then -- mocha --color",
     "test:setup": "bash scripts/setup-fixtures.sh",
-    "test:make-goldens": "npm run build && scripts/make-goldens.js"
+    "update-goldens": "npm run build && scripts/update-goldens.js"
   }
 }

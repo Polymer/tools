@@ -8,9 +8,6 @@
  *   lib/legacy/class.js
  */
 
-/// <reference path="legacy-element-mixin.d.ts" />
-/// <reference path="../elements/dom-module.d.ts" />
-
 
 /**
  * Applies a "legacy" behavior or array of behaviors to the provided class.
@@ -111,3 +108,5 @@ declare class PolymerGenerated {
  * @returns Generated class
  */
 declare function Class(info: PolymerInit): {new(): HTMLElement};
+
+export {};

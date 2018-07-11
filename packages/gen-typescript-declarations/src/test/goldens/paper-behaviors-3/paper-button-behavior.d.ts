@@ -8,8 +8,6 @@
  *   paper-button-behavior.js
  */
 
-/// <reference path="paper-ripple-behavior.d.ts" />
-
 declare namespace Polymer {
 
   interface PaperButtonBehavior {
@@ -66,3 +64,5 @@ interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRi
 }
 
 const PaperButtonBehavior: object;
+
+export {};

@@ -8,8 +8,6 @@
  *   lib/legacy/mutable-data-behavior.js
  */
 
-/// <reference path="../mixins/mutable-data.d.ts" />
-
 /**
  * Legacy element behavior to skip strict dirty-checking for objects and arrays,
  * (always consider them to be "dirty") for use on legacy API Polymer elements.
@@ -162,3 +160,5 @@ const OptionalMutableDataBehavior: object;
  * @returns Whether the property should be considered a change
  */
 declare function _shouldPropertyChange(property: string, value: any, old: any): boolean;
+
+export {};

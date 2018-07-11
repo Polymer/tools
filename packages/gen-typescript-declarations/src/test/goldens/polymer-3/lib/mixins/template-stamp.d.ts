@@ -8,9 +8,6 @@
  *   lib/mixins/template-stamp.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-
 
 /**
  * Element mixin that provides basic template parsing and stamping, including
@@ -253,3 +250,5 @@ interface TemplateStamp {
    */
   _removeEventListenerFromNode(node: Node|null, eventName: string, handler: (p0: Event) => void): void;
 }
+
+export {};

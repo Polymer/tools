@@ -8,8 +8,6 @@
  *   paper-inky-focus-behavior.js
  */
 
-/// <reference path="paper-ripple-behavior.d.ts" />
-
 declare namespace Polymer {
 
   /**
@@ -27,3 +25,5 @@ declare namespace Polymer {
 declare function _focusedChanged(): void;
 
 declare function _createRipple(): any;
+
+export {};

@@ -8,15 +8,6 @@
  *   lib/mixins/element-mixin.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/settings.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-/// <reference path="../utils/style-gather.d.ts" />
-/// <reference path="../utils/resolve-url.d.ts" />
-/// <reference path="../elements/dom-module.d.ts" />
-/// <reference path="property-effects.d.ts" />
-/// <reference path="properties-mixin.d.ts" />
-
 
 /**
  * Element class mixin that provides the core API for Polymer's meta-programming
@@ -249,3 +240,5 @@ declare function dumpRegistrations(): void;
  * These properties are retained unless a value of `null` is set.
  */
 declare function updateStyles(props?: object|null): void;
+
+export {};

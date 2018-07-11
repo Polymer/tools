@@ -8,10 +8,6 @@
  *   lib/utils/debounce.js
  */
 
-/// <reference path="boot.d.ts" />
-/// <reference path="mixin.d.ts" />
-/// <reference path="async.d.ts" />
-
 declare class Debouncer {
   constructor();
 
@@ -78,3 +74,5 @@ declare class Debouncer {
    */
   isActive(): boolean;
 }
+
+export {};

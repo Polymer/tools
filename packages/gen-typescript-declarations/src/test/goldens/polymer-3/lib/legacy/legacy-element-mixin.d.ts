@@ -8,18 +8,6 @@
  *   lib/legacy/legacy-element-mixin.js
  */
 
-/// <reference path="../mixins/element-mixin.d.ts" />
-/// <reference path="../mixins/gesture-event-listeners.d.ts" />
-/// <reference path="../mixins/dir-mixin.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-/// <reference path="../utils/render-status.d.ts" />
-/// <reference path="../utils/unresolved.d.ts" />
-/// <reference path="polymer.dom.d.ts" />
-/// <reference path="../utils/gestures.d.ts" />
-/// <reference path="../utils/debounce.d.ts" />
-/// <reference path="../utils/async.d.ts" />
-/// <reference path="../utils/path.d.ts" />
-
 
 /**
  * Element class mixin that provides Polymer's "legacy" API intended to be
@@ -614,3 +602,5 @@ interface LegacyElementMixin {
    */
   _logf(methodName: string, ...args: any[]): any[]|null;
 }
+
+export {};

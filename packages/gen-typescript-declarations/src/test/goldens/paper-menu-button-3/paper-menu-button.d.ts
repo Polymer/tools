@@ -8,8 +8,6 @@
  *   paper-menu-button.js
  */
 
-/// <reference path="paper-menu-button-animations.d.ts" />
-
 declare function value(): any;
 
 declare function value(): any;
@@ -70,3 +68,5 @@ declare function _openedChanged(opened: boolean, oldOpened: boolean): void;
  * dropdown.
  */
 declare function _disabledChanged(disabled: boolean): void;
+
+export {};

@@ -8,11 +8,6 @@
  *   lib/legacy/polymer.dom.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/settings.d.ts" />
-/// <reference path="../utils/flattened-nodes-observer.d.ts" />
-/// <reference path="../utils/flush.d.ts" />
-
 
 /**
  * Cross-platform `element.matches` shim.
@@ -168,3 +163,5 @@ declare class EventApi {
  * @returns Wrapper providing either node API or event API
  */
 declare function dom(obj?: Node|Event|null): DomApi|EventApi;
+
+export {};

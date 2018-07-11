@@ -8,11 +8,6 @@
  *   lib/mixins/property-accessors.js
  */
 
-/// <reference path="../utils/boot.d.ts" />
-/// <reference path="../utils/mixin.d.ts" />
-/// <reference path="../utils/case-map.d.ts" />
-/// <reference path="properties-changed.d.ts" />
-
 
 /**
  * Element class mixin that provides basic meta-programming for creating one
@@ -147,3 +142,5 @@ interface PropertyAccessors {
    */
   _isPropertyPending(prop: string): boolean;
 }
+
+export {};

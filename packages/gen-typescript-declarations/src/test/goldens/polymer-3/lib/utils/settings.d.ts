@@ -8,9 +8,6 @@
  *   lib/utils/settings.js
  */
 
-/// <reference path="boot.d.ts" />
-/// <reference path="resolve-url.d.ts" />
-
 
 /**
  * Sets the global rootPath property used by `ElementMixin` and
@@ -30,3 +27,5 @@ declare function setSanitizeDOMValue(newSanitizeDOMValue: ((p0: any, p1: string,
  * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
  */
 declare function setPassiveTouchGestures(usePassive: boolean): void;
+
+export {};

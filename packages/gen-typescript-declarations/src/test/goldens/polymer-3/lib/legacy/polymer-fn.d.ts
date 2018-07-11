@@ -8,9 +8,6 @@
  *   lib/legacy/polymer-fn.js
  */
 
-/// <reference path="class.d.ts" />
-/// <reference path="../utils/boot.d.ts" />
-
 
 /**
  * Legacy class factory and registration helper for defining Polymer
@@ -26,3 +23,5 @@
  * @returns Generated class
  */
 declare function Polymer(info: PolymerInit): {new(): HTMLElement};
+
+export {};

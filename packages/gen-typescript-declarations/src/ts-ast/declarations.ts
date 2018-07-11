@@ -13,8 +13,34 @@ import {formatComment, indent, quotePropertyName} from './formatting';
 import {Node} from './index';
 import {anyType, ParamType, Type} from './types';
 
-// An AST node that can appear directly in a document or namespace.
-export type Declaration = Namespace|Class|Interface|Function|ConstValue;
+/** An AST node that can appear directly in a document or namespace. */
+export type Declaration =
+    GlobalNamespace|Namespace|Class|Interface|Function|ConstValue|Export;
+
+export class GlobalNamespace {
+  readonly kind = 'globalNamespace';
+  members: Declaration[];
+
+  constructor(members?: Declaration[]) {
+    this.members = members || [];
+  }
+
+  * traverse(): Iterable<Node> {
+    for (const m of this.members) {
+      yield* m.traverse();
+    }
+    yield this;
+  }
+
+  serialize(_depth: number = 0): string {
+    let out = `declare global {\n`;
+    for (const member of this.members) {
+      out += '\n' + member.serialize(1);
+    }
+    out += `}\n`;
+    return out;
+  }
+}
 
 export class Namespace {
   readonly kind = 'namespace';
@@ -371,5 +397,57 @@ export class ConstValue {
 
   serialize(depth: number = 0): string {
     return `${indent(depth)}const ${this.name}: ${this.type.serialize()};\n`;
+  }
+}
+
+/**
+ * An identifier that is imported or exported, possibly with a different name.
+ */
+export interface ImportExportIdentifier {
+  identifier: string;
+  alias?: string;
+}
+
+/**
+ * The "*" token in an import or export.
+ */
+export const AllIdentifiers = Symbol('*');
+
+/**
+ * A JavaScript module export.
+ */
+export class Export {
+  readonly kind = 'export';
+  identifiers: ImportExportIdentifier[]|typeof AllIdentifiers;
+  fromModuleSpecifier: string;
+
+  constructor(data: {
+    identifiers: ImportExportIdentifier[]|typeof AllIdentifiers,
+    fromModuleSpecifier?: string
+  }) {
+    this.identifiers = data.identifiers;
+    this.fromModuleSpecifier = data.fromModuleSpecifier || '';
+  }
+
+  * traverse(): Iterable<Node> {
+    yield this;
+  }
+
+  serialize(_depth: number = 0): string {
+    let out = 'export ';
+    if (this.identifiers === AllIdentifiers) {
+      out += '*';
+    } else {
+      const specifiers = this.identifiers.map(({identifier, alias}) => {
+        return identifier +
+            (alias !== undefined && alias !== identifier ? ` as ${alias}` : '');
+      });
+      out += `{${specifiers.join(', ')}}`;
+    }
+    if (this.fromModuleSpecifier !== '') {
+      out += ` from '${this.fromModuleSpecifier}'`;
+    }
+    out += ';\n';
+    return out;
   }
 }
