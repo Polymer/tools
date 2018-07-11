@@ -8,6 +8,8 @@
  *   lib/legacy/class.js
  */
 
+export {mixinBehaviors};
+
 
 /**
  * Applies a "legacy" behavior or array of behaviors to the provided class.
@@ -40,6 +42,8 @@ declare class PolymerGenerated {
    */
   attributeChanged(name: string, old: string|null, value: string|null): void;
 }
+
+export {Class};
 
 
 /**
@@ -108,5 +112,3 @@ declare class PolymerGenerated {
  * @returns Generated class
  */
 declare function Class(info: PolymerInit): {new(): HTMLElement};
-
-export {};

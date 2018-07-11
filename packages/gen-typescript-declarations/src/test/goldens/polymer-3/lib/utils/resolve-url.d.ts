@@ -8,6 +8,8 @@
  *   lib/utils/resolve-url.js
  */
 
+export {resolveUrl};
+
 
 /**
  * Resolves the given URL against the provided `baseUri'.
@@ -20,6 +22,8 @@
  */
 declare function resolveUrl(url: string, baseURI?: string|null): string;
 
+export {resolveCss};
+
 
 /**
  * Resolves any relative URL's in the given CSS text against the provided
@@ -29,6 +33,8 @@ declare function resolveUrl(url: string, baseURI?: string|null): string;
  */
 declare function resolveCss(cssText: string, baseURI: string): string;
 
+export {pathFromUrl};
+
 
 /**
  * Returns a path from a given `url`. The path includes the trailing
@@ -37,5 +43,3 @@ declare function resolveCss(cssText: string, baseURI: string): string;
  * @returns resolved path
  */
 declare function pathFromUrl(url: string): string;
-
-export {};

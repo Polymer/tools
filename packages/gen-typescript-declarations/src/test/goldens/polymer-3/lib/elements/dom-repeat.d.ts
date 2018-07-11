@@ -8,6 +8,8 @@
  *   lib/elements/dom-repeat.js
  */
 
+export {DomRepeat};
+
 /**
  * The `<dom-repeat>` element will automatically stamp and binds one instance
  * of template content to each object in a user-provided array.
@@ -273,5 +275,3 @@ declare global {
     "dom-repeat": DomRepeat;
   }
 }
-
-export {};

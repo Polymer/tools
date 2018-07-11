@@ -8,6 +8,8 @@
  *   lib/elements/dom-bind.js
  */
 
+export {DomBind};
+
 /**
  * Custom element to allow using Polymer's template features (data binding,
  * declarative event listeners, etc.) in the main document without defining
@@ -40,5 +42,3 @@ declare global {
     "dom-bind": DomBind;
   }
 }
-
-export {};

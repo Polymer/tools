@@ -8,6 +8,8 @@
  *   lib/mixins/element-mixin.js
  */
 
+export {ElementMixin};
+
 
 /**
  * Element class mixin that provides the core API for Polymer's meta-programming
@@ -213,17 +215,23 @@ interface ElementMixin {
   resolveUrl(url: string, base?: string): string;
 }
 
+export {register};
+
 
 /**
  * Registers a class prototype for telemetry purposes.
  */
 declare function register(prototype: HTMLElement|null): void;
 
+export {dumpRegistrations};
+
 
 /**
  * Logs all elements registered with an `is` to the console.
  */
 declare function dumpRegistrations(): void;
+
+export {updateStyles};
 
 
 /**
@@ -240,5 +248,3 @@ declare function dumpRegistrations(): void;
  * These properties are retained unless a value of `null` is set.
  */
 declare function updateStyles(props?: object|null): void;
-
-export {};

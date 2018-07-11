@@ -17,7 +17,7 @@ import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/func
 import Uri from 'vscode-uri';
 
 import {closureParamToTypeScript, closureTypeToTypeScript} from './closure-types';
-import {isEsModuleDocument} from './es-modules';
+import {isEsModuleDocument, resolveExportedFeature} from './es-modules';
 import * as ts from './ts-ast';
 
 /**
@@ -265,6 +265,8 @@ function handleDocument(
       if (feature.sourceRange && feature.sourceRange.file === doc.url) {
         handleHtmlImport(feature as analyzer.Import, root, rootDir);
       }
+    } else if (feature.kinds.has('export')) {
+      handleJsExport(feature as analyzer.Export, root, doc);
     }
   }
 }
@@ -672,6 +674,29 @@ function handleNamespace(feature: analyzer.Namespace, tsDoc: ts.Document) {
   const ns = findOrCreateNamespace(tsDoc, feature.name.split('.'));
   if (ns.kind === 'namespace') {
     ns.description = feature.description || feature.summary || '';
+  }
+}
+
+/**
+ * Add a JavaScript export to the TypeScript declarations.
+ */
+function handleJsExport(
+    feature: analyzer.Export, root: ts.Document, doc: analyzer.Document) {
+  const identifiers = [];
+  for (const identifier of feature.identifiers) {
+    const resolved = resolveExportedFeature(feature, identifier, doc);
+    if (resolved !== undefined) {
+      identifiers.push({
+        identifier: resolved.identifier,
+        alias: identifier,
+      });
+    }
+  }
+  if (identifiers.length > 0) {
+    root.members.push(new ts.Export({
+      identifiers,
+      fromModuleSpecifier: feature.sourceSpecifier,
+    }));
   }
 }
 

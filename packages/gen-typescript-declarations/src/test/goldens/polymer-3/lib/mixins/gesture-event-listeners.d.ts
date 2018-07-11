@@ -8,6 +8,8 @@
  *   lib/mixins/gesture-event-listeners.js
  */
 
+export {GestureEventListeners};
+
 
 /**
  * Element class mixin that provides API for adding Polymer's cross-platform
@@ -44,5 +46,3 @@ interface GestureEventListeners {
    */
   _removeEventListenerFromNode(node: Node, eventName: string, handler: (p0: Event) => void): void;
 }
-
-export {};

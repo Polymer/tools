@@ -8,6 +8,8 @@
  *   lib/mixins/dir-mixin.js
  */
 
+export {DirMixin};
+
 
 /**
  * Element class mixin that allows elements to use the `:dir` CSS Selector to
@@ -48,5 +50,3 @@ interface DirMixin {
   connectedCallback(): void;
   disconnectedCallback(): void;
 }
-
-export {};

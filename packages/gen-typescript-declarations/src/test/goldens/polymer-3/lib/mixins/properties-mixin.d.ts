@@ -8,6 +8,8 @@
  *   lib/mixins/properties-mixin.js
  */
 
+export {PropertiesMixin};
+
 
 /**
  * Mixin that provides a minimal starting point to using the PropertiesChanged
@@ -70,5 +72,3 @@ interface PropertiesMixin {
    */
   disconnectedCallback(): void;
 }
-
-export {};

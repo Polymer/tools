@@ -23,6 +23,8 @@ declare class LiteralString {
   toString(): string;
 }
 
+export {html};
+
 
 /**
  * A template literal tag that creates an HTML <template> element from the
@@ -58,6 +60,8 @@ declare class LiteralString {
  */
 declare function html(strings: TemplateStringsArray, ...values: any[]): HTMLTemplateElement;
 
+export {htmlLiteral};
+
 
 /**
  * An html literal tag that can be used with `html` to compose.
@@ -82,5 +86,3 @@ declare function html(strings: TemplateStringsArray, ...values: any[]): HTMLTemp
  * @returns Constructed literal string
  */
 declare function htmlLiteral(strings: TemplateStringsArray, ...values: any[]): LiteralString;
-
-export {};

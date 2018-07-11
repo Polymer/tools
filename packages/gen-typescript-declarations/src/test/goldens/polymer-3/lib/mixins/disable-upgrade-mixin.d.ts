@@ -8,6 +8,8 @@
  *   lib/mixins/disable-upgrade-mixin.js
  */
 
+export {DisableUpgradeMixin};
+
 
 /**
  * Element class mixin that allows the element to boot up in a non-enabled
@@ -42,5 +44,3 @@ interface DisableUpgradeMixin {
   connectedCallback(): void;
   disconnectedCallback(): void;
 }
-
-export {};

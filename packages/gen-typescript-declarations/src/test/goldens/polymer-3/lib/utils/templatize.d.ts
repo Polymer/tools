@@ -78,6 +78,8 @@ declare namespace templateInfo {
   }
 }
 
+export {templatize};
+
 
 /**
  * Returns an anonymous `PropertyEffects` class bound to the
@@ -154,6 +156,8 @@ declare namespace templateInfo {
  */
 declare function templatize(template: HTMLTemplateElement, owner?: Polymer.PropertyEffects|null, options?: object|null): {new(): TemplateInstanceBase};
 
+export {modelForElement};
+
 
 /**
  * Returns the template "model" associated with a given element, which
@@ -174,4 +178,4 @@ declare function templatize(template: HTMLTemplateElement, owner?: Polymer.Prope
  */
 declare function modelForElement(template: HTMLTemplateElement|null, node?: Node|null): TemplateInstanceBase|null;
 
-export {};
+export {TemplateInstanceBase};

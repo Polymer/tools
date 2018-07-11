@@ -8,6 +8,8 @@
  *   lib/utils/array-splice.js
  */
 
+export {calculateSplices};
+
 
 /**
  * Returns an array of splice records indicating the minimum edits required
@@ -36,5 +38,3 @@
  * of items added at this location.
  */
 declare function calculateSplices(current: any[], previous: any[]): any[];
-
-export {};

@@ -8,6 +8,8 @@
  *   lib/legacy/polymer.dom.js
  */
 
+export {matchesSelector};
+
 
 /**
  * Cross-platform `element.matches` shim.
@@ -15,6 +17,8 @@
  * @returns True if node matched selector
  */
 declare function matchesSelector(node: Node, selector: string): boolean;
+
+export {DomApi};
 
 /**
  * Node API wrapper class returned from `Polymer.dom.(target)` when
@@ -150,6 +154,8 @@ declare class EventApi {
   constructor(event: any);
 }
 
+export {dom};
+
 
 /**
  * Legacy DOM and Event manipulation API wrapper factory used to abstract
@@ -164,4 +170,4 @@ declare class EventApi {
  */
 declare function dom(obj?: Node|Event|null): DomApi|EventApi;
 
-export {};
+export {flush};

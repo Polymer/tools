@@ -8,6 +8,8 @@
  *   lib/mixins/mutable-data.js
  */
 
+export {MutableData};
+
 
 /**
  * Element class mixin to skip strict dirty-checking for objects and arrays
@@ -69,6 +71,8 @@ interface MutableData {
    */
   _shouldPropertyChange(property: string, value: any, old: any): boolean;
 }
+
+export {OptionalMutableData};
 
 
 /**
@@ -140,5 +144,3 @@ interface OptionalMutableData {
    */
   _shouldPropertyChange(property: string, value: any, old: any): boolean;
 }
-
-export {};

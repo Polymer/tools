@@ -8,6 +8,8 @@
  *   lib/mixins/property-accessors.js
  */
 
+export {PropertyAccessors};
+
 
 /**
  * Element class mixin that provides basic meta-programming for creating one
@@ -142,5 +144,3 @@ interface PropertyAccessors {
    */
   _isPropertyPending(prop: string): boolean;
 }
-
-export {};

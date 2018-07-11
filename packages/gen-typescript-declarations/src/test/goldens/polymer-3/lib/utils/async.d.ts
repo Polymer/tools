@@ -37,6 +37,8 @@ declare namespace timeOut {
   function cancel(handle: number): void;
 }
 
+export {timeOut};
+
 /**
  * Async interface wrapper around `requestAnimationFrame`.
  */
@@ -56,6 +58,8 @@ declare namespace animationFrame {
    */
   function cancel(handle: number): void;
 }
+
+export {animationFrame};
 
 /**
  * Async interface wrapper around `requestIdleCallback`.  Falls back to
@@ -77,6 +81,8 @@ declare namespace idlePeriod {
    */
   function cancel(handle: number): void;
 }
+
+export {idlePeriod};
 
 /**
  * Async interface for enqueuing callbacks that run at microtask timing.
@@ -104,4 +110,4 @@ declare namespace microTask {
   function cancel(handle: number): void;
 }
 
-export {};
+export {microTask};

@@ -8,6 +8,8 @@
  *   lib/legacy/legacy-element-mixin.js
  */
 
+export {LegacyElementMixin};
+
 
 /**
  * Element class mixin that provides Polymer's "legacy" API intended to be
@@ -602,5 +604,3 @@ interface LegacyElementMixin {
    */
   _logf(methodName: string, ...args: any[]): any[]|null;
 }
-
-export {};

@@ -8,6 +8,8 @@
  *   lib/legacy/templatizer-behavior.js
  */
 
+export {Templatizer};
+
 /**
  * The `Templatizer` behavior adds methods to generate instances of
  * templates that are each managed by an anonymous `PropertyEffects`
@@ -144,5 +146,3 @@ declare function stamp(model?: object|null): TemplateInstanceBase|null;
  *   the element.
  */
 declare function modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
-
-export {};

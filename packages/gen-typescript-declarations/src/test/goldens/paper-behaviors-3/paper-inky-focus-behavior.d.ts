@@ -8,6 +8,8 @@
  *   paper-inky-focus-behavior.js
  */
 
+export {PaperInkyFocusBehaviorImpl};
+
 declare namespace Polymer {
 
   /**
@@ -25,5 +27,3 @@ declare namespace Polymer {
 declare function _focusedChanged(): void;
 
 declare function _createRipple(): any;
-
-export {};

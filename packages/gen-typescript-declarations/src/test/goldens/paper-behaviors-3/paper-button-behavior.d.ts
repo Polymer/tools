@@ -8,6 +8,8 @@
  *   paper-button-behavior.js
  */
 
+export {PaperButtonBehaviorImpl};
+
 declare namespace Polymer {
 
   interface PaperButtonBehavior {
@@ -60,9 +62,9 @@ declare function _spaceKeyDownHandler(event: KeyboardEvent): void;
  */
 declare function _spaceKeyUpHandler(event: KeyboardEvent): void;
 
+export {PaperButtonBehavior};
+
 interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior, PaperButtonBehaviorImpl {
 }
 
 const PaperButtonBehavior: object;
-
-export {};

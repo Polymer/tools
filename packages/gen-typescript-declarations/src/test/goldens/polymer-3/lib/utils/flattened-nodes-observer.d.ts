@@ -8,6 +8,8 @@
  *   lib/utils/flattened-nodes-observer.js
  */
 
+export {FlattenedNodesObserver};
+
 /**
  * Class that listens for changes (additions or removals) to
  * "flattened nodes" on a given `node`. The list of flattened nodes consists
@@ -94,5 +96,3 @@ declare class FlattenedNodesObserver {
    */
   flush(): boolean;
 }
-
-export {};
