@@ -9,6 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import * as babel from '@babel/types';
 import * as jsdoc from 'doctrine';
 import * as minimatch from 'minimatch';
 import * as path from 'path';
@@ -682,21 +683,48 @@ function handleNamespace(feature: analyzer.Namespace, tsDoc: ts.Document) {
  */
 function handleJsExport(
     feature: analyzer.Export, root: ts.Document, doc: analyzer.Document) {
-  const identifiers = [];
-  for (const identifier of feature.identifiers) {
-    const resolved = resolveExportedFeature(feature, identifier, doc);
-    if (resolved !== undefined) {
-      identifiers.push({
-        identifier: resolved.identifier,
-        alias: identifier,
-      });
-    }
+  const node = feature.astNode.node;
+
+  function isResolvable(identifier: string) {
+    return resolveExportedFeature(feature, identifier, doc) !== undefined;
   }
-  if (identifiers.length > 0) {
+
+  if (babel.isExportAllDeclaration(node)) {
+    // E.g. export * from './foo.js'
     root.members.push(new ts.Export({
-      identifiers,
-      fromModuleSpecifier: feature.sourceSpecifier,
+      identifiers: ts.AllIdentifiers,
+      fromModuleSpecifier: node.source && node.source.value,
     }));
+
+  } else if (babel.isExportNamedDeclaration(node)) {
+    const identifiers = [];
+
+    if (node.declaration) {
+      // E.g. export class Foo {}
+      for (const identifier of feature.identifiers) {
+        if (isResolvable(identifier)) {
+          identifiers.push({identifier});
+        }
+      }
+
+    } else {
+      // E.g. export {Foo, Bar as Baz}
+      for (const specifier of node.specifiers) {
+        if (isResolvable(specifier.exported.name)) {
+          identifiers.push({
+            identifier: specifier.local.name,
+            alias: specifier.exported.name,
+          });
+        }
+      }
+    }
+
+    if (identifiers.length > 0) {
+      root.members.push(new ts.Export({
+        identifiers,
+        fromModuleSpecifier: node.source && node.source.value,
+      }));
+    }
   }
 }
 

@@ -170,4 +170,4 @@ export {dom};
  */
 declare function dom(obj?: Node|Event|null): DomApi|EventApi;
 
-export {flush};
+export {flush$0 as flush};

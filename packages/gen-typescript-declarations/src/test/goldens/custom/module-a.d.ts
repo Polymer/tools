@@ -18,6 +18,6 @@ declare class ClassA2 {
 
 export {ClassA2};
 
-export {ClassB1, ClassC2Alias2} from './module-b.js';
+export {ClassB1, ClassC2Alias as ClassC2Alias2} from './module-b.js';
 
-export {ClassB1, ClassB2, ClassC1, ClassC2Alias} from './module-b.js';
+export * from './module-b.js';
