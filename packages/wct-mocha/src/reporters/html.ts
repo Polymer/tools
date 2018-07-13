@@ -17,9 +17,9 @@
 export default function HTML(runner: Mocha.IRunner) {
   const output = document.createElement('div');
   output.id = 'mocha';
-  document.body.appendChild(output);
+  document.body.appendChild(output as Node);
 
-  runner.on('suite', function(_test: any) {
+  runner.on('suite', function (_test: any) {
     this.total = runner.total;
   }.bind(this));
 
@@ -67,4 +67,4 @@ style.textContent = `
       color: #555 !important;
     }
 `;
-document.head.appendChild(style);
+document.head.appendChild(style as Node);

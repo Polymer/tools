@@ -12,6 +12,7 @@
     "removeComments": false,
     "preserveConstEnums": true,
     "suppressImplicitAnyIndexErrors": true,
+    "outDir": "./lib",
     "lib": [
       "es2017",
       "dom"
@@ -23,8 +24,9 @@
     "node_modules"
   ],
   "include": [
-    "*.ts",
-    "**/*.ts",
-    "../custom_typings/*.d.ts"
+    "src/*.ts",
+    "src/**/*.ts",
+    "custom_typings/*.d.ts",
+    "node_modules/@types/mocha/*.d.ts"
   ]
 }

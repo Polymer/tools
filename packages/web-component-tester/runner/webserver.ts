@@ -81,9 +81,9 @@ export function webserver(wct: Context): void {
     // npm, the wct-browser-legacy package may be used, so we test for that
     // package and will use its "browser.js" if present.
     let browserScript = 'web-component-tester/browser.js';
+    let browserModule = '';
 
     if (options.npm) {
-
       // concat options.clientOptions.environmentScripts with resolved
       // ENVIRONMENT_SCRIPTS
       options.clientOptions = options.clientOptions || {};
@@ -97,9 +97,15 @@ export function webserver(wct: Context): void {
         const npmPackageMainPath = resolveFrom(fromPath, npmPackageName);
         const npmPackageRootPath = path.dirname(
           resolveFrom(fromPath, npmPackageName + '/package.json'));
-        browserScript = npmPackageMainPath.slice(
-          npmPackageRootPath.length - npmPackageName.length);
-        options.clientOptions.environmentScripts.push('mocha/mocha.js');
+          browserScript = npmPackageMainPath.slice(
+            npmPackageRootPath.length - npmPackageName.length);
+          if (npmPackageName === 'wct-browser-legacy') {
+            options.clientOptions.environmentScripts.push('mocha/mocha.js');
+          } else {
+            browserModule = browserScript;
+            browserScript = '';
+            options.extraScripts.push('../mocha/mocha.js');
+          }
       } catch (e) {
         // Safely ignore.
       }
@@ -114,13 +120,14 @@ export function webserver(wct: Context): void {
             resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
       }
 
-      if (isPackageScoped) {
+      if (browserScript && isPackageScoped) {
         browserScript = `../${browserScript}`;
       }
     }
+
     const a11ySuiteScript = 'web-component-tester/data/a11ySuite.js';
     options.webserver._generatedIndexContent = INDEX_TEMPLATE(
-      Object.assign({ browserScript, a11ySuiteScript }, options));
+      Object.assign({ browserScript, browserModule, a11ySuiteScript }, options));
   });
 
   wct.hook('prepare', async function () {

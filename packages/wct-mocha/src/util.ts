@@ -17,7 +17,7 @@ import * as config from './config.js';
  */
 export function whenFrameworksReady(callback: () => void) {
   debug('whenFrameworksReady');
-  const done = function() {
+  const done = function () {
     debug('whenFrameworksReady done');
     callback();
   };
@@ -57,7 +57,7 @@ export function loadScript(path: string, done: (error?: any) => void) {
     script.onload = done.bind(null, null);
     script.onerror = done.bind(null, 'Failed to load script ' + script.src);
   }
-  document.head.appendChild(script);
+  document.head.appendChild(script as Node);
 }
 
 /**
@@ -72,7 +72,7 @@ export function loadStyle(path: string, done?: () => void) {
     link.onload = done.bind(null, null);
     link.onerror = done.bind(null, 'Failed to load stylesheet ' + link.href);
   }
-  document.head.appendChild(link);
+  document.head.appendChild(link as Node);
 }
 
 /**
@@ -137,8 +137,8 @@ export function getParams(query?: string): Params {
   if (query === '')
     return {};
 
-  const result: {[param: string]: string[]} = {};
-  query.split('&').forEach(function(part) {
+  const result: { [param: string]: string[] } = {};
+  query.split('&').forEach(function (part) {
     const pair = part.split('=');
     if (pair.length !== 2) {
       console.warn('Invalid URL query part:', part);
@@ -163,7 +163,7 @@ export function getParams(query?: string): Params {
  * @param {!Object<string, !Array<string>>} source
  */
 export function mergeParams(target: Params, source: Params) {
-  Object.keys(source).forEach(function(key) {
+  Object.keys(source).forEach(function (key) {
     if (!(key in target)) {
       target[key] = [];
     }
@@ -175,7 +175,7 @@ export function mergeParams(target: Params, source: Params) {
  * @param {string} param The param to return a value for.
  * @return {?string} The first value for `param`, if found.
  */
-export function getParam(param: string): string|null {
+export function getParam(param: string): string | null {
   const params = getParams();
   return params[param] ? params[param][0] : null;
 }
@@ -186,23 +186,23 @@ export function getParam(param: string): string|null {
  */
 export function paramsToQuery(params: Params): string {
   const pairs: string[] = [];
-  Object.keys(params).forEach(function(key) {
-    params[key].forEach(function(value) {
+  Object.keys(params).forEach(function (key) {
+    params[key].forEach(function (value) {
       pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
     });
   });
   return (pairs.length > 0) ? ('?' + pairs.join('&')) : '';
 }
 
-function getPathName(location: Location|string): string {
+function getPathName(location: Location | string): string {
   return typeof location === 'string' ? location : location.pathname;
 }
 
-export function basePath(location: Location|string) {
+export function basePath(location: Location | string) {
   return getPathName(location).match(/^.*\//)[0];
 }
 
-export function relativeLocation(location: Location|string, basePath: string) {
+export function relativeLocation(location: Location | string, basePath: string) {
   let path = getPathName(location);
   if (path.indexOf(basePath) === 0) {
     path = path.substring(basePath.length);
@@ -210,7 +210,7 @@ export function relativeLocation(location: Location|string, basePath: string) {
   return path;
 }
 
-export function cleanLocation(location: Location|string) {
+export function cleanLocation(location: Location | string) {
   let path = getPathName(location);
   if (path.slice(-11) === '/index.html') {
     path = path.slice(0, path.length - 10);
@@ -233,10 +233,10 @@ export type Runner = (f: Function) => void;
  */
 export function parallel(runners: Runner[], done: (error?: any) => void): void;
 export function parallel(
-    runners: Runner[], limit: number, done: (error?: any) => void): void;
+  runners: Runner[], limit: number, done: (error?: any) => void): void;
 export function parallel(
-    runners: Runner[], maybeLimit: number|((error?: any) => void),
-    done?: (error?: any) => void) {
+  runners: Runner[], maybeLimit: number | ((error?: any) => void),
+  done?: (error?: any) => void) {
   let limit: number;
   if (typeof maybeLimit !== 'number') {
     done = maybeLimit;
@@ -287,13 +287,13 @@ export function parallel(
  * @param {string} filename
  * @return {string?}
  */
-export function scriptPrefix(filename: string): string|null {
+export function scriptPrefix(filename: string): string | null {
   const scripts =
-      document.querySelectorAll('script[src*="' + filename + '"]') as
-      NodeListOf<HTMLScriptElement>;
+    document.querySelectorAll('script[src*="' + filename + '"]') as
+    NodeList;
   if (scripts.length !== 1) {
     return null;
   }
-  const script = scripts[0].src;
+  const script = (scripts[0] as HTMLScriptElement).src;
   return script.substring(0, script.indexOf(filename));
 }

@@ -14,15 +14,18 @@ const depcheck = require('depcheck');
 const fs = require('fs');
 const glob = require('glob');
 const gulp = require('gulp');
+const gulpGulp = require('gulp-gulp');
 const bower = require('gulp-bower');
 const mocha = require('gulp-spawn-mocha');
 const tslint = require('gulp-tslint');
 const ts = require('gulp-typescript');
+const gulpUtil = require('gulp-util');
 const lazypipe = require('lazypipe');
 const path = require('path');
 const rollup = require('rollup');
 const runSequence = require('run-sequence');
 const typescript = require('typescript');
+const spawn = require('child_process').spawn;
 
 const mochaConfig = { reporter: 'spec', retries: 3, timeout: 90000 };
 
@@ -86,7 +89,7 @@ gulp.task('build-all', (done) => {
 });
 
 gulp.task('build',
-  ['build:typescript-server', 'build:browser', 'build:wct-browser-legacy']);
+  ['build:typescript-server', 'build:browser', /*'build:wct-browser-legacy'*/]);
 
 const tsProject = ts.createProject('tsconfig.json', { typescript });
 gulp.task('build:typescript-server', function () {
@@ -95,6 +98,7 @@ gulp.task('build:typescript-server', function () {
   return tsProject.src().pipe(tsProject(ts.reporter.nullReporter())).js.pipe(gulp.dest('./'));
 });
 
+/*
 const browserTsProject = ts.createProject('browser/tsconfig.json', {
   typescript
 });
@@ -102,25 +106,46 @@ gulp.task('build:typescript-browser', function () {
   return browserTsProject.src().pipe(
     browserTsProject(ts.reporter.nullReporter())).js.pipe(gulp.dest('./browser/'));
 });
+*/
 
 // Specific tasks
 
-gulp.task('build:browser', ['build:typescript-browser'], function (done) {
+gulp.task('build:browser', ['build:wct-mocha'], function (done) {
   rollup.rollup({
-    entry: 'browser/index.js',
+    input: '../wct-mocha/lib/index.js',
   }).then(function (bundle) {
     bundle.write({
+      file: 'browser.js',
       indent: false,
       format: 'iife',
-      banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
+      banner: fs.readFileSync('browser-js-header.js', 'utf-8'),
       intro: 'window.__wctUseNpm = false;',
-      dest: 'browser.js',
       sourceMap: true,
       sourceMapFile: path.resolve('browser.js.map')
     }).then(function () {
       done();
     });
   }).catch(done);
+});
+
+gulp.task('build:wct-mocha', function (done) {
+  // We don't need to bother building wct-mocha already built.
+  if (fs.exists('../wct-mocha/lib/index.js')) {
+    return done();
+  }
+  const wctMocha = spawn('lerna', [
+    'exec',
+    '--scope=wct-mocha',
+    '--',
+    'gulp build'
+  ], { stdio: 'inherit' });
+  wctMocha.on('close', (exitCode) => {
+    if (exitCode !== 0) {
+      done('exit code: ' + exitCode);
+    } else {
+      done();
+    }
+  });
 });
 
 gulp.task('build:wct-browser-legacy:a11ySuite', function () {
@@ -128,30 +153,6 @@ gulp.task('build:wct-browser-legacy:a11ySuite', function () {
     .pipe(concat('a11ySuite.js'))
     .pipe(gulp.dest('../wct-browser-legacy/'));
 });
-
-gulp.task('build:wct-browser-legacy:browser', ['build:typescript-browser'], function (done) {
-  rollup.rollup({
-    entry: 'browser/index.js',
-  }).then(function (bundle) {
-    bundle.write({
-      indent: false,
-      format: 'iife',
-      banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
-      intro: 'window.__wctUseNpm = true;',
-      dest: '../wct-browser-legacy/browser.js',
-      sourceMap: true,
-      sourceMapFile: path.resolve('browser.js.map')
-    }).then(function () {
-      done();
-    });
-  }).catch(done);
-});
-
-gulp.task('build:wct-browser-legacy', [
-  'build:wct-browser-legacy:a11ySuite',
-  'build:wct-browser-legacy:browser',
-]);
-
 
 gulp.task('test:unit', function () {
   return gulp.src('test/unit/*.js', { read: false, timeout: 5000, })

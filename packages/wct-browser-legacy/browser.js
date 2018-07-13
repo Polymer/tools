@@ -17,6 +17,7 @@
 'use strict';
 
 window.__wctUseNpm = true;
+
 /**
  * @license
  * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
@@ -207,6 +208,16 @@ window.asyncPlatformFlush = asyncPlatformFlush;
 window.waitFor = waitFor;
 
 /**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
+/**
  * The global configuration state for WCT's browser client.
  */
 var _config = {
@@ -278,6 +289,16 @@ function _deepMerge(target, source) {
     });
 }
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 /**
  * @param {function()} callback A function to call when the active web component
  *     frameworks have loaded.
@@ -526,26 +547,35 @@ function scriptPrefix(filename) {
     return script.substring(0, script.indexOf(filename));
 }
 
-
-var util = Object.freeze({
-    whenFrameworksReady: whenFrameworksReady,
-    pluralizedStat: pluralizedStat,
-    loadScript: loadScript,
-    loadStyle: loadStyle,
-    debug: debug,
-    parseUrl: parseUrl,
-    expandUrl: expandUrl,
-    getParams: getParams,
-    mergeParams: mergeParams,
-    getParam: getParam,
-    paramsToQuery: paramsToQuery,
-    basePath: basePath,
-    relativeLocation: relativeLocation,
-    cleanLocation: cleanLocation,
-    parallel: parallel,
-    scriptPrefix: scriptPrefix
+var util = /*#__PURE__*/Object.freeze({
+whenFrameworksReady: whenFrameworksReady,
+pluralizedStat: pluralizedStat,
+loadScript: loadScript,
+loadStyle: loadStyle,
+debug: debug,
+parseUrl: parseUrl,
+expandUrl: expandUrl,
+getParams: getParams,
+mergeParams: mergeParams,
+getParam: getParam,
+paramsToQuery: paramsToQuery,
+basePath: basePath,
+relativeLocation: relativeLocation,
+cleanLocation: cleanLocation,
+parallel: parallel,
+scriptPrefix: scriptPrefix
 });
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 /**
  * A Mocha suite (or suites) run within a child iframe, but reported as if they
  * are part of the current context.
@@ -681,6 +711,16 @@ var ChildRunner = /** @class */ (function () {
     return ChildRunner;
 }());
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 var SOCKETIO_ENDPOINT = window.location.protocol + '//' + window.location.host;
 var SOCKETIO_LIBRARY = SOCKETIO_ENDPOINT + '/socket.io/socket.io.js';
 /**
@@ -808,6 +848,16 @@ function getState(runnable) {
     }
 }
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 // We capture console events when running tests; so make sure we have a
 // reference to the original one.
 var console$1 = window.console;
@@ -949,6 +999,16 @@ var style = document.createElement('style');
 style.textContent = "\n    html, body {\n      position: relative;\n      height: 100%;\n      width:  100%;\n      min-width: 900px;\n    }\n    #mocha, #subsuites {\n      height: 100%;\n      position: absolute;\n      top: 0;\n    }\n    #mocha {\n      box-sizing: border-box;\n      margin: 0 !important;\n      padding: 60px 20px;\n      right: 0;\n      left: 500px;\n    }\n    #subsuites {\n      -ms-flex-direction: column;\n      -webkit-flex-direction: column;\n      display: -ms-flexbox;\n      display: -webkit-flex;\n      display: flex;\n      flex-direction: column;\n      left: 0;\n      width: 500px;\n    }\n    #subsuites .subsuite {\n      border: 0;\n      width: 100%;\n      height: 100%;\n    }\n    #mocha .test.pass .duration {\n      color: #555 !important;\n    }\n";
 document.head.appendChild(style);
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 var STACKY_CONFIG = {
     indent: '  ',
     locationStrip: [
@@ -1177,6 +1237,16 @@ var MultiReporter = /** @class */ (function () {
     return MultiReporter;
 }());
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 var ARC_OFFSET = 0; // start at the right.
 var ARC_WIDTH = 6;
 /**
@@ -1246,8 +1316,18 @@ function drawFaviconArc(context, total, start, length, color) {
     context.stroke();
 }
 
-var htmlSuites$1 = [];
-var jsSuites$1 = [];
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
+var htmlSuites = [];
+var jsSuites = [];
 // We process grep ourselves to avoid loading suites that will be filtered.
 var GREP = getParam('grep');
 // work around mocha bug (https://github.com/mochajs/mocha/issues/2070)
@@ -1262,10 +1342,10 @@ if (GREP) {
 function loadSuites(files) {
     files.forEach(function (file) {
         if (/\.js(\?.*)?$/.test(file)) {
-            jsSuites$1.push(file);
+            jsSuites.push(file);
         }
         else if (/\.html(\?.*)?$/.test(file)) {
-            htmlSuites$1.push(file);
+            htmlSuites.push(file);
         }
         else {
             throw new Error('Unknown resource type: ' + file);
@@ -1277,7 +1357,7 @@ function loadSuites(files) {
  *     those that would not match `GREP`.
  */
 function activeChildSuites() {
-    var subsuites = htmlSuites$1;
+    var subsuites = htmlSuites;
     if (GREP) {
         var cleanSubsuites = [];
         for (var i = 0, subsuite = void 0; subsuite = subsuites[i]; i++) {
@@ -1293,8 +1373,8 @@ function activeChildSuites() {
  * Loads all `.js` sources requested by the current suite.
  */
 function loadJsSuites(_reporter, done) {
-    debug('loadJsSuites', jsSuites$1);
-    var loaders = jsSuites$1.map(function (file) {
+    debug('loadJsSuites', jsSuites);
+    var loaders = jsSuites.map(function (file) {
         // We only support `.js` dependencies for now.
         return loadScript.bind(util, file);
     });
@@ -1397,7 +1477,7 @@ function determineReporters(socket, parent) {
             socket.observe(runner);
         });
     }
-    if (htmlSuites$1.length > 0 || jsSuites$1.length > 0) {
+    if (htmlSuites.length > 0 || jsSuites.length > 0) {
         reporters.push(HTML);
     }
     return reporters;
@@ -1420,6 +1500,16 @@ function _injectPrototype(klass, prototype) {
     klass.prototype = newPrototype;
 }
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 /**
  * Loads all environment scripts ...synchronously ...after us.
  */
@@ -1485,6 +1575,16 @@ function _checkChai() {
     window.expect = window.chai.expect;
 }
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 // We may encounter errors during initialization (for example, syntax errors in
 // a test file). Hang onto those (and more) until we are ready to report them.
 var globalErrors = [];
@@ -1704,6 +1804,16 @@ extendInterfaces('replace', function (_context, teardown) {
     };
 });
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 // Mocha global helpers, broken out by testing method.
 //
 // Keys are the method for a particular interface; values are their analog in
@@ -1754,8 +1864,6 @@ function stubInterfaces() {
         });
     });
 }
-// Whether we've called `mocha.setup`
-var _mochaIsSetup = false;
 /**
  * @param {string} ui Sets up mocha to run `ui`-style tests.
  * @param {string} key The method called that triggered this.
@@ -1769,14 +1877,21 @@ function _setupMocha(ui, key, alternate) {
             'You called "' + key + '". Did you mean ' + alternate + '?';
         throw new Error(message);
     }
-    if (_mochaIsSetup) {
-        return;
-    }
     applyExtensions();
     mochaOptions.ui = ui;
     mocha.setup(mochaOptions); // Note that the reporter is configured in run.js.
 }
 
+/**
+ * @license
+ * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
+ */
 // You can configure WCT before it has loaded by assigning your custom
 // configuration to the global `WCT`.
 setup(window.WCT);
@@ -1844,4 +1959,3 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 }());
-//# sourceMappingURL=browser.js.map

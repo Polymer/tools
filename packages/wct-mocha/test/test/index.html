@@ -2,12 +2,11 @@
 <html>
 
 <body>
-  <script src="../node_modules/wct-mocha/browser.js"></script>
+  <script src="../node_modules/mocha/mocha.js"></script>
   <script src="../node_modules/chai/chai.js"></script>
-
   <script type="module">
+    import 'wct-mocha';
     import '../my-test-element.js';
-
     suite('something', () => {
       test('is normal', () => {
         chai.assert.equal(1, 2, 'ONE DOES NOT EQUAL TWO');

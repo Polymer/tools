@@ -16,7 +16,7 @@ import * as util from './util.js';
 // has no mocha correlate. This may also eliminate the need for root/non-root
 // suite distinctions.
 
-export interface SharedState {}
+export interface SharedState { }
 
 /**
  * A Mocha suite (or suites) run within a child iframe, but reported as if they
@@ -25,16 +25,16 @@ export interface SharedState {}
 export default class ChildRunner {
   private url: string;
   parentScope: Window;
-  private state: 'initializing'|'loading'|'complete';
+  private state: 'initializing' | 'loading' | 'complete';
   private iframe?: HTMLIFrameElement;
   private onRunComplete: (error?: any) => void;
-  private timeoutId: undefined|number;
+  private timeoutId: undefined | number;
   private share: SharedState;
 
   constructor(url: string, parentScope: Window) {
     const urlBits = util.parseUrl(url);
     util.mergeParams(
-        urlBits.params, util.getParams(parentScope.location.search));
+      urlBits.params, util.getParams(parentScope.location.search));
     delete urlBits.params.cli_browser_id;
 
     this.url = urlBits.base + util.paramsToQuery(urlBits.params);
@@ -48,7 +48,7 @@ export default class ChildRunner {
 
   // We can't maintain properties on iframe elements in Firefox/Safari/???, so
   // we track childRunners by URL.
-  static _byUrl: {[url: string]: undefined|ChildRunner} = {};
+  static _byUrl: { [url: string]: undefined | ChildRunner } = {};
 
   /**
    * @return {ChildRunner} The `ChildRunner` that was registered for this
@@ -71,7 +71,7 @@ export default class ChildRunner {
     if (window.parent === window) {  // Top window.
       if (traversal) {
         console.warn(
-            'Subsuite loaded but was never registered. This most likely is due to wonky history behavior. Reloading...');
+          'Subsuite loaded but was never registered. This most likely is due to wonky history behavior. Reloading...');
         window.location.reload();
       }
       return null;
@@ -98,25 +98,25 @@ export default class ChildRunner {
     if (!container) {
       container = document.createElement('div');
       container.id = 'subsuites';
-      document.body.appendChild(container);
+      document.body.appendChild(container as Node);
     }
-    container.appendChild(this.iframe);
+    container.appendChild(this.iframe as Node);
 
     // let the iframe expand the URL for us.
     this.url = this.iframe.src;
     ChildRunner._byUrl[this.url] = this;
 
     this.timeoutId = setTimeout(
-        this.loaded.bind(this, new Error('Timed out loading ' + this.url)),
-        ChildRunner.loadTimeout);
+      this.loaded.bind(this, new Error('Timed out loading ' + this.url)),
+      ChildRunner.loadTimeout);
 
     this.iframe.addEventListener(
-        'error',
-        this.loaded.bind(
-            this, new Error('Failed to load document ' + this.url)));
+      'error',
+      this.loaded.bind(
+        this, new Error('Failed to load document ' + this.url)));
 
     this.iframe.contentWindow.addEventListener(
-        'DOMContentLoaded', this.loaded.bind(this, null));
+      'DOMContentLoaded', this.loaded.bind(this, null));
   }
 
   /**
@@ -175,7 +175,7 @@ export default class ChildRunner {
       return;
     // Be safe and avoid potential browser crashes when logic attempts to
     // interact with the removed iframe.
-    setTimeout(function() {
+    setTimeout(function () {
       this.iframe.parentNode.removeChild(this.iframe);
       this.iframe = null;
     }.bind(this), 1);
