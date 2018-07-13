@@ -83,22 +83,6 @@ export async function build(
                 }));
   }
 
-  if (bundled) {
-    // Polymer 1.x and Polymer 2.x deal with relative urls in dom-module
-    // templates differently.  Polymer CLI will attempt to provide a sensible
-    // default value for the `rewriteUrlsInTemplates` option passed to
-    // `polymer-bundler` based on the version of Polymer found in the project's
-    // folders.  We will default to Polymer 1.x behavior unless 2.x is found.
-    const polymerVersion = await getPolymerVersion();
-    const bundlerOptions = {
-      rewriteUrlsInTemplates: !polymerVersion.startsWith('2.')
-    };
-    if (typeof options.bundle === 'object') {
-      Object.assign(bundlerOptions, options.bundle);
-    }
-    buildStream = buildStream.pipe(polymerProject.bundler(bundlerOptions));
-  }
-
   const htmlSplitter = new HtmlSplitter();
 
   buildStream = pipeStreams([
@@ -127,6 +111,22 @@ export async function build(
     logger.info(`(${buildName}) Building...`);
   });
 
+  if (bundled) {
+    // Polymer 1.x and Polymer 2.x deal with relative urls in dom-module
+    // templates differently.  Polymer CLI will attempt to provide a sensible
+    // default value for the `rewriteUrlsInTemplates` option passed to
+    // `polymer-bundler` based on the version of Polymer found in the project's
+    // folders.  We will default to Polymer 1.x behavior unless 2.x is found.
+    const polymerVersion = await getPolymerVersion();
+    const bundlerOptions = {
+      rewriteUrlsInTemplates: !polymerVersion.startsWith('2.')
+    };
+    if (typeof options.bundle === 'object') {
+      Object.assign(bundlerOptions, options.bundle);
+    }
+    buildStream = buildStream.pipe(polymerProject.bundler(bundlerOptions));
+  }
+  
   if (options.basePath) {
     let basePath = options.basePath === true ? buildName : options.basePath;
     if (!basePath.startsWith('/')) {
