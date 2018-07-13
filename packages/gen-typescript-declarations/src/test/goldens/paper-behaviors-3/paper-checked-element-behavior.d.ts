@@ -8,6 +8,8 @@
  *   paper-checked-element-behavior.js
  */
 
+export {PaperCheckedElementBehaviorImpl};
+
 declare namespace Polymer {
 
   /**
@@ -44,5 +46,3 @@ declare function _checkedChanged(): void;
  *    
  */
 declare function _buttonStateChanged(): void;
-
-export {};

@@ -58,4 +58,4 @@ interface StrictBindingParserConstructor {
 interface StrictBindingParser {
 }
 
-export {};
+export {StrictBindingParser};

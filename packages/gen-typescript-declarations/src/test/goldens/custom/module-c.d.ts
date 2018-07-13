@@ -5,9 +5,15 @@
  *   https://github.com/Polymer/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   polymer-legacy.js
+ *   module-c.js
  */
 
-export {Polymer} from './lib/legacy/polymer-fn.js';
+export {ClassC1};
 
-export {html} from './lib/utils/html-tag.js';
+declare class ClassC1 {
+}
+
+export {ClassC2};
+
+declare class ClassC2 {
+}

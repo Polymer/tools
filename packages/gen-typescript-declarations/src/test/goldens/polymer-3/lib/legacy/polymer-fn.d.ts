@@ -24,4 +24,4 @@
  */
 declare function Polymer(info: PolymerInit): {new(): HTMLElement};
 
-export {};
+export {Polymer};

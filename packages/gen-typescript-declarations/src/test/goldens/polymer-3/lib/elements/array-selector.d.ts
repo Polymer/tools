@@ -114,6 +114,8 @@ interface ArraySelectorMixin {
   selectIndex(idx: number): void;
 }
 
+export {ArraySelectorMixin};
+
 /**
  * Element implementing the `ArraySelector` mixin, which records
  * dynamic associations between item paths in a master `items` array and a
@@ -193,4 +195,4 @@ declare global {
   }
 }
 
-export {};
+export {ArraySelector};

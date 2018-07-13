@@ -8,6 +8,8 @@
  *   lib/elements/dom-module.js
  */
 
+export {DomModule};
+
 /**
  * The `dom-module` element registers the dom it contains to the name given
  * by the module's id attribute. It provides a unified database of dom
@@ -78,5 +80,3 @@ declare global {
     "dom-module": DomModule;
   }
 }
-
-export {};

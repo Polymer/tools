@@ -8,11 +8,15 @@
  *   lib/utils/flush.js
  */
 
+export {enqueueDebouncer};
+
 
 /**
  * Adds a `Debouncer` to a list of globally flushable tasks.
  */
 declare function enqueueDebouncer(debouncer: Debouncer): void;
+
+export {flush};
 
 
 /**
@@ -21,5 +25,3 @@ declare function enqueueDebouncer(debouncer: Debouncer): void;
  * - ShadyDOM distribution
  */
 declare function flush(): void;
-
-export {};

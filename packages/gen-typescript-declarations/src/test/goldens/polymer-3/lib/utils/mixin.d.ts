@@ -8,6 +8,8 @@
  *   lib/utils/mixin.js
  */
 
+export {dedupingMixin};
+
 
 /**
  * Wraps an ES6 class expression mixin such that the mixin is only applied
@@ -15,5 +17,3 @@
  * applications.
  */
 declare function dedupingMixin<T>(mixin: T): T;
-
-export {};

@@ -8,6 +8,8 @@
  *   lib/mixins/properties-changed.js
  */
 
+export {PropertiesChanged};
+
 
 /**
  * Element class mixin that provides basic meta-programming for creating one
@@ -296,5 +298,3 @@ interface PropertiesChanged {
    */
   _deserializeValue(value: string|null, type?: any): any;
 }
-
-export {};

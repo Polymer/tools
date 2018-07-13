@@ -8,6 +8,8 @@
  *   lib/utils/case-map.js
  */
 
+export {dashToCamelCase};
+
 
 /**
  * Converts "dash-case" identifier (e.g. `foo-bar-baz`) to "camelCase"
@@ -17,6 +19,8 @@
  */
 declare function dashToCamelCase(dash: string): string;
 
+export {camelToDashCase};
+
 
 /**
  * Converts "camelCase" identifier (e.g. `fooBarBaz`) to "dash-case"
@@ -25,5 +29,3 @@ declare function dashToCamelCase(dash: string): string;
  * @returns Dash-case representation of the identifier
  */
 declare function camelToDashCase(camel: string): string;
-
-export {};

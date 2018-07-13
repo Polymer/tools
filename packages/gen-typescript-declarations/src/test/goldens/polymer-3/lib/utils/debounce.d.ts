@@ -8,6 +8,8 @@
  *   lib/utils/debounce.js
  */
 
+export {Debouncer};
+
 declare class Debouncer {
   constructor();
 
@@ -74,5 +76,3 @@ declare class Debouncer {
    */
   isActive(): boolean;
 }
-
-export {};

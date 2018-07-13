@@ -8,6 +8,8 @@
  *   lib/mixins/property-effects.js
  */
 
+export {PropertyEffects};
+
 
 /**
  * Element class mixin that provides meta-programming for Polymer's template
@@ -840,5 +842,3 @@ interface PropertyEffects {
    */
   _removeBoundDom(dom: StampedTemplate): void;
 }
-
-export {};

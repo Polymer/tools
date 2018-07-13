@@ -8,6 +8,8 @@
  *   lib/utils/gestures.js
  */
 
+export {deepTargetFind};
+
 
 /**
  * Finds the element rendered on the screen at the provided coordinates.
@@ -20,6 +22,8 @@
  */
 declare function deepTargetFind(x: number, y: number): _Element|null;
 
+export {addListener};
+
 
 /**
  * Adds an event listener to a node for the given gesture type.
@@ -27,6 +31,8 @@ declare function deepTargetFind(x: number, y: number): _Element|null;
  * @returns Returns true if a gesture event listener was added.
  */
 declare function addListener(node: Node, evType: string, handler: (p0: Event) => void): boolean;
+
+export {removeListener};
 
 
 /**
@@ -36,12 +42,16 @@ declare function addListener(node: Node, evType: string, handler: (p0: Event) =>
  */
 declare function removeListener(node: Node, evType: string, handler: (p0: Event) => void): boolean;
 
+export {register};
+
 
 /**
  * Registers a new gesture event recognizer for adding new custom
  * gesture event types.
  */
 declare function register(recog: GestureRecognizer): void;
+
+export {setTouchAction};
 
 
 /**
@@ -52,11 +62,15 @@ declare function register(recog: GestureRecognizer): void;
  */
 declare function setTouchAction(node: _Element, value: string): void;
 
+export {prevent};
+
 
 /**
  * Prevents the dispatch and default action of the given event name.
  */
 declare function prevent(evName: string): void;
+
+export {resetMouseCanceller};
 
 
 /**
@@ -67,5 +81,3 @@ declare function prevent(evName: string): void;
  * Calling this method in production may cause duplicate taps or other Gestures.
  */
 declare function resetMouseCanceller(): void;
-
-export {};

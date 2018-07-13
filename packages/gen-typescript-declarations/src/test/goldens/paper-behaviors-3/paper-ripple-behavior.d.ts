@@ -8,6 +8,8 @@
  *   paper-ripple-behavior.js
  */
 
+export {PaperRippleBehavior};
+
 declare namespace Polymer {
 
   /**
@@ -122,5 +124,3 @@ declare function hasRipple(): boolean;
 declare function _createRipple(): PaperRippleElement;
 
 declare function _noinkChanged(): void;
-
-export {};

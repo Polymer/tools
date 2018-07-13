@@ -8,12 +8,16 @@
  *   lib/utils/settings.js
  */
 
+export {setRootPath};
+
 
 /**
  * Sets the global rootPath property used by `ElementMixin` and
  * available via `rootPath`.
  */
 declare function setRootPath(path: string): void;
+
+export {setSanitizeDOMValue};
 
 
 /**
@@ -22,10 +26,10 @@ declare function setRootPath(path: string): void;
  */
 declare function setSanitizeDOMValue(newSanitizeDOMValue: ((p0: any, p1: string, p2: string, p3: Node|null) => any)|undefined): void;
 
+export {setPassiveTouchGestures};
+
 
 /**
  * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
  */
 declare function setPassiveTouchGestures(usePassive: boolean): void;
-
-export {};

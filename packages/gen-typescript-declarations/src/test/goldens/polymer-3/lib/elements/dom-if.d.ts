@@ -8,6 +8,8 @@
  *   lib/elements/dom-if.js
  */
 
+export {DomIf};
+
 /**
  * The `<dom-if>` element will stamp a light-dom `<template>` child when
  * the `if` property becomes truthy, and the template can use Polymer
@@ -64,5 +66,3 @@ declare global {
     "dom-if": DomIf;
   }
 }
-
-export {};

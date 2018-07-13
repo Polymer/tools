@@ -8,6 +8,8 @@
  *   lib/utils/path.js
  */
 
+export {isPath};
+
 
 /**
  * Returns true if the given string is a structured data path (has dots).
@@ -23,6 +25,8 @@
  */
 declare function isPath(path: string): boolean;
 
+export {root};
+
 
 /**
  * Returns the root property name for the given path.
@@ -37,6 +41,8 @@ declare function isPath(path: string): boolean;
  * @returns Root property name
  */
 declare function root(path: string): string;
+
+export {isAncestor};
 
 
 /**
@@ -55,6 +61,8 @@ declare function root(path: string): string;
  */
 declare function isAncestor(base: string, path: string): boolean;
 
+export {isDescendant};
+
 
 /**
  * Given `base` is `foo.bar`, `foo.bar.baz` is an descendant
@@ -70,6 +78,8 @@ declare function isAncestor(base: string, path: string): boolean;
  * @returns True if `path` is a descendant of `base`.
  */
 declare function isDescendant(base: string, path: string): boolean;
+
+export {translate};
 
 
 /**
@@ -88,11 +98,15 @@ declare function isDescendant(base: string, path: string): boolean;
  */
 declare function translate(base: string, newBase: string, path: string): string;
 
+export {matches};
+
 
 /**
  * @returns True if `path` is equal to `base`
  */
 declare function matches(base: string, path: string): boolean;
+
+export {normalize};
 
 
 /**
@@ -110,6 +124,8 @@ declare function matches(base: string, path: string): boolean;
  */
 declare function normalize(path: string|Array<string|number>): string;
 
+export {split};
+
 
 /**
  * Splits a path into an array of property names. Accepts either arrays
@@ -126,6 +142,8 @@ declare function normalize(path: string|Array<string|number>): string;
  */
 declare function split(path: string|Array<string|number>): string[];
 
+export {get};
+
 
 /**
  * Reads a value from a path.  If any sub-property in the path is `undefined`,
@@ -136,6 +154,8 @@ declare function split(path: string|Array<string|number>): string[];
  */
 declare function get(root: object|null, path: string|Array<string|number>, info?: object|null): any;
 
+export {set};
+
 
 /**
  * Sets a value to a path.  If any sub-property in the path is `undefined`,
@@ -144,5 +164,3 @@ declare function get(root: object|null, path: string|Array<string|number>, info?
  * @returns The normalized version of the input path
  */
 declare function set(root: object|null, path: string|Array<string|number>, value: any): string|undefined;
-
-export {};
