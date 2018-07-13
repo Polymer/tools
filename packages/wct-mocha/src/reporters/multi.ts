@@ -219,6 +219,11 @@ export default class MultiReporter implements Reporter {
       extraArgs[0] = this.showRootSuite(extraArgs[0]);
     }
 
+    // Stacky is optional.
+    if (typeof Stacky === 'undefined') {
+      return;
+    }
+
     // Normalize errors
     if (eventName === 'fail') {
       extraArgs[1] = Stacky.normalize(extraArgs[1], STACKY_CONFIG);
