@@ -725,6 +725,10 @@ function handleJsExport(
         fromModuleSpecifier: node.source && node.source.value,
       }));
     }
+
+  } else {
+    console.warn(
+        `Export feature with AST node type ${node.type} not supported.`);
   }
 }
 
