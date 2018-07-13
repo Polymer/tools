@@ -45,13 +45,11 @@ export class Export implements Resolvable, Feature {
   readonly astNode: JsAstNode<ExportNode>;
   readonly statementAst: babel.Statement;
   readonly warnings: ReadonlyArray<Warning> = [];
-  /** The original source module specifier from the `from` clause. */
-  readonly sourceSpecifier?: string;
 
   constructor(
       astNode: JsAstNode<ExportNode>, statementAst: babel.Statement,
       sourceRange: SourceRange|undefined, nodePath: NodePath<babel.Node>,
-      exportingAllFrom?: Iterable<Export>, sourceSpecifier?: string) {
+      exportingAllFrom?: Iterable<Export>) {
     this.astNode = astNode;
     this.statementAst = statementAst;
     let exportedIdentifiers;
@@ -68,7 +66,6 @@ export class Export implements Resolvable, Feature {
 
     this.astNodePath = nodePath;
     this.sourceRange = sourceRange;
-    this.sourceSpecifier = sourceSpecifier;
   }
 
   // TODO: Could potentially get a speed boost by doing the Reference
@@ -88,8 +85,7 @@ export class Export implements Resolvable, Feature {
           this.statementAst,
           this.sourceRange,
           this.astNodePath,
-          import_.document.getFeatures({kind: 'export'}),
-          this.sourceSpecifier);
+          import_.document.getFeatures({kind: 'export'}));
     }
     // It's immutable, and it doesn't care about other documents, so it's
     // both a ScannedFeature and a Feature. This is just one step in an
@@ -120,18 +116,14 @@ export class JavaScriptExportScanner implements JavaScriptScanner {
             {language: 'js', containingDocument: document, node},
             esutil.getCanonicalStatement(path)!,
             document.sourceRangeForNode(node),
-            path,
-            undefined,
-            node.source && node.source.value));
+            path));
       },
       enterExportAllDeclaration(node, _parent, path) {
         exports.push(new Export(
             {language: 'js', containingDocument: document, node},
             esutil.getCanonicalStatement(path)!,
             document.sourceRangeForNode(node),
-            path,
-            undefined,
-            node.source && node.source.value));
+            path));
       },
       enterExportDefaultDeclaration(node, _parent, path) {
         exports.push(new Export(
