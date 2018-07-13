@@ -15,7 +15,7 @@ import {anyType, ParamType, Type} from './types';
 
 /** An AST node that can appear directly in a document or namespace. */
 export type Declaration =
-    GlobalNamespace|Namespace|Class|Interface|Function|ConstValue|Export;
+    GlobalNamespace|Namespace|Class|Interface|Function|ConstValue|Import|Export;
 
 export class GlobalNamespace {
   readonly kind = 'globalNamespace';
@@ -412,6 +412,35 @@ export interface ImportExportIdentifier {
  * The "*" token in an import or export.
  */
 export const AllIdentifiers = Symbol('*');
+
+/**
+ * A JavaScript module import.
+ */
+export class Import {
+  readonly kind = 'import';
+  identifiers: ImportExportIdentifier[];
+  fromModuleSpecifier: string;
+
+  constructor(data: {
+    identifiers: ImportExportIdentifier[]; fromModuleSpecifier: string
+  }) {
+    this.identifiers = data.identifiers;
+    this.fromModuleSpecifier = data.fromModuleSpecifier;
+  }
+
+  * traverse(): Iterable<Node> {
+    yield this;
+  }
+
+  serialize(_depth: number = 0): string {
+    const specifiers = this.identifiers.map(({identifier, alias}) => {
+      return identifier +
+          (alias !== undefined && alias !== identifier ? ` as ${alias}` : '');
+    });
+    return `import {${specifiers.join(', ')}} ` +
+        `from '${this.fromModuleSpecifier}';\n`;
+  }
+}
 
 /**
  * A JavaScript module export.

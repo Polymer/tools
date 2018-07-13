@@ -204,6 +204,22 @@ declare class MyClass {
 `);
   });
 
+  suite('import', () => {
+    test('with aliases', () => {
+      const n = new ts.Import({
+        identifiers: [
+          {identifier: 'Foo'},
+          {identifier: 'Bar', alias: 'BarAlias'},
+          {identifier: 'Baz', alias: 'Baz'},
+        ],
+        fromModuleSpecifier: './foo.js',
+      });
+      assert.equal(
+          n.serialize(),
+          `import {Foo, Bar as BarAlias, Baz} from './foo.js';\n`);
+    });
+  });
+
   suite('export', () => {
     test('locals with aliases', () => {
       const n = new ts.Export({

@@ -71,9 +71,8 @@ export class Document {
     out += this.members.map((m) => m.serialize()).join('\n');
     // If these are typings for an ES module, we want to be sure that TypeScript
     // will treat them as one too, which requires at least one import or export.
-    // TODO(aomarks) Also check for imports when defined.
     if (this.isEsModule === true &&
-        !this.members.some((m) => m.kind === 'export')) {
+        !this.members.some((m) => m.kind === 'import' || m.kind === 'export')) {
       out += '\n' + (new Export({identifiers: []})).serialize();
     }
     return out;
