@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 * The `Function` type is now exported from `index.js`.
+* `Import` features now have an `astNodePath`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.2] - 2018-06-28
