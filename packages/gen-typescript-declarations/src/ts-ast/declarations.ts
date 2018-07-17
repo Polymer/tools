@@ -401,10 +401,10 @@ export class ConstValue {
 }
 
 /**
- * An identifier that is imported or exported, possibly with a different name.
+ * An identifier that is imported, possibly with a different name.
  */
-export interface ImportExportIdentifier {
-  identifier: string;
+export interface ImportSpecifier {
+  identifier: string|typeof AllIdentifiers;
   alias?: string;
 }
 
@@ -418,11 +418,11 @@ export const AllIdentifiers = Symbol('*');
  */
 export class Import {
   readonly kind = 'import';
-  identifiers: ImportExportIdentifier[];
+  identifiers: ImportSpecifier[];
   fromModuleSpecifier: string;
 
   constructor(data: {
-    identifiers: ImportExportIdentifier[]; fromModuleSpecifier: string
+    identifiers: ImportSpecifier[]; fromModuleSpecifier: string
   }) {
     this.identifiers = data.identifiers;
     this.fromModuleSpecifier = data.fromModuleSpecifier;
@@ -434,7 +434,7 @@ export class Import {
 
   serialize(_depth: number = 0): string {
     const specifiers = this.identifiers.map(({identifier, alias}) => {
-      return identifier +
+      return (identifier === AllIdentifiers ? '*' : identifier) +
           (alias !== undefined && alias !== identifier ? ` as ${alias}` : '');
     });
     return `import {${specifiers.join(', ')}} ` +
@@ -443,15 +443,23 @@ export class Import {
 }
 
 /**
+ * An identifier that is imported, possibly with a different name.
+ */
+export interface ExportSpecifier {
+  identifier: string;
+  alias?: string;
+}
+
+/**
  * A JavaScript module export.
  */
 export class Export {
   readonly kind = 'export';
-  identifiers: ImportExportIdentifier[]|typeof AllIdentifiers;
+  identifiers: ExportSpecifier[]|typeof AllIdentifiers;
   fromModuleSpecifier: string;
 
   constructor(data: {
-    identifiers: ImportExportIdentifier[]|typeof AllIdentifiers,
+    identifiers: ExportSpecifier[]|typeof AllIdentifiers,
     fromModuleSpecifier?: string
   }) {
     this.identifiers = data.identifiers;

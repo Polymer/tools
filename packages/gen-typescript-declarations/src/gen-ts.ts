@@ -694,7 +694,7 @@ function handleJsImport(
   }
 
   if (babel.isImportDeclaration(node)) {
-    const identifiers = [];
+    const identifiers: ts.ImportSpecifier[] = [];
     for (const specifier of node.specifiers) {
       if (babel.isImportSpecifier(specifier)) {
         // E.g. import {Foo, Bar as Baz} from './foo.js'
@@ -714,9 +714,12 @@ function handleJsImport(
           });
         }
 
-      } else {
-        console.warn(
-            `Import specifier with AST type ${specifier.type} not supported.`);
+      } else if (babel.isImportNamespaceSpecifier(specifier)) {
+        // E.g. import * as foo from './foo.js'
+        identifiers.push({
+          identifier: ts.AllIdentifiers,
+          alias: specifier.local.name,
+        });
       }
     }
 
@@ -726,7 +729,6 @@ function handleJsImport(
         fromModuleSpecifier: node.source && node.source.value,
       }));
     }
-
   } else if (
       // Exports are handled as exports below. Analyzer also considers them
       // imports when they export from another module.
