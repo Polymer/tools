@@ -23,18 +23,19 @@ export function isEsModuleDocument(doc: analyzer.Document):
 }
 
 /**
- * Resolve an identifier being exported to the feature it refers to.
+ * Resolve an identifier being imported or exported to the feature it refers to.
  */
-export function resolveExportedFeature(
-    exportFeature: analyzer.Export, identifier: string, doc: analyzer.Document):
-    analyzer.Reference<ResolvedTypes>|undefined {
+export function resolveImportExportFeature(
+    feature: analyzer.JavascriptImport|analyzer.Export,
+    identifier: string,
+    doc: analyzer.Document): analyzer.Reference<ResolvedTypes>|undefined {
   for (const kind of resolveKinds) {
     const reference = new analyzer.ScannedReference(
         kind,
         identifier,
-        exportFeature.sourceRange,
-        exportFeature.astNode,
-        exportFeature.astNodePath);
+        feature.sourceRange,
+        feature.astNode,
+        feature.astNodePath);
     const resolved = reference.resolve(doc);
     if (resolved.feature !== undefined) {
       return resolved as analyzer.Reference<ResolvedTypes>;

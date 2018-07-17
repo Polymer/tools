@@ -8,6 +8,8 @@
  *   lib/mixins/template-stamp.js
  */
 
+import {dedupingMixin} from '../utils/mixin.js';
+
 export {TemplateStamp};
 
 

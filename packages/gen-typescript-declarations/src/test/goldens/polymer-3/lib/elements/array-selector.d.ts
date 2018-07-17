@@ -8,6 +8,14 @@
  *   lib/elements/array-selector.js
  */
 
+import {PolymerElement} from '../../polymer-element.js';
+
+import {dedupingMixin} from '../utils/mixin.js';
+
+import {calculateSplices} from '../utils/array-splice.js';
+
+import {ElementMixin} from '../mixins/element-mixin.js';
+
 
 /**
  * Element mixin for recording dynamic associations between item paths in a

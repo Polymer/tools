@@ -8,6 +8,8 @@
  *   paper-button-behavior.js
  */
 
+import {PaperRippleBehavior} from './paper-ripple-behavior.js';
+
 export {PaperButtonBehaviorImpl};
 
 declare namespace Polymer {

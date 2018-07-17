@@ -8,6 +8,10 @@
  *   lib/mixins/disable-upgrade-mixin.js
  */
 
+import {ElementMixin} from './element-mixin.js';
+
+import {dedupingMixin} from '../utils/mixin.js';
+
 export {DisableUpgradeMixin};
 
 

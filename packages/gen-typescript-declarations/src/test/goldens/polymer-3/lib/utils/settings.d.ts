@@ -8,6 +8,8 @@
  *   lib/utils/settings.js
  */
 
+import {pathFromUrl} from './resolve-url.js';
+
 export {setRootPath};
 
 

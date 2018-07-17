@@ -12,6 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
+import {NodePath} from '@babel/traverse';
 import * as babel from '@babel/types';
 import {parseURL, URL} from 'whatwg-url';
 
@@ -54,16 +55,18 @@ export class ScannedJavascriptImport extends ScannedImport {
 
   readonly statementAst: babel.Statement|undefined;
   readonly astNode: JsAstNode<ImportNode>;
+  readonly astNodePath: NodePath<babel.Node>;
 
   constructor(
       url: FileRelativeUrl|undefined, sourceRange: SourceRange|undefined,
       urlSourceRange: SourceRange|undefined, ast: JsAstNode<ImportNode>,
-      lazy: boolean, originalSpecifier: string,
-      statementAst: babel.Statement|undefined) {
+      astNodePath: NodePath<babel.Node>, lazy: boolean,
+      originalSpecifier: string, statementAst: babel.Statement|undefined) {
     super('js-import', url, sourceRange, urlSourceRange, ast, lazy);
     this.specifier = originalSpecifier;
     this.statementAst = statementAst;
     this.astNode = ast;
+    this.astNodePath = astNodePath;
   }
 
   protected constructImport(
@@ -77,6 +80,7 @@ export class ScannedJavascriptImport extends ScannedImport {
         this.sourceRange,
         this.urlSourceRange,
         this.astNode,
+        this.astNodePath,
         this.warnings,
         this.lazy,
         this.specifier,
@@ -97,13 +101,14 @@ export class JavascriptImport extends Import implements DeclaredWithStatement {
   readonly specifier: string;
   readonly statementAst: babel.Statement|undefined;
   readonly astNode: JsAstNode<ImportNode>;
+  readonly astNodePath: NodePath<babel.Node>;
 
   constructor(
       url: ResolvedUrl, originalUrl: FileRelativeUrl, type: string,
       document: Document|undefined, sourceRange: SourceRange|undefined,
       urlSourceRange: SourceRange|undefined, ast: JsAstNode<ImportNode>,
-      warnings: Warning[], lazy: boolean, specifier: string,
-      statementAst: babel.Statement|undefined) {
+      astNodePath: NodePath<babel.Node>, warnings: Warning[], lazy: boolean,
+      specifier: string, statementAst: babel.Statement|undefined) {
     super(
         url,
         originalUrl,
@@ -117,6 +122,7 @@ export class JavascriptImport extends Import implements DeclaredWithStatement {
     this.specifier = specifier;
     this.statementAst = statementAst;
     this.astNode = ast;
+    this.astNodePath = astNodePath;
   }
 }
 
@@ -170,6 +176,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.callee)!,
             {language: 'js', node, containingDocument: document},
+            path,
             true,
             specifier,
             esutil.getCanonicalStatement(path)));
@@ -182,6 +189,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
             {language: 'js', node, containingDocument: document},
+            path,
             false,
             specifier,
             esutil.getCanonicalStatement(path)));
@@ -194,6 +202,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
             {language: 'js', node, containingDocument: document},
+            path,
             false,
             specifier,
             esutil.getCanonicalStatement(path)));
@@ -209,6 +218,7 @@ export class JavaScriptImportScanner implements JavaScriptScanner {
             document.sourceRangeForNode(node)!,
             document.sourceRangeForNode(node.source)!,
             {language: 'js', node, containingDocument: document},
+            path,
             false,
             specifier,
             esutil.getCanonicalStatement(path)));

@@ -8,6 +8,12 @@
  *   lib/mixins/strict-binding-parser.js
  */
 
+import {isPath} from '../utils/path.js';
+
+import {dedupingMixin} from '../utils/mixin.js';
+
+import {PropertyEffects} from './property-effects.js';
+
 
 /**
  * Mixin that parses binding expressions and generates corresponding metadata.

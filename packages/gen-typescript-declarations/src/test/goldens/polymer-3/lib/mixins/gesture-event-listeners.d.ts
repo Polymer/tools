@@ -8,6 +8,10 @@
  *   lib/mixins/gesture-event-listeners.js
  */
 
+import {dedupingMixin} from '../utils/mixin.js';
+
+import * as gestures$0 from '../utils/gestures.js';
+
 export {GestureEventListeners};
 
 

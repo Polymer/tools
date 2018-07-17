@@ -8,6 +8,8 @@
  *   paper-checked-element-behavior.js
  */
 
+import {PaperRippleBehavior} from './paper-ripple-behavior.js';
+
 export {PaperCheckedElementBehaviorImpl};
 
 declare namespace Polymer {

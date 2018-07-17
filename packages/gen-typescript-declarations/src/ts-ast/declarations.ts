@@ -15,7 +15,7 @@ import {anyType, ParamType, Type} from './types';
 
 /** An AST node that can appear directly in a document or namespace. */
 export type Declaration =
-    GlobalNamespace|Namespace|Class|Interface|Function|ConstValue|Export;
+    GlobalNamespace|Namespace|Class|Interface|Function|ConstValue|Import|Export;
 
 export class GlobalNamespace {
   readonly kind = 'globalNamespace';
@@ -401,28 +401,90 @@ export class ConstValue {
 }
 
 /**
- * An identifier that is imported or exported, possibly with a different name.
+ * The "*" token in an import or export.
  */
-export interface ImportExportIdentifier {
-  identifier: string;
+export const AllIdentifiers = Symbol('*');
+export type AllIdentifiers = typeof AllIdentifiers;
+
+/**
+ * An identifier that is imported, possibly with a different name.
+ */
+export interface ImportSpecifier {
+  identifier: string|AllIdentifiers;
   alias?: string;
 }
 
 /**
- * The "*" token in an import or export.
+ * A JavaScript module import.
  */
-export const AllIdentifiers = Symbol('*');
+export class Import {
+  readonly kind = 'import';
+  identifiers: ImportSpecifier[];
+  fromModuleSpecifier: string;
+
+  constructor(data: {
+    identifiers: ImportSpecifier[]; fromModuleSpecifier: string
+  }) {
+    this.identifiers = data.identifiers;
+    this.fromModuleSpecifier = data.fromModuleSpecifier;
+  }
+
+  * traverse(): Iterable<Node> {
+    yield this;
+  }
+
+  serialize(_depth: number = 0): string {
+    if (this.identifiers.some((i) => i.identifier === AllIdentifiers)) {
+      // Namespace imports have a different form. You can also have a default
+      // import, but no named imports.
+      const parts = [];
+      for (const identifier of this.identifiers) {
+        if (identifier.identifier === 'default') {
+          parts.push(identifier.alias);
+        } else if (identifier.identifier === AllIdentifiers) {
+          parts.push(`* as ${identifier.alias}`);
+        }
+      }
+      return `import ${parts.join(', ')} ` +
+          `from '${this.fromModuleSpecifier}';\n`;
+    }
+
+    else {
+      const parts = [];
+      for (const {identifier, alias} of this.identifiers) {
+        if (identifier === AllIdentifiers) {
+          // Can't happen, see above.
+          continue;
+        }
+        parts.push(
+            identifier +
+            (alias !== undefined && alias !== identifier ? ` as ${alias}` :
+                                                           ''));
+      }
+      return `import {${parts.join(', ')}} ` +
+          `from '${this.fromModuleSpecifier}';\n`;
+    }
+  }
+}
+
+/**
+ * An identifier that is imported, possibly with a different name.
+ */
+export interface ExportSpecifier {
+  identifier: string;
+  alias?: string;
+}
 
 /**
  * A JavaScript module export.
  */
 export class Export {
   readonly kind = 'export';
-  identifiers: ImportExportIdentifier[]|typeof AllIdentifiers;
+  identifiers: ExportSpecifier[]|AllIdentifiers;
   fromModuleSpecifier: string;
 
   constructor(data: {
-    identifiers: ImportExportIdentifier[]|typeof AllIdentifiers,
+    identifiers: ExportSpecifier[]|AllIdentifiers,
     fromModuleSpecifier?: string
   }) {
     this.identifiers = data.identifiers;

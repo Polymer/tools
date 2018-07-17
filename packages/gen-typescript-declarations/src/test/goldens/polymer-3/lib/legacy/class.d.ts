@@ -8,6 +8,10 @@
  *   lib/legacy/class.js
  */
 
+import {LegacyElementMixin} from './legacy-element-mixin.js';
+
+import {DomModule} from '../elements/dom-module.js';
+
 export {mixinBehaviors};
 
 

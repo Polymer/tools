@@ -8,6 +8,10 @@
  *   lib/mixins/properties-changed.js
  */
 
+import {dedupingMixin} from '../utils/mixin.js';
+
+import {microTask} from '../utils/async.js';
+
 export {PropertiesChanged};
 
 
