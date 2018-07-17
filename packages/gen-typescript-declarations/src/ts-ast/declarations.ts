@@ -401,17 +401,18 @@ export class ConstValue {
 }
 
 /**
- * An identifier that is imported, possibly with a different name.
- */
-export interface ImportSpecifier {
-  identifier: string|typeof AllIdentifiers;
-  alias?: string;
-}
-
-/**
  * The "*" token in an import or export.
  */
 export const AllIdentifiers = Symbol('*');
+export type AllIdentifiers = typeof AllIdentifiers;
+
+/**
+ * An identifier that is imported, possibly with a different name.
+ */
+export interface ImportSpecifier {
+  identifier: string|AllIdentifiers;
+  alias?: string;
+}
 
 /**
  * A JavaScript module import.
@@ -479,11 +480,11 @@ export interface ExportSpecifier {
  */
 export class Export {
   readonly kind = 'export';
-  identifiers: ExportSpecifier[]|typeof AllIdentifiers;
+  identifiers: ExportSpecifier[]|AllIdentifiers;
   fromModuleSpecifier: string;
 
   constructor(data: {
-    identifiers: ExportSpecifier[]|typeof AllIdentifiers,
+    identifiers: ExportSpecifier[]|AllIdentifiers,
     fromModuleSpecifier?: string
   }) {
     this.identifiers = data.identifiers;
