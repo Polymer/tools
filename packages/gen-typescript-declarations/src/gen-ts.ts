@@ -18,7 +18,7 @@ import {Function as AnalyzerFunction} from 'polymer-analyzer/lib/javascript/func
 import Uri from 'vscode-uri';
 
 import {closureParamToTypeScript, closureTypeToTypeScript} from './closure-types';
-import {isEsModuleDocument, resolveExportedFeature} from './es-modules';
+import {isEsModuleDocument, resolveImportExportFeature} from './es-modules';
 import * as ts from './ts-ast';
 
 /**
@@ -266,6 +266,8 @@ function handleDocument(
       if (feature.sourceRange && feature.sourceRange.file === doc.url) {
         handleHtmlImport(feature as analyzer.Import, root, rootDir);
       }
+    } else if (feature.kinds.has('js-import')) {
+      handleJsImport(feature as analyzer.JavascriptImport, root, doc);
     } else if (feature.kinds.has('export')) {
       handleJsExport(feature as analyzer.Export, root, doc);
     }
@@ -679,6 +681,63 @@ function handleNamespace(feature: analyzer.Namespace, tsDoc: ts.Document) {
 }
 
 /**
+ * Add a JavaScript import to the TypeScript declarations.
+ */
+function handleJsImport(
+    feature: analyzer.JavascriptImport,
+    root: ts.Document,
+    doc: analyzer.Document) {
+  const node = feature.astNode.node;
+
+  function isResolvable(identifier: string) {
+    return resolveImportExportFeature(feature, identifier, doc) !== undefined;
+  }
+
+  if (babel.isImportDeclaration(node)) {
+    const identifiers = [];
+    for (const specifier of node.specifiers) {
+      if (babel.isImportSpecifier(specifier)) {
+        // E.g. import {Foo, Bar as Baz} from './foo.js'
+        if (isResolvable(specifier.imported.name)) {
+          identifiers.push({
+            identifier: specifier.imported.name,
+            alias: specifier.local.name,
+          });
+        }
+
+      } else if (babel.isImportDefaultSpecifier(specifier)) {
+        // E.g. import foo from './foo.js'
+        if (isResolvable('default')) {
+          identifiers.push({
+            identifier: 'default',
+            alias: specifier.local.name,
+          });
+        }
+
+      } else {
+        console.warn(
+            `Import specifier with AST type ${specifier.type} not supported.`);
+      }
+    }
+
+    if (identifiers.length > 0) {
+      root.members.push(new ts.Import({
+        identifiers: identifiers,
+        fromModuleSpecifier: node.source && node.source.value,
+      }));
+    }
+
+  } else if (
+      // Exports are handled as exports below. Analyzer also considers them
+      // imports when they export from another module.
+      !babel.isExportNamedDeclaration(node) &&
+      !babel.isExportAllDeclaration(node)) {
+    console.warn(`Import with AST type ${node.type} not supported.`);
+  }
+}
+
+
+/**
  * Add a JavaScript export to the TypeScript declarations.
  */
 function handleJsExport(
@@ -686,7 +745,7 @@ function handleJsExport(
   const node = feature.astNode.node;
 
   function isResolvable(identifier: string) {
-    return resolveExportedFeature(feature, identifier, doc) !== undefined;
+    return resolveImportExportFeature(feature, identifier, doc) !== undefined;
   }
 
   if (babel.isExportAllDeclaration(node)) {

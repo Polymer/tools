@@ -8,6 +8,8 @@
  *   lib/legacy/mutable-data-behavior.js
  */
 
+import {MutableData} from '../mixins/mutable-data.js';
+
 export {MutableDataBehavior};
 
 /**

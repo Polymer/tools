@@ -8,6 +8,8 @@
  *   lib/elements/custom-style.js
  */
 
+import {cssFromModules} from '../utils/style-gather.js';
+
 export {CustomStyle};
 
 /**

@@ -8,6 +8,10 @@
  *   lib/utils/templatize.js
  */
 
+import {PropertyEffects} from '../mixins/property-effects.js';
+
+import {MutableData} from '../mixins/mutable-data.js';
+
 declare class TemplateInstanceBase extends
   PropertyEffects(
   Polymer.Element) {

@@ -8,6 +8,10 @@
  *   lib/utils/gestures.js
  */
 
+import {timeOut, microTask} from './async.js';
+
+import {Debouncer} from './debounce.js';
+
 export {deepTargetFind};
 
 

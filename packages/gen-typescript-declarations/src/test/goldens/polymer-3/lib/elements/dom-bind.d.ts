@@ -8,6 +8,12 @@
  *   lib/elements/dom-bind.js
  */
 
+import {PropertyEffects} from '../mixins/property-effects.js';
+
+import {OptionalMutableData} from '../mixins/mutable-data.js';
+
+import {GestureEventListeners} from '../mixins/gesture-event-listeners.js';
+
 export {DomBind};
 
 /**

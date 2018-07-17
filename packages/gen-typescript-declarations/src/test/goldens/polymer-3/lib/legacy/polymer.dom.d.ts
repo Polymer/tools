@@ -8,6 +8,10 @@
  *   lib/legacy/polymer.dom.js
  */
 
+import {FlattenedNodesObserver} from '../utils/flattened-nodes-observer.js';
+
+import {flush as flush$0, enqueueDebouncer} from '../utils/flush.js';
+
 export {matchesSelector};
 
 

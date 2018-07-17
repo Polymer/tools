@@ -8,6 +8,8 @@
  *   lib/legacy/templatizer-behavior.js
  */
 
+import {TemplateInstanceBase as TemplateInstanceBase$0, templatize as templatize$0, modelForElement as modelForElement$0} from '../utils/templatize.js';
+
 export {Templatizer};
 
 /**

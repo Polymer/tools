@@ -8,6 +8,10 @@
  *   lib/utils/flattened-nodes-observer.js
  */
 
+import {calculateSplices} from './array-splice.js';
+
+import {microTask} from './async.js';
+
 export {FlattenedNodesObserver};
 
 /**

@@ -8,6 +8,18 @@
  *   lib/mixins/element-mixin.js
  */
 
+import {dedupingMixin} from '../utils/mixin.js';
+
+import {stylesFromTemplate, stylesFromModuleImports} from '../utils/style-gather.js';
+
+import {pathFromUrl, resolveCss, resolveUrl as resolveUrl$0} from '../utils/resolve-url.js';
+
+import {DomModule} from '../elements/dom-module.js';
+
+import {PropertyEffects} from './property-effects.js';
+
+import {PropertiesMixin} from './properties-mixin.js';
+
 export {ElementMixin};
 
 

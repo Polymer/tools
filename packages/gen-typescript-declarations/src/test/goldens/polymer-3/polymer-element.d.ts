@@ -8,6 +8,8 @@
  *   polymer-element.js
  */
 
+import {ElementMixin} from './lib/mixins/element-mixin.js';
+
 export {html} from './lib/utils/html-tag.js';
 
 export {PolymerElement};

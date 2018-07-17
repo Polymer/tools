@@ -8,6 +8,8 @@
  *   lib/utils/style-gather.js
  */
 
+import {resolveCss} from './resolve-url.js';
+
 export {stylesFromModules};
 
 

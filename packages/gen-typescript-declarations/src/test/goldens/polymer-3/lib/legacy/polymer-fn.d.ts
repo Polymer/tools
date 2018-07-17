@@ -8,6 +8,8 @@
  *   lib/legacy/polymer-fn.js
  */
 
+import {Class} from './class.js';
+
 
 /**
  * Legacy class factory and registration helper for defining Polymer

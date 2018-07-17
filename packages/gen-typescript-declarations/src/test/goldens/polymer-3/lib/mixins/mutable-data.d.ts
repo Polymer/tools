@@ -8,6 +8,8 @@
  *   lib/mixins/mutable-data.js
  */
 
+import {dedupingMixin} from '../utils/mixin.js';
+
 export {MutableData};
 
 

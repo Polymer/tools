@@ -8,6 +8,16 @@
  *   lib/mixins/property-effects.js
  */
 
+import {dedupingMixin} from '../utils/mixin.js';
+
+import {root as root$0, isAncestor, isDescendant, get as get$0, translate, isPath as isPath$0, set as set$0, normalize} from '../utils/path.js';
+
+import {camelToDashCase as camelToDashCase$0, dashToCamelCase} from '../utils/case-map.js';
+
+import {PropertyAccessors} from './property-accessors.js';
+
+import {TemplateStamp} from './template-stamp.js';
+
 export {PropertyEffects};
 
 

@@ -8,6 +8,10 @@
  *   lib/mixins/dir-mixin.js
  */
 
+import {PropertyAccessors} from './property-accessors.js';
+
+import {dedupingMixin} from '../utils/mixin.js';
+
 export {DirMixin};
 
 

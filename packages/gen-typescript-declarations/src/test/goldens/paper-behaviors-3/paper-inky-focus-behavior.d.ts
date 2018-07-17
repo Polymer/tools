@@ -8,6 +8,8 @@
  *   paper-inky-focus-behavior.js
  */
 
+import {PaperRippleBehavior} from './paper-ripple-behavior.js';
+
 export {PaperInkyFocusBehaviorImpl};
 
 declare namespace Polymer {

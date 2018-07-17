@@ -8,6 +8,10 @@
  *   lib/mixins/properties-mixin.js
  */
 
+import {dedupingMixin} from '../utils/mixin.js';
+
+import {PropertiesChanged} from './properties-changed.js';
+
 export {PropertiesMixin};
 
 

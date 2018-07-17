@@ -8,6 +8,8 @@
  *   lib/elements/dom-module.js
  */
 
+import {resolveUrl, pathFromUrl} from '../utils/resolve-url.js';
+
 export {DomModule};
 
 /**

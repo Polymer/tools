@@ -8,6 +8,24 @@
  *   lib/legacy/legacy-element-mixin.js
  */
 
+import {ElementMixin} from '../mixins/element-mixin.js';
+
+import {GestureEventListeners} from '../mixins/gesture-event-listeners.js';
+
+import {DirMixin} from '../mixins/dir-mixin.js';
+
+import {dedupingMixin} from '../utils/mixin.js';
+
+import {dom as dom$0, matchesSelector} from './polymer.dom.js';
+
+import {setTouchAction} from '../utils/gestures.js';
+
+import {Debouncer} from '../utils/debounce.js';
+
+import {timeOut, microTask} from '../utils/async.js';
+
+import {get as get$0} from '../utils/path.js';
+
 export {LegacyElementMixin};
 
 

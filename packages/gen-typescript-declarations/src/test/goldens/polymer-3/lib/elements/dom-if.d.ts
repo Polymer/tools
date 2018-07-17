@@ -8,6 +8,18 @@
  *   lib/elements/dom-if.js
  */
 
+import {PolymerElement} from '../../polymer-element.js';
+
+import {templatize} from '../utils/templatize.js';
+
+import {Debouncer} from '../utils/debounce.js';
+
+import {enqueueDebouncer, flush} from '../utils/flush.js';
+
+import {microTask} from '../utils/async.js';
+
+import {root as root$0} from '../utils/path.js';
+
 export {DomIf};
 
 /**

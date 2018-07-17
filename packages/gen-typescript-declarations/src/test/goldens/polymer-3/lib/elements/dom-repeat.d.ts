@@ -8,6 +8,20 @@
  *   lib/elements/dom-repeat.js
  */
 
+import {PolymerElement} from '../../polymer-element.js';
+
+import {TemplateInstanceBase as TemplateInstanceBase$0, templatize, modelForElement as modelForElement$0} from '../utils/templatize.js';
+
+import {Debouncer} from '../utils/debounce.js';
+
+import {enqueueDebouncer, flush} from '../utils/flush.js';
+
+import {OptionalMutableData} from '../mixins/mutable-data.js';
+
+import {matches, translate} from '../utils/path.js';
+
+import {timeOut, microTask} from '../utils/async.js';
+
 export {DomRepeat};
 
 /**

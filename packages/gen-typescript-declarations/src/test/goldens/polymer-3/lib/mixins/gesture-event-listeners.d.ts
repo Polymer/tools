@@ -8,6 +8,8 @@
  *   lib/mixins/gesture-event-listeners.js
  */
 
+import {dedupingMixin} from '../utils/mixin.js';
+
 export {GestureEventListeners};
 
 
