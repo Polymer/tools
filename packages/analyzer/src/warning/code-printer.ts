@@ -18,7 +18,8 @@ import {ParsedDocument} from '../parser/document';
 export function underlineCode(
     sourceRange: SourceRange,
     parsedDocument: ParsedDocument,
-    colorizer = (s: string) => s): string|undefined {
+    colorizer = (s: string) => s,
+    maxLines?: number): string|undefined {
   const relativeRange =
       parsedDocument.absoluteToRelativeSourceRange(sourceRange);
   const code = _getRelavantSourceCode(relativeRange, parsedDocument);
@@ -26,7 +27,7 @@ export function underlineCode(
     return undefined;
   }
   const outputLines: string[] = [];
-  const lines = code.split('\n');
+  const lines = code.split('\n', maxLines);
   let lineNum = relativeRange.start.line;
   for (const line of lines) {
     outputLines.push(line);

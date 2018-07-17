@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 - Support for ES module imports and exports.
+- Warnings are now printed with file names, line numbers, and code snippets.
 
 ## [1.3.0] - 2018-06-29
 - Generate typings for class constructors.
