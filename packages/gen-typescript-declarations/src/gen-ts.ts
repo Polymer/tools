@@ -84,7 +84,7 @@ export async function generateDeclarations(
   });
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();
-  for (const tsDoc of analyzerToAst(analysis, config, rootDir)) {
+  for (const tsDoc of await analyzerToAst(analysis, config, rootDir)) {
     outFiles.set(tsDoc.path, tsDoc.serialize());
   }
   return outFiles;
@@ -94,9 +94,9 @@ export async function generateDeclarations(
  * Make TypeScript declaration documents from the given Polymer Analyzer
  * result.
  */
-function analyzerToAst(
+async function analyzerToAst(
     analysis: analyzer.Analysis, config: Config, rootDir: string):
-    ts.Document[] {
+    Promise<ts.Document[]> {
   const excludeFiles = (config.excludeFiles || config.exclude || defaultExclude)
                            .map((p) => new minimatch.Minimatch(p));
   const addReferences = config.addReferences || {};
@@ -141,6 +141,9 @@ function analyzerToAst(
   }
 
   const tsDocs = [];
+  const warningPrinter =
+      new analyzer.WarningPrinter(process.stderr, {maxCodeLines: 1});
+
   for (const [declarationsFilename, analyzerDocs] of declarationDocs) {
     const tsDoc = new ts.Document({
       path: declarationsFilename,
@@ -154,10 +157,15 @@ function analyzerToAst(
       }
     }
 
-    const generator = new TypeGenerator(
-        tsDoc, analysis, rootDir, config.excludeIdentifiers || []);
     for (const analyzerDoc of analyzerDocs) {
-      generator.handleDocument(analyzerDoc);
+      const generator = new TypeGenerator(
+          tsDoc,
+          analysis,
+          analyzerDoc,
+          rootDir,
+          config.excludeIdentifiers || []);
+      generator.handleDocument();
+      await warningPrinter.printWarnings(generator.warnings);
     }
 
     for (const ref of tsDoc.referencePaths) {
@@ -227,19 +235,33 @@ interface MaybePrivate {
 }
 
 class TypeGenerator {
+  public warnings: analyzer.Warning[] = [];
+
   constructor(
       private root: ts.Document,
       private analysis: analyzer.Analysis,
+      private analyzerDoc: analyzer.Document,
       private rootDir: string,
       private excludeIdentifiers: string[]) {
+  }
+
+  private warn(feature: analyzer.Feature, message: string) {
+    this.warnings.push(new analyzer.Warning({
+      message,
+      sourceRange: feature.sourceRange!,
+      severity: analyzer.Severity.WARNING,
+      // We don't really need specific codes.
+      code: 'GEN_TYPESCRIPT_DECLARATIONS_WARNING',
+      parsedDocument: this.analyzerDoc.parsedDocument,
+    }));
   }
 
   /**
    * Extend the given TypeScript declarations document with all of the relevant
    * items in the given Polymer Analyzer document.
    */
-  handleDocument(doc: analyzer.Document) {
-    for (const feature of doc.getFeatures()) {
+  handleDocument() {
+    for (const feature of this.analyzerDoc.getFeatures()) {
       if (this.excludeIdentifiers.some((id) => feature.identifiers.has(id))) {
         continue;
       }
@@ -265,13 +287,15 @@ class TypeGenerator {
         // file, then the JS file's Analyzer document will include that <script>
         // tag as an import feature. We only care about outbound dependencies,
         // hence this check.
-        if (feature.sourceRange && feature.sourceRange.file === doc.url) {
+        if (feature.sourceRange &&
+            feature.sourceRange.file === this.analyzerDoc.url) {
           this.handleHtmlImport(feature as analyzer.Import);
         }
       } else if (feature.kinds.has('js-import')) {
-        this.handleJsImport(feature as analyzer.JavascriptImport, doc);
+        this.handleJsImport(
+            feature as analyzer.JavascriptImport, this.analyzerDoc);
       } else if (feature.kinds.has('export')) {
-        this.handleJsExport(feature as analyzer.Export, doc);
+        this.handleJsExport(feature as analyzer.Export, this.analyzerDoc);
       }
     }
   }
@@ -310,8 +334,7 @@ class TypeGenerator {
       parent = this.root;
 
     } else {
-      console.error(
-          `Could not find element name defined in ${feature.sourceRange}`);
+      this.warn(feature, `Could not find element name.`);
       return;
     }
 
@@ -393,8 +416,7 @@ class TypeGenerator {
    */
   private handleBehavior(feature: analyzer.PolymerBehavior) {
     if (!feature.className) {
-      console.error(`Could not find a name for behavior defined in ${
-          feature.sourceRange}`);
+      this.warn(feature, `Could not find a name for behavior.`);
       return;
     }
 
@@ -495,9 +517,10 @@ class TypeGenerator {
       const childMixinSet = this.analysis.getFeatures(
           {id: childRef.identifier, kind: 'element-mixin'});
       if (childMixinSet.size !== 1) {
-        console.error(
+        this.warn(
+            parentMixin,
             `Found ${childMixinSet.size} features for mixin ` +
-            `${childRef.identifier}, expected 1.`);
+                `${childRef.identifier}, expected 1.`);
         continue;
       }
       const childMixin = childMixinSet.values().next().value;
@@ -511,8 +534,7 @@ class TypeGenerator {
    */
   private handleClass(feature: analyzer.Class) {
     if (!feature.className) {
-      console.error(
-          `Could not find a name for class defined in ${feature.sourceRange}`);
+      this.warn(feature, `Could not find a name for class.`);
       return;
     }
     const [namespacePath, name] = splitReference(feature.className);
@@ -727,7 +749,7 @@ class TypeGenerator {
         // imports when they export from another module.
         !babel.isExportNamedDeclaration(node) &&
         !babel.isExportAllDeclaration(node)) {
-      console.warn(`Import with AST type ${node.type} not supported.`);
+      this.warn(feature, `Import with AST type ${node.type} not supported.`);
     }
   }
 
@@ -779,7 +801,8 @@ class TypeGenerator {
       }
 
     } else {
-      console.warn(
+      this.warn(
+          feature,
           `Export feature with AST node type ${node.type} not supported.`);
     }
   }
@@ -792,7 +815,8 @@ class TypeGenerator {
   private handleHtmlImport(feature: analyzer.Import) {
     let sourcePath = analyzerUrlToRelativePath(feature.url, this.rootDir);
     if (sourcePath === undefined) {
-      console.warn(
+      this.warn(
+          feature,
           `Skipping HTML import without local file URL: ${feature.url}`);
       return;
     }
