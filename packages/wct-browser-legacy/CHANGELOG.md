@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Fixed memory leak.
 <!-- Add new, unreleased items here. -->
 
 ## 1.0.1 - 2018-05-17
