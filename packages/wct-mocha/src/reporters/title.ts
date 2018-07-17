@@ -63,7 +63,7 @@ export default class Title {
   setFavicon(url: string) {
     const current = document.head.querySelector('link[rel="icon"]');
     if (current) {
-      document.head.removeChild(current);
+      document.head.removeChild(current as Node);
     }
 
     const link = document.createElement('link');
@@ -71,7 +71,7 @@ export default class Title {
     link.type = 'image/x-icon';
     link.href = url;
     link.setAttribute('sizes', '32x32');
-    document.head.appendChild(link);
+    document.head.appendChild(link as Node);
   }
 }
 
@@ -79,8 +79,8 @@ export default class Title {
  * Draws an arc for the favicon status, relative to the total number of tests.
  */
 function drawFaviconArc(
-    context: CanvasRenderingContext2D, total: number, start: number,
-    length: number, color: string) {
+  context: CanvasRenderingContext2D, total: number, start: number,
+  length: number, color: string) {
   const arcStart = ARC_OFFSET + Math.PI * 2 * (start / total);
   const arcEnd = ARC_OFFSET + Math.PI * 2 * ((start + length) / total);
 
@@ -91,4 +91,4 @@ function drawFaviconArc(
   context.stroke();
 }
 
-export default interface Title extends Mocha.reporters.Base {}
+export default interface Title extends Mocha.reporters.Base { }

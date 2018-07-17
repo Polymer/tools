@@ -9,9 +9,11 @@
   <script>
     window.__generatedByWct = true;
   </script>
-  <script src="../<%= browserScript %>"></script>
+  <% if (browserScript) { %>
+    <script src="../<%= browserScript %>"></script>
+  <% } %>
   <% extraScripts.forEach(function(script) { %>
-    <script src="<%- script %>"></script>
+    <script src="<%= script %>"></script>
   <% }); %>
   <% if (typeof npm === 'undefined' || !npm) { %>
     <script src="../<%= a11ySuiteScript %>"></script>
@@ -19,9 +21,17 @@
 </head>
 
 <body>
+  <% if (browserScript) { %>
   <script>
     WCT.loadSuites(<%= JSON.stringify(suites) %>);
   </script>
+  <% } %>
+  <% if (browserModule) { %>
+    <script type="module">
+      import '../<%= browserModule %>';
+      WCT.loadSuites(<%= JSON.stringify(suites) %>);
+    </script>
+  <% } %>
 </body>
 
 </html>

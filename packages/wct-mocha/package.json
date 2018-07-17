@@ -1,0 +1,25 @@
+{
+	"name": "wct-mocha",
+	"version": "1.0.0",
+	"main": "lib/index.js",
+	"scripts": {
+		"build": "rm -rf lib && gulp build",
+		"test": "cd test/ && npm test",
+		"test:integration": "cd test/ && npm run test:integration"
+	},
+	"homepage": "https://github.com/Polymer/tools/tree/master/packages/wct-mocha",
+	"repository": "github:Polymer/tools",
+	"bugs": "https://github.com/Polymer/tools/issues",
+	"author": "The Polymer Project Authors",
+	"license": "BSD-3-Clause",
+	"devDependencies": {
+		"@types/gulp": "^3.8.8",
+		"@types/node": "^8.0.0",
+		"@types/resolve": "0.0.7",
+		"@types/socket.io": "^1.4.27",
+		"gulp": "^3.9.1",
+		"gulp-typescript": "^3.1.2",
+		"rollup": "^0.62.0",
+		"source-map-support": "^0.5.4"
+	}
+}

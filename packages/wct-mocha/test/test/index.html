@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+  <script src="../node_modules/mocha/mocha.js"></script>
+  <script src="../node_modules/chai/chai.js"></script>
+  <script type="module">
+    import 'wct-mocha';
+    import '../my-test-element.js';
+    suite('something', () => {
+      test('is normal', () => {
+        chai.assert.equal(1, 1, '1 really should equal 1');
+      });
+    });
+  </script>
+</body>
+
+</html>

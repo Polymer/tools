@@ -10,7 +10,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap --ci",
     "build": "lerna run build --stream",
-    "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec 'rm -f package-lock.json npm-shrinkwrap.json' && lerna clean --yes && lerna exec --stream -- npm install && lerna bootstrap",
+    "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec 'rm -f package-lock.json npm-shrinkwrap.json' && lerna clean --yes && lerna bootstrap",
     "test": "npm run build && npm run test:unit",
     "test:all": "npm run test:unit && npm run test:integration",
     "test:all:parallel": "npm run test:unit && npm run test:integration:parallel",

@@ -11,9 +11,10 @@
 
 import ChildRunner from './childrunner.js';
 import * as util from './util.js';
+import * as SocketIO from 'socket.io';
 
 const SOCKETIO_ENDPOINT =
-    window.location.protocol + '//' + window.location.host;
+  window.location.protocol + '//' + window.location.host;
 const SOCKETIO_LIBRARY = SOCKETIO_ENDPOINT + '/socket.io/socket.io.js';
 
 /**
@@ -46,7 +47,7 @@ export default class CLISocket {
     // For all possible mocha events, see:
     // https://github.com/visionmedia/mocha/blob/master/lib/runner.js#L36
     runner.on('test', (test: Mocha.IRunnable) => {
-      this.emitEvent('test-start', {test: getTitles(test)});
+      this.emitEvent('test-start', { test: getTitles(test) });
     });
 
     runner.on('test end', (test: Mocha.IRunnable) => {
@@ -62,8 +63,8 @@ export default class CLISocket {
       // fail the test run if we catch errors outside of a test function
       if (test.type !== 'test') {
         this.emitEvent(
-            'browser-fail',
-            'Error thrown outside of test function: ' + err.stack);
+          'browser-fail',
+          'Error thrown outside of test function: ' + err.stack);
       }
     });
 
@@ -106,17 +107,17 @@ export default class CLISocket {
     if (ChildRunner.current())
       return done();
 
-    util.loadScript(SOCKETIO_LIBRARY, function(error: any) {
+    util.loadScript(SOCKETIO_LIBRARY, function (error: any) {
       if (error)
         return done(error);
 
       const socket = io(SOCKETIO_ENDPOINT);
-      socket.on('error', function(error?: any) {
+      socket.on('error', function (error?: any) {
         socket.off();
         done(error);
       });
 
-      socket.on('connect', function() {
+      socket.on('connect', function () {
         socket.off();
         done(null, new CLISocket(browserId, socket as any));
       });

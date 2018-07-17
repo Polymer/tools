@@ -3,8 +3,8 @@ import * as SinonStatic from 'sinon';
 import * as SocketIOStatic from 'socket.io';
 import * as StackyStatic from 'stacky';
 
-import {default as ChildRunner, SharedState} from './childrunner.js';
-import {Config} from './config.js';
+import { default as ChildRunner, SharedState } from './childrunner.js';
+import { Config } from './config.js';
 import MultiReporter from './reporters/multi.js';
 import * as suites from './suites.js';
 
@@ -46,7 +46,7 @@ declare global {
   }
   interface PolymerStatic {
     flush(): void;
-    dom: {flush(): void};
+    dom: { flush(): void };
     Element: PolymerElementConstructor;
   }
 
@@ -55,7 +55,7 @@ declare global {
   }
 
   interface Mocha {
-    suite: Mocha.ISuite;
+    suite: Mocha.Suite;
   }
 
   var Stacky: typeof StackyStatic;
