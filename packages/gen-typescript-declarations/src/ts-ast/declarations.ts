@@ -433,12 +433,36 @@ export class Import {
   }
 
   serialize(_depth: number = 0): string {
-    const specifiers = this.identifiers.map(({identifier, alias}) => {
-      return (identifier === AllIdentifiers ? '*' : identifier) +
-          (alias !== undefined && alias !== identifier ? ` as ${alias}` : '');
-    });
-    return `import {${specifiers.join(', ')}} ` +
-        `from '${this.fromModuleSpecifier}';\n`;
+    if (this.identifiers.some((i) => i.identifier === AllIdentifiers)) {
+      // Namespace imports have a different form. You can also have a default
+      // import, but no named imports.
+      const parts = [];
+      for (const identifier of this.identifiers) {
+        if (identifier.identifier === 'default') {
+          parts.push(identifier.alias);
+        } else if (identifier.identifier === AllIdentifiers) {
+          parts.push(`* as ${identifier.alias}`);
+        }
+      }
+      return `import ${parts.join(', ')} ` +
+          `from '${this.fromModuleSpecifier}';\n`;
+    }
+
+    else {
+      const parts = [];
+      for (const {identifier, alias} of this.identifiers) {
+        if (identifier === AllIdentifiers) {
+          // Can't happen, see above.
+          continue;
+        }
+        parts.push(
+            identifier +
+            (alias !== undefined && alias !== identifier ? ` as ${alias}` :
+                                                           ''));
+      }
+      return `import {${parts.join(', ')}} ` +
+          `from '${this.fromModuleSpecifier}';\n`;
+    }
   }
 }
 

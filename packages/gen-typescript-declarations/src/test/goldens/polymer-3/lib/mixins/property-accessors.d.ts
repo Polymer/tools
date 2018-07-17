@@ -10,7 +10,7 @@
 
 import {dedupingMixin} from '../utils/mixin.js';
 
-import {* as caseMap$0} from '../utils/case-map.js';
+import * as caseMap$0 from '../utils/case-map.js';
 
 import {PropertiesChanged} from './properties-changed.js';
 
