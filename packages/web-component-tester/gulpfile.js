@@ -130,7 +130,7 @@ gulp.task('build:browser', ['build:wct-mocha'], function (done) {
 
 gulp.task('build:wct-mocha', function (done) {
   // We don't need to bother building wct-mocha already built.
-  if (fs.exists('../wct-mocha/lib/index.js')) {
+  if (fs.existsSync('../wct-mocha/lib/index.js')) {
     return done();
   }
   const wctMocha = spawn('lerna', [
