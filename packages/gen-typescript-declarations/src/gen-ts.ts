@@ -64,6 +64,15 @@ export interface Config {
    * e.g. entire generated classes.
    */
   renameTypes?: {[name: string]: string};
+
+  /**
+   * A map from an ES module path (relative to the analysis root directory) to
+   * an array of identifiers exported by that module. If any of those
+   * identifiers are encountered in a generated typings file, an import for that
+   * identifier from the specified module will be inserted into the typings
+   * file.
+   */
+  autoImport?: {[modulePath: string]: string[]};
 }
 
 const defaultExclude = [
@@ -103,6 +112,16 @@ async function analyzerToAst(
   const removeReferencesResolved = new Set(
       (config.removeReferences || []).map((r) => path.resolve(rootDir, r)));
   const renameTypes = new Map(Object.entries(config.renameTypes || {}));
+
+  // Map from identifier to the module path that exports it.
+  const autoImportMap = new Map<string, string>();
+  if (config.autoImport !== undefined) {
+    for (const importPath in config.autoImport) {
+      for (const identifier of config.autoImport[importPath]) {
+        autoImportMap.set(identifier, importPath);
+      }
+    }
+  }
 
   const analyzerDocs = [
     ...analysis.getFeatures({kind: 'html-document'}),
@@ -185,6 +204,7 @@ async function analyzerToAst(
         }
       }
     }
+    addAutoImports(tsDoc, autoImportMap);
     tsDoc.simplify();
     // Include even documents with no members. They might be dependencies of
     // other files via the HTML import graph, and it's simpler to have empty
@@ -192,6 +212,48 @@ async function analyzerToAst(
     tsDocs.push(tsDoc);
   }
   return tsDocs;
+}
+
+/**
+ * Insert imports into the typings for any referenced identifiers listed in the
+ * autoImport configuration, unless they are already imported.
+ */
+function addAutoImports(tsDoc: ts.Document, autoImport: Map<string, string>) {
+  const alreadyImported = new Set<string>();
+  for (const member of tsDoc.members) {
+    if (member.kind === 'import') {
+      for (const {identifier, alias} of member.identifiers) {
+        if (identifier !== ts.AllIdentifiers) {
+          alreadyImported.add(alias || identifier);
+        }
+      }
+    }
+  }
+
+  for (const node of tsDoc.traverse()) {
+    if (node.kind !== 'name') {
+      continue;
+    }
+    const importPath = autoImport.get(node.name);
+    if (importPath === undefined) {
+      continue;
+    }
+    if (alreadyImported.has(node.name)) {
+      continue;
+    }
+    if (makeDeclarationsFilename(importPath) === tsDoc.path) {
+      // Don't import from yourself.
+      continue;
+    }
+    const fileRelative = path.relative(path.dirname(tsDoc.path), importPath);
+    const fromModuleSpecifier =
+        fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
+    tsDoc.members.push(new ts.Import({
+      identifiers: [{identifier: node.name}],
+      fromModuleSpecifier,
+    }));
+    alreadyImported.add(node.name);
+  }
 }
 
 /**

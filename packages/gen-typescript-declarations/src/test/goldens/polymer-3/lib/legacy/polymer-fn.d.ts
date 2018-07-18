@@ -27,3 +27,5 @@ import {Class} from './class.js';
 declare function Polymer(info: PolymerInit): {new(): HTMLElement};
 
 export {Polymer};
+
+import {PolymerInit} from '../../interfaces';

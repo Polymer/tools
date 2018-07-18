@@ -260,3 +260,5 @@ export {updateStyles};
  * These properties are retained unless a value of `null` is set.
  */
 declare function updateStyles(props?: object|null): void;
+
+import {StampedTemplate} from '../../interfaces';

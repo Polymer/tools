@@ -25,3 +25,5 @@ export {flush};
  * - ShadyDOM distribution
  */
 declare function flush(): void;
+
+import {Debouncer} from './debounce.js';

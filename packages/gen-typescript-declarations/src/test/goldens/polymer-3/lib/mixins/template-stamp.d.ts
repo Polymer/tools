@@ -254,3 +254,9 @@ interface TemplateStamp {
    */
   _removeEventListenerFromNode(node: Node|null, eventName: string, handler: (p0: Event) => void): void;
 }
+
+import {TemplateInfo} from '../../interfaces';
+
+import {NodeInfo} from '../../interfaces';
+
+import {StampedTemplate} from '../../interfaces';

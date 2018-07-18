@@ -85,3 +85,5 @@ export {resetMouseCanceller};
  * Calling this method in production may cause duplicate taps or other Gestures.
  */
 declare function resetMouseCanceller(): void;
+
+import {GestureRecognizer} from '../../interfaces';

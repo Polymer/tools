@@ -65,3 +65,5 @@ interface StrictBindingParser {
 }
 
 export {StrictBindingParser};
+
+import {BindingPart} from '../../interfaces';

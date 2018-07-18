@@ -854,3 +854,11 @@ interface PropertyEffects {
    */
   _removeBoundDom(dom: StampedTemplate): void;
 }
+
+import {TemplateInfo} from '../../interfaces';
+
+import {NodeInfo} from '../../interfaces';
+
+import {BindingPart} from '../../interfaces';
+
+import {StampedTemplate} from '../../interfaces';
