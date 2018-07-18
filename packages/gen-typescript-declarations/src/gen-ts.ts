@@ -538,8 +538,7 @@ class TypeGenerator {
         new ts.NameType('T'),
         new ts.NameType(constructorName),
         ...[...transitiveMixins].map(
-            (mixin) =>
-                new ts.NameType([...mixin.identifiers][0] + 'Constructor'))
+            (mixin) => new ts.NameType(mixin.name + 'Constructor'))
       ]),
     }));
 
@@ -561,8 +560,7 @@ class TypeGenerator {
         const fromModuleSpecifier =
             fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
         this.root.members.push(new ts.Import({
-          identifiers:
-              [{identifier: [...mixin.identifiers][0] + 'Constructor'}],
+          identifiers: [{identifier: mixin.name + 'Constructor'}],
           fromModuleSpecifier,
         }));
       }
