@@ -21,10 +21,12 @@ cd src/test
 mkdir -p fixtures
 cd fixtures
 
-while read -r repo tag dir; do
+while read -r repo commitish dir; do
   if [ -d $dir ]; then continue; fi  # Already set up.
-  git clone $repo --single-branch --depth 1 --branch $tag $dir
+  # Note you can't do a shallow clone of a SHA.
+  git clone $repo $dir
   cd $dir
+  git checkout $commitish
   if [ -e package.json ]; then
     npm install --production
   elif [ -e bower.json ]; then
