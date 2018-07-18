@@ -24,7 +24,7 @@ export {deepTargetFind};
  * @returns Returns the deepest shadowRoot inclusive element
  * found at the screen position given.
  */
-declare function deepTargetFind(x: number, y: number): _Element|null;
+declare function deepTargetFind(x: number, y: number): Element|null;
 
 export {addListener};
 
@@ -64,7 +64,7 @@ export {setTouchAction};
  * This value is checked on first move, thus it should be called prior to
  * adding event listeners.
  */
-declare function setTouchAction(node: _Element, value: string): void;
+declare function setTouchAction(node: Element, value: string): void;
 
 export {prevent};
 

@@ -8,5 +8,3 @@
  *   lib/utils/boot.js
  */
 
-/// <reference path="../../extra-types.d.ts" />
-

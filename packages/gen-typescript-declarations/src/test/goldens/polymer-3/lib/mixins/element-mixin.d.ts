@@ -141,7 +141,7 @@ interface ElementMixin {
   rootPath: string;
   importPath: string;
   root: StampedTemplate|HTMLElement|ShadowRoot|null;
-  $: {[key: string]: _Element};
+  $: {[key: string]: Element};
 
   /**
    * Stamps the element template.

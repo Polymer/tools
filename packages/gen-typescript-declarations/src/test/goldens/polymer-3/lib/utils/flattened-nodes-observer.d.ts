@@ -59,7 +59,7 @@ declare class FlattenedNodesObserver {
    * @param callback Function called when there are additions
    * or removals from the target's list of flattened nodes.
    */
-  constructor(target: _Element|null, callback: ((p0: _Element, p1: {target: _Element, addedNodes: _Element[], removedNodes: _Element[]}) => void)|null);
+  constructor(target: Element|null, callback: ((p0: Element, p1: {target: Element, addedNodes: Element[], removedNodes: Element[]}) => void)|null);
 
   /**
    * Returns the list of flattened nodes for the given `node`.

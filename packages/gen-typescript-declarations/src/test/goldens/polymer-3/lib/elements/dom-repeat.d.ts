@@ -10,7 +10,7 @@
 
 import {PolymerElement} from '../../polymer-element.js';
 
-import {TemplateInstanceBase as TemplateInstanceBase$0, templatize, modelForElement as modelForElement$0} from '../utils/templatize.js';
+import {TemplateInstanceBase, templatize, modelForElement as modelForElement$0} from '../utils/templatize.js';
 
 import {Debouncer} from '../utils/debounce.js';
 

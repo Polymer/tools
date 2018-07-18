@@ -21,8 +21,8 @@ declare class TemplateInstanceBase extends
    * is either another templatize instance that had option `parentModel: true`,
    * or else the host element.
    */
-  readonly parentModel: Polymer.PropertyEffects;
-  _methodHost: Polymer.PropertyEffects;
+  readonly parentModel: PropertyEffects;
+  _methodHost: PropertyEffects;
 
   /**
    * Override point for adding custom or simulated event handling.
@@ -158,7 +158,7 @@ export {templatize};
  * @returns Generated class bound to the template
  *   provided
  */
-declare function templatize(template: HTMLTemplateElement, owner?: Polymer.PropertyEffects|null, options?: object|null): {new(): TemplateInstanceBase};
+declare function templatize(template: HTMLTemplateElement, owner?: PropertyEffects|null, options?: object|null): {new(): TemplateInstanceBase};
 
 export {modelForElement};
 
