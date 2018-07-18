@@ -35,7 +35,21 @@ export {LegacyElementMixin};
  * found on the Polymer 1.x `Polymer.Base` prototype applied to all elements
  * defined using the `Polymer({...})` function.
  */
-declare function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: T): T & LegacyElementMixinConstructor;
+declare function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: T): T & LegacyElementMixinConstructor & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor & GestureEventListenersConstructor;
+
+import {ElementMixinConstructor} from '../mixins/element-mixin.js';
+
+import {PropertyEffectsConstructor} from '../mixins/property-effects.js';
+
+import {TemplateStampConstructor} from '../mixins/template-stamp.js';
+
+import {PropertyAccessorsConstructor} from '../mixins/property-accessors.js';
+
+import {PropertiesChangedConstructor} from '../mixins/properties-changed.js';
+
+import {PropertiesMixinConstructor} from '../mixins/properties-mixin.js';
+
+import {GestureEventListenersConstructor} from '../mixins/gesture-event-listeners.js';
 
 interface LegacyElementMixinConstructor {
   new(...args: any[]): LegacyElementMixin;
@@ -55,34 +69,17 @@ interface LegacyElementMixin {
   readonly domHost: any;
 
   /**
-   * Legacy callback called during the `constructor`, for overriding
-   * by the user.
+   * Overrides the default `Polymer.PropertyEffects` implementation to
+   * add support for installing `hostAttributes` and `listeners`.
    */
-  created(): void;
+  ready(): void;
 
   /**
-   * Provides an implementation of `connectedCallback`
-   * which adds Polymer legacy API's `attached` method.
+   * Overrides the default `Polymer.PropertyEffects` implementation to
+   * add support for class initialization via the `_registered` callback.
+   * This is called only when the first instance of the element is created.
    */
-  connectedCallback(): void;
-
-  /**
-   * Legacy callback called during `connectedCallback`, for overriding
-   * by the user.
-   */
-  attached(): void;
-
-  /**
-   * Provides an implementation of `disconnectedCallback`
-   * which adds Polymer legacy API's `detached` method.
-   */
-  disconnectedCallback(): void;
-
-  /**
-   * Legacy callback called during `disconnectedCallback`, for overriding
-   * by the user.
-   */
-  detached(): void;
+  _initializeProperties(): void;
 
   /**
    * Provides an override implementation of `attributeChangedCallback`
@@ -96,6 +93,36 @@ interface LegacyElementMixin {
   attributeChangedCallback(name: string, old: string|null, value: string|null, namespace: string|null): void;
 
   /**
+   * Provides an implementation of `connectedCallback`
+   * which adds Polymer legacy API's `attached` method.
+   */
+  connectedCallback(): void;
+
+  /**
+   * Provides an implementation of `disconnectedCallback`
+   * which adds Polymer legacy API's `detached` method.
+   */
+  disconnectedCallback(): void;
+
+  /**
+   * Legacy callback called during the `constructor`, for overriding
+   * by the user.
+   */
+  created(): void;
+
+  /**
+   * Legacy callback called during `connectedCallback`, for overriding
+   * by the user.
+   */
+  attached(): void;
+
+  /**
+   * Legacy callback called during `disconnectedCallback`, for overriding
+   * by the user.
+   */
+  detached(): void;
+
+  /**
    * Legacy callback called during `attributeChangedChallback`, for overriding
    * by the user.
    *
@@ -106,25 +133,12 @@ interface LegacyElementMixin {
   attributeChanged(name: string, old: string|null, value: string|null): void;
 
   /**
-   * Overrides the default `Polymer.PropertyEffects` implementation to
-   * add support for class initialization via the `_registered` callback.
-   * This is called only when the first instance of the element is created.
-   */
-  _initializeProperties(): void;
-
-  /**
    * Called automatically when an element is initializing.
    * Users may override this method to perform class registration time
    * work. The implementation should ensure the work is performed
    * only once for the class.
    */
   _registered(): void;
-
-  /**
-   * Overrides the default `Polymer.PropertyEffects` implementation to
-   * add support for installing `hostAttributes` and `listeners`.
-   */
-  ready(): void;
 
   /**
    * Ensures an element has required attributes. Called when the element
