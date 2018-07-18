@@ -8,6 +8,16 @@
  *   paper-menu-button.js
  */
 
+import {IronA11yKeysBehavior} from '@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
+
+import {IronControlState} from '@polymer/iron-behaviors/iron-control-state.js';
+
+import {Polymer as Polymer$0} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+
+import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+
+import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';
+
 declare function value(): any;
 
 declare function value(): any;
@@ -68,5 +78,3 @@ declare function _openedChanged(opened: boolean, oldOpened: boolean): void;
  * dropdown.
  */
 declare function _disabledChanged(disabled: boolean): void;
-
-export {};

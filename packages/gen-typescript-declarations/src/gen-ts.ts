@@ -11,6 +11,7 @@
 
 import * as babel from '@babel/types';
 import * as jsdoc from 'doctrine';
+import * as fsExtra from 'fs-extra';
 import * as minimatch from 'minimatch';
 import * as path from 'path';
 import * as analyzer from 'polymer-analyzer';
@@ -87,9 +88,17 @@ const defaultExclude = [
  */
 export async function generateDeclarations(
     rootDir: string, config: Config): Promise<Map<string, string>> {
+  // Note that many Bower projects also have a node_modules/, but the reverse is
+  // unlikely.
+  const isBowerProject =
+      await fsExtra.pathExists(path.join(rootDir, 'bower_components')) === true;
   const a = new analyzer.Analyzer({
     urlLoader: new analyzer.FsUrlLoader(rootDir),
-    urlResolver: new analyzer.PackageUrlResolver({packageDir: rootDir}),
+    urlResolver: new analyzer.PackageUrlResolver({
+      packageDir: rootDir,
+      componentDir: isBowerProject ? 'bower_components/' : 'node_modules/',
+    }),
+    moduleResolution: isBowerProject ? undefined : 'node',
   });
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();

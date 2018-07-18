@@ -8,6 +8,10 @@
  *   paper-menu-button-animations.js
  */
 
+import {NeonAnimationBehavior} from '@polymer/neon-animation/neon-animation-behavior.js';
+
+import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+
 interface PaperMenuGrowHeightAnimationElement extends Polymer.Element, NeonAnimationBehavior {
   configure(config: any): any;
 }
@@ -33,5 +37,3 @@ interface PaperMenuShrinkWidthAnimationElement extends Polymer.Element, NeonAnim
 interface PaperMenuShrinkHeightAnimationElement extends Polymer.Element, NeonAnimationBehavior {
   configure(config: any): any;
 }
-
-export {};

@@ -8,6 +8,10 @@
  *   paper-button.js
  */
 
+import {PaperButtonBehavior, PaperButtonBehaviorImpl} from '@polymer/paper-behaviors/paper-button-behavior.js';
+
+import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+
 interface PaperButtonElement extends Polymer.Element, PaperButtonBehavior {
 
   /**
@@ -23,5 +27,3 @@ declare global {
     "paper-button": PaperButtonElement;
   }
 }
-
-export {};

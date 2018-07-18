@@ -8,6 +8,8 @@
  *   paper-checked-element-behavior.js
  */
 
+import {IronCheckedElementBehaviorImpl} from '@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js';
+
 import {PaperRippleBehavior} from './paper-ripple-behavior.js';
 
 export {PaperCheckedElementBehaviorImpl};
