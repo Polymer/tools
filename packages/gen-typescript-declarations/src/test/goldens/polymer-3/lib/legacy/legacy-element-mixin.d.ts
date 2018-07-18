@@ -35,11 +35,13 @@ export {LegacyElementMixin};
  * found on the Polymer 1.x `Polymer.Base` prototype applied to all elements
  * defined using the `Polymer({...})` function.
  */
-declare function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: T): T & LegacyElementMixinConstructor & Polymer.ElementMixinConstructor & Polymer.GestureEventListenersConstructor;
+declare function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: T): T & LegacyElementMixinConstructor;
 
 interface LegacyElementMixinConstructor {
   new(...args: any[]): LegacyElementMixin;
 }
+
+export {LegacyElementMixinConstructor};
 
 interface LegacyElementMixin {
   isAttached: boolean;

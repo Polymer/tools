@@ -53,6 +53,12 @@ export {PropertyEffects};
  */
 declare function PropertyEffects<T extends new (...args: any[]) => {}>(base: T): T & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor;
 
+import {TemplateStampConstructor} from './template-stamp.js';
+
+import {PropertyAccessorsConstructor} from './property-accessors.js';
+
+import {PropertiesChangedConstructor} from './properties-changed.js';
+
 interface PropertyEffectsConstructor {
   new(...args: any[]): PropertyEffects;
 
@@ -294,6 +300,8 @@ interface PropertyEffectsConstructor {
    */
   _evaluateBinding(inst: this|null, part: BindingPart|null, path: string, props: object|null, oldProps: object|null, hasPaths: boolean): any;
 }
+
+export {PropertyEffectsConstructor};
 
 interface PropertyEffects {
   readonly PROPERTY_EFFECT_TYPES: any;

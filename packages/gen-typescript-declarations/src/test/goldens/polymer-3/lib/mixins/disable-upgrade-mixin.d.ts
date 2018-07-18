@@ -37,9 +37,23 @@ export {DisableUpgradeMixin};
  */
 declare function DisableUpgradeMixin<T extends new (...args: any[]) => {}>(base: T): T & DisableUpgradeMixinConstructor & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor;
 
+import {ElementMixinConstructor} from './element-mixin.js';
+
+import {PropertyEffectsConstructor} from './property-effects.js';
+
+import {TemplateStampConstructor} from './template-stamp.js';
+
+import {PropertyAccessorsConstructor} from './property-accessors.js';
+
+import {PropertiesChangedConstructor} from './properties-changed.js';
+
+import {PropertiesMixinConstructor} from './properties-mixin.js';
+
 interface DisableUpgradeMixinConstructor {
   new(...args: any[]): DisableUpgradeMixin;
 }
+
+export {DisableUpgradeMixinConstructor};
 
 interface DisableUpgradeMixin {
   _initializeProperties(): void;

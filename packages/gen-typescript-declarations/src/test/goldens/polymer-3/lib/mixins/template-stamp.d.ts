@@ -195,6 +195,8 @@ interface TemplateStampConstructor {
   _contentForTemplate(template: HTMLTemplateElement|null): DocumentFragment|null;
 }
 
+export {TemplateStampConstructor};
+
 interface TemplateStamp {
 
   /**

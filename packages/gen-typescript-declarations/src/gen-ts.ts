@@ -521,6 +521,8 @@ class TypeGenerator {
   private handleMixin(feature: analyzer.ElementMixin) {
     const [namespacePath, mixinName] = splitReference(feature.name);
     const parentNamespace = findOrCreateNamespace(this.root, namespacePath);
+    const transitiveMixins = this.transitiveMixins(feature);
+    const constructorName = mixinName + 'Constructor';
 
     // The mixin function. It takes a constructor, and returns an intersection
     // of 1) the given constructor, 2) the constructor for this mixin, 3) the
@@ -534,17 +536,43 @@ class TypeGenerator {
       ],
       returns: new ts.IntersectionType([
         new ts.NameType('T'),
-        new ts.NameType(mixinName + 'Constructor'),
-        ...Array.from(this.transitiveMixins(feature))
-            .map((mixin) => new ts.NameType(mixin + 'Constructor'))
+        new ts.NameType(constructorName),
+        ...[...transitiveMixins].map(
+            (mixin) =>
+                new ts.NameType([...mixin.identifiers][0] + 'Constructor'))
       ]),
     }));
+
+    if (this.root.isEsModule) {
+      // We need to import all of the synthetic constructor interfaces that our
+      // own signature references. We can assume they're exported from the same
+      // module that the mixin is defined in.
+      for (const mixin of transitiveMixins) {
+        if (mixin.sourceRange === undefined) {
+          continue;
+        }
+        const rootRelative =
+            analyzerUrlToRelativePath(mixin.sourceRange.file, this.rootDir);
+        if (rootRelative === undefined) {
+          continue;
+        }
+        const fileRelative =
+            path.relative(path.dirname(this.root.path), rootRelative);
+        const fromModuleSpecifier =
+            fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
+        this.root.members.push(new ts.Import({
+          identifiers:
+              [{identifier: [...mixin.identifiers][0] + 'Constructor'}],
+          fromModuleSpecifier,
+        }));
+      }
+    }
 
     // The interface for a constructor of this mixin. Returns the instance
     // interface (see below) when instantiated, and may also have methods of its
     // own (static methods from the mixin class).
     parentNamespace.members.push(new ts.Interface({
-      name: mixinName + 'Constructor',
+      name: constructorName,
       methods: [
         new ts.Method({
           name: 'new',
@@ -560,6 +588,13 @@ class TypeGenerator {
         ...this.handleMethods(feature.staticMethods.values()),
       ],
     }));
+
+    if (this.root.isEsModule) {
+      // If any other mixin applies us, it will need to import our synthetic
+      // constructor interface.
+      this.root.members.push(
+          new ts.Export({identifiers: [{identifier: constructorName}]}));
+    }
 
     // The interface for instances of this mixin. Has the same name as the
     // function.
@@ -579,12 +614,11 @@ class TypeGenerator {
    */
   private transitiveMixins(
       parentMixin: analyzer.ElementMixin,
-      result?: Set<string>): Set<string> {
+      result?: Set<analyzer.ElementMixin>): Set<analyzer.ElementMixin> {
     if (result === undefined) {
       result = new Set();
     }
     for (const childRef of parentMixin.mixins) {
-      result.add(childRef.identifier);
       const childMixinSet = this.analysis.getFeatures(
           {id: childRef.identifier, kind: 'element-mixin'});
       if (childMixinSet.size !== 1) {
@@ -595,6 +629,7 @@ class TypeGenerator {
         continue;
       }
       const childMixin = childMixinSet.values().next().value;
+      result.add(childMixin);
       this.transitiveMixins(childMixin, result);
     }
     return result;

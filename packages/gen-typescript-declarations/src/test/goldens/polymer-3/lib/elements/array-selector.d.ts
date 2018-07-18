@@ -33,9 +33,23 @@ import {ElementMixin} from '../mixins/element-mixin.js';
  */
 declare function ArraySelectorMixin<T extends new (...args: any[]) => {}>(base: T): T & ArraySelectorMixinConstructor & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor;
 
+import {ElementMixinConstructor} from '../mixins/element-mixin.js';
+
+import {PropertyEffectsConstructor} from '../mixins/property-effects.js';
+
+import {TemplateStampConstructor} from '../mixins/template-stamp.js';
+
+import {PropertyAccessorsConstructor} from '../mixins/property-accessors.js';
+
+import {PropertiesChangedConstructor} from '../mixins/properties-changed.js';
+
+import {PropertiesMixinConstructor} from '../mixins/properties-mixin.js';
+
 interface ArraySelectorMixinConstructor {
   new(...args: any[]): ArraySelectorMixin;
 }
+
+export {ArraySelectorMixinConstructor};
 
 interface ArraySelectorMixin {
 

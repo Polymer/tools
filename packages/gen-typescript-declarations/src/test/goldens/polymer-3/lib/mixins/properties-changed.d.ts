@@ -59,6 +59,8 @@ interface PropertiesChangedConstructor {
   typeForProperty(name: string): void;
 }
 
+export {PropertiesChangedConstructor};
+
 interface PropertiesChanged {
 
   /**

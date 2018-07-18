@@ -36,6 +36,10 @@ export {DirMixin};
  */
 declare function DirMixin<T extends new (...args: any[]) => {}>(base: T): T & DirMixinConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor;
 
+import {PropertyAccessorsConstructor} from './property-accessors.js';
+
+import {PropertiesChangedConstructor} from './properties-changed.js';
+
 interface DirMixinConstructor {
   new(...args: any[]): DirMixin;
   _processStyleText(cssText: any, baseURI: any): any;
@@ -48,6 +52,8 @@ interface DirMixinConstructor {
    */
   _replaceDirInCssText(text: string): string;
 }
+
+export {DirMixinConstructor};
 
 interface DirMixin {
   ready(): void;

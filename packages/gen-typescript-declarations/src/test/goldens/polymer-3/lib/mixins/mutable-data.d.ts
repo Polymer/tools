@@ -53,6 +53,8 @@ interface MutableDataConstructor {
   new(...args: any[]): MutableData;
 }
 
+export {MutableDataConstructor};
+
 interface MutableData {
 
   /**
@@ -117,6 +119,8 @@ declare function OptionalMutableData<T extends new (...args: any[]) => {}>(base:
 interface OptionalMutableDataConstructor {
   new(...args: any[]): OptionalMutableData;
 }
+
+export {OptionalMutableDataConstructor};
 
 interface OptionalMutableData {
 
