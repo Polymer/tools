@@ -30,6 +30,8 @@ interface GestureEventListenersConstructor {
   new(...args: any[]): GestureEventListeners;
 }
 
+export {GestureEventListenersConstructor};
+
 interface GestureEventListeners {
 
   /**

@@ -41,6 +41,8 @@ export {PropertyAccessors};
  */
 declare function PropertyAccessors<T extends new (...args: any[]) => {}>(base: T): T & PropertyAccessorsConstructor & PropertiesChangedConstructor;
 
+import {PropertiesChangedConstructor} from './properties-changed.js';
+
 interface PropertyAccessorsConstructor {
   new(...args: any[]): PropertyAccessors;
 
@@ -62,6 +64,8 @@ interface PropertyAccessorsConstructor {
    */
   createPropertiesForAttributes(): void;
 }
+
+export {PropertyAccessorsConstructor};
 
 interface PropertyAccessors {
 

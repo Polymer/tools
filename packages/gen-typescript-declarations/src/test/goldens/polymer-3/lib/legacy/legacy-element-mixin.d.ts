@@ -35,11 +35,27 @@ export {LegacyElementMixin};
  * found on the Polymer 1.x `Polymer.Base` prototype applied to all elements
  * defined using the `Polymer({...})` function.
  */
-declare function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: T): T & LegacyElementMixinConstructor & Polymer.ElementMixinConstructor & Polymer.GestureEventListenersConstructor;
+declare function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: T): T & LegacyElementMixinConstructor & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor & GestureEventListenersConstructor;
+
+import {ElementMixinConstructor} from '../mixins/element-mixin.js';
+
+import {PropertyEffectsConstructor} from '../mixins/property-effects.js';
+
+import {TemplateStampConstructor} from '../mixins/template-stamp.js';
+
+import {PropertyAccessorsConstructor} from '../mixins/property-accessors.js';
+
+import {PropertiesChangedConstructor} from '../mixins/properties-changed.js';
+
+import {PropertiesMixinConstructor} from '../mixins/properties-mixin.js';
+
+import {GestureEventListenersConstructor} from '../mixins/gesture-event-listeners.js';
 
 interface LegacyElementMixinConstructor {
   new(...args: any[]): LegacyElementMixin;
 }
+
+export {LegacyElementMixinConstructor};
 
 interface LegacyElementMixin {
   isAttached: boolean;
@@ -53,34 +69,17 @@ interface LegacyElementMixin {
   readonly domHost: any;
 
   /**
-   * Legacy callback called during the `constructor`, for overriding
-   * by the user.
+   * Overrides the default `Polymer.PropertyEffects` implementation to
+   * add support for installing `hostAttributes` and `listeners`.
    */
-  created(): void;
+  ready(): void;
 
   /**
-   * Provides an implementation of `connectedCallback`
-   * which adds Polymer legacy API's `attached` method.
+   * Overrides the default `Polymer.PropertyEffects` implementation to
+   * add support for class initialization via the `_registered` callback.
+   * This is called only when the first instance of the element is created.
    */
-  connectedCallback(): void;
-
-  /**
-   * Legacy callback called during `connectedCallback`, for overriding
-   * by the user.
-   */
-  attached(): void;
-
-  /**
-   * Provides an implementation of `disconnectedCallback`
-   * which adds Polymer legacy API's `detached` method.
-   */
-  disconnectedCallback(): void;
-
-  /**
-   * Legacy callback called during `disconnectedCallback`, for overriding
-   * by the user.
-   */
-  detached(): void;
+  _initializeProperties(): void;
 
   /**
    * Provides an override implementation of `attributeChangedCallback`
@@ -94,6 +93,36 @@ interface LegacyElementMixin {
   attributeChangedCallback(name: string, old: string|null, value: string|null, namespace: string|null): void;
 
   /**
+   * Provides an implementation of `connectedCallback`
+   * which adds Polymer legacy API's `attached` method.
+   */
+  connectedCallback(): void;
+
+  /**
+   * Provides an implementation of `disconnectedCallback`
+   * which adds Polymer legacy API's `detached` method.
+   */
+  disconnectedCallback(): void;
+
+  /**
+   * Legacy callback called during the `constructor`, for overriding
+   * by the user.
+   */
+  created(): void;
+
+  /**
+   * Legacy callback called during `connectedCallback`, for overriding
+   * by the user.
+   */
+  attached(): void;
+
+  /**
+   * Legacy callback called during `disconnectedCallback`, for overriding
+   * by the user.
+   */
+  detached(): void;
+
+  /**
    * Legacy callback called during `attributeChangedChallback`, for overriding
    * by the user.
    *
@@ -104,25 +133,12 @@ interface LegacyElementMixin {
   attributeChanged(name: string, old: string|null, value: string|null): void;
 
   /**
-   * Overrides the default `Polymer.PropertyEffects` implementation to
-   * add support for class initialization via the `_registered` callback.
-   * This is called only when the first instance of the element is created.
-   */
-  _initializeProperties(): void;
-
-  /**
    * Called automatically when an element is initializing.
    * Users may override this method to perform class registration time
    * work. The implementation should ensure the work is performed
    * only once for the class.
    */
   _registered(): void;
-
-  /**
-   * Overrides the default `Polymer.PropertyEffects` implementation to
-   * add support for installing `hostAttributes` and `listeners`.
-   */
-  ready(): void;
 
   /**
    * Ensures an element has required attributes. Called when the element
@@ -197,7 +213,7 @@ interface LegacyElementMixin {
    * @param attribute Attribute name to serialize to.
    * @param node Element to set attribute to.
    */
-  serializeValueToAttribute(value: any, attribute: string, node: _Element|null): void;
+  serializeValueToAttribute(value: any, attribute: string, node: Element|null): void;
 
   /**
    * Copies own properties (including accessor descriptors) from a source
@@ -268,7 +284,7 @@ interface LegacyElementMixin {
    * @param eventName Name of event to listen for.
    * @param methodName Name of handler method on `this` to call.
    */
-  listen(node: _Element|null, eventName: string, methodName: string): void;
+  listen(node: Element|null, eventName: string, methodName: string): void;
 
   /**
    * Convenience method to remove an event listener from a given element,
@@ -279,7 +295,7 @@ interface LegacyElementMixin {
    * @param methodName Name of handler method on `this` to not call
    *      anymore.
    */
-  unlisten(node: _Element|null, eventName: string, methodName: string): void;
+  unlisten(node: Element|null, eventName: string, methodName: string): void;
 
   /**
    * Override scrolling behavior to all direction, one direction, or none.
@@ -295,7 +311,7 @@ interface LegacyElementMixin {
    * @param node Element to apply scroll direction setting.
    * Defaults to `this`.
    */
-  setScrollDirection(direction?: string, node?: _Element|null): void;
+  setScrollDirection(direction?: string, node?: Element|null): void;
 
   /**
    * Convenience method to run `querySelector` on this local DOM scope.
@@ -305,7 +321,7 @@ interface LegacyElementMixin {
    * @param slctr Selector to run on this local DOM scope
    * @returns Element found by the selector, or null if not found.
    */
-  $$(slctr: string): _Element|null;
+  $$(slctr: string): Element|null;
 
   /**
    * Force this element to distribute its children to its local dom.
@@ -415,7 +431,7 @@ interface LegacyElementMixin {
    * @param node The element to be checked.
    * @returns true if node is in this element's local DOM tree.
    */
-  isLocalDescendant(node: _Element): boolean;
+  isLocalDescendant(node: Element): boolean;
 
   /**
    * No-op for backwards compatibility. This should now be handled by
@@ -513,7 +529,7 @@ interface LegacyElementMixin {
    *    instance.
    * @returns Newly created and configured element.
    */
-  create(tag: string, props?: object|null): _Element;
+  create(tag: string, props?: object|null): Element;
 
   /**
    * Polyfill for Element.prototype.matches, which is sometimes still
@@ -523,7 +539,7 @@ interface LegacyElementMixin {
    * @param node Element to test the selector against.
    * @returns Whether the element matches the selector.
    */
-  elementMatches(selector: string, node?: _Element): boolean;
+  elementMatches(selector: string, node?: Element): boolean;
 
   /**
    * Toggles an HTML attribute on or off.
@@ -533,7 +549,7 @@ interface LegacyElementMixin {
    *    When unspecified, the state of the attribute will be reversed.
    * @param node Node to target.  Defaults to `this`.
    */
-  toggleAttribute(name: string, bool?: boolean, node?: _Element|null): void;
+  toggleAttribute(name: string, bool?: boolean, node?: Element|null): void;
 
   /**
    * Toggles a CSS class on or off.
@@ -543,7 +559,7 @@ interface LegacyElementMixin {
    *    When unspecified, the state of the class will be reversed.
    * @param node Node to target.  Defaults to `this`.
    */
-  toggleClass(name: string, bool?: boolean, node?: _Element|null): void;
+  toggleClass(name: string, bool?: boolean, node?: Element|null): void;
 
   /**
    * Cross-platform helper for setting an element's CSS `transform` property.
@@ -552,7 +568,7 @@ interface LegacyElementMixin {
    * @param node Element to apply the transform to.
    * Defaults to `this`
    */
-  transform(transformText: string, node?: _Element|null): void;
+  transform(transformText: string, node?: Element|null): void;
 
   /**
    * Cross-platform helper for setting an element's CSS `translate3d`
@@ -564,7 +580,7 @@ interface LegacyElementMixin {
    * @param node Element to apply the transform to.
    * Defaults to `this`.
    */
-  translate3d(x: number, y: number, z: number, node?: _Element|null): void;
+  translate3d(x: number, y: number, z: number, node?: Element|null): void;
 
   /**
    * Removes an item from an array, if it exists.

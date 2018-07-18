@@ -116,3 +116,5 @@ export {Class};
  * @returns Generated class
  */
 declare function Class(info: PolymerInit): {new(): HTMLElement};
+
+import {PolymerInit} from '../../interfaces';

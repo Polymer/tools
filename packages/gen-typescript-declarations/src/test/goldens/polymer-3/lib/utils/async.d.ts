@@ -111,3 +111,7 @@ declare namespace microTask {
 }
 
 export {microTask};
+
+import {AsyncInterface} from '../../interfaces';
+
+import {IdleDeadline} from '../../interfaces';

@@ -11,6 +11,7 @@
 
 import * as babel from '@babel/types';
 import * as jsdoc from 'doctrine';
+import * as fsExtra from 'fs-extra';
 import * as minimatch from 'minimatch';
 import * as path from 'path';
 import * as analyzer from 'polymer-analyzer';
@@ -64,6 +65,15 @@ export interface Config {
    * e.g. entire generated classes.
    */
   renameTypes?: {[name: string]: string};
+
+  /**
+   * A map from an ES module path (relative to the analysis root directory) to
+   * an array of identifiers exported by that module. If any of those
+   * identifiers are encountered in a generated typings file, an import for that
+   * identifier from the specified module will be inserted into the typings
+   * file.
+   */
+  autoImport?: {[modulePath: string]: string[]};
 }
 
 const defaultExclude = [
@@ -78,9 +88,17 @@ const defaultExclude = [
  */
 export async function generateDeclarations(
     rootDir: string, config: Config): Promise<Map<string, string>> {
+  // Note that many Bower projects also have a node_modules/, but the reverse is
+  // unlikely.
+  const isBowerProject =
+      await fsExtra.pathExists(path.join(rootDir, 'bower_components')) === true;
   const a = new analyzer.Analyzer({
     urlLoader: new analyzer.FsUrlLoader(rootDir),
-    urlResolver: new analyzer.PackageUrlResolver({packageDir: rootDir}),
+    urlResolver: new analyzer.PackageUrlResolver({
+      packageDir: rootDir,
+      componentDir: isBowerProject ? 'bower_components/' : 'node_modules/',
+    }),
+    moduleResolution: isBowerProject ? undefined : 'node',
   });
   const analysis = await a.analyzePackage();
   const outFiles = new Map<string, string>();
@@ -103,6 +121,16 @@ async function analyzerToAst(
   const removeReferencesResolved = new Set(
       (config.removeReferences || []).map((r) => path.resolve(rootDir, r)));
   const renameTypes = new Map(Object.entries(config.renameTypes || {}));
+
+  // Map from identifier to the module path that exports it.
+  const autoImportMap = new Map<string, string>();
+  if (config.autoImport !== undefined) {
+    for (const importPath in config.autoImport) {
+      for (const identifier of config.autoImport[importPath]) {
+        autoImportMap.set(identifier, importPath);
+      }
+    }
+  }
 
   const analyzerDocs = [
     ...analysis.getFeatures({kind: 'html-document'}),
@@ -185,6 +213,7 @@ async function analyzerToAst(
         }
       }
     }
+    addAutoImports(tsDoc, autoImportMap);
     tsDoc.simplify();
     // Include even documents with no members. They might be dependencies of
     // other files via the HTML import graph, and it's simpler to have empty
@@ -192,6 +221,48 @@ async function analyzerToAst(
     tsDocs.push(tsDoc);
   }
   return tsDocs;
+}
+
+/**
+ * Insert imports into the typings for any referenced identifiers listed in the
+ * autoImport configuration, unless they are already imported.
+ */
+function addAutoImports(tsDoc: ts.Document, autoImport: Map<string, string>) {
+  const alreadyImported = new Set<string>();
+  for (const member of tsDoc.members) {
+    if (member.kind === 'import') {
+      for (const {identifier, alias} of member.identifiers) {
+        if (identifier !== ts.AllIdentifiers) {
+          alreadyImported.add(alias || identifier);
+        }
+      }
+    }
+  }
+
+  for (const node of tsDoc.traverse()) {
+    if (node.kind !== 'name') {
+      continue;
+    }
+    const importPath = autoImport.get(node.name);
+    if (importPath === undefined) {
+      continue;
+    }
+    if (alreadyImported.has(node.name)) {
+      continue;
+    }
+    if (makeDeclarationsFilename(importPath) === tsDoc.path) {
+      // Don't import from yourself.
+      continue;
+    }
+    const fileRelative = path.relative(path.dirname(tsDoc.path), importPath);
+    const fromModuleSpecifier =
+        fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
+    tsDoc.members.push(new ts.Import({
+      identifiers: [{identifier: node.name}],
+      fromModuleSpecifier,
+    }));
+    alreadyImported.add(node.name);
+  }
 }
 
 /**
@@ -450,6 +521,8 @@ class TypeGenerator {
   private handleMixin(feature: analyzer.ElementMixin) {
     const [namespacePath, mixinName] = splitReference(feature.name);
     const parentNamespace = findOrCreateNamespace(this.root, namespacePath);
+    const transitiveMixins = this.transitiveMixins(feature);
+    const constructorName = mixinName + 'Constructor';
 
     // The mixin function. It takes a constructor, and returns an intersection
     // of 1) the given constructor, 2) the constructor for this mixin, 3) the
@@ -463,17 +536,41 @@ class TypeGenerator {
       ],
       returns: new ts.IntersectionType([
         new ts.NameType('T'),
-        new ts.NameType(mixinName + 'Constructor'),
-        ...Array.from(this.transitiveMixins(feature))
-            .map((mixin) => new ts.NameType(mixin + 'Constructor'))
+        new ts.NameType(constructorName),
+        ...[...transitiveMixins].map(
+            (mixin) => new ts.NameType(mixin.name + 'Constructor'))
       ]),
     }));
+
+    if (this.root.isEsModule) {
+      // We need to import all of the synthetic constructor interfaces that our
+      // own signature references. We can assume they're exported from the same
+      // module that the mixin is defined in.
+      for (const mixin of transitiveMixins) {
+        if (mixin.sourceRange === undefined) {
+          continue;
+        }
+        const rootRelative =
+            analyzerUrlToRelativePath(mixin.sourceRange.file, this.rootDir);
+        if (rootRelative === undefined) {
+          continue;
+        }
+        const fileRelative =
+            path.relative(path.dirname(this.root.path), rootRelative);
+        const fromModuleSpecifier =
+            fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
+        this.root.members.push(new ts.Import({
+          identifiers: [{identifier: mixin.name + 'Constructor'}],
+          fromModuleSpecifier,
+        }));
+      }
+    }
 
     // The interface for a constructor of this mixin. Returns the instance
     // interface (see below) when instantiated, and may also have methods of its
     // own (static methods from the mixin class).
     parentNamespace.members.push(new ts.Interface({
-      name: mixinName + 'Constructor',
+      name: constructorName,
       methods: [
         new ts.Method({
           name: 'new',
@@ -489,6 +586,13 @@ class TypeGenerator {
         ...this.handleMethods(feature.staticMethods.values()),
       ],
     }));
+
+    if (this.root.isEsModule) {
+      // If any other mixin applies us, it will need to import our synthetic
+      // constructor interface.
+      this.root.members.push(
+          new ts.Export({identifiers: [{identifier: constructorName}]}));
+    }
 
     // The interface for instances of this mixin. Has the same name as the
     // function.
@@ -508,12 +612,11 @@ class TypeGenerator {
    */
   private transitiveMixins(
       parentMixin: analyzer.ElementMixin,
-      result?: Set<string>): Set<string> {
+      result?: Set<analyzer.ElementMixin>): Set<analyzer.ElementMixin> {
     if (result === undefined) {
       result = new Set();
     }
     for (const childRef of parentMixin.mixins) {
-      result.add(childRef.identifier);
       const childMixinSet = this.analysis.getFeatures(
           {id: childRef.identifier, kind: 'element-mixin'});
       if (childMixinSet.size !== 1) {
@@ -524,6 +627,7 @@ class TypeGenerator {
         continue;
       }
       const childMixin = childMixinSet.values().next().value;
+      result.add(childMixin);
       this.transitiveMixins(childMixin, result);
     }
     return result;

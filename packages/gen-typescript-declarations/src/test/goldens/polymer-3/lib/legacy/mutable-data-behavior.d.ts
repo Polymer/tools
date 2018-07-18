@@ -66,7 +66,7 @@ interface MutableDataBehavior {
   _shouldPropertyChange(property: string, value: any, old: any): boolean;
 }
 
-const MutableDataBehavior: object;
+declare const MutableDataBehavior: object;
 
 
 /**
@@ -149,7 +149,7 @@ interface OptionalMutableDataBehavior {
   _shouldPropertyChange(property: string, value: any, old: any): boolean;
 }
 
-const OptionalMutableDataBehavior: object;
+declare const OptionalMutableDataBehavior: object;
 
 
 /**

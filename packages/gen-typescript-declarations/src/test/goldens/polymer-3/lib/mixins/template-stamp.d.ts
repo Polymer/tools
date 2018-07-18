@@ -163,7 +163,7 @@ interface TemplateStampConstructor {
    * @returns `true` if the visited node added node-specific
    *   metadata to `nodeInfo`
    */
-  _parseTemplateNodeAttributes(node: _Element|null, templateInfo: TemplateInfo|null, nodeInfo: NodeInfo|null): boolean;
+  _parseTemplateNodeAttributes(node: Element|null, templateInfo: TemplateInfo|null, nodeInfo: NodeInfo|null): boolean;
 
   /**
    * Parses a single template node attribute and adds node metadata to
@@ -180,7 +180,7 @@ interface TemplateStampConstructor {
    * @returns `true` if the visited node added node-specific
    *   metadata to `nodeInfo`
    */
-  _parseTemplateNodeAttribute(node: _Element|null, templateInfo: TemplateInfo, nodeInfo: NodeInfo, name: string, value: string): boolean;
+  _parseTemplateNodeAttribute(node: Element|null, templateInfo: TemplateInfo, nodeInfo: NodeInfo, name: string, value: string): boolean;
 
   /**
    * Returns the `content` document fragment for a given template.
@@ -194,6 +194,8 @@ interface TemplateStampConstructor {
    */
   _contentForTemplate(template: HTMLTemplateElement|null): DocumentFragment|null;
 }
+
+export {TemplateStampConstructor};
 
 interface TemplateStamp {
 
@@ -254,3 +256,9 @@ interface TemplateStamp {
    */
   _removeEventListenerFromNode(node: Node|null, eventName: string, handler: (p0: Event) => void): void;
 }
+
+import {TemplateInfo} from '../../interfaces';
+
+import {NodeInfo} from '../../interfaces';
+
+import {StampedTemplate} from '../../interfaces';

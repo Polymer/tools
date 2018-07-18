@@ -81,6 +81,16 @@ export {ElementMixin};
  */
 declare function ElementMixin<T extends new (...args: any[]) => {}>(base: T): T & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor;
 
+import {PropertyEffectsConstructor} from './property-effects.js';
+
+import {TemplateStampConstructor} from './template-stamp.js';
+
+import {PropertyAccessorsConstructor} from './property-accessors.js';
+
+import {PropertiesChangedConstructor} from './properties-changed.js';
+
+import {PropertiesMixinConstructor} from './properties-mixin.js';
+
 interface ElementMixinConstructor {
   new(...args: any[]): ElementMixin;
 
@@ -135,13 +145,15 @@ interface ElementMixinConstructor {
   _finalizeTemplate(is: string): void;
 }
 
+export {ElementMixinConstructor};
+
 interface ElementMixin {
   _template: HTMLTemplateElement|null;
   _importPath: string;
   rootPath: string;
   importPath: string;
   root: StampedTemplate|HTMLElement|ShadowRoot|null;
-  $: {[key: string]: _Element};
+  $: {[key: string]: Element};
 
   /**
    * Stamps the element template.
@@ -260,3 +272,5 @@ export {updateStyles};
  * These properties are retained unless a value of `null` is set.
  */
 declare function updateStyles(props?: object|null): void;
+
+import {StampedTemplate} from '../../interfaces';

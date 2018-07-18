@@ -76,3 +76,5 @@ declare class Debouncer {
    */
   isActive(): boolean;
 }
+
+import {AsyncInterface} from '../../interfaces';

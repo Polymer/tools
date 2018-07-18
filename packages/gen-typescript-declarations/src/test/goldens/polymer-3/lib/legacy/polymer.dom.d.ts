@@ -49,7 +49,7 @@ declare class DomApi {
    *   of this element changes
    * @returns Observer instance
    */
-  observeNodes(callback: (p0: _Element, p1: {target: _Element, addedNodes: _Element[], removedNodes: _Element[]}) => void): Polymer.FlattenedNodesObserver;
+  observeNodes(callback: (p0: Element, p1: {target: Element, addedNodes: Element[], removedNodes: Element[]}) => void): FlattenedNodesObserver;
 
   /**
    * Disconnects an observer previously created via `observeNodes`
@@ -57,7 +57,7 @@ declare class DomApi {
    * @param observerHandle Observer instance
    *   to disconnect.
    */
-  unobserveNodes(observerHandle: Polymer.FlattenedNodesObserver): void;
+  unobserveNodes(observerHandle: FlattenedNodesObserver): void;
 
   /**
    * Provided as a backwards-compatible API only.  This method does nothing.
@@ -131,8 +131,8 @@ declare class DomApi {
   replaceChild(oldChild: Node, newChild: Node): Node;
   setAttribute(name: string, value: string): void;
   removeAttribute(name: string): void;
-  querySelector(selector: string): _Element|null;
-  querySelectorAll(selector: string): NodeListOf<_Element>;
+  querySelector(selector: string): Element|null;
+  querySelectorAll(selector: string): NodeListOf<Element>;
 }
 
 /**

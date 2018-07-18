@@ -396,7 +396,8 @@ export class ConstValue {
   }
 
   serialize(depth: number = 0): string {
-    return `${indent(depth)}const ${this.name}: ${this.type.serialize()};\n`;
+    return indent(depth) + (depth === 0 ? 'declare ' : '') +
+        `const ${this.name}: ${this.type.serialize()};\n`;
   }
 }
 

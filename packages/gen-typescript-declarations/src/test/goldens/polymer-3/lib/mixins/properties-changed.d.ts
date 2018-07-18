@@ -59,6 +59,8 @@ interface PropertiesChangedConstructor {
   typeForProperty(name: string): void;
 }
 
+export {PropertiesChangedConstructor};
+
 interface PropertiesChanged {
 
   /**
@@ -273,7 +275,7 @@ interface PropertiesChanged {
    * @param value Value to serialize.
    * @param attribute Attribute name to serialize to.
    */
-  _valueToNodeAttribute(node: _Element|null, value: any, attribute: string): void;
+  _valueToNodeAttribute(node: Element|null, value: any, attribute: string): void;
 
   /**
    * Converts a typed JavaScript value to a string.

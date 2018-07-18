@@ -53,6 +53,12 @@ export {PropertyEffects};
  */
 declare function PropertyEffects<T extends new (...args: any[]) => {}>(base: T): T & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor;
 
+import {TemplateStampConstructor} from './template-stamp.js';
+
+import {PropertyAccessorsConstructor} from './property-accessors.js';
+
+import {PropertiesChangedConstructor} from './properties-changed.js';
+
 interface PropertyEffectsConstructor {
   new(...args: any[]): PropertyEffects;
 
@@ -101,7 +107,7 @@ interface PropertyEffectsConstructor {
    * @returns `true` if the visited node added node-specific
    *   metadata to `nodeInfo`
    */
-  _parseTemplateNodeAttribute(node: _Element|null, templateInfo: TemplateInfo|null, nodeInfo: NodeInfo|null, name: string, value: string): boolean;
+  _parseTemplateNodeAttribute(node: Element|null, templateInfo: TemplateInfo|null, nodeInfo: NodeInfo|null, name: string, value: string): boolean;
 
   /**
    * Ensures an accessor exists for the specified property, and adds
@@ -294,6 +300,8 @@ interface PropertyEffectsConstructor {
    */
   _evaluateBinding(inst: this|null, part: BindingPart|null, path: string, props: object|null, oldProps: object|null, hasPaths: boolean): any;
 }
+
+export {PropertyEffectsConstructor};
 
 interface PropertyEffects {
   readonly PROPERTY_EFFECT_TYPES: any;
@@ -854,3 +862,11 @@ interface PropertyEffects {
    */
   _removeBoundDom(dom: StampedTemplate): void;
 }
+
+import {TemplateInfo} from '../../interfaces';
+
+import {NodeInfo} from '../../interfaces';
+
+import {BindingPart} from '../../interfaces';
+
+import {StampedTemplate} from '../../interfaces';

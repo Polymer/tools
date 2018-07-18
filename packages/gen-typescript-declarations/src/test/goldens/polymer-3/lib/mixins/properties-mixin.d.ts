@@ -28,6 +28,8 @@ export {PropertiesMixin};
  */
 declare function PropertiesMixin<T extends new (...args: any[]) => {}>(base: T): T & PropertiesMixinConstructor & PropertiesChangedConstructor;
 
+import {PropertiesChangedConstructor} from './properties-changed.js';
+
 interface PropertiesMixinConstructor {
   new(...args: any[]): PropertiesMixin;
 
@@ -55,6 +57,8 @@ interface PropertiesMixinConstructor {
    */
   _finalizeClass(): void;
 }
+
+export {PropertiesMixinConstructor};
 
 interface PropertiesMixin {
 
