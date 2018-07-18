@@ -73,4 +73,4 @@ export {PaperButtonBehavior};
 interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior, PaperButtonBehaviorImpl {
 }
 
-const PaperButtonBehavior: object;
+declare const PaperButtonBehavior: object;

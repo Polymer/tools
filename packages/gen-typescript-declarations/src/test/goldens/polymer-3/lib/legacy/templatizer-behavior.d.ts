@@ -113,7 +113,7 @@ interface Templatizer {
   modelForElement(el: HTMLElement|null): TemplateInstanceBase|null;
 }
 
-const Templatizer: object;
+declare const Templatizer: object;
 
 
 /**
