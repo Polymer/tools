@@ -84,7 +84,6 @@ export async function build(
   }
 
   const htmlSplitter = new HtmlSplitter();
-
   buildStream = pipeStreams([
     buildStream,
     htmlSplitter.split(),
@@ -103,14 +102,6 @@ export async function build(
     htmlSplitter.rejoin()
   ]);
 
-  if (options.insertPrefetchLinks) {
-    buildStream = buildStream.pipe(polymerProject.addPrefetchLinks());
-  }
-
-  buildStream.once('data', () => {
-    logger.info(`(${buildName}) Building...`);
-  });
-
   if (bundled) {
     // Polymer 1.x and Polymer 2.x deal with relative urls in dom-module
     // templates differently.  Polymer CLI will attempt to provide a sensible
@@ -126,7 +117,15 @@ export async function build(
     }
     buildStream = buildStream.pipe(polymerProject.bundler(bundlerOptions));
   }
-  
+
+  if (options.insertPrefetchLinks) {
+    buildStream = buildStream.pipe(polymerProject.addPrefetchLinks());
+  }
+
+  buildStream.once('data', () => {
+    logger.info(`(${buildName}) Building...`);
+  });
+
   if (options.basePath) {
     let basePath = options.basePath === true ? buildName : options.basePath;
     if (!basePath.startsWith('/')) {
