@@ -59,7 +59,7 @@
     "@types/html-minifier": "^3.5.1",
     "@types/is-windows": "^0.2.0",
     "@types/mz": "0.0.31",
-    "@types/node": "^9.6.4",
+    "@types/node": "^10.5.2",
     "@types/parse5": "^2.2.34",
     "@types/resolve": "0.0.7",
     "@types/uuid": "^3.4.3",

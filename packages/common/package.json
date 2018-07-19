@@ -19,7 +19,7 @@
     "format": "find src/ test/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i"
   },
   "dependencies": {
-    "@types/node": "^9.6.4",
+    "@types/node": "^10.5.2",
     "depcheck": "^0.6.0",
     "fs-extra": "^3.0.0",
     "gulp-eslint": "^4.0.0",

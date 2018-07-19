@@ -87,7 +87,6 @@
     "@polymer/tools-common": "^2.0.0",
     "@types/chokidar": "^1.7.3",
     "@types/fs-extra": "^5.0.1",
-    "@types/node": "^8.10.11",
     "@types/puppeteer": "^1.2.3",
     "@types/sinon": "^5.0.0",
     "@types/tmp": "^0.0.33",

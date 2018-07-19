@@ -60,7 +60,7 @@
     "@types/doctrine": "^0.0.1",
     "@types/is-windows": "^0.2.0",
     "@types/minimatch": "^3.0.1",
-    "@types/node": "^9.6.4",
+    "@types/node": "^10.5.2",
     "@types/parse5": "^2.2.34",
     "@types/path-is-inside": "^1.0.0",
     "@types/resolve": "0.0.6",

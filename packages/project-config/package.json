@@ -16,7 +16,7 @@
     "format": "find src test \\( -iname \"*.ts\" -o -iname \"*.js\" \\) | xargs clang-format --style=file -i"
   },
   "dependencies": {
-    "@types/node": "^9.6.4",
+    "@types/node": "^10.5.2",
     "@types/parse5": "^2.2.34",
     "browser-capabilities": "^1.0.0",
     "jsonschema": "^1.1.1",
