@@ -1,0 +1,47 @@
+{
+  "description": "Material design button",
+  "keywords": [
+    "web-components",
+    "web-component",
+    "polymer",
+    "paper",
+    "button"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/paper-button.git"
+  },
+  "homepage": "https://github.com/PolymerElements/paper-button",
+  "name": "@polymer/paper-button",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@polymer/gen-typescript-declarations": "^1.2.0",
+    "bower": "^1.8.0",
+    "@polymer/iron-component-page": "^3.0.0-pre.18",
+    "@polymer/iron-demo-helpers": "^3.0.0-pre.18",
+    "@polymer/iron-icon": "^3.0.0-pre.18",
+    "@polymer/iron-icons": "^3.0.0-pre.18",
+    "@polymer/iron-test-helpers": "^3.0.0-pre.18",
+    "@polymer/test-fixture": "^3.0.0-pre.18",
+    "wct-browser-legacy": "^1.0.1",
+    "@webcomponents/webcomponentsjs": "^2.0.0"
+  },
+  "scripts": {
+    "update-types": "bower install && gen-typescript-declarations --deleteExisting --outDir ."
+  },
+  "version": "3.0.0",
+  "resolutions": {
+    "inherits": "2.0.3",
+    "samsam": "1.1.3",
+    "supports-color": "3.1.2",
+    "type-detect": "1.0.0"
+  },
+  "main": "paper-button.js",
+  "author": "The Polymer Authors",
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0",
+    "@polymer/iron-flex-layout": "^3.0.0-pre.18",
+    "@polymer/paper-behaviors": "^3.0.0-pre.18",
+    "@polymer/paper-styles": "^3.0.0-pre.18"
+  }
+}

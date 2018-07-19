@@ -1,6 +1,6 @@
 {
   "name": "dom5",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Utilities for working with parse5 ASTs",
   "license": "BSD-3-Clause",
   "author": "The Polymer Authors",
@@ -22,13 +22,9 @@
     "parse5": "^4.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^3.4.34",
     "@types/clone": "^0.1.29",
-    "@types/mocha": "^2.2.32",
     "@types/node": "^6.0.0",
-    "chai": "^3.3.0",
     "clang-format": "=1.0.49",
-    "mocha": "^2.0.1",
     "tsc-then": "^1.1.0"
   },
   "main": "lib/index.js",

@@ -12,7 +12,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-/// <reference path="../../node_modules/@types/chai/index.d.ts" />
+
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
 import * as chai from 'chai';
 import {Analyzer, FsUrlLoader, FsUrlResolver, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';

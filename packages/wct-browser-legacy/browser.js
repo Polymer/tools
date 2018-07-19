@@ -664,6 +664,7 @@ var ChildRunner = /** @class */ (function () {
         setTimeout(function () {
             this.iframe.parentNode.removeChild(this.iframe);
             this.iframe = null;
+            this.share = null;
         }.bind(this), 1);
     };
     ChildRunner.prototype.signalRunComplete = function (error) {
@@ -998,6 +999,7 @@ var MultiReporter = /** @class */ (function () {
      *     that should be passed to `mocha.run`.
      */
     MultiReporter.prototype.childReporter = function (location) {
+        var _a;
         var name = this.suiteTitle(location);
         // The reporter is used as a constructor, so we can't depend on `this` being
         // properly bound.
@@ -1011,7 +1013,6 @@ var MultiReporter = /** @class */ (function () {
             }()),
             _a.title = window.name,
             _a;
-        var _a;
     };
     /** Must be called once all runners have finished. */
     MultiReporter.prototype.done = function () {

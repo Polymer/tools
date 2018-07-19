@@ -1,0 +1,71 @@
+{
+  "name": "iron-component-page",
+  "description": "Turns a raw element definition into beautiful documentation",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "docs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-component-page.git"
+  },
+  "version": "2.0.0",
+  "private": true,
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "dependencies": {
+    "app-layout": "PolymerElements/app-layout#1 - 2",
+    "hydrolysis": "Polymer/polymer-analyzer#hydrolysis-1.x",
+    "iron-ajax": "PolymerElements/iron-ajax#1 - 2",
+    "iron-doc-viewer": "PolymerElements/iron-doc-viewer#1 - 2",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#1 - 2",
+    "iron-icons": "PolymerElements/iron-icons#1 - 2",
+    "iron-selector": "PolymerElements/iron-selector#1 - 2",
+    "paper-styles": "PolymerElements/paper-styles#1 - 2",
+    "polymer": "Polymer/polymer#1.9 - 2"
+  },
+  "devDependencies": {
+    "web-component-tester": "^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  },
+  "variants": {
+    "1.x": {
+      "dependencies": {
+        "app-layout": "PolymerElements/app-layout#^0.10.0",
+        "hydrolysis": "Polymer/hydrolysis#^1.18",
+        "iron-ajax": "PolymerElements/iron-ajax#^1.0.0",
+        "iron-doc-viewer": "PolymerElements/iron-doc-viewer#^1.0.1",
+        "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0",
+        "iron-icons": "PolymerElements/iron-icons#^1.0.0",
+        "iron-selector": "PolymerElements/iron-selector#^1.0.0",
+        "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+        "polymer": "Polymer/polymer#^1.9"
+      },
+      "devDependencies": {
+        "web-component-tester": "^4.0.0",
+        "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+      },
+      "resolutions": {
+        "webcomponentsjs": "^0.7"
+      }
+    }
+  },
+  "main": "iron-component-page.html",
+  "ignore": [],
+  "resolutions": {
+    "webcomponentsjs": "^1.0.0"
+  },
+  "homepage": "https://github.com/PolymerElements/iron-component-page",
+  "_release": "2.0.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.0.0",
+    "commit": "079c41fb8d779267475ff9abb5306b4a0fee392b"
+  },
+  "_source": "https://github.com/PolymerElements/iron-component-page.git",
+  "_target": "1 - 2",
+  "_originalSource": "PolymerElements/iron-component-page"
+}

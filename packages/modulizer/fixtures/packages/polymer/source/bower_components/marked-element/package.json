@@ -1,0 +1,17 @@
+{
+  "name": "@polymer/marked-element",
+  "private": true,
+  "description": "Element wrapper for the marked library",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/marked-element.git"
+  },
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@polymer/gen-typescript-declarations": "^1.2.0",
+    "bower": "^1.8.0"
+  },
+  "scripts": {
+    "update-types": "bower install && gen-typescript-declarations --deleteExisting --outDir ."
+  }
+}

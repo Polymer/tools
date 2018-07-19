@@ -1,0 +1,32 @@
+{
+  "name": "hydrolysis",
+  "main": "hydrolysis.js",
+  "ignore": [
+    "lib/",
+    "examples/",
+    "demo/",
+    "test/",
+    ".gitignore",
+    "gulpfile.js",
+    "package.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Polymer/hydrolysis.git"
+  },
+  "devDependencies": {
+    "polymer": "Polymer/polymer#^0.9.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
+    "web-component-tester": "*"
+  },
+  "homepage": "https://github.com/Polymer/polymer-analyzer",
+  "_release": "c4caa3d19f",
+  "_resolution": {
+    "type": "branch",
+    "branch": "hydrolysis-1.x",
+    "commit": "c4caa3d19f85742f12cef349379c3ba3ca90a830"
+  },
+  "_source": "https://github.com/Polymer/polymer-analyzer.git",
+  "_target": "hydrolysis-1.x",
+  "_originalSource": "Polymer/polymer-analyzer"
+}

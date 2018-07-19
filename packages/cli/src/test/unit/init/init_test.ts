@@ -38,21 +38,15 @@ interface FakeEnv {
 }
 
 suite('init', () => {
-  let sandbox: sinon.SinonSandbox;
-
   function createFakeEnv(): FakeEnv {
     return {
-      getGeneratorsMeta: sandbox.stub(),
-      run: sandbox.stub().yields(),
+      getGeneratorsMeta: sinon.stub(),
+      run: sinon.stub().yields(),
     };
   }
 
-  setup(() => {
-    sandbox = sinon.sandbox.create();
-  });
-
   teardown(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   suite('runGenerator', () => {
@@ -176,7 +170,7 @@ suite('init', () => {
 
 
     test('works with the default yeoman environment', async () => {
-      sandbox.stub(inquirer, 'prompt').returns(Promise.resolve({
+      sinon.stub(inquirer, 'prompt').returns(Promise.resolve({
         foo: 'TEST',
       }));
       // tslint:disable-next-line: no-any
@@ -188,7 +182,7 @@ suite('init', () => {
     let testName =
         'prompts with a list to get generatorName property from user';
     test(testName, async () => {
-      const promptStub = sandbox.stub(inquirer, 'prompt')
+      const promptStub = sinon.stub(inquirer, 'prompt')
                              .returns(Promise.resolve({foo: 'TEST'}));
       try {
         await polymerInit.promptGeneratorSelection({env: yeomanEnvMock});
@@ -203,7 +197,7 @@ suite('init', () => {
     });
 
     test('prompts with a list of all registered generators', async () => {
-      const promptStub = sandbox.stub(inquirer, 'prompt')
+      const promptStub = sinon.stub(inquirer, 'prompt')
                              .returns(Promise.resolve({foo: 'TEST'}));
       try {
         await polymerInit.promptGeneratorSelection({env: yeomanEnvMock});
@@ -231,7 +225,7 @@ suite('init', () => {
     test(testName, async () => {
       const yeomanEnv = new YeomanEnvironment();
       const promptStub =
-          sandbox.stub(inquirer, 'prompt').returns(Promise.resolve({
+          sinon.stub(inquirer, 'prompt').returns(Promise.resolve({
             foo: 'TEST',
           }));
       helpers.registerDependencies(yeomanEnv, [[
@@ -254,7 +248,7 @@ suite('init', () => {
     });
 
     test('prompts the user with a list', async () => {
-      const promptStub = sandbox.stub(inquirer, 'prompt')
+      const promptStub = sinon.stub(inquirer, 'prompt')
                              .returns(Promise.resolve({foo: 'TEST'}));
 
       try {
@@ -268,9 +262,9 @@ suite('init', () => {
 
     if (isPlatformWin && isMinGw) {
       test('prompts with a rawlist if being used in MinGW shell', async () => {
-        const promptStub = sandbox.stub(inquirer, 'prompt')
+        const promptStub = sinon.stub(inquirer, 'prompt')
                                .returns(Promise.resolve({foo: 'TEST'}));
-        sandbox.stub(childProcess, 'execSync')
+        sinon.stub(childProcess, 'execSync')
             .withArgs('uname -s')
             .returns('mingw');
 

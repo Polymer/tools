@@ -5,8 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!--## Unreleased -->
+<!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
+* Allow file requests to specify `?nocompile` to prevent any compilation
+
+## [0.27.12] (2018-06-28)
+* Updated dependencies.
 
 ## [0.27.11] (2018-05-08)
 * Updated dependencies.

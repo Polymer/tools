@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- # Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [1.0.2] - 2018-06-28
+* Update minimized version for latest minifier changes.
+
 ## [1.0.1] - 2018-06-11
 * `import.meta.url` is now correct for scripts defined in HTML imports.
 * Executing the loader twice will no longer invalidate its global state.

@@ -1,0 +1,8 @@
+{
+  "excludeFiles": [
+    "exclude-me.js"
+  ],
+  "excludeIdentifiers": [
+    "ExcludeThisClass"
+  ]
+}

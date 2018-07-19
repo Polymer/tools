@@ -2,7 +2,7 @@
 
 # @polymer/esm-amd-loader
 
-A JavaScript library which loads AMD-style modules in the browser in 1.3 KB.
+A JavaScript library which loads AMD-style modules in the browser in 1.4 KB.
 
 ## Contents
 
@@ -110,7 +110,7 @@ Corresponds to an ES module's [`import.meta`][5].
 
 ## Differences from AMD/RequireJS
 
-- Minified and compressed size is 1.3 KB, vs 6.6 KB for RequireJS.
+- Minified and compressed size is 1.4 KB, vs 6.6 KB for RequireJS.
 
 - Only supports specifying dependencies as paths, and does not support
   explicitly naming modules.

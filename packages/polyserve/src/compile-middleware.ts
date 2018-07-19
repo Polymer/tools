@@ -72,6 +72,9 @@ export function babelCompile(
       if (isPolyfill.test(request.url)) {
         return false;
       }
+      if ('nocompile' in request.query) {
+        return false;
+      }
       if (!compileMimeTypes.includes(getContentType(response))) {
         return false;
       }

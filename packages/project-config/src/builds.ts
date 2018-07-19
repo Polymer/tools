@@ -255,7 +255,7 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
     'uncompiled-bundled',
     {
       name: 'uncompiled-bundled',
-      browserCapabilities: ['es2018'],
+      browserCapabilities: ['es2018', 'modules'],
       js: {minify: true},
       css: {minify: true},
       html: {minify: true},
@@ -268,7 +268,7 @@ export const buildPresets = new Map<string, ProjectBuildOptions>([
     'uncompiled-unbundled',
     {
       name: 'uncompiled-unbundled',
-      browserCapabilities: ['es2018', 'push'],
+      browserCapabilities: ['es2018', 'modules', 'push'],
       js: {minify: true},
       css: {minify: true},
       html: {minify: true},

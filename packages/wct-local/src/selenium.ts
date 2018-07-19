@@ -14,7 +14,7 @@ import * as selenium from 'selenium-standalone';
 import * as which from 'which';
 import * as child_process from 'child_process';
 import * as wct from 'wct';
-import * as promisify from 'promisify-node';
+import {promisify} from 'util';
 
 const SELENIUM_OVERRIDES: any = require('../package.json')['selenium-overrides'];
 
@@ -91,7 +91,7 @@ async function seleniumStart(
     try {
       const options = SELENIUM_OVERRIDES || {};
       options.logger = onOutput;
-      await promisify(selenium.install)(options);
+      await promisify<selenium.InstallOpts>(selenium.install)(options);
     } catch (error) {
       log.forEach((line) => wct.emit('log:info', line));
       throw error;
@@ -99,7 +99,7 @@ async function seleniumStart(
   }
 
   try {
-    await promisify(selenium.start)(config);
+    await promisify<selenium.StartOpts>(selenium.start)(config);
   } catch (error) {
     log.forEach((line) => wct.emit('log:info', line));
     throw error;

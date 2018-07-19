@@ -3,6 +3,14 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.7.7 [06-28-2018]
+* Update dependencies.
+
+## v1.7.6 [06-25-2018]
+* Node 10.5+ now supported!
+* Breaks Node 6; using Node's built-in promisify, which is not available in
+  versions of Node prior to 8.
+
 ## v1.7.4 [06-19-2018]
 * Regenerate shrinkwrap to pick up latest dependencies.
 * Fix issue caused by previous update where `polymer test -s` flag could not
