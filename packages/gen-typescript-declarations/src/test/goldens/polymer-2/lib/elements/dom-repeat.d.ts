@@ -112,7 +112,7 @@ declare namespace Polymer {
    */
   class DomRepeat extends
     Polymer.OptionalMutableData(
-    Polymer.Element) {
+    domRepeatBase) {
 
     /**
      * An array containing items determining how many instances of the template

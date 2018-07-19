@@ -191,7 +191,7 @@ declare namespace Polymer {
    */
   class ArraySelector extends
     Polymer.ArraySelectorMixin(
-    Polymer.Element) {
+    baseArraySelector) {
   }
 }
 

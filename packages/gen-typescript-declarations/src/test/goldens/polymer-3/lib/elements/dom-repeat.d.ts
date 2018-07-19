@@ -121,7 +121,7 @@ export {DomRepeat};
  */
 declare class DomRepeat extends
   OptionalMutableData(
-  Polymer.Element) {
+  domRepeatBase) {
 
   /**
    * An array containing items determining how many instances of the template

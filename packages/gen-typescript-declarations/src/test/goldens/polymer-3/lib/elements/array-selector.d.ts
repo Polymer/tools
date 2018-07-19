@@ -207,7 +207,7 @@ export {ArraySelectorMixin};
  */
 declare class ArraySelector extends
   ArraySelectorMixin(
-  Polymer.Element) {
+  baseArraySelector) {
 }
 
 declare global {

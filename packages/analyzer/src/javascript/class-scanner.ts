@@ -232,8 +232,7 @@ export class ClassScanner implements JavaScriptScanner {
       staticMethods = getStaticMethods(astNode.node, document);
     }
 
-    const extendsTag = jsdoc.getTag(docs, 'extends');
-    const extends_ = extendsTag !== undefined ? extendsTag.name : undefined;
+    const extends_ = getExtendsTypeName(docs);
     // TODO(justinfagnani): Infer mixin applications and superclass from AST.
     scannedElement = new ScannedPolymerElement({
       className: class_.name,
@@ -669,12 +668,10 @@ class ClassFinder implements Visitor {
       node: babel.Node, docs: jsdoc.Annotation, warnings: Warning[],
       document: JavaScriptDocument,
       path: NodePath): ScannedReference<'class'>|undefined {
-    const extendsAnnotations =
-        docs.tags!.filter((tag) => tag.title === 'extends');
+    const extendsId = getExtendsTypeName(docs);
 
     // prefer @extends annotations over extends clauses
-    if (extendsAnnotations.length > 0) {
-      const extendsId = extendsAnnotations[0].name;
+    if (extendsId !== undefined) {
       // TODO(justinfagnani): we need source ranges for jsdoc annotations
       const sourceRange = document.sourceRangeForNode(node)!;
       if (extendsId == null) {
@@ -950,4 +947,16 @@ function getPropertyNameOnThisExpression(node: babel.Node) {
     return;
   }
   return node.property.name;
+}
+
+/**
+ * Return the type name from the first @extends annotation. Supports either
+ * `@extends {SuperClass}` or `@extends SuperClass` forms.
+ */
+function getExtendsTypeName(docs: doctrine.Annotation): string|undefined {
+  const tag = jsdoc.getTag(docs, 'extends');
+  if (!tag) {
+    return undefined;
+  }
+  return tag.type ? doctrine.type.stringify(tag.type) : tag.name;
 }

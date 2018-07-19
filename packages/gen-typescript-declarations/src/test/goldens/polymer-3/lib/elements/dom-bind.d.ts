@@ -30,7 +30,7 @@ declare class DomBind extends
   PropertyEffects(
   OptionalMutableData(
   GestureEventListeners(
-  Polymer.Element))) {
+  domBindBase))) {
   attributeChangedCallback(): void;
   connectedCallback(): void;
   disconnectedCallback(): void;
