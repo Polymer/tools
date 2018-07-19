@@ -78,7 +78,7 @@ declare class TemplateInstanceBase extends
 
 declare namespace templateInfo {
 
-  class templatizeTemplateClass {
+  class templatizeTemplateClass extends base {
   }
 }
 

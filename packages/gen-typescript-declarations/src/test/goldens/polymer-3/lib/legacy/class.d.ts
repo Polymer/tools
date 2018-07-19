@@ -27,7 +27,7 @@ export {mixinBehaviors};
  */
 declare function mixinBehaviors<T>(behaviors: object|object[], klass: {new(): T}): {new(): T};
 
-declare class PolymerGenerated {
+declare class PolymerGenerated extends Base {
   created(): void;
   _registered(): void;
   _applyListeners(): void;

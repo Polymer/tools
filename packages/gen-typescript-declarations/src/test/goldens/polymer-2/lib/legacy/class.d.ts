@@ -94,7 +94,7 @@ declare namespace Polymer {
   function Class(info: PolymerInit): {new(): HTMLElement};
 }
 
-declare class PolymerGenerated {
+declare class PolymerGenerated extends Base {
   created(): void;
   _registered(): void;
   _applyListeners(): void;

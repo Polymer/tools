@@ -651,9 +651,12 @@ class TypeGenerator {
     ];
     m.constructorMethod =
         this.handleConstructorMethod(feature.constructorMethod);
+    if (feature.superClass !== undefined) {
+      m.extends = feature.superClass.identifier;
+    }
+    m.mixins = feature.mixins.map((mixin) => mixin.identifier);
     findOrCreateNamespace(this.root, namespacePath).members.push(m);
   }
-
 
   /**
    * Add the given Function to the given TypeScript declarations document.
