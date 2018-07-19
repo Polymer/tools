@@ -258,7 +258,8 @@ export class ClassScanner implements JavaScriptScanner {
       jsdoc: class_.jsdoc,
       abstract: class_.abstract,
       mixins: class_.mixins,
-      privacy: class_.privacy
+      privacy: class_.privacy,
+      isLegacyFactoryCall: false,
     });
 
     if (babel.isClassExpression(astNode.node) ||
