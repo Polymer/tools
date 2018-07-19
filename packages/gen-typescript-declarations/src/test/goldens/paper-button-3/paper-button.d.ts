@@ -12,7 +12,9 @@ import {PaperButtonBehavior, PaperButtonBehaviorImpl} from '@polymer/paper-behav
 
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 
-interface PaperButtonElement extends Polymer.Element, PaperButtonBehavior {
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin.js';
+
+interface PaperButtonElement extends PaperButtonBehavior, LegacyElementMixin, HTMLElement {
 
   /**
    * If true, the button should be styled with a shadow.

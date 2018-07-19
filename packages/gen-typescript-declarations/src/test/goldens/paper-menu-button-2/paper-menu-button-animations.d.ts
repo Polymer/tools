@@ -11,7 +11,7 @@
 /// <reference path="../polymer/types/polymer.d.ts" />
 /// <reference path="../neon-animation/neon-animation-behavior.d.ts" />
 
-interface PaperMenuGrowHeightAnimationElement extends Polymer.Element, Polymer.NeonAnimationBehavior {
+interface PaperMenuGrowHeightAnimationElement extends Polymer.NeonAnimationBehavior, Polymer.LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }
 
@@ -22,14 +22,14 @@ interface HTMLElementTagNameMap {
   "paper-menu-shrink-height-animation": PaperMenuShrinkHeightAnimationElement;
 }
 
-interface PaperMenuGrowWidthAnimationElement extends Polymer.Element, Polymer.NeonAnimationBehavior {
+interface PaperMenuGrowWidthAnimationElement extends Polymer.NeonAnimationBehavior, Polymer.LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }
 
-interface PaperMenuShrinkWidthAnimationElement extends Polymer.Element, Polymer.NeonAnimationBehavior {
+interface PaperMenuShrinkWidthAnimationElement extends Polymer.NeonAnimationBehavior, Polymer.LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }
 
-interface PaperMenuShrinkHeightAnimationElement extends Polymer.Element, Polymer.NeonAnimationBehavior {
+interface PaperMenuShrinkHeightAnimationElement extends Polymer.NeonAnimationBehavior, Polymer.LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }

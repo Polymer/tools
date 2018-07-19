@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   resolution settings accordingly.
 - Automatically import/export synthetic mixin constructor interfaces.
 - Superclasses and mixins are now emitted for classes.
+- Element super classes are now emitted.
+- Legacy Polymer elements now extend `LegacyElementMixin` and `HTMLElement`
+  instead of `PolymerElement`.
 
 ## [1.3.0] - 2018-06-29
 - Generate typings for class constructors.

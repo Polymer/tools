@@ -12,7 +12,9 @@ import {NeonAnimationBehavior} from '@polymer/neon-animation/neon-animation-beha
 
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
 
-interface PaperMenuGrowHeightAnimationElement extends Polymer.Element, NeonAnimationBehavior {
+import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin.js';
+
+interface PaperMenuGrowHeightAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }
 
@@ -26,14 +28,14 @@ declare global {
   }
 }
 
-interface PaperMenuGrowWidthAnimationElement extends Polymer.Element, NeonAnimationBehavior {
+interface PaperMenuGrowWidthAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }
 
-interface PaperMenuShrinkWidthAnimationElement extends Polymer.Element, NeonAnimationBehavior {
+interface PaperMenuShrinkWidthAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }
 
-interface PaperMenuShrinkHeightAnimationElement extends Polymer.Element, NeonAnimationBehavior {
+interface PaperMenuShrinkHeightAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }

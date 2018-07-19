@@ -56,7 +56,7 @@
  * `--paper-menu-button-dropdown` | Mixin applied to the paper-menu-button dropdown | `{}`
  * `--paper-menu-button-content` | Mixin applied to the paper-menu-button content | `{}`
  */
-declare class PaperMenuButton extends Polymer.Element {
+declare class PaperMenuButton {
 
   /**
    * True if the content is currently displayed.
@@ -210,7 +210,7 @@ declare class PaperMenuButton extends Polymer.Element {
   _openedChanged(opened: boolean, oldOpened: boolean): void;
 }
 
-interface PaperMenuButton extends Polymer.IronA11yKeysBehavior, Polymer.IronControlState {
+interface PaperMenuButton extends Polymer.IronA11yKeysBehavior, Polymer.IronControlState, Polymer.LegacyElementMixin, HTMLElement {
 }
 
 interface HTMLElementTagNameMap {

@@ -14,7 +14,7 @@ import {MutableData} from '../mixins/mutable-data.js';
 
 declare class TemplateInstanceBase extends
   PropertyEffects(
-  Polymer.Element) {
+  base) {
 
   /**
    * Find the parent model of this template instance.  The parent model
