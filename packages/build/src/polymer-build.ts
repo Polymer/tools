@@ -13,4 +13,4 @@ export {PolymerProject} from './polymer-project';
 export {addServiceWorker, generateServiceWorker} from './service-worker';
 export {AddServiceWorkerOptions} from './service-worker';
 export {addWorkboxServiceWorker, generateWorkboxServiceWorker} from './service-worker-workbox';
-export {AddServiceWorkerWorkboxOptions} from './service-worker-workbox';
+export {AddWorkboxServiceWorkerOptions} from './service-worker-workbox';

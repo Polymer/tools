@@ -24,7 +24,7 @@ import {PolymerProject} from './polymer-project';
 
 const logger = logging.getLogger('polymer-build.service-worker');
 
-export interface AddServiceWorkerWorkboxOptions {
+export interface AddWorkboxServiceWorkerOptions {
   project: PolymerProject;
   buildRoot: LocalFsPath;
   bundled?: boolean;
@@ -70,7 +70,7 @@ export const hasNoFileExtension = /\/[^\/\.]*(\?|$)/;
  * configuration.
  */
 export async function generateServiceWorkerConfig(
-    options: AddServiceWorkerWorkboxOptions): Promise<WorkboxConfig> {
+    options: AddWorkboxServiceWorkerOptions): Promise<WorkboxConfig> {
   assert(!!options, '`project` & `buildRoot` options are required');
   assert(!!options.project, '`project` option is required');
   assert(!!options.buildRoot, '`buildRoot` option is required');
@@ -128,7 +128,7 @@ export async function generateServiceWorkerConfig(
  * Returns a promise that resolves with a generated service worker (the file
  * contents), based off of the options provided.
  */
-export async function generateWorkboxServiceWorker(options: AddServiceWorkerWorkboxOptions):
+export async function generateWorkboxServiceWorker(options: AddWorkboxServiceWorkerOptions):
     Promise<Buffer> {
   const workboxConfig = await generateServiceWorkerConfig(options);
   return await <Promise<Buffer>>(new Promise((resolve) => {
@@ -146,7 +146,7 @@ export async function generateWorkboxServiceWorker(options: AddServiceWorkerWork
  * generate a service worker, which it then writes to the file system based on
  * the buildRoot & path (if provided) options.
  */
-export async function addWorkboxServiceWorker(options: AddServiceWorkerWorkboxOptions):
+export async function addWorkboxServiceWorker(options: AddWorkboxServiceWorkerOptions):
     Promise<void> {
   return generateWorkboxServiceWorker(options).then((fileContents: Buffer) => {
     return new Promise<void>((resolve, reject) => {
