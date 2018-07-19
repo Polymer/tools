@@ -10,6 +10,9 @@
 
 /// <reference path="boot.d.ts" />
 
+declare class MixinFunction extends Function {
+}
+
 declare namespace Polymer {
 
 

@@ -12,6 +12,9 @@
 /// <reference path="../mixins/property-effects.d.ts" />
 /// <reference path="../mixins/mutable-data.d.ts" />
 
+declare class HTMLTemplateElementExtension extends HTMLTemplateElement {
+}
+
 declare class DataTemplate extends HTMLTemplateElementExtension {
 }
 

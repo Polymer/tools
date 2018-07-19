@@ -585,9 +585,15 @@ class ClassFinder implements Visitor {
     }
   }
 
+  enterFunctionDeclaration(
+      node: babel.FunctionDeclaration, _parent: babel.Node, path: NodePath) {
+    this.handleGeneralAssignment(
+        astValue.getIdentifierName(node.id), node.body, path);
+  }
+
   /** Generalizes over variable declarators and assignment expressions. */
   private handleGeneralAssignment(
-      assignedName: string|undefined, value: babel.Expression, path: NodePath) {
+      assignedName: string|undefined, value: babel.Node, path: NodePath) {
     const doc = jsdoc.parseJsdoc(esutil.getBestComment(path) || '');
     if (babel.isClassExpression(value)) {
       const name = assignedName ||

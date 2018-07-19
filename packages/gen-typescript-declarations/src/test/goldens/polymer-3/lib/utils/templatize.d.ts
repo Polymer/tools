@@ -12,6 +12,9 @@ import {PropertyEffects} from '../mixins/property-effects.js';
 
 import {MutableData} from '../mixins/mutable-data.js';
 
+declare class HTMLTemplateElementExtension extends HTMLTemplateElement {
+}
+
 declare class DataTemplate extends HTMLTemplateElementExtension {
 }
 

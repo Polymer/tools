@@ -8,6 +8,9 @@
  *   lib/utils/mixin.js
  */
 
+declare class MixinFunction extends Function {
+}
+
 export {dedupingMixin};
 
 
