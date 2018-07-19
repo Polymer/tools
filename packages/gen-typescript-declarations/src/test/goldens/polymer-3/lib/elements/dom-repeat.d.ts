@@ -22,6 +22,9 @@ import {matches, translate} from '../utils/path.js';
 
 import {timeOut, microTask} from '../utils/async.js';
 
+declare class domRepeatBase extends PolymerElement {
+}
+
 export {DomRepeat};
 
 /**
@@ -217,8 +220,8 @@ declare class DomRepeat extends
    */
   targetFramerate: number|null|undefined;
   readonly _targetFrameTime: number|null|undefined;
-  disconnectedCallback(): void;
   connectedCallback(): void;
+  disconnectedCallback(): void;
 
   /**
    * Forces the element to render its content. Normally rendering is

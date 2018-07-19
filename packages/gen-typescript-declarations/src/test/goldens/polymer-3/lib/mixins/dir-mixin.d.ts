@@ -60,3 +60,6 @@ interface DirMixin {
   connectedCallback(): void;
   disconnectedCallback(): void;
 }
+
+declare class elementBase extends base {
+}

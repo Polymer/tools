@@ -632,3 +632,6 @@ declare namespace Polymer {
     _logf(methodName: string, ...args: any[]): any[]|null;
   }
 }
+
+declare class legacyElementBase extends base {
+}

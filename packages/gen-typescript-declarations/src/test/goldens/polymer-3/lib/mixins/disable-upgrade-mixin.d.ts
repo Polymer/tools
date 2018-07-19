@@ -62,3 +62,6 @@ interface DisableUpgradeMixin {
   connectedCallback(): void;
   disconnectedCallback(): void;
 }
+
+declare class superClass extends base {
+}

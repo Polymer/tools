@@ -74,6 +74,9 @@ export {StrictBindingParserConstructor};
 interface StrictBindingParser {
 }
 
+declare class elementBase extends base {
+}
+
 export {StrictBindingParser};
 
 import {BindingPart} from '../../interfaces';

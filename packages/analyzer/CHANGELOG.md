@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `isLegacyPolymerFactoryCall: true`.
 * `@extends {SuperClass}` annotations are now parsed. Previously the type was
   not extracted if it had curly braces.
+* Expressions annotated with `@class` or `@constructor` will now be scanned
+  as classes.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.2] - 2018-06-28

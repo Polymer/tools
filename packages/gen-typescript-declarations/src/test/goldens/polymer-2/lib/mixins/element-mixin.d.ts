@@ -228,3 +228,6 @@ declare namespace Polymer {
   namespace telemetry {
   }
 }
+
+declare class polymerElementBase extends base {
+}

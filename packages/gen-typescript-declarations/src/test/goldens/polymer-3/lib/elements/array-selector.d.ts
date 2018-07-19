@@ -136,7 +136,13 @@ interface ArraySelectorMixin {
   selectIndex(idx: number): void;
 }
 
+declare class elementBase extends superClass {
+}
+
 export {ArraySelectorMixin};
+
+declare class baseArraySelector extends PolymerElement {
+}
 
 /**
  * Element implementing the `ArraySelector` mixin, which records

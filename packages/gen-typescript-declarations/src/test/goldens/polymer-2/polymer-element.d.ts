@@ -22,4 +22,7 @@ declare namespace Polymer {
     Polymer.ElementMixin(
     HTMLElement) {
   }
+
+  class Element extends HTMLElement {
+  }
 }

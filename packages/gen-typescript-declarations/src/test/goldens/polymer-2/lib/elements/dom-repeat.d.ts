@@ -14,6 +14,9 @@
 /// <reference path="../utils/flush.d.ts" />
 /// <reference path="../mixins/mutable-data.d.ts" />
 
+declare class domRepeatBase extends Polymer.Element {
+}
+
 declare namespace Polymer {
 
   /**
@@ -208,8 +211,8 @@ declare namespace Polymer {
      */
     targetFramerate: number|null|undefined;
     readonly _targetFrameTime: number|null|undefined;
-    disconnectedCallback(): void;
     connectedCallback(): void;
+    disconnectedCallback(): void;
 
     /**
      * Forces the element to render its content. Normally rendering is

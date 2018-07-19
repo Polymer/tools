@@ -839,3 +839,6 @@ declare namespace Polymer {
     _removeBoundDom(dom: StampedTemplate): void;
   }
 }
+
+declare class propertyEffectsBase extends superClass {
+}

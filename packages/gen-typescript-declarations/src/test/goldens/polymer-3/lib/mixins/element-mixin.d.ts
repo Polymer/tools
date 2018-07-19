@@ -239,6 +239,9 @@ interface ElementMixin {
   resolveUrl(url: string, base?: string): string;
 }
 
+declare class polymerElementBase extends base {
+}
+
 export {register};
 
 

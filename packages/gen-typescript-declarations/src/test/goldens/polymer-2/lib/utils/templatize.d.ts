@@ -12,6 +12,15 @@
 /// <reference path="../mixins/property-effects.d.ts" />
 /// <reference path="../mixins/mutable-data.d.ts" />
 
+declare class DataTemplate extends HTMLTemplateElementExtension {
+}
+
+declare class MutableDataTemplate extends DataTemplate {
+}
+
+declare class base {
+}
+
 declare class TemplateInstanceBase extends
   Polymer.PropertyEffects(
   base) {
@@ -73,6 +82,9 @@ declare class TemplateInstanceBase extends
    * @param event Event to dispatch
    */
   dispatchEvent(event: Event|null): void;
+}
+
+declare class MutableTemplateInstanceBase extends TemplateInstanceBase {
 }
 
 declare namespace templateInfo {

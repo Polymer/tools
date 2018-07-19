@@ -154,3 +154,6 @@ interface PropertyAccessors {
    */
   _isPropertyPending(prop: string): boolean;
 }
+
+declare class base extends superClass {
+}
