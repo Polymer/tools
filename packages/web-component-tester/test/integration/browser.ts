@@ -293,6 +293,7 @@ function runsIntegrationSuite(
           if (tryNumber === maxRetries) {
             throw error;
           }
+          console.log(`An error occurred in the before block, but retry #${tryNumber}`);
         }
       }
     });
