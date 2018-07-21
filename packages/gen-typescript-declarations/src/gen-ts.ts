@@ -524,7 +524,7 @@ class TypeGenerator {
   private handleMixin(feature: analyzer.ElementMixin) {
     const [namespacePath, mixinName] = splitReference(feature.name);
     const parentNamespace = findOrCreateNamespace(this.root, namespacePath);
-    const transitiveMixins = this.transitiveMixins(feature);
+    const transitiveMixins = [...this.transitiveMixins(feature)];
     const constructorName = mixinName + 'Constructor';
 
     // The mixin function. It takes a constructor, and returns an intersection
@@ -540,7 +540,7 @@ class TypeGenerator {
       returns: new ts.IntersectionType([
         new ts.NameType('T'),
         new ts.NameType(constructorName),
-        ...[...transitiveMixins].map(
+        ...transitiveMixins.map(
             (mixin) => new ts.NameType(mixin.name + 'Constructor'))
       ]),
     }));
@@ -562,8 +562,12 @@ class TypeGenerator {
             path.relative(path.dirname(this.root.path), rootRelative);
         const fromModuleSpecifier =
             fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
+        const identifiers = [{identifier: mixin.name + 'Constructor'}];
+        if (!getImportedIdentifiers(this.root).has(mixin.name)) {
+          identifiers.push({identifier: mixin.name});
+        }
         this.root.members.push(new ts.Import({
-          identifiers: [{identifier: mixin.name + 'Constructor'}],
+          identifiers,
           fromModuleSpecifier,
         }));
       }
@@ -604,6 +608,7 @@ class TypeGenerator {
           name: mixinName,
           properties: this.handleProperties(feature.properties.values()),
           methods: this.handleMethods(feature.methods.values()),
+          extends: transitiveMixins.map((mixin) => mixin.name),
         }),
     );
   }

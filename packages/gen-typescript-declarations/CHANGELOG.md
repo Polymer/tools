@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Element super classes are now emitted.
 - Legacy Polymer elements now extend `LegacyElementMixin` and `HTMLElement`
   instead of `PolymerElement`.
+- Mixin instance interfaces now extend the instance interfaces for the mixins
+  that they automatically apply.
 
 ## [1.3.0] - 2018-06-29
 - Generate typings for class constructors.

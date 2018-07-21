@@ -39,15 +39,15 @@ declare function DisableUpgradeMixin<T extends new (...args: any[]) => {}>(base:
 
 import {ElementMixinConstructor} from './element-mixin.js';
 
-import {PropertyEffectsConstructor} from './property-effects.js';
+import {PropertyEffectsConstructor, PropertyEffects} from './property-effects.js';
 
-import {TemplateStampConstructor} from './template-stamp.js';
+import {TemplateStampConstructor, TemplateStamp} from './template-stamp.js';
 
-import {PropertyAccessorsConstructor} from './property-accessors.js';
+import {PropertyAccessorsConstructor, PropertyAccessors} from './property-accessors.js';
 
-import {PropertiesChangedConstructor} from './properties-changed.js';
+import {PropertiesChangedConstructor, PropertiesChanged} from './properties-changed.js';
 
-import {PropertiesMixinConstructor} from './properties-mixin.js';
+import {PropertiesMixinConstructor, PropertiesMixin} from './properties-mixin.js';
 
 interface DisableUpgradeMixinConstructor {
   new(...args: any[]): DisableUpgradeMixin;
@@ -55,7 +55,7 @@ interface DisableUpgradeMixinConstructor {
 
 export {DisableUpgradeMixinConstructor};
 
-interface DisableUpgradeMixin {
+interface DisableUpgradeMixin extends ElementMixin, PropertyEffects, TemplateStamp, PropertyAccessors, PropertiesChanged, PropertiesMixin {
   _initializeProperties(): void;
   _enableProperties(): void;
   attributeChangedCallback(name: any, old: any, value: any, namespace: any): void;

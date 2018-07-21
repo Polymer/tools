@@ -67,7 +67,7 @@ interface PropertyAccessorsConstructor {
 
 export {PropertyAccessorsConstructor};
 
-interface PropertyAccessors {
+interface PropertyAccessors extends PropertiesChanged {
 
   /**
    * Overrides PropertiesChanged implementation to save existing prototype

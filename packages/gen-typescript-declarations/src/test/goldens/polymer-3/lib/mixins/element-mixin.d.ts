@@ -82,11 +82,11 @@ declare function ElementMixin<T extends new (...args: any[]) => {}>(base: T): T 
 
 import {PropertyEffectsConstructor} from './property-effects.js';
 
-import {TemplateStampConstructor} from './template-stamp.js';
+import {TemplateStampConstructor, TemplateStamp} from './template-stamp.js';
 
-import {PropertyAccessorsConstructor} from './property-accessors.js';
+import {PropertyAccessorsConstructor, PropertyAccessors} from './property-accessors.js';
 
-import {PropertiesChangedConstructor} from './properties-changed.js';
+import {PropertiesChangedConstructor, PropertiesChanged} from './properties-changed.js';
 
 import {PropertiesMixinConstructor} from './properties-mixin.js';
 
@@ -146,7 +146,7 @@ interface ElementMixinConstructor {
 
 export {ElementMixinConstructor};
 
-interface ElementMixin {
+interface ElementMixin extends PropertyEffects, TemplateStamp, PropertyAccessors, PropertiesChanged, PropertiesMixin {
   _template: HTMLTemplateElement|null;
   _importPath: string;
   rootPath: string;
