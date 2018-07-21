@@ -254,7 +254,7 @@ interface TemplateStamp {
    * @param eventName Name of event
    * @param handler Listener function to remove
    */
-  _removeEventListenerFromNode(node: Node|null, eventName: string, handler: (p0: Event) => void): void;
+  _removeEventListenerFromNode(node: Node, eventName: string, handler: (p0: Event) => void): void;
 }
 
 import {TemplateInfo} from '../../interfaces';
