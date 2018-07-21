@@ -5,15 +5,12 @@
 function someMixin() {
 }
 
-/** @class */
-const hasClassAnnotation = HTMLElement;
-
 /** @constructor */
 const hasConstructorAnnotation = HTMLElement;
 
 /**
- * @class
+ * @constructor
  * @extends {HTMLElement}
  * @appliesMixin someMixin
  */
-const hasClassExtendsMixinAnnotations = someMixin(HTMLElement);
+const hasConstructorExtendsMixinAnnotations = someMixin(HTMLElement);

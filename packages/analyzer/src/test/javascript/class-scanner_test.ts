@@ -835,17 +835,12 @@ suite('Class', () => {
 
       assert.deepEqual(await Promise.all(classes.map(getTestProps)), [
         {
-          name: 'hasClassAnnotation',
-          description: '',
-          privacy: 'public',
-        },
-        {
           name: 'hasConstructorAnnotation',
           description: '',
           privacy: 'public',
         },
         {
-          name: 'hasClassExtendsMixinAnnotations',
+          name: 'hasConstructorExtendsMixinAnnotations',
           description: '',
           privacy: 'public',
           superClass: 'HTMLElement',

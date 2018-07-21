@@ -601,7 +601,7 @@ class ClassFinder implements Visitor {
 
       this._classFound(name, doc, value, path);
     } else {
-      if (jsdoc.hasTag(doc, 'class') || jsdoc.hasTag(doc, 'constructor') ||
+      if (jsdoc.hasTag(doc, 'constructor') ||
           // TODO(justinfagnani): remove @polymerElement support
           jsdoc.hasTag(doc, 'customElement') ||
           jsdoc.hasTag(doc, 'polymerElement')) {
