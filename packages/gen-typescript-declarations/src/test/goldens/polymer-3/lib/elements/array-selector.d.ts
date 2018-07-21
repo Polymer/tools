@@ -136,9 +136,6 @@ interface ArraySelectorMixin {
   selectIndex(idx: number): void;
 }
 
-declare class elementBase extends superClass {
-}
-
 export {ArraySelectorMixin};
 
 declare class baseArraySelector extends PolymerElement {

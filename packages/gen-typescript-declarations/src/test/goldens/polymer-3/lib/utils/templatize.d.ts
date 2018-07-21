@@ -12,15 +12,9 @@ import {PropertyEffects} from '../mixins/property-effects.js';
 
 import {MutableData} from '../mixins/mutable-data.js';
 
-declare class HTMLTemplateElementExtension extends HTMLTemplateElement {
-}
-
-declare class DataTemplate extends HTMLTemplateElementExtension {
-}
-
-declare class MutableDataTemplate extends DataTemplate {
-}
-
+/**
+ * Base class for TemplateInstance.
+ */
 declare class base {
 }
 
@@ -86,15 +80,6 @@ declare class TemplateInstanceBase extends
    * @returns Always true.
    */
   dispatchEvent(event: Event|null): boolean;
-}
-
-declare class MutableTemplateInstanceBase extends TemplateInstanceBase {
-}
-
-declare namespace templateInfo {
-
-  class templatizeTemplateClass extends base {
-  }
 }
 
 export {templatize};

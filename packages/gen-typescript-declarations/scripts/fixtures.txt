@@ -5,4 +5,4 @@ https://github.com/PolymerElements/paper-button.git e29e692e00839adcd94cfa08a3cd
 https://github.com/PolymerElements/paper-menu-button.git v2.0.0 paper-menu-button-2
 https://github.com/PolymerElements/paper-menu-button.git 4dd8ac9107c25340b77c2ad27f8f11660eddb661 paper-menu-button-3
 https://github.com/Polymer/polymer.git v2.5.0 polymer-2
-https://github.com/Polymer/polymer.git b33c934b9e38a268524f8281b2205d2a18b613a3 polymer-3
+https://github.com/Polymer/polymer.git fa58519c9ad72d722db855c1716eb5ba05bbd6c4 polymer-3

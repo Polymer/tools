@@ -38,8 +38,7 @@ export {ElementMixin};
  *
  * - `static get template()`: Users may provide the template directly (as
  *   opposed to via `dom-module`) by implementing a static `template` getter.
- *   The getter may return an `HTMLTemplateElement` or a string, which will
- *   automatically be parsed into a template.
+ *   The getter must return an `HTMLTemplateElement`.
  *
  * - `static get properties()`: Should return an object describing
  *   property-related metadata used by Polymer features (key: property name
@@ -237,9 +236,6 @@ interface ElementMixin {
    * @returns Rewritten URL relative to base
    */
   resolveUrl(url: string, base?: string): string;
-}
-
-declare class polymerElementBase extends base {
 }
 
 export {register};

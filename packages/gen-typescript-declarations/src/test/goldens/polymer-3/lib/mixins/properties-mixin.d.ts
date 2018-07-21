@@ -80,6 +80,3 @@ interface PropertiesMixin {
    */
   disconnectedCallback(): void;
 }
-
-declare class base extends superClass {
-}

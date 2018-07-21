@@ -863,9 +863,6 @@ interface PropertyEffects {
   _removeBoundDom(dom: StampedTemplate): void;
 }
 
-declare class propertyEffectsBase extends superClass {
-}
-
 import {TemplateInfo} from '../../interfaces';
 
 import {NodeInfo} from '../../interfaces';
