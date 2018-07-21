@@ -77,6 +77,3 @@ declare namespace Polymer {
     disconnectedCallback(): void;
   }
 }
-
-declare class base extends superClass {
-}

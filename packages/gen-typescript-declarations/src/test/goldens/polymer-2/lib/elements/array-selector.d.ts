@@ -195,9 +195,6 @@ declare namespace Polymer {
   }
 }
 
-declare class elementBase extends superClass {
-}
-
 declare class baseArraySelector extends Polymer.Element {
 }
 

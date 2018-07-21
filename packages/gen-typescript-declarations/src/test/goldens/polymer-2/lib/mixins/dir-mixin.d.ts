@@ -50,6 +50,3 @@ declare namespace Polymer {
     disconnectedCallback(): void;
   }
 }
-
-declare class elementBase extends base {
-}
