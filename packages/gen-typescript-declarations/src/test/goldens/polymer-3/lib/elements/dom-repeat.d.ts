@@ -22,9 +22,6 @@ import {matches, translate} from '../utils/path.js';
 
 import {timeOut, microTask} from '../utils/async.js';
 
-declare class domRepeatBase extends PolymerElement {
-}
-
 export {DomRepeat};
 
 /**
@@ -124,7 +121,7 @@ export {DomRepeat};
  */
 declare class DomRepeat extends
   OptionalMutableData(
-  domRepeatBase) {
+  PolymerElement) {
 
   /**
    * An array containing items determining how many instances of the template

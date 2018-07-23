@@ -14,9 +14,6 @@
 /// <reference path="../utils/flush.d.ts" />
 /// <reference path="../mixins/mutable-data.d.ts" />
 
-declare class domRepeatBase extends Polymer.Element {
-}
-
 declare namespace Polymer {
 
   /**
@@ -117,7 +114,7 @@ declare namespace Polymer {
    */
   class DomRepeat extends
     Polymer.OptionalMutableData(
-    domRepeatBase) {
+    Polymer.Element) {
 
     /**
      * An array containing items determining how many instances of the template

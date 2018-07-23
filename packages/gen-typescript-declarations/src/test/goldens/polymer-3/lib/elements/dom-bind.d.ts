@@ -14,9 +14,6 @@ import {OptionalMutableData} from '../mixins/mutable-data.js';
 
 import {GestureEventListeners} from '../mixins/gesture-event-listeners.js';
 
-declare class domBindBase extends HTMLElement {
-}
-
 export {DomBind};
 
 /**
@@ -33,7 +30,7 @@ declare class DomBind extends
   PropertyEffects(
   OptionalMutableData(
   GestureEventListeners(
-  domBindBase))) {
+  HTMLElement))) {
   attributeChangedCallback(): void;
   connectedCallback(): void;
   disconnectedCallback(): void;

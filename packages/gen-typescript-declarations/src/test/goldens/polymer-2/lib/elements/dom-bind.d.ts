@@ -13,9 +13,6 @@
 /// <reference path="../mixins/mutable-data.d.ts" />
 /// <reference path="../mixins/gesture-event-listeners.d.ts" />
 
-declare class domBindBase extends HTMLElement {
-}
-
 declare namespace Polymer {
 
   /**
@@ -32,7 +29,7 @@ declare namespace Polymer {
     Polymer.PropertyEffects(
     Polymer.OptionalMutableData(
     Polymer.GestureEventListeners(
-    domBindBase))) {
+    HTMLElement))) {
     attributeChangedCallback(): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
