@@ -59,6 +59,8 @@ export interface ScannedAttribute extends ScannedFeature {
   type?: string;
 }
 
+type ClassType = ScannedPolymerElement|ScannedClass|ScannedPolymerElementMixin;
+
 /**
  * Find and classify classes from source code.
  *
@@ -160,8 +162,7 @@ export class ClassScanner implements JavaScriptScanner {
       }
     }
 
-    const scannedFeatures: (ScannedPolymerElement|ScannedClass|
-                            ScannedPolymerElementMixin)[] = [];
+    const scannedFeatures: ClassType[] = [];
     for (const element of customElements) {
       scannedFeatures.push(this._makeElementFeature(element, document));
     }
@@ -172,14 +173,73 @@ export class ClassScanner implements JavaScriptScanner {
       scannedFeatures.push(mixin);
     }
 
+    const collapsedClasses =
+        this.collapseEphemeralSuperclasses(scannedFeatures);
+
     return {
-      features: scannedFeatures,
+      features: collapsedClasses,
       warnings: [
         ...elementDefinitionFinder.warnings,
         ...classFinder.warnings,
         ...mixinFinder.warnings,
       ]
     };
+  }
+
+  /**
+   * Handle the pattern where a class's superclass is declared as a separate
+   * variable, usually so that mixins can be applied in a way that is compatible
+   * with the Closure compiler.
+   */
+  private collapseEphemeralSuperclasses(classes: ClassType[]): ClassType[] {
+    const classById = new Map<string, ClassType>();
+    const classBySuperClassId = new Map<string, ClassType[]>();
+
+    for (const cls of classes) {
+      if (cls.name === undefined) {
+        continue;
+      }
+      classById.set(cls.name, cls);
+
+      if (cls.superClass !== undefined) {
+        const superClassId = cls.superClass.identifier;
+        const childClasses = classBySuperClassId.get(superClassId);
+        if (childClasses === undefined) {
+          classBySuperClassId.set(superClassId, [cls]);
+        } else {
+          childClasses.push(cls);
+        }
+      }
+    }
+
+    const ephemeralSuperClasses = new Set<ClassType>();
+    for (const [superClassId, childClasses] of classBySuperClassId) {
+      const superClass = classById.get(superClassId);
+      if (superClass === undefined) {
+        continue;
+      }
+      if (superClass.privacy !== 'private') {
+        continue;
+      }
+      let isEphemeral = false;
+      for (const childClass of childClasses) {
+        if (superClass.superClass !== undefined) {
+          // Feature properties are readonly, hence this hacky cast. We could
+          // also make a new feature, but then we'd need a good way to clone a
+          // feature.
+          (childClass as {
+            superClass: ScannedReference<'class'>| undefined
+          }).superClass = superClass.superClass;
+        }
+        childClass.mixins.push(...superClass.mixins);
+        isEphemeral = true;
+      }
+      if (isEphemeral) {
+        ephemeralSuperClasses.add(superClass);
+      }
+    }
+
+    return classes.filter((cls) => !ephemeralSuperClasses.has(cls));
   }
 
   private _makeElementFeature(

@@ -848,6 +848,15 @@ suite('Class', () => {
             {identifier: 'someMixin'},
           ],
         },
+        {
+          name: 'hasEphemeralSuperclass',
+          description: '',
+          privacy: 'public',
+          superClass: 'HTMLElement',
+          mixins: [
+            {identifier: 'someMixin'},
+          ],
+        }
       ]);
     });
 

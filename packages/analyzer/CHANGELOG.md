@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * `@extends {SuperClass}` annotations are now parsed. Previously the type was
   not extracted if it had curly braces.
 * Expressions annotated with `@constructor` will now be scanned as classes.
+* Ephemeral super classes will now be collapsed into their child classes.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.2] - 2018-06-28
