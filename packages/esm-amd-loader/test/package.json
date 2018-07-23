@@ -7,7 +7,8 @@
     "clean": "rm -rf lib/",
     "lint": "tslint --project . --format stylish",
     "build": "npm run clean && tsc",
-    "test:wct": "npm run lint && npm run build && bash run-wct.sh"
+    "test": "npm run lint && npm run build && npm run test:wct",
+    "test:wct": "bash run-wct.sh"
   },
   "devDependencies": {
     "@polymer/esm-amd-loader": "^1.0.0",
