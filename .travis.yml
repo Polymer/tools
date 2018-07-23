@@ -61,5 +61,5 @@ matrix:
     # environment variables. Only run Sauce if we have those vars. Note this
     # means that community PRs never run on Sauce, even when the builds show
     # all green.
-    - TEST_COMMAND="xvfb-run npx lerna run test:integration --scope web-component-tester --scope @polymer/esm-amd-loader"
+    - TEST_COMMAND="xvfb-run npx lerna run test:integration --stream --scope web-component-tester --scope @polymer/esm-amd-loader --concurrency 1"
     - WCT_SAUCE=$TRAVIS_SECURE_ENV_VARS
