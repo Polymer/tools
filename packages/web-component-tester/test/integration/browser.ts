@@ -201,7 +201,9 @@ function runsIntegrationSuite(
           // Filter the list of browsers within the suite's options by the
           // global overrides if they are present.
           if (suiteOptions.plugins !== undefined) {
-            if (testLocalBrowsersList.length > 0 &&
+            if (suiteOptions.plugins.local && !testLocalBrowsers) {
+              delete suiteOptions.plugins.local;
+            } else if (testLocalBrowsersList.length > 0 &&
                 !testLocalBrowsersList.includes('default') &&
                 suiteOptions.plugins.local !== undefined &&
                 suiteOptions.plugins.local.browsers !== undefined) {
@@ -209,7 +211,9 @@ function runsIntegrationSuite(
                   suiteOptions.plugins.local.browsers.filter(
                       (b: string) => testLocalBrowsersList.includes(b));
             }
-            if (testRemoteBrowsersList.length > 0 &&
+            if (suiteOptions.plugins.sauce && !testRemoteBrowsers) {
+              delete suiteOptions.plugins.sauce;
+            } else if (testRemoteBrowsersList.length > 0 &&
                 suiteOptions.plugins.sauce !== undefined &&
                 suiteOptions.plugins.sauce.browsers !== undefined) {
               suiteOptions.plugins.sauce.browsers =
