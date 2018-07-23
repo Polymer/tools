@@ -467,100 +467,102 @@ function repeatBrowsers<T>(
   return lodash.mapValues(context.stats, () => data);
 }
 
-describe('define:webserver hook', () => {
-  it('supports substituting given app', async function() {
-    const suiteRoot = await makeProperTestDir('define-webserver-hook');
-    const log: string[] = [];
-    const requestedUrls: string[] = [];
-    const options: config.Config = {
-      output: <any>{write: log.push.bind(log)},
-      ttyOutput: false,
-      root: suiteRoot,
-      browserOptions: <any>{
-        name: 'web-component-tester',
-        tags: ['org:Polymer', 'repo:web-component-tester'],
-      },
-      plugins: <any>{
-        local: {
-          browsers: testLocalBrowsersList,
-          skipSeleniumInstall: true,
-        }
-      },
-    };
-    const context = new Context(options);
-    context.hook(
-        'define:webserver',
-        (app: express.Application, assign: (sub: express.Express) => void,
-         _options: ServerOptions, done: (err?: any) => void) => {
-          const newApp = express();
-          newApp.get('*', (request, _response, next) => {
-            requestedUrls.push(request.url);
-            next();
+if (testLocalBrowsers) {
+  describe('define:webserver hook', () => {
+    it('supports substituting given app', async function() {
+      const suiteRoot = await makeProperTestDir('define-webserver-hook');
+      const log: string[] = [];
+      const requestedUrls: string[] = [];
+      const options: config.Config = {
+        output: <any>{write: log.push.bind(log)},
+        ttyOutput: false,
+        root: suiteRoot,
+        browserOptions: <any>{
+          name: 'web-component-tester',
+          tags: ['org:Polymer', 'repo:web-component-tester'],
+        },
+        plugins: <any>{
+          local: {
+            browsers: testLocalBrowsersList,
+            skipSeleniumInstall: true,
+          }
+        },
+      };
+      const context = new Context(options);
+      context.hook(
+          'define:webserver',
+          (app: express.Application, assign: (sub: express.Express) => void,
+          _options: ServerOptions, done: (err?: any) => void) => {
+            const newApp = express();
+            newApp.get('*', (request, _response, next) => {
+              requestedUrls.push(request.url);
+              next();
+            });
+            newApp.use(app);
+            assign(newApp);
+            done();
           });
-          newApp.use(app);
-          assign(newApp);
-          done();
-        });
-    await test(context);
+      await test(context);
 
-    // Our middleware records all the requested urls into this requestedUrls
-    // array, so we can test that the middleware works by inspecting it for
-    // expected tests.html file which should be loaded by index.html
-    expect(requestedUrls)
-        .to.include('/components/define-webserver-hook/test/tests.html');
-    return true;
+      // Our middleware records all the requested urls into this requestedUrls
+      // array, so we can test that the middleware works by inspecting it for
+      // expected tests.html file which should be loaded by index.html
+      expect(requestedUrls)
+          .to.include('/components/define-webserver-hook/test/tests.html');
+      return true;
+    });
   });
-});
 
-describe('early failures', () => {
-  it(`wct doesn't start testing if it's not bower installed locally`,
-     async function() {
-       const log: string[] = [];
-       const options: config.Config = {
-         output: <any>{write: log.push.bind(log)},
-         ttyOutput: false,
-         root: path.join(
-             __dirname, '..', 'fixtures', 'integration', 'components_dir'),
-         browserOptions: <any>{
-           name: 'web-component-tester',
-           tags: ['org:Polymer', 'repo:web-component-tester'],
-         },
-         plugins: <any>{
-           local: {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
-         },
-       };
-       const context = new Context(options);
-       try {
-         await test(context);
-         throw new Error('Expected test() to fail!');
-       } catch (e) {
-         expect(e.message).to.match(
-             /The web-component-tester Bower package is not installed as a dependency of this project/);
-       }
-     });
+  describe('early failures', () => {
+    it(`wct doesn't start testing if it's not bower installed locally`,
+      async function() {
+        const log: string[] = [];
+        const options: config.Config = {
+          output: <any>{write: log.push.bind(log)},
+          ttyOutput: false,
+          root: path.join(
+              __dirname, '..', 'fixtures', 'integration', 'components_dir'),
+          browserOptions: <any>{
+            name: 'web-component-tester',
+            tags: ['org:Polymer', 'repo:web-component-tester'],
+          },
+          plugins: <any>{
+            local: {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
+          },
+        };
+        const context = new Context(options);
+        try {
+          await test(context);
+          throw new Error('Expected test() to fail!');
+        } catch (e) {
+          expect(e.message).to.match(
+              /The web-component-tester Bower package is not installed as a dependency of this project/);
+        }
+      });
 
-  it('fails if the client side library is out of allowed version range',
-     async function() {
-       const log: string[] = [];
-       const options: config.Config = {
-         output: <any>{write: log.push.bind(log)},
-         ttyOutput: false,
-         root: path.join(__dirname, '..', 'fixtures', 'early-failure'),
-         browserOptions: <any>{
-           name: 'web-component-tester',
-           tags: ['org:Polymer', 'repo:web-component-tester'],
-         },
-         plugins: <any>{
-           local: {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
-         },
-       };
-       const context = new Context(options);
-       try {
-         await test(context);
-         throw new Error('Expected test() to fail!');
-       } catch (e) {
-         expect(e.message).to.match(
-             /The web-component-tester Bower package installed is incompatible with the\n\s*wct node package you're using/);
-       }
-     });
-});
+    it('fails if the client side library is out of allowed version range',
+      async function() {
+        const log: string[] = [];
+        const options: config.Config = {
+          output: <any>{write: log.push.bind(log)},
+          ttyOutput: false,
+          root: path.join(__dirname, '..', 'fixtures', 'early-failure'),
+          browserOptions: <any>{
+            name: 'web-component-tester',
+            tags: ['org:Polymer', 'repo:web-component-tester'],
+          },
+          plugins: <any>{
+            local: {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
+          },
+        };
+        const context = new Context(options);
+        try {
+          await test(context);
+          throw new Error('Expected test() to fail!');
+        } catch (e) {
+          expect(e.message).to.match(
+              /The web-component-tester Bower package installed is incompatible with the\n\s*wct node package you're using/);
+        }
+      });
+  });
+}
