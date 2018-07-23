@@ -315,22 +315,27 @@ function runsIntegrationSuite(
   });
 }
 
-if (testLocalBrowsers || testRemoteBrowsers) {
-  describe('Browser Tests', function() {
-    const pluginConfig = <any>{};
-    if (testLocalBrowsers) {
-      pluginConfig.local = {
-        browsers: testLocalBrowsersList,
-        skipSeleniumInstall: true,
-      };
-    }
-    if (testRemoteBrowsers) {
-      pluginConfig.sauce = {
-        browsers: testRemoteBrowsersList,
-      };
-    }
-    runsAllIntegrationSuites({
-      plugins: pluginConfig,
+if (testLocalBrowsers) {
+  describe('Local Browser Tests', function() {
+    runsAllIntegrationSuites(<any>{
+      plugins: {
+        local: {
+          browsers: testLocalBrowsersList,
+          skipSeleniumInstall: true,
+        }
+      }
+    });
+  });
+}
+
+if (testRemoteBrowsers) {
+  describe('Remote Browser Tests', function() {
+    runsAllIntegrationSuites(<any>{
+      plugins: {
+        sauce: {
+          browsers: testRemoteBrowsersList,
+        }
+      }
     });
   });
 }
