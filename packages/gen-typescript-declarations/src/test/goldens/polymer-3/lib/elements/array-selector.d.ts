@@ -138,9 +138,6 @@ interface ArraySelectorMixin extends ElementMixin, PropertyEffects, TemplateStam
 
 export {ArraySelectorMixin};
 
-declare class baseArraySelector extends PolymerElement {
-}
-
 /**
  * Element implementing the `ArraySelector` mixin, which records
  * dynamic associations between item paths in a master `items` array and a
@@ -210,7 +207,7 @@ declare class baseArraySelector extends PolymerElement {
  */
 declare class ArraySelector extends
   ArraySelectorMixin(
-  baseArraySelector) {
+  PolymerElement) {
 }
 
 declare global {

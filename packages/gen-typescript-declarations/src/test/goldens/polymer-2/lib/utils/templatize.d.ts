@@ -12,12 +12,6 @@
 /// <reference path="../mixins/property-effects.d.ts" />
 /// <reference path="../mixins/mutable-data.d.ts" />
 
-/**
- * Base class for TemplateInstance.
- */
-declare class base {
-}
-
 declare class TemplateInstanceBase extends
   Polymer.PropertyEffects(
   base) {

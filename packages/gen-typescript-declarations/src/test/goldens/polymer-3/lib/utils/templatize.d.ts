@@ -12,12 +12,6 @@ import {PropertyEffects} from '../mixins/property-effects.js';
 
 import {MutableData} from '../mixins/mutable-data.js';
 
-/**
- * Base class for TemplateInstance.
- */
-declare class base {
-}
-
 declare class TemplateInstanceBase extends
   PropertyEffects(
   base) {
