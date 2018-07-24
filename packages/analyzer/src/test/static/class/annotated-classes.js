@@ -21,6 +21,19 @@ const hasConstructorExtendsMixinAnnotations = someMixin(HTMLElement);
  * @extends {HTMLElement}
  * @appliesMixin someMixin
  */
-const ephemeralSuperclass = someMixin(HTMLElement);
+const ephemeralSuperclass1 = someMixin(HTMLElement);
+class hasEphemeralSuperclass1 extends ephemeralSuperclass1 {}
 
-class hasEphemeralSuperclass extends ephemeralSuperclass {}
+/**
+ * @constructor
+ * @private
+ */
+const ephemeralSuperclass2 = class {};
+class hasEphemeralSuperclass2 extends ephemeralSuperclass2 {};
+
+/**
+ * @constructor
+ * @private
+ */
+Polymer.notEphemeralSuperclass = class {};
+class hasNotEphemeralSuperclass extends Polymer.notEphemeralSuperclass {};

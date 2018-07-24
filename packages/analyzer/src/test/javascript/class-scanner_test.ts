@@ -849,13 +849,29 @@ suite('Class', () => {
           ],
         },
         {
-          name: 'hasEphemeralSuperclass',
+          name: 'hasEphemeralSuperclass1',
           description: '',
           privacy: 'public',
           superClass: 'HTMLElement',
           mixins: [
             {identifier: 'someMixin'},
           ],
+        },
+        {
+          name: 'hasEphemeralSuperclass2',
+          description: '',
+          privacy: 'public',
+        },
+        {
+          name: 'Polymer.notEphemeralSuperclass',
+          description: '',
+          privacy: 'private',
+        },
+        {
+          name: 'hasNotEphemeralSuperclass',
+          description: '',
+          superClass: 'Polymer.notEphemeralSuperclass',
+          privacy: 'public'
         }
       ]);
     });

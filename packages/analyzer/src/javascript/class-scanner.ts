@@ -174,7 +174,7 @@ export class ClassScanner implements JavaScriptScanner {
     }
 
     const collapsedClasses =
-        this.collapseEphemeralSuperclasses(scannedFeatures);
+        this.collapseEphemeralSuperclasses(scannedFeatures, classFinder);
 
     return {
       features: collapsedClasses,
@@ -189,36 +189,40 @@ export class ClassScanner implements JavaScriptScanner {
   /**
    * Handle the pattern where a class's superclass is declared as a separate
    * variable, usually so that mixins can be applied in a way that is compatible
-   * with the Closure compiler.
+   * with the Closure compiler. We consider a class ephemeral if:
+   *
+   * 1) It is the superclass of one or more classes.
+   * 2) It is declared using a const, let, or var.
+   * 3) It is annotated as @private.
    */
-  private collapseEphemeralSuperclasses(classes: ClassType[]): ClassType[] {
-    const classById = new Map<string, ClassType>();
-    const classBySuperClassId = new Map<string, ClassType[]>();
+  private collapseEphemeralSuperclasses(
+      allClasses: ClassType[], classFinder: ClassFinder): ClassType[] {
+    const possibleEphemeralsById = new Map<string, ClassType>();
+    const classesBySuperClassId = new Map<string, ClassType[]>();
 
-    for (const cls of classes) {
+    for (const cls of allClasses) {
       if (cls.name === undefined) {
         continue;
       }
-      classById.set(cls.name, cls);
-
+      if (classFinder.fromVariableDeclarators.has(cls) &&
+          cls.privacy === 'private') {
+        possibleEphemeralsById.set(cls.name, cls);
+      }
       if (cls.superClass !== undefined) {
         const superClassId = cls.superClass.identifier;
-        const childClasses = classBySuperClassId.get(superClassId);
+        const childClasses = classesBySuperClassId.get(superClassId);
         if (childClasses === undefined) {
-          classBySuperClassId.set(superClassId, [cls]);
+          classesBySuperClassId.set(superClassId, [cls]);
         } else {
           childClasses.push(cls);
         }
       }
     }
 
-    const ephemeralSuperClasses = new Set<ClassType>();
-    for (const [superClassId, childClasses] of classBySuperClassId) {
-      const superClass = classById.get(superClassId);
+    const ephemerals = new Set<ClassType>();
+    for (const [superClassId, childClasses] of classesBySuperClassId) {
+      const superClass = possibleEphemeralsById.get(superClassId);
       if (superClass === undefined) {
-        continue;
-      }
-      if (superClass.privacy !== 'private') {
         continue;
       }
       let isEphemeral = false;
@@ -232,11 +236,11 @@ export class ClassScanner implements JavaScriptScanner {
         isEphemeral = true;
       }
       if (isEphemeral) {
-        ephemeralSuperClasses.add(superClass);
+        ephemerals.add(superClass);
       }
     }
 
-    return classes.filter((cls) => !ephemeralSuperClasses.has(cls));
+    return allClasses.filter((cls) => !ephemerals.has(cls));
   }
 
   private _makeElementFeature(
@@ -621,6 +625,7 @@ class PrototypeMemberFinder implements Visitor {
 class ClassFinder implements Visitor {
   readonly classes: ScannedClass[] = [];
   readonly warnings: Warning[] = [];
+  readonly fromVariableDeclarators = new Set<ClassType>();
   private readonly alreadyMatched = new Set<babel.ClassExpression>();
   private readonly _document: JavaScriptDocument;
 
@@ -657,13 +662,12 @@ class ClassFinder implements Visitor {
           value.id && astValue.getIdentifierName(value.id) || undefined;
 
       this._classFound(name, doc, value, path);
-    } else {
-      if (jsdoc.hasTag(doc, 'constructor') ||
-          // TODO(justinfagnani): remove @polymerElement support
-          jsdoc.hasTag(doc, 'customElement') ||
-          jsdoc.hasTag(doc, 'polymerElement')) {
-        this._classFound(assignedName, doc, value, path);
-      }
+    } else if (
+        jsdoc.hasTag(doc, 'constructor') ||
+        // TODO(justinfagnani): remove @polymerElement support
+        jsdoc.hasTag(doc, 'customElement') ||
+        jsdoc.hasTag(doc, 'polymerElement')) {
+      this._classFound(assignedName, doc, value, path);
     }
   }
 
@@ -701,7 +705,7 @@ class ClassFinder implements Visitor {
     const methods = getMethods(astNode, this._document);
     const constructorMethod = getConstructorMethod(astNode, this._document);
 
-    this.classes.push(new ScannedClass(
+    const scannedClass = new ScannedClass(
         namespacedName,
         name,
         {language: 'js', containingDocument: this._document, node: astNode},
@@ -719,7 +723,11 @@ class ClassFinder implements Visitor {
         getOrInferPrivacy(namespacedName || '', doc),
         warnings,
         jsdoc.hasTag(doc, 'abstract'),
-        jsdoc.extractDemos(doc)));
+        jsdoc.extractDemos(doc));
+    this.classes.push(scannedClass);
+    if (babel.isVariableDeclarator(path.node)) {
+      this.fromVariableDeclarators.add(scannedClass);
+    }
     if (babel.isClassExpression(astNode)) {
       this.alreadyMatched.add(astNode);
     }
