@@ -229,6 +229,9 @@ export class ClassScanner implements JavaScriptScanner {
       for (const childClass of childClasses) {
         // Feature properties are readonly, hence this hacky cast. We could also
         // make a new feature, but then we'd need a good way to clone a feature.
+        // It's pretty safe because we're still in the construction phase for
+        // scanned classes, so we know nothing else could be relying on the
+        // previous value yet.
         (childClass as {
           superClass: ScannedReference<'class'>| undefined
         }).superClass = superClass.superClass;

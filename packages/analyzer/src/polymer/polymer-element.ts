@@ -156,7 +156,7 @@ export interface Options {
   astNode: AstNodeWithLanguage;
   statementAst: babel.Statement|undefined;
   sourceRange: SourceRange|undefined;
-  /** Whether this element was defined using the legacy Polymer() function. */
+  /** true iff element was defined using the legacy Polymer() function. */
   isLegacyFactoryCall: boolean|undefined;
 }
 
@@ -320,7 +320,7 @@ export class PolymerElement extends Element implements PolymerExtension {
       [];
   readonly domModule?: dom5.Node;
   readonly localIds: ImmutableArray<LocalId> = [];
-  /** Whether this element was defined using the legacy Polymer() function. */
+  /** true iff element was defined using the legacy Polymer() function. */
   readonly isLegacyFactoryCall: boolean;
 
   constructor(scannedElement: ScannedPolymerElement, document: Document) {
