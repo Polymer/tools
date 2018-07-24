@@ -223,14 +223,11 @@ export class ClassScanner implements JavaScriptScanner {
       }
       let isEphemeral = false;
       for (const childClass of childClasses) {
-        if (superClass.superClass !== undefined) {
-          // Feature properties are readonly, hence this hacky cast. We could
-          // also make a new feature, but then we'd need a good way to clone a
-          // feature.
-          (childClass as {
-            superClass: ScannedReference<'class'>| undefined
-          }).superClass = superClass.superClass;
-        }
+        // Feature properties are readonly, hence this hacky cast. We could also
+        // make a new feature, but then we'd need a good way to clone a feature.
+        (childClass as {
+          superClass: ScannedReference<'class'>| undefined
+        }).superClass = superClass.superClass;
         childClass.mixins.push(...superClass.mixins);
         isEphemeral = true;
       }

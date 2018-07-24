@@ -14,7 +14,7 @@
 
 declare class TemplateInstanceBase extends
   Polymer.PropertyEffects(
-  base) {
+  Object) {
 
   /**
    * Find the parent model of this template instance.  The parent model
