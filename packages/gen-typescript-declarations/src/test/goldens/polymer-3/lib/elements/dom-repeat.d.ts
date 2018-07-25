@@ -121,7 +121,7 @@ export {DomRepeat};
  */
 declare class DomRepeat extends
   OptionalMutableData(
-  Polymer.Element) {
+  PolymerElement) {
 
   /**
    * An array containing items determining how many instances of the template
@@ -217,8 +217,8 @@ declare class DomRepeat extends
    */
   targetFramerate: number|null|undefined;
   readonly _targetFrameTime: number|null|undefined;
-  disconnectedCallback(): void;
   connectedCallback(): void;
+  disconnectedCallback(): void;
 
   /**
    * Forces the element to render its content. Normally rendering is

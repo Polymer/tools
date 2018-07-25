@@ -30,10 +30,18 @@ const {generateDeclarations} = require('../lib/gen-ts');
 const fixturesDir = path.join(__dirname, '..', 'src', 'test', 'fixtures');
 const goldensDir = path.join(__dirname, '..', 'src', 'test', 'goldens');
 
-fsExtra.emptyDirSync(goldensDir);
+const filter = process.env.UPDATE_GOLDENS_FILTER || '';
+
+if (!filter) {
+  fsExtra.emptyDirSync(goldensDir);
+}
 
 for (const fixture of fs.readdirSync(fixturesDir)) {
+  if (filter && !fixture.includes(filter)) {
+    continue;
+  }
   console.log('making goldens for ' + fixture);
+  fsExtra.emptyDirSync(path.join(goldensDir, fixture));
 
   let config = {};
   const configPath = path.join(fixturesDir, fixture, 'gen-tsd.json');

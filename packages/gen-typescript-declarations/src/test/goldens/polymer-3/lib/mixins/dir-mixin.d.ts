@@ -38,7 +38,7 @@ declare function DirMixin<T extends new (...args: any[]) => {}>(base: T): T & Di
 
 import {PropertyAccessorsConstructor} from './property-accessors.js';
 
-import {PropertiesChangedConstructor} from './properties-changed.js';
+import {PropertiesChangedConstructor, PropertiesChanged} from './properties-changed.js';
 
 interface DirMixinConstructor {
   new(...args: any[]): DirMixin;
@@ -55,7 +55,7 @@ interface DirMixinConstructor {
 
 export {DirMixinConstructor};
 
-interface DirMixin {
+interface DirMixin extends PropertyAccessors, PropertiesChanged {
   ready(): void;
   connectedCallback(): void;
   disconnectedCallback(): void;

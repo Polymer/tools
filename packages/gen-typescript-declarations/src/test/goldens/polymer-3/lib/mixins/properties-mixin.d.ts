@@ -60,7 +60,7 @@ interface PropertiesMixinConstructor {
 
 export {PropertiesMixinConstructor};
 
-interface PropertiesMixin {
+interface PropertiesMixin extends PropertiesChanged {
 
   /**
    * Overrides `PropertiesChanged` method and adds a call to

@@ -59,6 +59,8 @@ export interface ScannedAttribute extends ScannedFeature {
   type?: string;
 }
 
+type ClassType = ScannedPolymerElement|ScannedClass|ScannedPolymerElementMixin;
+
 /**
  * Find and classify classes from source code.
  *
@@ -160,8 +162,7 @@ export class ClassScanner implements JavaScriptScanner {
       }
     }
 
-    const scannedFeatures: (ScannedPolymerElement|ScannedClass|
-                            ScannedPolymerElementMixin)[] = [];
+    const scannedFeatures: ClassType[] = [];
     for (const element of customElements) {
       scannedFeatures.push(this._makeElementFeature(element, document));
     }
@@ -172,14 +173,77 @@ export class ClassScanner implements JavaScriptScanner {
       scannedFeatures.push(mixin);
     }
 
+    const collapsedClasses =
+        this.collapseEphemeralSuperclasses(scannedFeatures, classFinder);
+
     return {
-      features: scannedFeatures,
+      features: collapsedClasses,
       warnings: [
         ...elementDefinitionFinder.warnings,
         ...classFinder.warnings,
         ...mixinFinder.warnings,
       ]
     };
+  }
+
+  /**
+   * Handle the pattern where a class's superclass is declared as a separate
+   * variable, usually so that mixins can be applied in a way that is compatible
+   * with the Closure compiler. We consider a class ephemeral if:
+   *
+   * 1) It is the superclass of one or more classes.
+   * 2) It is declared using a const, let, or var.
+   * 3) It is annotated as @private.
+   */
+  private collapseEphemeralSuperclasses(
+      allClasses: ClassType[], classFinder: ClassFinder): ClassType[] {
+    const possibleEphemeralsById = new Map<string, ClassType>();
+    const classesBySuperClassId = new Map<string, ClassType[]>();
+
+    for (const cls of allClasses) {
+      if (cls.name === undefined) {
+        continue;
+      }
+      if (classFinder.fromVariableDeclarators.has(cls) &&
+          cls.privacy === 'private') {
+        possibleEphemeralsById.set(cls.name, cls);
+      }
+      if (cls.superClass !== undefined) {
+        const superClassId = cls.superClass.identifier;
+        const childClasses = classesBySuperClassId.get(superClassId);
+        if (childClasses === undefined) {
+          classesBySuperClassId.set(superClassId, [cls]);
+        } else {
+          childClasses.push(cls);
+        }
+      }
+    }
+
+    const ephemerals = new Set<ClassType>();
+    for (const [superClassId, childClasses] of classesBySuperClassId) {
+      const superClass = possibleEphemeralsById.get(superClassId);
+      if (superClass === undefined) {
+        continue;
+      }
+      let isEphemeral = false;
+      for (const childClass of childClasses) {
+        // Feature properties are readonly, hence this hacky cast. We could also
+        // make a new feature, but then we'd need a good way to clone a feature.
+        // It's pretty safe because we're still in the construction phase for
+        // scanned classes, so we know nothing else could be relying on the
+        // previous value yet.
+        (childClass as {
+          superClass: ScannedReference<'class'>| undefined
+        }).superClass = superClass.superClass;
+        childClass.mixins.push(...superClass.mixins);
+        isEphemeral = true;
+      }
+      if (isEphemeral) {
+        ephemerals.add(superClass);
+      }
+    }
+
+    return allClasses.filter((cls) => !ephemerals.has(cls));
   }
 
   private _makeElementFeature(
@@ -232,8 +296,7 @@ export class ClassScanner implements JavaScriptScanner {
       staticMethods = getStaticMethods(astNode.node, document);
     }
 
-    const extendsTag = jsdoc.getTag(docs, 'extends');
-    const extends_ = extendsTag !== undefined ? extendsTag.name : undefined;
+    const extends_ = getExtendsTypeName(docs);
     // TODO(justinfagnani): Infer mixin applications and superclass from AST.
     scannedElement = new ScannedPolymerElement({
       className: class_.name,
@@ -258,7 +321,8 @@ export class ClassScanner implements JavaScriptScanner {
       jsdoc: class_.jsdoc,
       abstract: class_.abstract,
       mixins: class_.mixins,
-      privacy: class_.privacy
+      privacy: class_.privacy,
+      isLegacyFactoryCall: false,
     });
 
     if (babel.isClassExpression(astNode.node) ||
@@ -564,6 +628,7 @@ class PrototypeMemberFinder implements Visitor {
 class ClassFinder implements Visitor {
   readonly classes: ScannedClass[] = [];
   readonly warnings: Warning[] = [];
+  readonly fromVariableDeclarators = new Set<ClassType>();
   private readonly alreadyMatched = new Set<babel.ClassExpression>();
   private readonly _document: JavaScriptDocument;
 
@@ -585,21 +650,27 @@ class ClassFinder implements Visitor {
     }
   }
 
+  enterFunctionDeclaration(
+      node: babel.FunctionDeclaration, _parent: babel.Node, path: NodePath) {
+    this.handleGeneralAssignment(
+        astValue.getIdentifierName(node.id), node.body, path);
+  }
+
   /** Generalizes over variable declarators and assignment expressions. */
   private handleGeneralAssignment(
-      assignedName: string|undefined, value: babel.Expression, path: NodePath) {
+      assignedName: string|undefined, value: babel.Node, path: NodePath) {
     const doc = jsdoc.parseJsdoc(esutil.getBestComment(path) || '');
     if (babel.isClassExpression(value)) {
       const name = assignedName ||
           value.id && astValue.getIdentifierName(value.id) || undefined;
 
       this._classFound(name, doc, value, path);
-    } else {
-      // TODO(justinfagnani): remove @polymerElement support
-      if (jsdoc.hasTag(doc, 'customElement') ||
-          jsdoc.hasTag(doc, 'polymerElement')) {
-        this._classFound(assignedName, doc, value, path);
-      }
+    } else if (
+        jsdoc.hasTag(doc, 'constructor') ||
+        // TODO(justinfagnani): remove @polymerElement support
+        jsdoc.hasTag(doc, 'customElement') ||
+        jsdoc.hasTag(doc, 'polymerElement')) {
+      this._classFound(assignedName, doc, value, path);
     }
   }
 
@@ -637,7 +708,7 @@ class ClassFinder implements Visitor {
     const methods = getMethods(astNode, this._document);
     const constructorMethod = getConstructorMethod(astNode, this._document);
 
-    this.classes.push(new ScannedClass(
+    const scannedClass = new ScannedClass(
         namespacedName,
         name,
         {language: 'js', containingDocument: this._document, node: astNode},
@@ -655,7 +726,11 @@ class ClassFinder implements Visitor {
         getOrInferPrivacy(namespacedName || '', doc),
         warnings,
         jsdoc.hasTag(doc, 'abstract'),
-        jsdoc.extractDemos(doc)));
+        jsdoc.extractDemos(doc));
+    this.classes.push(scannedClass);
+    if (babel.isVariableDeclarator(path.node)) {
+      this.fromVariableDeclarators.add(scannedClass);
+    }
     if (babel.isClassExpression(astNode)) {
       this.alreadyMatched.add(astNode);
     }
@@ -668,12 +743,10 @@ class ClassFinder implements Visitor {
       node: babel.Node, docs: jsdoc.Annotation, warnings: Warning[],
       document: JavaScriptDocument,
       path: NodePath): ScannedReference<'class'>|undefined {
-    const extendsAnnotations =
-        docs.tags!.filter((tag) => tag.title === 'extends');
+    const extendsId = getExtendsTypeName(docs);
 
     // prefer @extends annotations over extends clauses
-    if (extendsAnnotations.length > 0) {
-      const extendsId = extendsAnnotations[0].name;
+    if (extendsId !== undefined) {
       // TODO(justinfagnani): we need source ranges for jsdoc annotations
       const sourceRange = document.sourceRangeForNode(node)!;
       if (extendsId == null) {
@@ -949,4 +1022,16 @@ function getPropertyNameOnThisExpression(node: babel.Node) {
     return;
   }
   return node.property.name;
+}
+
+/**
+ * Return the type name from the first @extends annotation. Supports either
+ * `@extends {SuperClass}` or `@extends SuperClass` forms.
+ */
+function getExtendsTypeName(docs: doctrine.Annotation): string|undefined {
+  const tag = jsdoc.getTag(docs, 'extends');
+  if (!tag) {
+    return undefined;
+  }
+  return tag.type ? doctrine.type.stringify(tag.type) : tag.name;
 }

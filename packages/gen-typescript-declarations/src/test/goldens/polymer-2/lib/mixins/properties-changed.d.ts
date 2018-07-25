@@ -183,6 +183,21 @@ declare namespace Polymer {
     _flushProperties(): void;
 
     /**
+     * Called in `_flushProperties` to determine if `_propertiesChanged`
+     * should be called. The default implementation returns true if
+     * properties are pending. Override to customize when
+     * `_propertiesChanged` is called.
+     *
+     * @param currentProps Bag of all current accessor values
+     * @param changedProps Bag of properties changed since the last
+     *   call to `_propertiesChanged`
+     * @param oldProps Bag of previous values for each property
+     *   in `changedProps`
+     * @returns true if changedProps is truthy
+     */
+    _shouldPropertiesChange(currentProps: object, changedProps: object, oldProps: object): boolean;
+
+    /**
      * Callback called when any properties with accessors created via
      * `_createPropertyAccessor` have been set.
      *
@@ -220,8 +235,9 @@ declare namespace Polymer {
      * @param name Name of attribute that changed
      * @param old Old attribute value
      * @param value New attribute value
+     * @param namespace Attribute namespace.
      */
-    attributeChangedCallback(name: string, old: string|null, value: string|null): void;
+    attributeChangedCallback(name: string, old: string|null, value: string|null, namespace: string|null): void;
 
     /**
      * Deserializes an attribute to its associated property.

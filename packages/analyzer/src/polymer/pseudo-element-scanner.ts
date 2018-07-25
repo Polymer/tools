@@ -62,7 +62,8 @@ export class PseudoElementScanner implements HtmlScanner {
             methods: new Map(),
             mixins: [],
             observers: [],
-            superClass: undefined
+            superClass: undefined,
+            isLegacyFactoryCall: false,
           });
           element.pseudo = true;
           annotateElementHeader(element);
