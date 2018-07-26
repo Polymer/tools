@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.1.0] - 2018-07-25
 * The `Function` type is now exported from `index.js`.
 * `Import` features now have an `astNodePath`.
 * `WarningStringifyOptions` now takes an optional `maxCodeLines` to print.
@@ -15,7 +18,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   not extracted if it had curly braces.
 * Expressions annotated with `@constructor` will now be scanned as classes.
 * Ephemeral super classes will now be collapsed into their child classes.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.0.2] - 2018-06-28
 * Better support for resolving `export {foo as bar}` statements.
