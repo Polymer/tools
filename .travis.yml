@@ -35,8 +35,7 @@ matrix:
     env:
     - TEST_COMMAND="npm run test:unit"
 
-  # TODO(https://github.com/Polymer/tools/issues/280): update to node 10
-  - node_js: '9'
+  - node_js: '10'
     env:
     - TEST_COMMAND="npm run test:unit"
 
@@ -46,12 +45,25 @@ matrix:
       firefox: latest
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
-    - SKIP_REMOTE_BROWSERS=true
 
-  - node_js: '9'
+  - node_js: '10'
     addons:
       chrome: stable
       firefox: latest
-      sauce_connect: true
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
+
+  - node_js: '10'
+    addons:
+      sauce_connect: true
+    env:
+    # We can't run Sauce without credentials. PRs from forks don't get secure
+    # environment variables. Only run Sauce if we have those vars. Note this
+    # means that community PRs never run on Sauce, even when the builds show
+    # all green.
+    - WCT_SAUCE=$TRAVIS_SECURE_ENV_VARS
+    # We don't need to test the local browsers on this WCT integration test
+    # run.  Sauce only.
+    - SKIP_LOCAL_BROWSERS=true
+    - TEST_REMOTE_BROWSERS="OS X 10.11/safari@9,OS X 10.11/safari@10,Windows 8.1/internet explorer@11,Windows 10/microsoftedge@14"
+    - TEST_COMMAND="xvfb-run npx lerna run test:integration --stream --scope web-component-tester --scope @polymer/esm-amd-loader --concurrency 1"

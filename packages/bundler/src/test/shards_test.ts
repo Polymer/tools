@@ -11,9 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-/// <reference path="../../node_modules/@types/chai/index.d.ts" />
+
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import * as chai from 'chai';
 import * as dom5 from 'dom5';
 import * as parse5 from 'parse5';
@@ -67,13 +66,13 @@ suite('Bundler', () => {
     return getAnalyzer().resolveUrl(url as PackageRelativeUrl)!;
   }
 
-  async function bundleMultiple(inputPath: string[], opts?: BundlerOptions):
-      Promise<BundleResult> {
-        const bundler = getBundler(opts);
-        const manifest = await bundler.generateManifest(
-            inputPath.map((e) => bundler.analyzer.resolveUrl(e)!));
-        return await bundler.bundle(manifest);
-      }
+  async function bundleMultiple(
+      inputPath: string[], opts?: BundlerOptions): Promise<BundleResult> {
+    const bundler = getBundler(opts);
+    const manifest = await bundler.generateManifest(
+        inputPath.map((e) => bundler.analyzer.resolveUrl(e)!));
+    return await bundler.bundle(manifest);
+  }
 
   function assertContainsAndExcludes(
       doc: parse5.ASTNode,

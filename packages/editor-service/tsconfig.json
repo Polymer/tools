@@ -3,7 +3,18 @@
   "compilerOptions": {
     "strictPropertyInitialization": false,
     "suppressImplicitAnyIndexErrors": true,
-    "outDir": "./lib"
+    "outDir": "./lib",
+    "baseUrl": "./",
+    "paths": {
+      "parse5": [
+        "node_modules/@types/parse5",
+        "*"
+      ],
+      "ua-parser-js": [
+        "node_modules/@types/ua-parser-js",
+        "*"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts"

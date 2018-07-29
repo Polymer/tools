@@ -111,7 +111,7 @@ export class AddPrefetchLinks extends AsyncTransformStream<File, File> {
       const filePath = pathFromUrl(
           this._config.root as LocalFsPath,
           this._analyzer.urlResolver.relative(documentUrl));
-      yield new File({contents: new Buffer(html, 'utf-8'), path: filePath});
+      yield new File({contents: Buffer.from(html, 'utf-8'), path: filePath});
     }
   }
 }

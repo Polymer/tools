@@ -28,6 +28,7 @@ export {Namespace} from './javascript/namespace';
 export {JavascriptImport} from './javascript/javascript-import-scanner';
 export {Export} from './javascript/javascript-export-scanner';
 export {ParsedDocument} from './parser/document';
+export {Function} from './javascript/function';
 
 // Analysis
 export {generateAnalysis, validateAnalysis} from './analysis-format/generate-analysis';

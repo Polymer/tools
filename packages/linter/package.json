@@ -1,6 +1,6 @@
 {
   "name": "polymer-linter",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Lint Polymer!",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/linter",
   "repository": "github:Polymer/tools",
@@ -29,20 +29,14 @@
     "@polymer/tools-common": "^2.0.0",
     "@types/babel-traverse": "^6.25.2",
     "@types/babel-types": "^6.25.1",
-    "@types/chai": "^3.4.34",
     "@types/clone": "^0.1.30",
-    "@types/mocha": "^2.2.32",
     "@types/node": "^8.10.11",
     "bower": "^1.8.0",
-    "chai": "^3.5.0",
     "clang-format": "1.0.48",
     "knuth-shuffle": "^1.0.1",
-    "mocha": "^3.1.0",
     "polymer-project-config": "^4.0.0",
     "source-map-support": "^0.4.3",
-    "tsc-then": "^1.0.1",
-    "tslint": "^5.9.1",
-    "typescript": "^2.7.1"
+    "tsc-then": "^1.0.1"
   },
   "scripts": {
     "prepublishOnly": "npm run build",

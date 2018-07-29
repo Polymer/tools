@@ -229,9 +229,9 @@ export default class ChildRunner {
       setTimeout(() => {
         this.removeAllEventListeners();
 
-        const { iframe } = this;
-        this.container.removeChild(iframe as Node);
+        this.container.removeChild(this.iframe as Node);
         this.iframe = undefined;
+        this.share = null;
       }, 0);
     }
   }

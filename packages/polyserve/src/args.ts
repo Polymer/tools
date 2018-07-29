@@ -119,7 +119,7 @@ export const args: ArgDescriptor[] = [
   {
     name: 'protocol',
     alias: 'P',
-    description: 'The server protocol to use {h2, https/1.1, http/1.1}. ' +
+    description: 'The server protocol to use \\{h2, https/1.1, http/1.1\\}. ' +
         'Defaults to "http/1.1".',
     defaultValue: 'http/1.1',
     type: String,

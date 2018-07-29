@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as assert from 'assert';
 import {NodePath} from '@babel/traverse';
 import * as babel from '@babel/types';
+import * as assert from 'assert';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
 import {Visitor} from '../javascript/estree-visitor';
@@ -176,7 +176,8 @@ class BehaviorVisitor implements Visitor {
       mixins: [],
       observers: [],
       superClass: undefined,
-      tagName: undefined
+      tagName: undefined,
+      isLegacyFactoryCall: false,
     }));
     const behavior = this.currentBehavior!;
 

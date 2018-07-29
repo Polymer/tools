@@ -1,0 +1,34 @@
+clone_depth: 10
+
+version: "{build}"
+
+# Test against this version of Node.js
+environment:
+  nodejs_version: "" # latest
+
+# Force CRLF line-endings
+init:
+  - git config --global core.autocrlf true
+
+# Don't actually build.
+build: off
+
+# Install scripts. (runs after repo cloning)
+install:
+  # Get the latest stable version of Node.js or io.js
+  - ps: Install-Product node $env:nodejs_version
+  # Get latest npm
+  - npm install -g npm
+  # install modules. Use --force to workaround permissions issues on Windows
+  - npm install --force
+
+before_test:
+  - set "PATH=C:\MinGW\msys\1.0\bin;%PATH%"
+
+# Post-install test scripts.
+test_script:
+  # Output useful info for debugging.
+  - node --version
+  - npm --version
+  # run tests
+  - npm run test:full

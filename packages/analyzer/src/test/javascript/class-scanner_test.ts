@@ -826,6 +826,56 @@ suite('Class', () => {
       ]);
     });
 
+    test('recognizes class and constructor annotations', async () => {
+      const classes = (await getClasses('class/annotated-classes.js'))
+                          .classes
+                          // Mixin functions are classes too, but we don't care
+                          // about them here.
+                          .filter((c) => !c.kinds.has('element-mixin'));
+
+      assert.deepEqual(await Promise.all(classes.map(getTestProps)), [
+        {
+          name: 'hasConstructorAnnotation',
+          description: '',
+          privacy: 'public',
+        },
+        {
+          name: 'hasConstructorExtendsMixinAnnotations',
+          description: '',
+          privacy: 'public',
+          superClass: 'HTMLElement',
+          mixins: [
+            {identifier: 'someMixin'},
+          ],
+        },
+        {
+          name: 'hasEphemeralSuperclass1',
+          description: '',
+          privacy: 'public',
+          superClass: 'HTMLElement',
+          mixins: [
+            {identifier: 'someMixin'},
+          ],
+        },
+        {
+          name: 'hasEphemeralSuperclass2',
+          description: '',
+          privacy: 'public',
+        },
+        {
+          name: 'Polymer.notEphemeralSuperclass',
+          description: '',
+          privacy: 'private',
+        },
+        {
+          name: 'hasNotEphemeralSuperclass',
+          description: '',
+          superClass: 'Polymer.notEphemeralSuperclass',
+          privacy: 'public'
+        }
+      ]);
+    });
+
     test('we index classes by their canonical statements', async () => {
       const filename = 'class/class-names.js';
       const {classes, analysis} = await getClasses(filename);

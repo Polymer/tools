@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
-
 import {assert} from 'chai';
 
 import {ScannedPolymerElement} from '../../polymer/polymer-element';
@@ -245,6 +243,9 @@ suite('PolymerElementScanner', () => {
             .warnings.filter((w) => w.code === 'invalid-listeners-declaration')
             .length,
         1);
+
+
+    assert.deepEqual(features.map((f) => f.isLegacyFactoryCall), [true, true]);
   });
 
   test('finds declared and assigned call expressions', async () => {

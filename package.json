@@ -10,7 +10,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap --ci",
     "build": "lerna run build --stream",
-    "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec 'rm -f package-lock.json npm-shrinkwrap.json' && lerna clean --yes && lerna bootstrap",
+    "nuke": "rm -rf package-lock.json node_modules && npm install && lerna exec 'rm -f package-lock.json npm-shrinkwrap.json' && lerna clean --yes && lerna exec --stream -- npm install && lerna bootstrap",
     "test": "npm run build && npm run test:unit",
     "test:all": "npm run test:unit && npm run test:integration",
     "test:all:parallel": "npm run test:unit && npm run test:integration:parallel",
@@ -19,13 +19,28 @@
     "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester --ignore @polymer/esm-amd-loader --parallel",
     "test:unit": "lerna run test:unit --stream",
     "test:unit:parallel": "lerna run test:unit --stream --parallel",
-    "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester",
+    "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester --ignore @polymer/gen-typescript-declarations",
     "update-goldens": "lerna run update-goldens --stream"
   },
   "devDependencies": {
-    "lerna": "^3.0.0-beta.18"
+    "@types/chai-as-promised": "^7.1.0",
+    "@types/chai-subset": "^1.3.1",
+    "@types/sinon-chai": "^2.7.32",
+    "chai-as-promised": "^7.1.1",
+    "chai-subset": "^1.6.0",
+    "lerna": "^3.0.0-beta.18",
+    "sinon-chai": "^3.1.0"
   },
   "engines": {
     "node": ">=8"
+  },
+  "dependencies": {
+    "@types/chai": "^4.1.3",
+    "@types/mocha": "^5.2.1",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.2",
+    "typescript-json-schema": "^0.25.1"
   }
 }

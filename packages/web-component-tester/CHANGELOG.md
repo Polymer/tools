@@ -6,7 +6,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Fixed client-side memory leak.
 <!-- Add new, unreleased items here. -->
+
+## 6.7.1 - 2018-06-25
+* Converted from promisify-node to native Node version of promisify.  Officially breaks support for node v6.
+
+## 6.7.0 - 2018-06-19
+* Updated Mocha to v5
+* Updated wct-st to *not* force-exit process after `runSauceTunnel()` promise is rejected/resolved. 
+* Fixed incorrect CLI arguments
 
 ## 6.6.0 - 2018-05-08
 * Dropped support for node v6. This is a soft break, as we aren't

@@ -5,7 +5,7 @@
   "bugs": "https://github.com/Polymer/tools/issues",
   "license": "BSD-3-Clause",
   "author": "The Polymer Project Authors",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "engines": {
     "node": ">=8.0"
   },
@@ -23,19 +23,17 @@
     "depcheck": "^0.6.0",
     "fs-extra": "^3.0.0",
     "gulp-eslint": "^4.0.0",
-    "gulp-mocha": "^4.0.0",
+    "gulp-mocha": "^6.0.0",
     "gulp-tslint": "^8.0.0",
     "gulp-typescript": "^3.0.0",
     "merge-stream": "^1.0.0",
     "run-sequence": "^1.0.0"
   },
   "peerDependencies": {
-    "gulp": "^3.9.1"
+    "gulp": "^4.0.0"
   },
   "devDependencies": {
     "clang-format": "1.0.46",
-    "gulp": "^3.9.1",
-    "tslint": "^5.9.1",
-    "typescript": "^2.2.0"
+    "gulp": "^4.0.0"
   }
 }

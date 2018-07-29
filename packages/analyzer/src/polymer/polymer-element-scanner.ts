@@ -81,7 +81,8 @@ class ElementVisitor implements Visitor {
       mixins: [],
       observers: [],
       superClass: undefined,
-      tagName: undefined
+      tagName: undefined,
+      isLegacyFactoryCall: true,
     });
     element.description = (element.description || '').trim();
     const propertyHandlers =

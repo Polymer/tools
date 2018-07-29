@@ -159,13 +159,6 @@ export interface JsTransformOptions {
   // transform if the script contains any ES module import/export syntax.
   transformModulesToAmd?: boolean|'auto';
 
-  // If transformModulesToAmd is true, setting this option will update the
-  // generated AMD module to be 1) defined with an auto-generated name (instead
-  // of with no name), and 2) if > 0, to depend on the previously auto-generated
-  // module. This can be used to generate a dependency chain between module
-  // scripts.
-  moduleScriptIdx?: number;
-
   // If true, parsing of invalid JavaScript will not throw an exception.
   // Instead, a console error will be logged, and the original JavaScript will
   // be returned with no changes. Use with caution!

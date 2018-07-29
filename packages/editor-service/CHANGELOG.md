@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 -->
 
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## 2.2.2 - 2018-06-28
+- Fix NPM audit warnings.
 
 ## 2.2.1 - 2018-05-08 
 

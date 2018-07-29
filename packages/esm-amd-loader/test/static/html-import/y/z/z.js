@@ -1,0 +1,3 @@
+define([], () => {
+  window.addExecutedForImport('z');
+});

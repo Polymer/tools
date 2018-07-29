@@ -1,0 +1,11 @@
+{
+  "files": {
+    "file-before.html": {
+      "convertedUrl": "file-after.js",
+      "exports": {
+        "NS.Export1": "Export1",
+        "NS.Export2": "Export2"
+      }
+    }
+  }
+}

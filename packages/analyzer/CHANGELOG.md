@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.1.0] - 2018-07-25
+* The `Function` type is now exported from `index.js`.
+* `Import` features now have an `astNodePath`.
+* `WarningStringifyOptions` now takes an optional `maxCodeLines` to print.
+* Elements registered with the legacy `Polymer()` function now have
+  `isLegacyPolymerFactoryCall: true`.
+* `@extends {SuperClass}` annotations are now parsed. Previously the type was
+  not extracted if it had curly braces.
+* Expressions annotated with `@constructor` will now be scanned as classes.
+* Ephemeral super classes will now be collapsed into their child classes.
+
+## [3.0.2] - 2018-06-28
+* Better support for resolving `export {foo as bar}` statements.
+
 ## [3.0.1] - 2018-05-11
 * Better support for handling errors early on in the analysis process (load,
   parse, scan). This should solve the vast majority of Internal Error warnings.

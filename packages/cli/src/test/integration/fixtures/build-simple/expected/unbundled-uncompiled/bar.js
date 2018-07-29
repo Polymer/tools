@@ -1,3 +1,0 @@
-function bar() {
-  alert('bar');
-}

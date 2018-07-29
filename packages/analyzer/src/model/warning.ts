@@ -64,7 +64,7 @@ export class Warning {
       sourceRange: this.sourceRange,
       severity: this.severity,
       code: this.code,
-      parsedDocument: this._parsedDocument,
+      parsedDocument: this._parsedDocument
     } = init);
     this.fix = init.fix;
     this.actions = init.actions;
@@ -90,8 +90,11 @@ export class Warning {
 
     let result = '';
     if (options.verbosity !== 'one-line') {
-      const underlined =
-          underlineCode(this.sourceRange, this._parsedDocument, colorize);
+      const underlined = underlineCode(
+          this.sourceRange,
+          this._parsedDocument,
+          colorize,
+          options.maxCodeLines);
       if (underlined) {
         result += underlined;
       }
@@ -180,6 +183,11 @@ export interface WarningStringifyOptions {
    * to the reported file.
    */
   readonly resolver?: UrlResolver;
+  /**
+   * If given, we will only print this many lines of code. Otherwise print all
+   * lines in the source range.
+   */
+  readonly maxCodeLines?: number;
 }
 const defaultPrinterOptions = {
   verbosity: 'full' as 'full',
