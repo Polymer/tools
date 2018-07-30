@@ -65,5 +65,5 @@ matrix:
     # We don't need to test the local browsers on this WCT integration test
     # run.  Sauce only.
     - SKIP_LOCAL_BROWSERS=true
-    - TEST_REMOTE_BROWSERS="OS X 10.11/safari@9,OS X 10.11/safari@10,macOS 10.13/safari@11,Windows 8.1/internet explorer@11,Windows 10/microsoftedge@14,Windows 10/microsoftedge@42"
+    - TEST_REMOTE_BROWSERS="OS X 10.11/safari@9,OS X 10.11/safari@10,macOS 10.13/safari@11,Windows 8.1/internet explorer@11,Windows 10/microsoftedge@14,Windows 10/microsoftedge@17"
     - TEST_COMMAND="xvfb-run npx lerna run test:integration --stream --scope web-component-tester --scope @polymer/esm-amd-loader --concurrency 1"
