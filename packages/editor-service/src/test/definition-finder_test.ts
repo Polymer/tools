@@ -229,8 +229,8 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     const {client} = await createTestEnvironment(
         {fixtureDir: path.join(fixtureDir, 'editor-service')});
     assert.deepEqual(
-        (await client.getDocumentSymbols('slot-test-elem.html') as
-             DocumentSymbol[])!.map((s: DocumentSymbol) => s.name),
+        (await client.getDocumentSymbols(
+            'slot-test-elem.html') as DocumentSymbol[])!.map((s) => s.name),
         [
           'slot-test-elem',
           'slot-one-test-elem',
