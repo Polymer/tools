@@ -12,8 +12,5 @@
   },
   "main": "index.js",
   "typings": "./index.d.ts",
-  "engine": ">=4",
-  "dependencies": {
-    "@types/node": "^10.5.2"
-  }
+  "engine": ">=4"
 }
