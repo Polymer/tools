@@ -128,7 +128,11 @@ export class LintCommand implements Command {
         content: collectionsDocs.join('\n\n'),
         raw: true
       },
-      {header: 'Lint Rules', content: rulesDocs.join('\n\n'), raw: true}
+      {
+        header: 'Lint Rules',
+        content: rulesDocs.join('\n\n').replace(/[{}\\]/g, '\\$&'),
+        raw: true
+      }
     ];
   }
 
