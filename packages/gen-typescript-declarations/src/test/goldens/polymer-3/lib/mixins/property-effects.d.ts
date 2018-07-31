@@ -57,7 +57,7 @@ import {TemplateStampConstructor} from './template-stamp.js';
 
 import {PropertyAccessorsConstructor} from './property-accessors.js';
 
-import {PropertiesChangedConstructor} from './properties-changed.js';
+import {PropertiesChangedConstructor, PropertiesChanged} from './properties-changed.js';
 
 interface PropertyEffectsConstructor {
   new(...args: any[]): PropertyEffects;
@@ -303,7 +303,7 @@ interface PropertyEffectsConstructor {
 
 export {PropertyEffectsConstructor};
 
-interface PropertyEffects {
+interface PropertyEffects extends TemplateStamp, PropertyAccessors, PropertiesChanged {
   readonly PROPERTY_EFFECT_TYPES: any;
 
   /**

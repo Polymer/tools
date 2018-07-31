@@ -25,11 +25,11 @@ declare function StrictBindingParser<T extends new (...args: any[]) => {}>(base:
 
 import {PropertyEffectsConstructor} from './property-effects.js';
 
-import {TemplateStampConstructor} from './template-stamp.js';
+import {TemplateStampConstructor, TemplateStamp} from './template-stamp.js';
 
-import {PropertyAccessorsConstructor} from './property-accessors.js';
+import {PropertyAccessorsConstructor, PropertyAccessors} from './property-accessors.js';
 
-import {PropertiesChangedConstructor} from './properties-changed.js';
+import {PropertiesChangedConstructor, PropertiesChanged} from './properties-changed.js';
 
 interface StrictBindingParserConstructor {
   new(...args: any[]): StrictBindingParser;
@@ -71,7 +71,7 @@ interface StrictBindingParserConstructor {
 
 export {StrictBindingParserConstructor};
 
-interface StrictBindingParser {
+interface StrictBindingParser extends PropertyEffects, TemplateStamp, PropertyAccessors, PropertiesChanged {
 }
 
 export {StrictBindingParser};

@@ -39,15 +39,15 @@ declare function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: 
 
 import {ElementMixinConstructor} from '../mixins/element-mixin.js';
 
-import {PropertyEffectsConstructor} from '../mixins/property-effects.js';
+import {PropertyEffectsConstructor, PropertyEffects} from '../mixins/property-effects.js';
 
-import {TemplateStampConstructor} from '../mixins/template-stamp.js';
+import {TemplateStampConstructor, TemplateStamp} from '../mixins/template-stamp.js';
 
-import {PropertyAccessorsConstructor} from '../mixins/property-accessors.js';
+import {PropertyAccessorsConstructor, PropertyAccessors} from '../mixins/property-accessors.js';
 
-import {PropertiesChangedConstructor} from '../mixins/properties-changed.js';
+import {PropertiesChangedConstructor, PropertiesChanged} from '../mixins/properties-changed.js';
 
-import {PropertiesMixinConstructor} from '../mixins/properties-mixin.js';
+import {PropertiesMixinConstructor, PropertiesMixin} from '../mixins/properties-mixin.js';
 
 import {GestureEventListenersConstructor} from '../mixins/gesture-event-listeners.js';
 
@@ -57,7 +57,7 @@ interface LegacyElementMixinConstructor {
 
 export {LegacyElementMixinConstructor};
 
-interface LegacyElementMixin {
+interface LegacyElementMixin extends ElementMixin, PropertyEffects, TemplateStamp, PropertyAccessors, PropertiesChanged, PropertiesMixin, GestureEventListeners {
   isAttached: boolean;
   _debouncers: {[key: string]: Function|null};
 

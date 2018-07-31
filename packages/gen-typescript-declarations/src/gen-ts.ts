@@ -228,16 +228,7 @@ async function analyzerToAst(
  * autoImport configuration, unless they are already imported.
  */
 function addAutoImports(tsDoc: ts.Document, autoImport: Map<string, string>) {
-  const alreadyImported = new Set<string>();
-  for (const member of tsDoc.members) {
-    if (member.kind === 'import') {
-      for (const {identifier, alias} of member.identifiers) {
-        if (identifier !== ts.AllIdentifiers) {
-          alreadyImported.add(alias || identifier);
-        }
-      }
-    }
-  }
+  const alreadyImported = getImportedIdentifiers(tsDoc);
 
   for (const node of tsDoc.traverse()) {
     if (node.kind !== 'name') {
@@ -263,6 +254,23 @@ function addAutoImports(tsDoc: ts.Document, autoImport: Map<string, string>) {
     }));
     alreadyImported.add(node.name);
   }
+}
+
+/**
+ * Return all local identifiers imported by the given typings.
+ */
+function getImportedIdentifiers(tsDoc: ts.Document): Set<string> {
+  const identifiers = new Set();
+  for (const member of tsDoc.members) {
+    if (member.kind === 'import') {
+      for (const {identifier, alias} of member.identifiers) {
+        if (identifier !== ts.AllIdentifiers) {
+          identifiers.add(alias || identifier);
+        }
+      }
+    }
+  }
+  return identifiers;
 }
 
 /**
@@ -409,60 +417,55 @@ class TypeGenerator {
       return;
     }
 
-    const behaviors = isPolymerElement(feature) ?
-        feature.behaviorAssignments.map((behavior) => behavior.identifier) :
-        [];
+    const legacyPolymerInterfaces = [];
+    if (isPolymerElement(feature)) {
+      legacyPolymerInterfaces.push(...feature.behaviorAssignments.map(
+          (behavior) => behavior.identifier));
+
+      if (feature.isLegacyFactoryCall) {
+        if (this.root.isEsModule) {
+          legacyPolymerInterfaces.push('LegacyElementMixin');
+          if (!getImportedIdentifiers(this.root).has('LegacyElementMixin')) {
+            this.root.members.push(new ts.Import({
+              identifiers: [{identifier: 'LegacyElementMixin'}],
+              fromModuleSpecifier:
+                  '@polymer/polymer/lib/legacy/legacy-element-mixin.js',
+            }));
+          }
+
+        } else {
+          legacyPolymerInterfaces.push('Polymer.LegacyElementMixin');
+        }
+
+        legacyPolymerInterfaces.push('HTMLElement');
+      }
+    }
 
     if (constructable) {
-      parent.members.push(new ts.Class({
-        name: shortName,
-        description: feature.description || feature.summary,
-        extends: (feature.extends) ||
-            (isPolymerElement(feature) ? 'Polymer.Element' : 'HTMLElement'),
-        mixins: feature.mixins.map((mixin) => mixin.identifier),
-        properties: this.handleProperties(feature.properties.values()),
-        methods: [
-          ...this.handleMethods(
-              feature.staticMethods.values(), {isStatic: true}),
-          ...this.handleMethods(feature.methods.values()),
-        ],
-        constructorMethod:
-            this.handleConstructorMethod(feature.constructorMethod)
-      }));
+      this.handleClass(feature);
 
-      if (behaviors.length > 0) {
-        // We need to augment our class declaration with some behaviors.
-        // Behaviors are interfaces, so our class can't directly extend them,
-        // like we can do with mixin functions. However, the class declaration
-        // implicitly creates a corresponding interface with the same name, and
-        // we can augment that with the behavior interfaces using declaration
-        // merging.
+      if (legacyPolymerInterfaces.length > 0) {
+        // Augment the class interface.
         parent.members.push(new ts.Interface({
           name: shortName,
-          extends: behaviors,
+          extends: legacyPolymerInterfaces,
         }));
       }
 
     } else {
-      // TODO How do we handle mixins when we are emitting an interface? We
-      // don't currently define interfaces for mixins, so we can't just add them
-      // to extends.
-      const i = new ts.Interface({
+      parent.members.push(new ts.Interface({
         name: shortName,
         description: feature.description || feature.summary,
         properties: this.handleProperties(feature.properties.values()),
-        // Don't worry about about static methods when we're not constructable.
-        // Since there's no handle to the constructor, they could never be
-        // called.
+        // Don't worry about about static methods when we're not
+        // constructable. Since there's no handle to the constructor, they
+        // could never be called.
         methods: this.handleMethods(feature.methods.values()),
-      });
-
-      if (isPolymerElement(feature)) {
-        i.extends.push('Polymer.Element');
-        i.extends.push(...behaviors);
-      }
-
-      parent.members.push(i);
+        extends: [
+          ...feature.mixins.map((mixin) => mixin.identifier),
+          ...legacyPolymerInterfaces,
+        ],
+      }));
     }
 
     // The `HTMLElementTagNameMap` global interface maps custom element tag
@@ -521,7 +524,7 @@ class TypeGenerator {
   private handleMixin(feature: analyzer.ElementMixin) {
     const [namespacePath, mixinName] = splitReference(feature.name);
     const parentNamespace = findOrCreateNamespace(this.root, namespacePath);
-    const transitiveMixins = this.transitiveMixins(feature);
+    const transitiveMixins = [...this.transitiveMixins(feature)];
     const constructorName = mixinName + 'Constructor';
 
     // The mixin function. It takes a constructor, and returns an intersection
@@ -537,7 +540,7 @@ class TypeGenerator {
       returns: new ts.IntersectionType([
         new ts.NameType('T'),
         new ts.NameType(constructorName),
-        ...[...transitiveMixins].map(
+        ...transitiveMixins.map(
             (mixin) => new ts.NameType(mixin.name + 'Constructor'))
       ]),
     }));
@@ -559,8 +562,12 @@ class TypeGenerator {
             path.relative(path.dirname(this.root.path), rootRelative);
         const fromModuleSpecifier =
             fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
+        const identifiers = [{identifier: mixin.name + 'Constructor'}];
+        if (!getImportedIdentifiers(this.root).has(mixin.name)) {
+          identifiers.push({identifier: mixin.name});
+        }
         this.root.members.push(new ts.Import({
-          identifiers: [{identifier: mixin.name + 'Constructor'}],
+          identifiers,
           fromModuleSpecifier,
         }));
       }
@@ -601,6 +608,7 @@ class TypeGenerator {
           name: mixinName,
           properties: this.handleProperties(feature.properties.values()),
           methods: this.handleMethods(feature.methods.values()),
+          extends: transitiveMixins.map((mixin) => mixin.name),
         }),
     );
   }
@@ -651,9 +659,12 @@ class TypeGenerator {
     ];
     m.constructorMethod =
         this.handleConstructorMethod(feature.constructorMethod);
+    if (feature.superClass !== undefined) {
+      m.extends = feature.superClass.identifier;
+    }
+    m.mixins = feature.mixins.map((mixin) => mixin.identifier);
     findOrCreateNamespace(this.root, namespacePath).members.push(m);
   }
-
 
   /**
    * Add the given Function to the given TypeScript declarations document.

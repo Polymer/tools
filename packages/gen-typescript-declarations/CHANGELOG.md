@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+
+## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.
 - Warnings are now printed with file names, line numbers, and code snippets.
 - Add `autoImport` config option to automatically add ES module imports when
@@ -12,6 +14,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Automatically detect if a project uses NPM or Bower and configure module
   resolution settings accordingly.
 - Automatically import/export synthetic mixin constructor interfaces.
+- Superclasses and mixins are now emitted for classes.
+- Element super classes are now emitted.
+- Legacy Polymer elements now extend `LegacyElementMixin` and `HTMLElement`
+  instead of `PolymerElement`.
+- Mixin instance interfaces now extend the instance interfaces for the mixins
+  that they automatically apply.
 
 ## [1.3.0] - 2018-06-29
 - Generate typings for class constructors.

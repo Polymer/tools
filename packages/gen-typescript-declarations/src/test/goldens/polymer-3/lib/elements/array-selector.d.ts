@@ -35,15 +35,15 @@ declare function ArraySelectorMixin<T extends new (...args: any[]) => {}>(base: 
 
 import {ElementMixinConstructor} from '../mixins/element-mixin.js';
 
-import {PropertyEffectsConstructor} from '../mixins/property-effects.js';
+import {PropertyEffectsConstructor, PropertyEffects} from '../mixins/property-effects.js';
 
-import {TemplateStampConstructor} from '../mixins/template-stamp.js';
+import {TemplateStampConstructor, TemplateStamp} from '../mixins/template-stamp.js';
 
-import {PropertyAccessorsConstructor} from '../mixins/property-accessors.js';
+import {PropertyAccessorsConstructor, PropertyAccessors} from '../mixins/property-accessors.js';
 
-import {PropertiesChangedConstructor} from '../mixins/properties-changed.js';
+import {PropertiesChangedConstructor, PropertiesChanged} from '../mixins/properties-changed.js';
 
-import {PropertiesMixinConstructor} from '../mixins/properties-mixin.js';
+import {PropertiesMixinConstructor, PropertiesMixin} from '../mixins/properties-mixin.js';
 
 interface ArraySelectorMixinConstructor {
   new(...args: any[]): ArraySelectorMixin;
@@ -51,7 +51,7 @@ interface ArraySelectorMixinConstructor {
 
 export {ArraySelectorMixinConstructor};
 
-interface ArraySelectorMixin {
+interface ArraySelectorMixin extends ElementMixin, PropertyEffects, TemplateStamp, PropertyAccessors, PropertiesChanged, PropertiesMixin {
 
   /**
    * An array containing items from which selection will be made.
@@ -207,7 +207,7 @@ export {ArraySelectorMixin};
  */
 declare class ArraySelector extends
   ArraySelectorMixin(
-  Polymer.Element) {
+  PolymerElement) {
 }
 
 declare global {

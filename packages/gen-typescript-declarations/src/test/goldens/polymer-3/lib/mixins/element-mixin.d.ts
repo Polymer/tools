@@ -38,8 +38,7 @@ export {ElementMixin};
  *
  * - `static get template()`: Users may provide the template directly (as
  *   opposed to via `dom-module`) by implementing a static `template` getter.
- *   The getter may return an `HTMLTemplateElement` or a string, which will
- *   automatically be parsed into a template.
+ *   The getter must return an `HTMLTemplateElement`.
  *
  * - `static get properties()`: Should return an object describing
  *   property-related metadata used by Polymer features (key: property name
@@ -83,11 +82,11 @@ declare function ElementMixin<T extends new (...args: any[]) => {}>(base: T): T 
 
 import {PropertyEffectsConstructor} from './property-effects.js';
 
-import {TemplateStampConstructor} from './template-stamp.js';
+import {TemplateStampConstructor, TemplateStamp} from './template-stamp.js';
 
-import {PropertyAccessorsConstructor} from './property-accessors.js';
+import {PropertyAccessorsConstructor, PropertyAccessors} from './property-accessors.js';
 
-import {PropertiesChangedConstructor} from './properties-changed.js';
+import {PropertiesChangedConstructor, PropertiesChanged} from './properties-changed.js';
 
 import {PropertiesMixinConstructor} from './properties-mixin.js';
 
@@ -147,7 +146,7 @@ interface ElementMixinConstructor {
 
 export {ElementMixinConstructor};
 
-interface ElementMixin {
+interface ElementMixin extends PropertyEffects, TemplateStamp, PropertyAccessors, PropertiesChanged, PropertiesMixin {
   _template: HTMLTemplateElement|null;
   _importPath: string;
   rootPath: string;

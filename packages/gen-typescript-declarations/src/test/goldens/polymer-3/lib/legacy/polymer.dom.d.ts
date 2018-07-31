@@ -76,7 +76,7 @@ declare class DomApi {
   deepContains(node: Node|null): boolean;
 
   /**
-   * Returns the root node of this node.  Equivalent to `getRoodNode()`.
+   * Returns the root node of this node.  Equivalent to `getRootNode()`.
    *
    * @returns Top most element in the dom tree in which the node
    * exists. If the node is connected to a document this is either a

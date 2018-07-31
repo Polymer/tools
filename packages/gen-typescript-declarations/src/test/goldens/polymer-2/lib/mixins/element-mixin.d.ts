@@ -132,7 +132,7 @@ declare namespace Polymer {
     _finalizeTemplate(is: string): void;
   }
 
-  interface ElementMixin {
+  interface ElementMixin extends Polymer.PropertyEffects, Polymer.TemplateStamp, Polymer.PropertyAccessors, Polymer.PropertiesChanged, Polymer.PropertiesMixin {
     _template: HTMLTemplateElement|null;
     _importPath: string;
     rootPath: string;
@@ -197,6 +197,9 @@ declare namespace Polymer {
      * Example: `this.updateStyles({'--color': 'blue'})`
      *
      * These properties are retained unless a value of `null` is set.
+     *
+     * Note: This function does not support updating CSS mixins.
+     * You can not dynamically change the value of an `@apply`.
      *
      * @param properties Bag of custom property key/values to
      *   apply to this element.

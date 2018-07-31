@@ -243,6 +243,9 @@ suite('PolymerElementScanner', () => {
             .warnings.filter((w) => w.code === 'invalid-listeners-declaration')
             .length,
         1);
+
+
+    assert.deepEqual(features.map((f) => f.isLegacyFactoryCall), [true, true]);
   });
 
   test('finds declared and assigned call expressions', async () => {

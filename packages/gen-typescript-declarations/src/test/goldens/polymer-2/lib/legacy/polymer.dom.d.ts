@@ -180,6 +180,6 @@ declare class EventApi {
   /**
    * Returns the `composedPath` for this event.
    */
-  readonly path: Array<EventTarget|null>;
+  readonly path: EventTarget[];
   constructor(event: any);
 }
