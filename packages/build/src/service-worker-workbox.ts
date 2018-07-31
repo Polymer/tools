@@ -75,14 +75,14 @@ export async function generateServiceWorkerConfig(
   assert(!!options.project, '`project` option is required');
   assert(!!options.buildRoot, '`buildRoot` option is required');
 
-  options = Object.assign({}, options);
+  options = {...options};
   const project = options.project;
   const buildRoot = options.buildRoot;
-  const workboxConfig: WorkboxConfig =
-      Object.assign({}, {
-        globDirectory: buildRoot,
-        navigateFallback: path.relative(project.config.root, project.config.entrypoint),
-      }, options.workboxConfig);
+  const workboxConfig: WorkboxConfig = {
+    ...options.workboxConfig,
+    globDirectory: buildRoot,
+    navigateFallback: path.relative(project.config.root, project.config.entrypoint),
+  };
 
   const depsIndex = await project.analyzer.analyzeDependencies;
   let staticFileGlobs = Array.from(workboxConfig.globPatterns || []);
@@ -113,9 +113,10 @@ export async function generateServiceWorkerConfig(
   }
 
   if (options.basePath) {
-    workboxConfig.modifyUrlPrefix = Object.assign({}, workboxConfig.modifyUrlPrefix, {
-      '': addTrailingSlash(posixifyPath(options.basePath))
-    });
+    workboxConfig.modifyUrlPrefix = {
+      ...workboxConfig.modifyUrlPrefix,
+      '': addTrailingSlash(posixifyPath(options.basePath)),
+    };
   }
 
   // static files will be pre-cached
