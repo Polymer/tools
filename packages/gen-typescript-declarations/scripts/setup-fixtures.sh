@@ -22,6 +22,7 @@ mkdir -p fixtures
 cd fixtures
 
 while read -r repo commitish dir; do
+  if [ $repo = "#" ]; then continue; fi  # Commented out line. 
   if [ -d $dir ]; then continue; fi  # Already set up.
   # Note you can't do a shallow clone of a SHA.
   git clone $repo $dir
