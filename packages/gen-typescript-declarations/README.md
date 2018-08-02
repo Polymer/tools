@@ -7,10 +7,24 @@ elements.
 
 ## How do I use the typings?
 
-### Polymer
+### Polymer 3
 
-To use the typings, install Polymer normally from Bower (versions 2.4 and
-above), and add a [triple-slash
+Typings for Polymer 3 are included starting from version 3.0.5. To use them,
+install `@polymer/polymer` from npm, and use standard ES module import
+specifiers:
+
+```ts
+import {PolymerElement} from '@polymer/polymer';
+
+class MyElement extends PolymerElement {
+   ...
+}
+```
+
+### Polymer 2
+
+Typings for Polymer 2 are included starting from version 2.4.0. To use them,
+install Polymer from Bower and add a [triple-slash
 directive](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html)
 anywhere in your TypeScript project for the typings you require. Each HTML
 import from Polymer has a corresponding typings file. For example, if you depend
@@ -24,7 +38,8 @@ class MyElement extends Polymer.Element {
 }
 ```
 
-Alternatively, you can add the dependency to `tsconfig.json` in the root of your project:
+Alternatively, you can add the dependency to `tsconfig.json` in the root of your
+project:
 
 ```javascript
 {
@@ -36,16 +51,14 @@ Alternatively, you can add the dependency to `tsconfig.json` in the root of your
 }
 ```
 
-Typings for Polymer 3 are planned but not yet available (see
-[#18](https://github.com/Polymer/gen-typescript-declarations/issues/18)).
-
 You may also be interested in the [Polymer
 decorators](https://github.com/Polymer/polymer-decorators).
 
 ## How do I generate new typings?
 
-You can run this package from the command line with `gen-tsd`, or as a library
-with the `generateDeclarations` function.
+You can run this package from the command line with
+`gen-typescript-declarations`, or as a library with the `generateDeclarations`
+function.
 
 It is recommended to integrate typings generation as part of your build/release
 process:
@@ -54,28 +67,32 @@ process:
 $ npm install --save-dev @polymer/gen-typescript-declarations
 ```
 
-Add a `gen-tsd` script to your `package.json`:
+Add a `generate-typings` script to your `package.json`:
 
 ```js
 {
   ...
   "scripts": {
-    "gen-tsd": "gen-tsd"
+    "generate-typings": "gen-typescript-declarations"
   }
 }
 ```
 
-If you're using Bower, ensure you run `npm run gen-tsd` to generate the latest
-typings and commit them to your repository before tagging each release.
+If you're using NPM, you can add this script to the NPM `prepack` script to
+generate and include typings in your NPM package every time you publish. Most
+users will want to configure their `.gitignore` so that the generated typings
+are not committed to their Git repository. In this case, take care to configure
+your `.npmignore` and/or `package.json`  to ensure that they are included when
+you publish to NPM (run `npm pack` to check before publishing).
 
-If you're using NPM, you can instead add this script to the NPM `prepack`
-script to generate and include typings in your NPM package every time you
-publish.
+If you are still using Bower, ensure you run `npm run generate-typings` to
+generate the latest typings and commit them to your repository before tagging
+each release.
 
 ## Config options
 
-By default the `gen-tsd` command will read a file called `gen-tsd.json` in
-your root directory. It has the following options:
+By default the `gen-typescript-declarations` command will read a file called
+`gen-tsd.json` in your root directory. It has the following options:
 
 * **`excludeFiles`**`: string[]`
 
@@ -103,6 +120,14 @@ your root directory. It has the following options:
   the given name. Note this only applies to named types found in places like
   function/method parameters and return types. It does not currently rename
   e.g. entire generated classes.
+
+* **`autoImport`**`: {[modulePath: string]: string[]}`
+
+  A map from an ES module path (relative to the analysis root directory) to
+  an array of identifiers exported by that module. If any of those
+  identifiers are encountered in a generated typings file, an import for that
+  identifier from the specified module will be inserted into the typings
+  file.
 
 ## Using as a module
 
