@@ -79,7 +79,11 @@ Add a `generate-typings` script to your `package.json`:
 ```
 
 If you're using NPM, you can add this script to the NPM `prepack` script to
-generate and include typings in your NPM package every time you publish.
+generate and include typings in your NPM package every time you publish. Most
+users will want to configure their `.gitignore` so that the generated typings
+are not committed to their Git repository. In this case, take care to configure
+your `.npmignore` and/or `package.json`  to ensure that they are included when
+you publish to NPM (run `npm pack` to check before publishing).
 
 If you are still using Bower, ensure you run `npm run generate-typings` to
 generate the latest typings and commit them to your repository before tagging
