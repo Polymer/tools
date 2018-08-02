@@ -9,7 +9,9 @@ elements.
 
 ### Polymer 3
 
-Typings for Polymer 3 are included starting from version 3.0.5. To use them, install `@polymer/polymer` from npm, and use standard ES module import specifiers:
+Typings for Polymer 3 are included starting from version 3.0.5. To use them,
+install `@polymer/polymer` from npm, and use standard ES module import
+specifiers:
 
 ```ts
 import {PolymerElement} from '@polymer/polymer';
@@ -21,7 +23,8 @@ class MyElement extends PolymerElement {
 
 ### Polymer 2
 
-Typings for Polymer 2 are included starting from version 2.4.0. To use them, install Polymer from Bower and add a [triple-slash
+Typings for Polymer 2 are included starting from version 2.4.0. To use them,
+install Polymer from Bower and add a [triple-slash
 directive](https://www.typescriptlang.org/docs/handbook/triple-slash-directives.html)
 anywhere in your TypeScript project for the typings you require. Each HTML
 import from Polymer has a corresponding typings file. For example, if you depend
@@ -35,7 +38,8 @@ class MyElement extends Polymer.Element {
 }
 ```
 
-Alternatively, you can add the dependency to `tsconfig.json` in the root of your project:
+Alternatively, you can add the dependency to `tsconfig.json` in the root of your
+project:
 
 ```javascript
 {
@@ -52,8 +56,9 @@ decorators](https://github.com/Polymer/polymer-decorators).
 
 ## How do I generate new typings?
 
-You can run this package from the command line with `gen-typescript-declarations`,
-or as a library with the `generateDeclarations` function.
+You can run this package from the command line with
+`gen-typescript-declarations`, or as a library with the `generateDeclarations`
+function.
 
 It is recommended to integrate typings generation as part of your build/release
 process:
@@ -62,13 +67,13 @@ process:
 $ npm install --save-dev @polymer/gen-typescript-declarations
 ```
 
-Add a `generate-types` script to your `package.json`:
+Add a `generate-typings` script to your `package.json`:
 
 ```js
 {
   ...
   "scripts": {
-    "generate-types": "gen-typescript-declarations"
+    "generate-typings": "gen-typescript-declarations"
   }
 }
 ```
@@ -76,8 +81,9 @@ Add a `generate-types` script to your `package.json`:
 If you're using NPM, you can add this script to the NPM `prepack` script to
 generate and include typings in your NPM package every time you publish.
 
-If you are still using Bower, ensure you run `npm run gen-tsd` to generate the
-latest typings and commit them to your repository before tagging each release.
+If you are still using Bower, ensure you run `npm run generate-typings` to
+generate the latest typings and commit them to your repository before tagging
+each release.
 
 ## Config options
 
