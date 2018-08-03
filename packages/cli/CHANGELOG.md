@@ -1,7 +1,9 @@
 # Changelog
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- Add new, unreleased items here. -->
+* Fix a case where the CustomElementsEs5Adapter script was not added to the 
+  builds when the `js.compile` is an object with a target property of es5.
 
 ## v1.7.7 [06-28-2018]
 * Update dependencies.
