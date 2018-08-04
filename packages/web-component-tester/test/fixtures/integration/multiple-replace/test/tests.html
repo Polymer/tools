@@ -178,13 +178,44 @@
         var annotationsBefore;
         var annotationsAfter;
 
+        function decircularize(object, references) {
+          var cleanObject = {};
+          // Get around the fact that unauthorized access to Document.cookie
+          // throws an uncatchable exception.
+          if (Object.keys(object).indexOf('cookie') !== -1) {
+            return cleanObject;
+          }
+          Object.keys(object).forEach(function (key) {
+            var value = object[key];
+            if (value && typeof value === 'object') {
+              if (references.indexOf(value) === -1) {
+                references.push(value);
+                cleanObject[key] = decircularize(value, references);
+                references.pop();
+              } else {
+                cleanObject[key] = '[Circular]';
+              }
+            } else if (typeof value !== 'function') {
+              cleanObject[key] = value;
+            }
+          });
+          return cleanObject;
+        }
+
+        function stringify(object) {
+          if (object && typeof object === 'object') {
+            object = decircularize(object, [object]);
+          }
+          return JSON.stringify(object);
+        }
+
         before(function () {
           domRepeat = fixture('DomRepeatFixture');
 
           Flusher.flush();
 
           var notes = domRepeat._notes || domRepeat._template.content._notes;
-          annotationsBefore = JSON.stringify(notes);
+          annotationsBefore = stringify(notes);
 
           var bindingElements = Polymer.dom(domRepeat.root)
             .querySelectorAll('binding-element');
@@ -192,7 +223,7 @@
           for (var i = 0; i < bindingElements.length; i++) {
             var element = bindingElements[i];
 
-            annotationsBefore += JSON.stringify(element._notes);
+            annotationsBefore += stringify(element._notes);
           }
 
           try {
@@ -206,7 +237,7 @@
           Flusher.flush();
 
           var notes = domRepeat._notes || domRepeat._template.content._notes;
-          annotationsAfter = JSON.stringify(notes);
+          annotationsAfter = stringify(notes);
 
           bindingElements = Polymer.dom(domRepeat.root)
             .querySelectorAll('binding-element');
@@ -214,7 +245,7 @@
           for (var i = 0; i < bindingElements.length; i++) {
             var element = bindingElements[i];
 
-            annotationsAfter += JSON.stringify(element._notes);
+            annotationsAfter += stringify(element._notes);
           }
         });
 
