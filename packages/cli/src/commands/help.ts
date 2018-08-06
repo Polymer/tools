@@ -15,7 +15,7 @@
 // Be careful with these imports. As many as possible should be dynamic imports
 // in the run method in order to minimize startup time from loading unused code.
 
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as commandLineUsage from 'command-line-usage';
 import * as logging from 'plylog';
 import {ProjectConfig} from 'polymer-project-config';
