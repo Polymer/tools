@@ -52,7 +52,11 @@ async function serve(dirToServe: string, options: ServerOptions = {}) {
     startResult.server.close();
   });
   const address = startResult.server.address();
-  return `http://${address.address}:${address.port}`;
+  if (typeof address === 'string') {
+    return `http://${address}`;
+  } else {
+    return `http://${address.address}:${address.port}`;
+  }
 }
 
 async function requestAnimationFrame(page: puppeteer.Page) {
