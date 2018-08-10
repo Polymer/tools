@@ -117,7 +117,6 @@ declare class PaperMenuButton {
    * for the `iron-dropdown` contained by `paper-menu-button`.
    */
   _dropdownContent: object|null|undefined;
-  _template: any;
   hostAttributes: object|null;
 
   /**

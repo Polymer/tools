@@ -133,6 +133,9 @@ export function declarationPropertyHandlers(
 
         declaration.listeners.push({event: evtName, handler: handler});
       }
+    },
+    _template() {
+      // Not an interesting property.
     }
   };
 }

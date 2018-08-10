@@ -22,7 +22,6 @@ interface PaperButtonElement extends PaperButtonBehavior, LegacyElementMixin, HT
    * If true, the button should be styled with a shadow.
    */
   raised: boolean|null|undefined;
-  _template: template|null;
   _calculateElevation(): void;
 }
 
