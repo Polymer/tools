@@ -16,43 +16,35 @@ import {PaperRippleBehavior} from './paper-ripple-behavior.js';
 
 export {PaperButtonBehaviorImpl};
 
-declare namespace Polymer {
+interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior {
 
-  interface PaperButtonBehavior {
+  /**
+   * The z-depth of this element, from 0-5. Setting to 0 will remove the
+   * shadow, and each increasing number greater than 0 will be "deeper"
+   * than the last.
+   */
+  readonly elevation: number|null|undefined;
+  hostAttributes: object|null;
 
-    /**
-     * The z-depth of this element, from 0-5. Setting to 0 will remove the
-     * shadow, and each increasing number greater than 0 will be "deeper"
-     * than the last.
-     */
-    readonly elevation: number|null|undefined;
-    hostAttributes: object|null;
-    _calculateElevation(): void;
-    _computeKeyboardClass(receivedFocusFromKeyboard: any): void;
+  /**
+   * In addition to `IronButtonState` behavior, when space key goes down,
+   * create a ripple down effect.
+   *
+   * @param event .
+   */
+  _spaceKeyDownHandler(event: KeyboardEvent): void;
 
-    /**
-     * In addition to `IronButtonState` behavior, when space key goes down,
-     * create a ripple down effect.
-     *
-     * @param event .
-     */
-    _spaceKeyDownHandler(event: KeyboardEvent): void;
-
-    /**
-     * In addition to `IronButtonState` behavior, when space key goes up,
-     * create a ripple up effect.
-     *
-     * @param event .
-     */
-    _spaceKeyUpHandler(event: KeyboardEvent): void;
-  }
-
-  const PaperButtonBehavior: object;
-}
-
-export {PaperButtonBehavior};
-
-interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior, PaperButtonBehaviorImpl {
+  /**
+   * In addition to `IronButtonState` behavior, when space key goes up,
+   * create a ripple up effect.
+   *
+   * @param event .
+   */
+  _spaceKeyUpHandler(event: KeyboardEvent): void;
+  _calculateElevation(): void;
+  _computeKeyboardClass(receivedFocusFromKeyboard: any): void;
 }
 
 declare const PaperButtonBehavior: object;
+
+export {PaperButtonBehavior};

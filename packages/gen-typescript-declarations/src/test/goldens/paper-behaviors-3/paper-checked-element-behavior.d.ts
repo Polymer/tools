@@ -10,29 +10,30 @@
 
 import {IronCheckedElementBehaviorImpl} from '@polymer/iron-checked-element-behavior/iron-checked-element-behavior.js';
 
+import {PaperInkyFocusBehavior} from './paper-inky-focus-behavior.js';
+
 import {PaperRippleBehavior} from './paper-ripple-behavior.js';
 
 export {PaperCheckedElementBehaviorImpl};
 
-declare namespace Polymer {
+/**
+ * Use `PaperCheckedElementBehavior` to implement a custom element that has a
+ * `checked` property similar to `IronCheckedElementBehavior` and is compatible
+ * with having a ripple effect.
+ */
+interface PaperCheckedElementBehavior extends PaperInkyFocusBehavior, IronCheckedElementBehavior {
 
   /**
-   * Use `Polymer.PaperCheckedElementBehavior` to implement a custom element
-   * that has a `checked` property similar to `Polymer.IronCheckedElementBehavior`
-   * and is compatible with having a ripple effect.
+   * Synchronizes the element's `active` and `checked` state.
    */
-  interface PaperCheckedElementBehavior extends PaperInkyFocusBehavior, IronCheckedElementBehavior, PaperCheckedElementBehaviorImpl {
+  _buttonStateChanged(): void;
 
-    /**
-     * Synchronizes the element's checked state with its ripple effect.
-     */
-    _checkedChanged(): void;
-
-    /**
-     * Synchronizes the element's `active` and `checked` state.
-     */
-    _buttonStateChanged(): void;
-  }
-
-  const PaperCheckedElementBehavior: object;
+  /**
+   * Synchronizes the element's checked state with its ripple effect.
+   */
+  _checkedChanged(): void;
 }
+
+declare const PaperCheckedElementBehavior: object;
+
+export {PaperCheckedElementBehavior};

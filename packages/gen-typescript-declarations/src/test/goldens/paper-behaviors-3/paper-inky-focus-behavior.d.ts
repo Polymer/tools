@@ -16,16 +16,15 @@ import {PaperRippleBehavior} from './paper-ripple-behavior.js';
 
 export {PaperInkyFocusBehaviorImpl};
 
-declare namespace Polymer {
-
-  /**
-   * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has
-   * keyboard focus.
-   */
-  interface PaperInkyFocusBehavior extends IronButtonState, IronControlState, PaperRippleBehavior, PaperInkyFocusBehaviorImpl {
-    _createRipple(): any;
-    _focusedChanged(receivedFocusFromKeyboard: any): void;
-  }
-
-  const PaperInkyFocusBehavior: object;
+/**
+ * `PaperInkyFocusBehavior` implements a ripple when the element has keyboard
+ * focus.
+ */
+interface PaperInkyFocusBehavior extends IronButtonState, IronControlState, PaperRippleBehavior {
+  _createRipple(): any;
+  _focusedChanged(receivedFocusFromKeyboard: any): void;
 }
+
+declare const PaperInkyFocusBehavior: object;
+
+export {PaperInkyFocusBehavior};

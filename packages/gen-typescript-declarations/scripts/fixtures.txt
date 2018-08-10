@@ -1,5 +1,5 @@
 https://github.com/PolymerElements/paper-behaviors.git v2.0.1 paper-behaviors-2
-https://github.com/PolymerElements/paper-behaviors.git 9e490b57c66d2278c0b99698ba8c1919ff960790 paper-behaviors-3
+https://github.com/PolymerElements/paper-behaviors.git 20d38d8ae9035a349c89e770d9344a2d14b0a51c paper-behaviors-3
 https://github.com/PolymerElements/paper-button.git v2.0.0 paper-button-2
 https://github.com/PolymerElements/paper-button.git f644abdfc660f58b6535134ae9a0c16fa7ccaf16 paper-button-3
 https://github.com/PolymerElements/paper-menu-button.git v2.0.0 paper-menu-button-2
