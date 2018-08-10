@@ -29,7 +29,3 @@ declare namespace Polymer {
 
   const PaperInkyFocusBehavior: object;
 }
-
-declare function _focusedChanged(): void;
-
-declare function _createRipple(): any;

@@ -68,22 +68,6 @@ interface MutableDataBehavior {
 
 declare const MutableDataBehavior: object;
 
-
-/**
- * Overrides `Polymer.PropertyEffects` to provide option for skipping
- * strict equality checking for Objects and Arrays.
- *
- * This method pulls the value to dirty check against from the `__dataTemp`
- * cache (rather than the normal `__data` cache) for Objects.  Since the temp
- * cache is cleared at the end of a turn, this implementation allows
- * side-effects of deep object changes to be processed by re-setting the
- * same object (using the temp cache as an in-turn backstop to prevent
- * cycles due to 2-way notification).
- *
- * @returns Whether the property should be considered a change
- */
-declare function _shouldPropertyChange(property: string, value: any, old: any): boolean;
-
 export {OptionalMutableDataBehavior};
 
 /**
@@ -150,19 +134,3 @@ interface OptionalMutableDataBehavior {
 }
 
 declare const OptionalMutableDataBehavior: object;
-
-
-/**
- * Overrides `Polymer.PropertyEffects` to skip strict equality checking
- * for Objects and Arrays.
- *
- * Pulls the value to dirty check against from the `__dataTemp` cache
- * (rather than the normal `__data` cache) for Objects.  Since the temp
- * cache is cleared at the end of a turn, this implementation allows
- * side-effects of deep object changes to be processed by re-setting the
- * same object (using the temp cache as an in-turn backstop to prevent
- * cycles due to 2-way notification).
- *
- * @returns Whether the property should be considered a change
- */
-declare function _shouldPropertyChange(property: string, value: any, old: any): boolean;

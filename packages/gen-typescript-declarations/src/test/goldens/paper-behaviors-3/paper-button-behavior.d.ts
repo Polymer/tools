@@ -50,24 +50,6 @@ declare namespace Polymer {
   const PaperButtonBehavior: object;
 }
 
-declare function _calculateElevation(): void;
-
-declare function _computeKeyboardClass(): void;
-
-
-/**
- * In addition to `IronButtonState` behavior, when space key goes down,
- * create a ripple down effect.
- */
-declare function _spaceKeyDownHandler(event: KeyboardEvent): void;
-
-
-/**
- * In addition to `IronButtonState` behavior, when space key goes up,
- * create a ripple up effect.
- */
-declare function _spaceKeyUpHandler(event: KeyboardEvent): void;
-
 export {PaperButtonBehavior};
 
 interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior, PaperButtonBehaviorImpl {

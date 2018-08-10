@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## Unreleased
 * Legacy Polymer function component features will no longer have a `_template`
   property.
+* Functions defined within exported objects are no longer themselves emitted as
+  top-level functions.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.1.0] - 2018-07-25

@@ -36,17 +36,3 @@ declare namespace Polymer {
 
   const PaperCheckedElementBehavior: object;
 }
-
-
-/**
- * Synchronizes the element's checked state with its ripple effect.
- *    
- */
-declare function _checkedChanged(): void;
-
-
-/**
- * Synchronizes the element's `active` and `checked` state.
- *    
- */
-declare function _buttonStateChanged(): void;
