@@ -4,7 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-<!-- ## [Unreleased] -->
+## [Unreleased]
+* Legacy Polymer function components will no longer have a `_template`
+  property.
+* Functions defined within exported Polymer function calls or exported objects
+  are no longer themselves emitted as top-level functions.
+* `FooBehaviorImpl` style behavior objects (that have been merged into a main
+  `FooBehavior` array) will no longer have a broken `import` or `export`
+  statements emitted for them.
+* Update the URL for this repo put in generated file headers, since it has moved
+  into the Polymer tools monorepo.
 
 ## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.

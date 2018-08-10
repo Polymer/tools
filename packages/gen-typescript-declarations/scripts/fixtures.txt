@@ -1,8 +1,8 @@
 https://github.com/PolymerElements/paper-behaviors.git v2.0.1 paper-behaviors-2
-https://github.com/PolymerElements/paper-behaviors.git 28cf765323b8c7fe4440752968c651ccc1b16768 paper-behaviors-3
+https://github.com/PolymerElements/paper-behaviors.git 20d38d8ae9035a349c89e770d9344a2d14b0a51c paper-behaviors-3
 https://github.com/PolymerElements/paper-button.git v2.0.0 paper-button-2
-https://github.com/PolymerElements/paper-button.git dac8fb397abf4b2df471f5264dcd8a6152a14063 paper-button-3
+https://github.com/PolymerElements/paper-button.git f644abdfc660f58b6535134ae9a0c16fa7ccaf16 paper-button-3
 https://github.com/PolymerElements/paper-menu-button.git v2.0.0 paper-menu-button-2
-https://github.com/PolymerElements/paper-menu-button.git 4dd8ac9107c25340b77c2ad27f8f11660eddb661 paper-menu-button-3
+https://github.com/PolymerElements/paper-menu-button.git ab4885daa67d09a929c8209972e20fbf56014543 paper-menu-button-3
 https://github.com/Polymer/polymer.git 50ba80b864d4843d4e59cfdddeab6efdf280a2ec polymer-2
-https://github.com/Polymer/polymer.git c96b4502e12bbf8a7f4f61a878deaf5f1e305dd2 polymer-3
+https://github.com/Polymer/polymer.git 59405b57b3f7f3732b7f1db07ef1a76b1871814e polymer-3
