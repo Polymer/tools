@@ -35,6 +35,20 @@ declare class DomApi {
    * shadow root.
    */
   readonly activeElement: Node|null|undefined;
+  parentNode: Node|null;
+  firstChild: Node|null;
+  lastChild: Node|null;
+  nextSibling: Node|null;
+  previousSibling: Node|null;
+  firstElementChild: HTMLElement|null;
+  lastElementChild: HTMLElement|null;
+  nextElementSibling: HTMLElement|null;
+  previousElementSibling: HTMLElement|null;
+  childNodes: Node[];
+  children: HTMLElement[];
+  classList: DOMTokenList|null;
+  textContent: string;
+  innerHTML: string;
 
   /**
    * @param node Node for which to create a Polymer.dom helper object.

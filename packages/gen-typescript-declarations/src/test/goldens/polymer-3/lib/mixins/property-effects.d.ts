@@ -413,7 +413,7 @@ interface PropertyEffects extends TemplateStamp, PropertyAccessors, PropertiesCh
    * @param oldProps Bag of previous values for each property
    *   in `changedProps`
    */
-  _propertiesChanged(currentProps: object, changedProps: object, oldProps: object): void;
+  _propertiesChanged(currentProps: object, changedProps: object|null, oldProps: object|null): void;
 
   /**
    * Overrides `PropertyAccessors` implementation to provide a

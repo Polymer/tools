@@ -64,7 +64,7 @@ export {setTouchAction};
  * This value is checked on first move, thus it should be called prior to
  * adding event listeners.
  */
-declare function setTouchAction(node: Element, value: string): void;
+declare function setTouchAction(node: Node, value: string): void;
 
 export {prevent};
 

@@ -197,7 +197,7 @@ interface PropertiesChanged {
    *   in `changedProps`
    * @returns true if changedProps is truthy
    */
-  _shouldPropertiesChange(currentProps: object, changedProps: object, oldProps: object): boolean;
+  _shouldPropertiesChange(currentProps: object, changedProps: object|null, oldProps: object|null): boolean;
 
   /**
    * Callback called when any properties with accessors created via
@@ -209,7 +209,7 @@ interface PropertiesChanged {
    * @param oldProps Bag of previous values for each property
    *   in `changedProps`
    */
-  _propertiesChanged(currentProps: object, changedProps: object, oldProps: object): void;
+  _propertiesChanged(currentProps: object, changedProps: object|null, oldProps: object|null): void;
 
   /**
    * Method called to determine whether a property value should be
