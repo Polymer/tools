@@ -8,13 +8,11 @@
  *   paper-button-behavior.js
  */
 
-import {IronButtonState, IronButtonStateImpl} from '@polymer/iron-behaviors/iron-button-state.js';
+import {IronButtonState} from '@polymer/iron-behaviors/iron-button-state.js';
 
 import {IronControlState} from '@polymer/iron-behaviors/iron-control-state.js';
 
 import {PaperRippleBehavior} from './paper-ripple-behavior.js';
-
-export {PaperButtonBehaviorImpl};
 
 interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior {
 

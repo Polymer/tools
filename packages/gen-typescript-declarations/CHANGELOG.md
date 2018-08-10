@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   property.
 * Functions defined within exported Polymer function calls or exported objects
   are no longer themselves emitted as top-level functions.
+* `FooBehaviorImpl` style behavior objects (that have been merged into a main
+  `FooBehavior` array) will no longer have a broken `import` or `export`
+  statements emitted for them.
 
 ## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.

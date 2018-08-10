@@ -8,8 +8,6 @@
  *   paper-ripple-behavior.js
  */
 
-import {IronButtonStateImpl} from '@polymer/iron-behaviors/iron-button-state.js';
-
 import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';
 
 export {PaperRippleBehavior};

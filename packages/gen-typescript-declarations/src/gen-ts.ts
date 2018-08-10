@@ -820,8 +820,10 @@ class TypeGenerator {
       doc: analyzer.Document) {
     const node = feature.astNode.node;
 
-    const isResolvable = (identifier: string) =>
-        resolveImportExportFeature(feature, identifier, doc) !== undefined;
+    const isResolvable = (identifier: string) => {
+      const reference = resolveImportExportFeature(feature, identifier, doc);
+      return reference !== undefined && !isBehaviorImpl(reference);
+    };
 
     if (babel.isImportDeclaration(node)) {
       const identifiers: ts.ImportSpecifier[] = [];
@@ -875,8 +877,10 @@ class TypeGenerator {
   private handleJsExport(feature: analyzer.Export, doc: analyzer.Document) {
     const node = feature.astNode.node;
 
-    const isResolvable = (identifier: string) =>
-        resolveImportExportFeature(feature, identifier, doc) !== undefined;
+    const isResolvable = (identifier: string) => {
+      const reference = resolveImportExportFeature(feature, identifier, doc);
+      return reference !== undefined && !isBehaviorImpl(reference);
+    };
 
     if (babel.isExportAllDeclaration(node)) {
       // E.g. export * from './foo.js'
@@ -1035,6 +1039,29 @@ function findOrCreateInterface(
 function isPolymerElement(feature: analyzer.Feature):
     feature is analyzer.PolymerElement {
   return feature.kinds.has('polymer-element');
+}
+
+/**
+ * Return whether a reference looks like it is a FooBehaviorImpl style behavior
+ * object, which we want to ignore.
+ *
+ * Polymer behavior libraries are often written like:
+ *
+ *   /** @polymerBehavior FooBehavior *\/
+ *   export const FooBehaviorImpl = {};
+ *
+ *   /** @polymerBehavior *\/
+ *   export const FooBehavior = [FooBehaviorImpl, OtherBehavior];
+ *
+ * In this case, Analyzer merges FooBehaviorImpl into FooBehavior and does not
+ * emit a behavior feature for FooBehaviorImpl. However, there is still an
+ * export feature for FooBehaviorImpl, so we exclude it here.
+ */
+function isBehaviorImpl(reference: analyzer.Reference<analyzer.Feature>) {
+  return reference.feature !== undefined &&
+      reference.feature.kinds.has('behavior') &&
+      (reference.feature as analyzer.PolymerBehavior).name !==
+      reference.identifier;
 }
 
 /**
