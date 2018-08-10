@@ -237,11 +237,17 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
     if (polyserveResult.kind === 'mainline') {
       servers = [polyserveResult];
       registerServerTeardown(polyserveResult);
-      wsOptions.port = polyserveResult.server.address().port;
+      const address = polyserveResult.server.address();
+      if (typeof address !== 'string') {
+        wsOptions.port = address.port;
+      }
     } else if (polyserveResult.kind === 'MultipleServers') {
       servers = [polyserveResult.mainline];
       servers = servers.concat(polyserveResult.variants);
-      wsOptions.port = polyserveResult.mainline.server.address().port;
+      const address = polyserveResult.mainline.server.address();
+      if (typeof address !== 'string') {
+        wsOptions.port = address.port;
+      }
       for (const server of polyserveResult.servers) {
         registerServerTeardown(server);
       }
@@ -261,9 +267,10 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
     }
 
     options.webserver._servers = servers.map((s) => {
-      const port = s.server.address().port;
+      const address = s.server.address();
+      const port = typeof address === 'string' ? '' : `:${address.port}`; 
       const hostname = s.options.hostname;
-      const url = `http://${hostname}:${port}${pathToGeneratedIndex}`;
+      const url = `http://${hostname}${port}${pathToGeneratedIndex}`;
       return {url, variant: s.kind === 'mainline' ? '' : s.variantName};
     });
 

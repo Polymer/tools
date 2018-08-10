@@ -159,7 +159,8 @@ export const defaultClientCapabilities: ClientCapabilities = {
     synchronization: {didSave: true, willSave: true, willSaveWaitUntil: true},
     implementation: {dynamicRegistration: false},
     typeDefinition: {},
-    colorProvider: {}
+    colorProvider: {},
+    foldingRange: {},
   },
   workspace: {
     applyEdit: true,
