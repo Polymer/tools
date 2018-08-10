@@ -71,7 +71,8 @@ async function run(argv: string[]) {
     console.log(commandLineUsage([
       {
         header: `gen-typescript-declarations`,
-        content: 'https://github.com/Polymer/gen-typescript-declarations',
+        content: 'https://github.com/Polymer/tools/tree/master/packages/' +
+            'gen-typescript-declarations',
       },
       {
         header: `Options`,
