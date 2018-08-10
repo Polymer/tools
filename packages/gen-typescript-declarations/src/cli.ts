@@ -14,6 +14,7 @@ import * as glob from 'glob';
 import * as path from 'path';
 
 import {Config, generateDeclarations} from './gen-ts';
+import {verifyTypings} from './verify';
 
 import commandLineArgs = require('command-line-args');
 import commandLineUsage = require('command-line-usage');
@@ -53,6 +54,12 @@ const argDefs = [
         'writing new typings, excluding node_modules/, bower_components/, ' +
         'or any file added using the <addReferences> config option.',
   },
+  {
+    name: 'verify',
+    type: Boolean,
+    description: 'Compile the generated types with TypeScript and fail if ' +
+        'they are invalid.',
+  },
 ];
 
 interface Args {
@@ -62,6 +69,7 @@ interface Args {
   config?: string;
   outDir?: string;
   deleteExisting?: boolean;
+  verify?: boolean;
 }
 
 async function run(argv: string[]) {
@@ -90,6 +98,7 @@ async function run(argv: string[]) {
   if (!args.outDir) {
     throw new Error('--outDir is required');
   }
+  const outDir = path.resolve(args.outDir);
 
   if (!args.config) {
     const p = path.join(args.root, 'gen-tsd.json');
@@ -107,7 +116,7 @@ async function run(argv: string[]) {
 
   if (args.deleteExisting) {
     let dtsFiles = glob.sync('**/*.d.ts', {
-      cwd: args.outDir,
+      cwd: outDir,
       absolute: true,
       nodir: true,
       ignore: [
@@ -128,13 +137,26 @@ async function run(argv: string[]) {
     dtsFiles = dtsFiles.filter((filepath) => !dontDelete.has(filepath));
 
     console.log(
-        `Deleting ${dtsFiles.length} existing d.ts files from ` +
-        `${path.resolve(args.outDir)}`);
+        `Deleting ${dtsFiles.length} existing d.ts files from ${outDir}`);
     await Promise.all(dtsFiles.map((filepath) => fsExtra.remove(filepath)));
   }
 
-  console.log('Writing type declarations to', path.resolve(args.outDir));
+  console.log(`Writing type declarations to ${outDir}`);
   await writeFileMap(args.outDir, fileMap);
+
+  if (args.verify) {
+    console.log('Verifying type declarations');
+    const declarationFiles =
+        [...fileMap.keys()].map((filePath) => path.join(outDir, filePath));
+    const result = verifyTypings(declarationFiles);
+    if (result.success === true) {
+      console.log('Compilation successful');
+    } else {
+      console.log('Compilation failed')
+      console.log(result.errorLog);
+      process.exit(1);
+    }
+  }
 }
 
 async function writeFileMap(

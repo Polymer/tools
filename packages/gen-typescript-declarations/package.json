@@ -33,6 +33,7 @@
     "glob": "^7.1.2",
     "minimatch": "^3.0.4",
     "polymer-analyzer": "^3.0.2",
+    "typescript": "^3.0.1",
     "vscode-uri": "^1.0.3"
   },
   "devDependencies": {

@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   statements emitted for them.
 * Update the URL for this repo put in generated file headers, since it has moved
   into the Polymer tools monorepo.
+* Added `--verify` command-line flag which will run the generated typings
+  through the TypeScript compiler (3.0) and fail with the log if it fails.
 
 ## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.
