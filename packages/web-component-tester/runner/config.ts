@@ -433,7 +433,7 @@ export function fromDisk(matcher: string, root?: string): Config {
   // Load a shared config from the user's home dir, if they have one, and then
   // try the project-specific path (starting at the current working directory).
   const paths = _.union([globalFile, projectFile]);
-  const configs = _.filter(paths, fs.existsSync).map(loadProjectFile);
+  const configs = _.filter(paths, fs.existsSync).map((f) => loadProjectFile(f as string));
   const options: Config = merge.apply(null, configs);
 
   if (!options.root && projectFile && projectFile !== globalFile) {
