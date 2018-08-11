@@ -27,7 +27,7 @@ import { WorkboxConfig } from 'workbox-build';
 const temp = require('temp').track();
 const mergeStream = require('merge-stream');
 
-suite('service-worker', () => {
+suite('workbox', () => {
   let testBuildRoot: LocalFsPath;
   let defaultProject: PolymerProject;
 

@@ -165,7 +165,7 @@ export async function addWorkboxServiceWorker(options: AddWorkboxServiceWorkerOp
 }
 
 function removeLeadingSlash(s: string): string {
-  return s.startsWith('/') ? s.substring(1) : s;
+  return (s.startsWith('/') || s.startsWith('\\')) ? s.substring(1) : s;
 }
 
 function addTrailingSlash(s: string): string {
