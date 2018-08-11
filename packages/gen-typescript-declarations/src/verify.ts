@@ -12,28 +12,6 @@
 import * as ts from 'typescript';
 
 /**
- * Compile the given declaration file paths with TypeScript and return whether
- * compilation succeeded or failed, and a "pretty" formatted error log string.
- *
- * Uses a TypeScript compiler configuration suitable for web development, and
- * strict type checking.
- */
-export function verifyTypings(filePaths: string[]): VerifyTypingsResult {
-  const program = ts.createProgram(filePaths, compilerOptions);
-  const emitResult = program.emit();
-  const diagnostics =
-      ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
-  if (diagnostics.length > 0) {
-    return {
-      success: false,
-      errorLog:
-          ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
-    };
-  }
-  return {success: true, errorLog: ''};
-}
-
-/**
  * The result of calling verifyTypings.
  */
 export interface VerifyTypingsResult {
@@ -60,3 +38,25 @@ const diagnosticsHost = {
   getCurrentDirectory: () => process.cwd(),
   getCanonicalFileName: (fileName: string) => fileName,
 };
+
+/**
+ * Compile the given declaration file paths with TypeScript and return whether
+ * compilation succeeded or failed, and a "pretty" formatted error log string.
+ *
+ * Uses a TypeScript compiler configuration suitable for web development, and
+ * strict type checking.
+ */
+export function verifyTypings(filePaths: string[]): VerifyTypingsResult {
+  const program = ts.createProgram(filePaths, compilerOptions);
+  const emitResult = program.emit();
+  const diagnostics =
+      ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
+  if (diagnostics.length > 0) {
+    return {
+      success: false,
+      errorLog:
+          ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
+    };
+  }
+  return {success: true, errorLog: ''};
+}

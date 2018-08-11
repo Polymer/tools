@@ -57,8 +57,8 @@ const argDefs = [
   {
     name: 'verify',
     type: Boolean,
-    description: 'Compile the generated types with TypeScript and fail if ' +
-        'they are invalid.',
+    description: 'Compile the generated types with TypeScript 3.0 and fail ' +
+        'if they are invalid.',
   },
 ];
 
