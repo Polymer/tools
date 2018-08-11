@@ -47,7 +47,6 @@ function getPrecachedAssets(
     depImports.scripts.forEach((s) => precachedAssets.add(s));
     depImports.styles.forEach((s) => precachedAssets.add(s));
   }
-
   return Array.from(precachedAssets);
 }
 
