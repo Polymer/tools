@@ -41,7 +41,6 @@ function getPrecachedAssets(
     depsIndex: DepsIndex, project: PolymerProject): string[] {
   const precachedAssets = new Set<string>(project.config.allFragments);
   precachedAssets.add(project.config.entrypoint);
-
   for (const depImports of depsIndex.fragmentToFullDeps.values()) {
     depImports.imports.forEach((s) => precachedAssets.add(s));
     depImports.scripts.forEach((s) => precachedAssets.add(s));
