@@ -52,7 +52,8 @@ const argDefs = [
     type: Boolean,
     description: 'Recursively delete all .d.ts files in <outDir> before ' +
         'writing new typings, excluding node_modules/, bower_components/, ' +
-        'or any file added using the <addReferences> config option.',
+        'or any file added using the <addReferences> or <autoImport> config ' +
+        'options.',
   },
   {
     name: 'verify',
@@ -125,14 +126,18 @@ async function run(argv: string[]) {
       ]
     });
 
-    // If the addReferences option is being used, it's probably to add some
-    // manually written typings. Since manually written typing files won't get
-    // re-generated, we shouldn't delete them.
+    // If the addReferences or autoImport options are used, it's probably to add
+    // some manually written typings. Since manually written typing files won't
+    // get re-generated, we shouldn't delete them.
     const dontDelete = new Set<string>();
-    for (const refs of Object.values(config.addReferences || {})) {
-      for (const ref of refs) {
-        dontDelete.add(path.resolve(args.root, ref));
+    for (const dtsFilePaths of Object.values(config.addReferences || {})) {
+      for (const dtsFilePath of dtsFilePaths) {
+        dontDelete.add(path.resolve(args.root, dtsFilePath));
       }
+    }
+    for (const localModuleSpecifier of Object.keys(config.autoImport || {})) {
+      const dtsFilePath = localModuleSpecifier.replace(/\.js$/, '') + '.d.ts';
+      dontDelete.add(path.resolve(args.root, dtsFilePath));
     }
     dtsFiles = dtsFiles.filter((filepath) => !dontDelete.has(filepath));
 

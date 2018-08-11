@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   into the Polymer tools monorepo.
 * Added `--verify` command-line flag which will run the generated typings
   through the TypeScript compiler (3.0) and fail with the log if it fails.
+* The `--deleteExisting` flag will no longer delete `.d.ts` files that are
+  referenced as keys in the `autoImport` config option.
 
 ## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.
