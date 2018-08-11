@@ -119,7 +119,6 @@ export async function generateServiceWorkerConfig(
 
   // static files will be pre-cached
   workboxConfig.globPatterns = staticFileGlobs;
-
   return workboxConfig;
 }
 
