@@ -231,28 +231,27 @@ function addAutoImports(tsDoc: ts.Document, autoImport: Map<string, string>) {
   const alreadyImported = getImportedIdentifiers(tsDoc);
 
   for (const node of tsDoc.traverse()) {
-    if (node.kind !== 'name' && node.kind !== 'param') {
-      continue;
+    if (node.kind === 'name' || node.kind === 'param') {
+      const importPath = autoImport.get(node.name);
+      if (importPath === undefined) {
+        continue;
+      }
+      if (alreadyImported.has(node.name)) {
+        continue;
+      }
+      if (makeDeclarationsFilename(importPath) === tsDoc.path) {
+        // Don't import from yourself.
+        continue;
+      }
+      const fileRelative = path.relative(path.dirname(tsDoc.path), importPath);
+      const fromModuleSpecifier =
+          fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
+      tsDoc.members.push(new ts.Import({
+        identifiers: [{identifier: node.name}],
+        fromModuleSpecifier,
+      }));
+      alreadyImported.add(node.name);
     }
-    const importPath = autoImport.get(node.name);
-    if (importPath === undefined) {
-      continue;
-    }
-    if (alreadyImported.has(node.name)) {
-      continue;
-    }
-    if (makeDeclarationsFilename(importPath) === tsDoc.path) {
-      // Don't import from yourself.
-      continue;
-    }
-    const fileRelative = path.relative(path.dirname(tsDoc.path), importPath);
-    const fromModuleSpecifier =
-        fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
-    tsDoc.members.push(new ts.Import({
-      identifiers: [{identifier: node.name}],
-      fromModuleSpecifier,
-    }));
-    alreadyImported.add(node.name);
   }
 }
 
