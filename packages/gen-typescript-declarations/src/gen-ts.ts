@@ -309,10 +309,6 @@ To modify these typings, edit the source file(s):
 ${sourceUrls.map((url) => '  ' + url).join('\n')}`;
 }
 
-interface MaybePrivate {
-  privacy?: 'public'|'private'|'protected';
-}
-
 class TypeGenerator {
   public warnings: analyzer.Warning[] = [];
 
@@ -344,7 +340,7 @@ class TypeGenerator {
       if (this.excludeIdentifiers.some((id) => feature.identifiers.has(id))) {
         continue;
       }
-      if ((feature as MaybePrivate).privacy === 'private') {
+      if (isPrivate(feature)) {
         continue;
       }
       if (feature.kinds.has('element')) {
@@ -371,10 +367,9 @@ class TypeGenerator {
           this.handleHtmlImport(feature as analyzer.Import);
         }
       } else if (feature.kinds.has('js-import')) {
-        this.handleJsImport(
-            feature as analyzer.JavascriptImport, this.analyzerDoc);
+        this.handleJsImport(feature as analyzer.JavascriptImport);
       } else if (feature.kinds.has('export')) {
-        this.handleJsExport(feature as analyzer.Export, this.analyzerDoc);
+        this.handleJsExport(feature as analyzer.Export);
       }
     }
   }
@@ -815,22 +810,15 @@ class TypeGenerator {
   /**
    * Add a JavaScript import to the TypeScript declarations.
    */
-  private handleJsImport(
-      feature: analyzer.JavascriptImport,
-      doc: analyzer.Document) {
+  private handleJsImport(feature: analyzer.JavascriptImport) {
     const node = feature.astNode.node;
-
-    const isResolvable = (identifier: string) => {
-      const reference = resolveImportExportFeature(feature, identifier, doc);
-      return reference !== undefined && !isBehaviorImpl(reference);
-    };
 
     if (babel.isImportDeclaration(node)) {
       const identifiers: ts.ImportSpecifier[] = [];
       for (const specifier of node.specifiers) {
         if (babel.isImportSpecifier(specifier)) {
           // E.g. import {Foo, Bar as Baz} from './foo.js'
-          if (isResolvable(specifier.imported.name)) {
+          if (this.isResolvable(specifier.imported.name, feature)) {
             identifiers.push({
               identifier: specifier.imported.name,
               alias: specifier.local.name,
@@ -839,7 +827,7 @@ class TypeGenerator {
 
         } else if (babel.isImportDefaultSpecifier(specifier)) {
           // E.g. import foo from './foo.js'
-          if (isResolvable('default')) {
+          if (this.isResolvable('default', feature)) {
             identifiers.push({
               identifier: 'default',
               alias: specifier.local.name,
@@ -874,13 +862,8 @@ class TypeGenerator {
   /**
    * Add a JavaScript export to the TypeScript declarations.
    */
-  private handleJsExport(feature: analyzer.Export, doc: analyzer.Document) {
+  private handleJsExport(feature: analyzer.Export) {
     const node = feature.astNode.node;
-
-    const isResolvable = (identifier: string) => {
-      const reference = resolveImportExportFeature(feature, identifier, doc);
-      return reference !== undefined && !isBehaviorImpl(reference);
-    };
 
     if (babel.isExportAllDeclaration(node)) {
       // E.g. export * from './foo.js'
@@ -895,7 +878,7 @@ class TypeGenerator {
       if (node.declaration) {
         // E.g. export class Foo {}
         for (const identifier of feature.identifiers) {
-          if (isResolvable(identifier)) {
+          if (this.isResolvable(identifier, feature)) {
             identifiers.push({identifier});
           }
         }
@@ -903,7 +886,7 @@ class TypeGenerator {
       } else {
         // E.g. export {Foo, Bar as Baz}
         for (const specifier of node.specifiers) {
-          if (isResolvable(specifier.exported.name)) {
+          if (this.isResolvable(specifier.exported.name, feature)) {
             identifiers.push({
               identifier: specifier.local.name,
               alias: specifier.exported.name,
@@ -924,6 +907,19 @@ class TypeGenerator {
           feature,
           `Export feature with AST node type ${node.type} not supported.`);
     }
+  }
+
+  /**
+   * True if the given identifier can be resolved to a feature that will be
+   * exported as a TypeScript type.
+   */
+  private isResolvable(
+      identifier: string,
+      fromFeature: analyzer.JavascriptImport|analyzer.Export) {
+    const resolved =
+        resolveImportExportFeature(fromFeature, identifier, this.analyzerDoc);
+    return resolved !== undefined && resolved.feature !== undefined &&
+        !isPrivate(resolved.feature) && !isBehaviorImpl(resolved);
   }
 
   /**
@@ -1062,6 +1058,17 @@ function isBehaviorImpl(reference: analyzer.Reference<analyzer.Feature>) {
       reference.feature.kinds.has('behavior') &&
       (reference.feature as analyzer.PolymerBehavior).name !==
       reference.identifier;
+}
+
+interface MaybePrivate {
+  privacy?: 'public'|'private'|'protected';
+}
+
+/**
+ * Return whether the given Analyzer feature has "private" visibility.
+ */
+function isPrivate(feature: analyzer.Feature&MaybePrivate): boolean {
+  return feature.privacy === 'private';
 }
 
 /**
