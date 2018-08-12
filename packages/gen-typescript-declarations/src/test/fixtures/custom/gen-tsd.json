@@ -4,5 +4,11 @@
   ],
   "excludeIdentifiers": [
     "ExcludeThisClass"
-  ]
+  ],
+  "autoImport": {
+    "module-b.js": [
+      "AutoImportClass1",
+      "AutoImportClass2"
+    ]
+  }
 }
