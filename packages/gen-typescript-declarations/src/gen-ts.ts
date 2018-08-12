@@ -1067,8 +1067,8 @@ interface MaybePrivate {
 /**
  * Return whether the given Analyzer feature has "private" visibility.
  */
-function isPrivate(feature: analyzer.Feature): boolean {
-  return ((feature as MaybePrivate).privacy === 'private');
+function isPrivate(feature: analyzer.Feature&MaybePrivate): boolean {
+  return feature.privacy === 'private';
 }
 
 /**
