@@ -157,7 +157,7 @@ async function run(argv: string[]) {
     if (result.success === true) {
       console.log('Compilation successful');
     } else {
-      console.log('Compilation failed')
+      console.log('Compilation failed');
       console.log(result.errorLog);
       process.exit(1);
     }

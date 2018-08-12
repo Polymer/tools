@@ -8,3 +8,5 @@ export * from './module-b.js';
 
 export const notASupportedAnalyzerFeature = 0;
 export {NotResolvable} from './module-b.js';
+
+import {PrivateClass} from './module-b.js';
