@@ -10,3 +10,9 @@ export const notASupportedAnalyzerFeature = 0;
 export {NotResolvable} from './module-b.js';
 
 import {PrivateClass} from './module-b.js';
+
+/**
+ * @param {!AutoImportClass1} p
+ * @return {!AutoImportClass2}
+ */
+export function autoImportFunction(p) { }

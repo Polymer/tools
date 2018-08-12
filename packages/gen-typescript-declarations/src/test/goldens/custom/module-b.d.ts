@@ -21,3 +21,13 @@ declare class ClassB2 {
 export {ClassC1} from './module-c.js';
 
 export {ClassC2 as ClassC2Alias} from './module-c.js';
+
+export {AutoImportClass1};
+
+declare class AutoImportClass1 {
+}
+
+export {AutoImportClass2};
+
+declare class AutoImportClass2 {
+}
