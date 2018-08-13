@@ -231,7 +231,7 @@ function addAutoImports(tsDoc: ts.Document, autoImport: Map<string, string>) {
   const alreadyImported = getImportedIdentifiers(tsDoc);
 
   for (const node of tsDoc.traverse()) {
-    if (node.kind === 'name' || node.kind === 'param') {
+    if (node.kind === 'name') {
       const importPath = autoImport.get(node.name);
       if (importPath === undefined) {
         continue;
