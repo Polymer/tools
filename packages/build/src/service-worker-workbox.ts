@@ -80,7 +80,6 @@ export async function generateServiceWorkerConfig(
     globDirectory: buildRoot,
     navigateFallback: path.relative(project.config.root, project.config.entrypoint),
   };
-
   const depsIndex = await project.analyzer.analyzeDependencies;
   let staticFileGlobs = Array.from(workboxConfig.globPatterns || []);
   const precachedAssets = (options.bundled) ?
