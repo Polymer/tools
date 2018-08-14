@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * The `--deleteExisting` flag will no longer delete `.d.ts` files that are
   referenced as keys in the `autoImport` config option.
 * Do not `import` or `export` features with `private` visibility.
+* Display warnings generated during the analysis phase.
 
 ## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.
