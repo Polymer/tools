@@ -6,9 +6,12 @@
     "ExcludeThisClass"
   ],
   "autoImport": {
-    "module-b.js": [
-      "AutoImportClass1",
-      "AutoImportClass2"
+    "./module-a.js": [
+      "ClassA1",
+      "ClassA2"
+    ],
+    "@polymer/external-package": [
+      "ExternalPackageClass"
     ]
   }
 }
