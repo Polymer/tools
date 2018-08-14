@@ -235,23 +235,27 @@ function addAutoImports(tsDoc: ts.Document, autoImport: Map<string, string>) {
 
   for (const node of tsDoc.traverse()) {
     if (node.kind === 'name') {
-      const importPath = autoImport.get(node.name);
-      if (importPath === undefined) {
+      let importSpecifier = autoImport.get(node.name);
+      if (importSpecifier === undefined) {
         continue;
       }
       if (alreadyImported.has(node.name)) {
         continue;
       }
-      if (makeDeclarationsFilename(importPath) === tsDoc.path) {
-        // Don't import from yourself.
-        continue;
+      if (importSpecifier.startsWith('.')) {
+        if (makeDeclarationsFilename(importSpecifier) === tsDoc.path) {
+          // Don't import from yourself.
+          continue;
+        }
+        importSpecifier =
+            path.relative(path.dirname(tsDoc.path), importSpecifier);
+        if (!importSpecifier.startsWith('.')) {
+          importSpecifier = './' + importSpecifier;
+        }
       }
-      const fileRelative = path.relative(path.dirname(tsDoc.path), importPath);
-      const fromModuleSpecifier =
-          fileRelative.startsWith('.') ? fileRelative : './' + fileRelative;
       tsDoc.members.push(new ts.Import({
         identifiers: [{identifier: node.name}],
-        fromModuleSpecifier,
+        fromModuleSpecifier: importSpecifier,
       }));
       alreadyImported.add(node.name);
     }
