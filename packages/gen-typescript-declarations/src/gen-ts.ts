@@ -222,10 +222,6 @@ async function analyzerToAst(
   const warningPrinter =
       new analyzer.WarningPrinter(process.stderr, {maxCodeLines: 1});
   await warningPrinter.printWarnings(warnings);
-  if (warnings.some(
-          (warning) => warning.severity === analyzer.Severity.ERROR)) {
-    throw new Error('An error occured generating types.');
-  }
 
   return tsDocs;
 }
