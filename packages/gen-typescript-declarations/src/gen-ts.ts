@@ -700,7 +700,8 @@ class TypeGenerator {
       ts.Property[] {
     const tsProperties = <ts.Property[]>[];
     for (const property of analyzerProperties) {
-      if (property.inheritedFrom || property.privacy === 'private') {
+      if (property.inheritedFrom || property.privacy === 'private' ||
+          this.excludeIdentifiers.includes(property.name)) {
         continue;
       }
       const p = new ts.Property({
@@ -726,7 +727,8 @@ class TypeGenerator {
   }): ts.Method[] {
     const tsMethods = <ts.Method[]>[];
     for (const method of analyzerMethods) {
-      if (method.inheritedFrom || method.privacy === 'private') {
+      if (method.inheritedFrom || method.privacy === 'private' ||
+          this.excludeIdentifiers.includes(method.name)) {
         continue;
       }
 
