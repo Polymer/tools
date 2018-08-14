@@ -317,13 +317,15 @@ ${sourceUrls.map((url) => '  ' + url).join('\n')}`;
 
 class TypeGenerator {
   public warnings: analyzer.Warning[] = [];
+  private excludeIdentifiers: Set<String>;
 
   constructor(
       private root: ts.Document,
       private analysis: analyzer.Analysis,
       private analyzerDoc: analyzer.Document,
       private rootDir: string,
-      private excludeIdentifiers: string[]) {
+      excludeIdentifiers: string[]) {
+    this.excludeIdentifiers = new Set(excludeIdentifiers);
   }
 
   private warn(feature: analyzer.Feature, message: string) {
@@ -343,7 +345,8 @@ class TypeGenerator {
    */
   handleDocument() {
     for (const feature of this.analyzerDoc.getFeatures()) {
-      if (this.excludeIdentifiers.some((id) => feature.identifiers.has(id))) {
+      if ([...feature.identifiers].some(
+              (id) => this.excludeIdentifiers.has(id))) {
         continue;
       }
       if (isPrivate(feature)) {
@@ -701,7 +704,7 @@ class TypeGenerator {
     const tsProperties = <ts.Property[]>[];
     for (const property of analyzerProperties) {
       if (property.inheritedFrom || property.privacy === 'private' ||
-          this.excludeIdentifiers.includes(property.name)) {
+          this.excludeIdentifiers.has(property.name)) {
         continue;
       }
       const p = new ts.Property({
@@ -728,7 +731,7 @@ class TypeGenerator {
     const tsMethods = <ts.Method[]>[];
     for (const method of analyzerMethods) {
       if (method.inheritedFrom || method.privacy === 'private' ||
-          this.excludeIdentifiers.includes(method.name)) {
+          this.excludeIdentifiers.has(method.name)) {
         continue;
       }
 
