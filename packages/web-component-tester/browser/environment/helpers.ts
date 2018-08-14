@@ -173,8 +173,11 @@ export interface MutationEl {
  *
  */
 function waitFor(
-    fn: () => void, next: () => void, intervalOrMutationEl: number|MutationEl,
-    timeout: number, timeoutTime: number) {
+    fn: () => void,
+    next: () => void,
+    intervalOrMutationEl: number|MutationEl,
+    timeout: number,
+    timeoutTime: number) {
   timeoutTime = timeoutTime || Date.now() + (timeout || 1000);
   intervalOrMutationEl = intervalOrMutationEl || 32;
   try {

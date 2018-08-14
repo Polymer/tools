@@ -169,7 +169,8 @@ suite('getLocationInfoForPosition', () => {
    */
   function getAllKindsSpaceSeparated(text: string) {
     const doc = parser.parse(
-        text, 'uninteresting file name.html' as ResolvedUrl,
+        text,
+        'uninteresting file name.html' as ResolvedUrl,
         new PackageUrlResolver());
     return getEveryPosition(text)
         .map((pos) => getHtmlAstLocationForPosition(doc, pos).kind)

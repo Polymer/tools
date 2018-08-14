@@ -26,7 +26,7 @@
     "test:watch": "tsc-then -- bash test/run-mocha.sh unit",
     "test": "npm run test:fast && npm run lint",
     "lint": "tslint -p ./",
-    "format": "find bin src test | grep \"\\.js$\\|\\.ts$\" | xargs clang-format --style=file -i",
+    "format": "find bin src -name \"*.[jt]s\" | xargs clang-format --style=file -i",
     "clean": "rm -rf ./lib/",
     "prepublishOnly": "npm test"
   },

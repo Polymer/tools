@@ -40,8 +40,7 @@ export class GithubResponseError extends Error {
   readonly url: string;
 
   constructor(
-      url: string,
-      statusCode: number|undefined,
+      url: string, statusCode: number|undefined,
       statusMessage: string|undefined) {
     super(`${statusCode} fetching ${url} - ${statusMessage}`);
     this.url = url;

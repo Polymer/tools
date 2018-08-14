@@ -163,7 +163,8 @@ function getChildren(node: shadyCssParser.Node):
 }
 
 function internalGetAstLocationForPosition(
-    node: parse5.ASTNode, position: SourcePosition,
+    node: parse5.ASTNode,
+    position: SourcePosition,
     document: ParsedHtmlDocument): undefined|HtmlAstLocation {
   const sourceRange = document.sourceRangeForNode(node);
   const location = node.__location;
@@ -273,7 +274,8 @@ function internalGetAstLocationForPosition(
 }
 
 function findLocationInChildren(
-    node: parse5.ASTNode, position: SourcePosition,
+    node: parse5.ASTNode,
+    position: SourcePosition,
     document: ParsedHtmlDocument) {
   for (const child of node.childNodes || []) {
     const result = internalGetAstLocationForPosition(child, position, document);
@@ -304,9 +306,10 @@ type Parse5Location = parse5.LocationInfo|parse5.ElementLocationInfo;
  * correct LocationResult.
  */
 function getAttributeAstLocation(
-    node: parse5.ASTNode, position: SourcePosition,
-    document: ParsedHtmlDocument, location: Parse5Location): AttributesSection|
-    AttributeValue|undefined {
+    node: parse5.ASTNode,
+    position: SourcePosition,
+    document: ParsedHtmlDocument,
+    location: Parse5Location): AttributesSection|AttributeValue|undefined {
   /**
    * TODO(rictic): upstream to @types the fact that regular locations (not just
    * element locations) can have attrs sometimes.

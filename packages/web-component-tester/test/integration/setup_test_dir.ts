@@ -65,10 +65,12 @@ export async function makeProperTestDir(dirname: string) {
     const wctDir = path.join(componentsDir, 'web-component-tester');
     fs.mkdirSync(wctDir);
     fs.symlinkSync(
-        '../../../../../../../browser.js', path.join(wctDir, 'browser.js'),
+        '../../../../../../../browser.js',
+        path.join(wctDir, 'browser.js'),
         'file');
     fs.symlinkSync(
-        '../../../../../../../package.json', path.join(wctDir, 'package.json'),
+        '../../../../../../../package.json',
+        path.join(wctDir, 'package.json'),
         'file');
     fs.symlinkSync(
         '../../../../../../../data', path.join(wctDir, 'data'), 'dir');

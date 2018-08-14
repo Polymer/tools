@@ -17,9 +17,7 @@ import * as dom5 from '../index';
 /// <reference path="mocha" />
 
 suite('dom5', () => {
-
   suite('Parse5 Node Manipulation', () => {
-
     const docText = `<!DOCTYPE html>` +
         `<div id='A' qux>a1<div bar='b1' bar='b2'>b1</div>a2</div>` +
         `<div bar='b3 b4'>b3 b4</div>` +
@@ -51,7 +49,6 @@ suite('dom5', () => {
     });
 
     suite('getAttribute', () => {
-
       test('returns null for a non-set attribute', () => {
         const divA = doc.childNodes![1].childNodes![1].childNodes![0];
         assert.equal(dom5.getAttribute(divA, 'foo'), null);
@@ -70,7 +67,6 @@ suite('dom5', () => {
     });
 
     suite('hasAttribute', () => {
-
       test('returns false for a non-set attribute', () => {
         const divA = doc.childNodes![1].childNodes![1].childNodes![0];
         assert.equal(dom5.hasAttribute(divA, 'foo'), false);
@@ -94,7 +90,6 @@ suite('dom5', () => {
     });
 
     suite('setAttribute', () => {
-
       test('sets a non-set attribute', () => {
         const divA = doc.childNodes![1].childNodes![1].childNodes![0];
         dom5.setAttribute(divA, 'foo', 'bar');
@@ -124,7 +119,6 @@ suite('dom5', () => {
     });
 
     suite('removeAttribute', () => {
-
       test('removes a set attribute', () => {
         const divA = doc.childNodes![1].childNodes![1].childNodes![0];
         dom5.removeAttribute(divA, 'foo');
@@ -390,7 +384,6 @@ suite('dom5', () => {
         assert.equal(dom.childNodes!.indexOf(text), 4);
         assert.equal(fragment.childNodes!.length, 0);
       });
-
     });
 
     suite('insertAfter', () => {
@@ -419,11 +412,9 @@ suite('dom5', () => {
             '<div></div><span></span><span></span>footext');
         assert.equal(fragment.childNodes!.length, 0);
       });
-
     });
 
     suite('cloneNode', () => {
-
       test('clones a node', () => {
         const dom = parse5.parseFragment('<div><span foo="bar">a</span></div>');
         const div = dom.childNodes![0];
@@ -443,9 +434,7 @@ suite('dom5', () => {
         assert.equal(span.childNodes![0].value, 'a');
         assert.notStrictEqual(clone.childNodes![0], span.childNodes![0]);
       });
-
     });
-
   });
 
   suite('Query Predicates', () => {
@@ -578,7 +567,6 @@ suite('dom5', () => {
 
 
   suite('Constructors', () => {
-
     test('text node', () => {
       const node = dom5.constructors.text('test');
       assert.isTrue(dom5.isTextNode(node));
@@ -708,5 +696,4 @@ suite('dom5', () => {
       assert.equal(span.childNodes!.length, 1);
     });
   });
-
 });

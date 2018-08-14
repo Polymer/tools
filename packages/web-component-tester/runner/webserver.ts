@@ -155,7 +155,8 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
 
       const allowedRange =
           require(path.join(
-              __dirname, '..',
+              __dirname,
+              '..',
               'package.json'))['--private-wct--']['client-side-version-range'] as
           string;
       if (!semver.satisfies(version, allowedRange)) {

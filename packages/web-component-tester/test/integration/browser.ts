@@ -172,7 +172,9 @@ const integrationDir = path.resolve(__dirname, '../fixtures/integration');
  * the output for tests.
  */
 function runsIntegrationSuite(
-    dirName: string, options: config.Config, howToRun: 'only'|'skip'|'normal',
+    dirName: string,
+    options: config.Config,
+    howToRun: 'only'|'skip'|'normal',
     contextFunction: (context: TestResults) => void) {
   const suiteName = `integration fixture dir '${dirName}'`;
   let describer: (suiteName: string, spec: () => void) => void = describe;
@@ -224,7 +226,8 @@ function runsIntegrationSuite(
               tags: ['org:Polymer', 'repo:web-component-tester'],
             },
           },
-          options, suiteOptions);
+          options,
+          suiteOptions);
       const context = new Context(allOptions);
 
       const addEventHandler = (name: string, handler: Function) => {
@@ -351,7 +354,10 @@ function assertFailed(context: VariantResults, expectedError: string) {
 
 /** Asserts that all browsers match the given stats. */
 function assertStats(
-    context: VariantResults, passing: number, pending: number, failing: number,
+    context: VariantResults,
+    passing: number,
+    pending: number,
+    failing: number,
     status: 'complete') {
   const expected: Stats = {passing, pending, failing, status};
   expect(context.stats).to.deep.equal(repeatBrowsers(context, expected));
@@ -412,13 +418,19 @@ function assertVariantResultsConformToGolden(
   it('records the correct result stats', function() {
     try {
       assertStats(
-          variantResults, golden.passing, golden.pending, golden.failing,
+          variantResults,
+          golden.passing,
+          golden.pending,
+          golden.failing,
           <any>golden.status);
     } catch (_) {
       // mocha reports twice the failures because reasons
       // https://github.com/mochajs/mocha/issues/2083
       assertStats(
-          variantResults, golden.passing, golden.pending, golden.failing * 2,
+          variantResults,
+          golden.passing,
+          golden.pending,
+          golden.failing * 2,
           <any>golden.status);
     }
   });
@@ -491,8 +503,10 @@ if (testLocalBrowsers) {
       const context = new Context(options);
       context.hook(
           'define:webserver',
-          (app: express.Application, assign: (sub: express.Express) => void,
-           _options: ServerOptions, done: (err?: any) => void) => {
+          (app: express.Application,
+           assign: (sub: express.Express) => void,
+           _options: ServerOptions,
+           done: (err?: any) => void) => {
             const newApp = express();
             newApp.get('*', (request, _response, next) => {
               requestedUrls.push(request.url);

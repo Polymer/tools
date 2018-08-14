@@ -10,7 +10,7 @@
   "main": "lib/esm-amd-loader.min.js",
   "types": "lib/esm-amd-loader.d.ts",
   "scripts": {
-    "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "clean": "rm -rf lib/",
     "lint": "tslint --project . --format stylish",
     "build": "npm run clean && tsc && npm run minify",

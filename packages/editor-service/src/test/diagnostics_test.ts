@@ -229,7 +229,8 @@ suite('DiagnosticGenerator', function() {
 
     writeFileSync(
         path.join(baseDir, 'polymer.json'),
-        JSON.stringify({lint: {rules: ['bad']}}), 'utf-8');
+        JSON.stringify({lint: {rules: ['bad']}}),
+        'utf-8');
     await client.watchedFilesChanged(
         [{path: 'polymer.json', type: FileChangeType.Created}]);
     assert.deepEqual(

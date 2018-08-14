@@ -23,8 +23,18 @@ const STACKY_CONFIG = {
 
 // https://github.com/visionmedia/mocha/blob/master/lib/runner.js#L36-46
 const MOCHA_EVENTS = [
-  'start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end',
-  'pass', 'fail', 'pending', 'childRunner end'
+  'start',
+  'end',
+  'suite',
+  'suite end',
+  'test',
+  'test end',
+  'hook',
+  'hook end',
+  'pass',
+  'fail',
+  'pending',
+  'childRunner end'
 ];
 
 // Until a suite has loaded, we assume this many tests in it.
@@ -32,7 +42,9 @@ const ESTIMATED_TESTS_PER_SUITE = 3;
 
 export interface Reporter {}
 
-export interface ReporterFactory { new(parent: MultiReporter): Reporter; }
+export interface ReporterFactory {
+  new(parent: MultiReporter): Reporter;
+}
 
 interface ExtendedTest extends Mocha.ITest {
   err: any;
@@ -176,7 +188,8 @@ export default class MultiReporter implements Reporter {
     const extraArgs = Array.prototype.slice.call(arguments, 2);
     if (this.complete) {
       console.warn(
-          'out of order Mocha event for ' + runner.name + ':', eventName,
+          'out of order Mocha event for ' + runner.name + ':',
+          eventName,
           extraArgs);
       return;
     }

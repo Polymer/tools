@@ -269,7 +269,8 @@ suite.skip('AutoCompleter', () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     const partialContents = [
-      `<behavior-test-elem >`, `<behavior-test-elem existing-attr>`,
+      `<behavior-test-elem >`,
+      `<behavior-test-elem existing-attr>`,
       `<behavior-test-elem existing-attr></behavior-test-elem>`,
       `<behavior-test-elem existing-attr></wrong-closing-tag>`
     ];
@@ -290,7 +291,8 @@ suite.skip('AutoCompleter', () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     const partialContents = [
-      `<behavior-test-elem >`, `<behavior-test-elem existing-attr>`,
+      `<behavior-test-elem >`,
+      `<behavior-test-elem existing-attr>`,
       `<behavior-test-elem existing-attr></behavior-test-elem>`,
       `<behavior-test-elem existing-attr></wrong-closing-tag>`
     ];

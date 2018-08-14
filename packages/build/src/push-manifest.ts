@@ -175,8 +175,7 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
   private basePath: PackageRelativeUrl;
 
   constructor(
-      config: ProjectConfig,
-      outPath?: LocalFsPath,
+      config: ProjectConfig, outPath?: LocalFsPath,
       basePath?: PackageRelativeUrl) {
     super({objectMode: true});
     this.files = new Map();

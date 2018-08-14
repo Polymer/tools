@@ -156,7 +156,7 @@ export function setTextContent(node: Node, value: string) {
   }
 }
 
-export type GetChildNodes = ((node: Node) => Node[] | undefined);
+export type GetChildNodes = ((node: Node) => Node[]|undefined);
 
 export const defaultChildNodes = function defaultChildNodes(node: Node) {
   return node.childNodes;

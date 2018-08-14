@@ -51,7 +51,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "format": "find src | grep \"\\.js$\\|\\.ts$\" | xargs clang-format --style=file -i",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "test": "npm run build && tslint -c tslint.json \"src/**/*.ts\" && mocha \"lib/test/**/*_test.js\"",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\""

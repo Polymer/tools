@@ -275,7 +275,8 @@ export default class DiagnosticGenerator extends Handler {
           }
           commands.push(this.createApplyEditCommand(
               // Take up to the first newline.
-              action.description.split('\n')[0], action.edit));
+              action.description.split('\n')[0],
+              action.edit));
         }
       }
     }

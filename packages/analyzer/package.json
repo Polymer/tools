@@ -18,6 +18,7 @@
   "scripts": {
     "clean": "touch lib && rm -rf lib && mkdir lib",
     "build": "tsc && npm run generate-json-schema",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "generate-json-schema": "typescript-json-schema --required --ignoreErrors src/analysis-format/analysis-format.ts -o lib/analysis.schema.json Analysis",
     "lint": "tslint -p ./ && node ./scripts/depcheck.js",
     "tslint": "tslint -p .",
@@ -27,7 +28,6 @@
     "benchmark": "npm run build && npm run initBench && node --expose-gc lib/perf/parse-all-benchmark.js",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
-    "format": "find src test | grep \"\\.js$\\|\\.ts$\" | xargs clang-format --style=file -i",
     "prepublishOnly": "tsc && npm test"
   },
   "devDependencies": {

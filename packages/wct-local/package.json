@@ -16,6 +16,7 @@
   "scripts": {
     "lint": "gulp lint",
     "build": "tsc",
+    "format": "find src scripts -name \"*.[jt]s\" | xargs clang-format --style=file -i",
     "prepublishOnly": "tsc",
     "postinstall": "node scripts/postinstall.js"
   },

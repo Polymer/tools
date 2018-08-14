@@ -83,7 +83,8 @@ export default class DefinitionFinder extends Handler {
       analysis?: Analysis): Promise<Location[]> {
     const sourceRanges = await this.getDefinitionsForFeatureAtPosition(
         textPosition.textDocument.uri,
-        this.converter.convertPosition(textPosition.position), analysis);
+        this.converter.convertPosition(textPosition.position),
+        analysis);
     return sourceRanges.map((sr): Location => {
       return {uri: sr.file, range: this.converter.convertPRangeToL(sr)};
     });

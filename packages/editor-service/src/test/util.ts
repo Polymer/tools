@@ -51,7 +51,10 @@ export function createFileSynchronizer(baseDir?: string, debugging?: boolean) {
   const converter = new AnalyzerLSPConverter(
       URI.file(baseDir), new PackageUrlResolver({packageDir: baseDir}));
   const synchronizer = new FileSynchronizer(
-      serverConnection, textDocuments, baseDir, converter,
+      serverConnection,
+      textDocuments,
+      baseDir,
+      converter,
       new Logger({connection: serverConnection, logToFileFlag: undefined}));
   return {synchronizer, serverConnection, clientConnection, baseDir, converter};
 }

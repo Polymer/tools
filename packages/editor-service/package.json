@@ -13,12 +13,12 @@
   "scripts": {
     "clean": "touch lib && rm -rf lib",
     "build": "tsc",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "prepublishOnly": "npm run clean && npm run build",
     "lint": "tslint --project ./tsconfig.json",
     "test": "npm run clean && npm run build && mocha \"lib/test/**/*_test.js\" && npm run lint",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
-    "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
-    "format": "find src test | grep \"\\.js$\\|\\.ts$\" | xargs clang-format --style=file -i"
+    "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\""
   },
   "devDependencies": {
     "@types/clone": "^0.1.30",

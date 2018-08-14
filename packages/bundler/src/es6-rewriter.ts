@@ -34,8 +34,7 @@ const acornImportMetaInject = require('acorn-import-meta/inject');
  */
 export class Es6Rewriter {
   constructor(
-      public bundler: Bundler,
-      public manifest: BundleManifest,
+      public bundler: Bundler, public manifest: BundleManifest,
       public bundle: AssignedBundle) {
   }
 
@@ -344,9 +343,7 @@ export class Es6Rewriter {
    *         .then((moduleA) => moduleA.doSomething());
    */
   private _rewriteDynamicImport(
-      baseUrl: ResolvedUrl,
-      root: babel.Node,
-      importNodePath: NodePath) {
+      baseUrl: ResolvedUrl, root: babel.Node, importNodePath: NodePath) {
     if (!importNodePath) {
       return;
     }
@@ -420,8 +417,7 @@ export class Es6Rewriter {
    *     import {something_1} from './bundle_1.js';
    */
   private _rewriteImportSpecifierName(
-      specifier: babel.ImportSpecifier,
-      source: ResolvedUrl,
+      specifier: babel.ImportSpecifier, source: ResolvedUrl,
       sourceBundle: AssignedBundle) {
     const originalExportName = specifier.imported.name;
     const exportName = getOrSetBundleModuleExportName(
@@ -440,8 +436,7 @@ export class Es6Rewriter {
    *     import {$moduleADefault} from './bundle_1.js';
    */
   private _rewriteImportDefaultSpecifier(
-      specifier: babel.ImportDefaultSpecifier,
-      source: ResolvedUrl,
+      specifier: babel.ImportDefaultSpecifier, source: ResolvedUrl,
       sourceBundle: AssignedBundle) {
     const exportName =
         getOrSetBundleModuleExportName(sourceBundle, source, 'default');
@@ -468,8 +463,7 @@ export class Es6Rewriter {
    *     import {$moduleA} from './bundle_1.js';
    */
   private _rewriteImportNamespaceSpecifier(
-      specifier: babel.ImportNamespaceSpecifier,
-      source: ResolvedUrl,
+      specifier: babel.ImportNamespaceSpecifier, source: ResolvedUrl,
       sourceBundle: AssignedBundle) {
     const exportName =
         getOrSetBundleModuleExportName(sourceBundle, source, '*');
@@ -486,8 +480,7 @@ export class Es6Rewriter {
   }
 
   private _rewriteImportMetaToBundleMeta(
-      bundledImportMetaIdentifierName: string,
-      moduleFile: babel.File,
+      bundledImportMetaIdentifierName: string, moduleFile: babel.File,
       relativeUrl: FileRelativeUrl): babel.File {
     // Generate a stand-in for any local references to import.meta...
     // ```javascript

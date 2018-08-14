@@ -9,11 +9,11 @@
   "repository": "github:Polymer/tools",
   "scripts": {
     "build": "tsc",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint 'src/**/*.ts'",
     "prepublishOnly": "npm run test",
     "test": "npm run build && npm run lint && npm run test:unit",
     "test:unit": "mocha -c --ui tdd \"lib/test/*_test.js\"",
-    "format": "clang-format --style=file -i \"src/**/*.ts\"",
-    "lint": "tslint 'src/**/*.ts'",
     "test:watch": "tsc-then -- mocha -c --ui tdd \"lib/test/*_test.js\""
   },
   "dependencies": {

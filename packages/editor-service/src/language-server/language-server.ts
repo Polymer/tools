@@ -74,7 +74,10 @@ export default class LanguageServer extends Handler {
             await ProjectConfig.initializeAnalyzerFromDirectory(
                 workspaceUri.fsPath);
         const newServer = new LanguageServer(
-            connection, workspaceUri, params.capabilities, urlResolver,
+            connection,
+            workspaceUri,
+            params.capabilities,
+            urlResolver,
             loggingOptions.logToFile);
         resolve(newServer);
         return {capabilities: newServer.capabilities(params.capabilities)};
@@ -132,8 +135,12 @@ export default class LanguageServer extends Handler {
     logger.hookupSettings(settings);
 
     const diagnosticGenerator = new DiagnosticGenerator(
-        analyzerSynchronizer.analyzer, converter, connection, settings,
-        analyzerSynchronizer, documents);
+        analyzerSynchronizer.analyzer,
+        converter,
+        connection,
+        settings,
+        analyzerSynchronizer,
+        documents);
     this.disposables.push(diagnosticGenerator);
 
     const commandExecutor =
@@ -146,13 +153,19 @@ export default class LanguageServer extends Handler {
     this.disposables.push(hoverDocumenter);
 
     const autoCompleter = new AutoCompleter(
-        this.connection, converter, featureFinder,
-        analyzerSynchronizer.analyzer, clientCapabilities);
+        this.connection,
+        converter,
+        featureFinder,
+        analyzerSynchronizer.analyzer,
+        clientCapabilities);
     this.disposables.push(autoCompleter);
 
     const definitionFinder = new DefinitionFinder(
-        this.connection, converter, featureFinder,
-        analyzerSynchronizer.analyzer, settings);
+        this.connection,
+        converter,
+        featureFinder,
+        analyzerSynchronizer.analyzer,
+        settings);
     this.disposables.push(definitionFinder);
   }
 
