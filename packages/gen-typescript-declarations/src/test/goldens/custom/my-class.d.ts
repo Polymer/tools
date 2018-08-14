@@ -9,6 +9,7 @@
  */
 
 declare class MyClass {
+  dont_exclude_this_property: string;
   constructor(num: number, truth: boolean);
   no_params(): void;
   one_param(p1: any): void;

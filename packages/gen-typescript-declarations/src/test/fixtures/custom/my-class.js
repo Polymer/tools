@@ -4,8 +4,14 @@ class MyClass {
    * @param {boolean} truth
    */
   constructor(num, truth) {
-
+    /** @type {string} */
+    this.dont_exclude_this_property;
+    /** @type {string} */
+    this.exclude_this_property;
   }
+
+  exclude_this_method() { }
+
   no_params() { }
 
   one_param(p1) { }

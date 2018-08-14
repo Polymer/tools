@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Display warnings generated during the analysis phase.
 * `autoImport` now supports bare-module specifiers. Local files must now
   begin with `.`.
+* `excludeIdentifiers` option now applies to properties and methods.
 
 ## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.

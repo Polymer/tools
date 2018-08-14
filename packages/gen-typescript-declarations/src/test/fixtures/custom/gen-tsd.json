@@ -3,7 +3,9 @@
     "exclude-me.js"
   ],
   "excludeIdentifiers": [
-    "ExcludeThisClass"
+    "ExcludeThisClass",
+    "exclude_this_method",
+    "exclude_this_property"
   ],
   "autoImport": {
     "./module-a.js": [
