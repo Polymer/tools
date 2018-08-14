@@ -29,18 +29,18 @@ suite(ruleId, () => {
   let analyzer: Analyzer;
   let linter: Linter;
 
-  setup(async() => {
+  setup(async () => {
     ({analyzer} =
          await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
     linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
-  test('works in the trivial case', async() => {
+  test('works in the trivial case', async () => {
     const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
-  test('applies automatic-safe fixes', async() => {
+  test('applies automatic-safe fixes', async () => {
     await assertExpectedFixes(
         linter,
         analyzer,
@@ -48,7 +48,7 @@ suite(ruleId, () => {
         `${ruleId}/after-fixes.html`);
   });
 
-  test('applies fixes and edit actions', async() => {
+  test('applies fixes and edit actions', async () => {
     const {warnings, analysis} =
         await linter.lint([`${ruleId}/before-fixes.html`]);
     const edits = [];

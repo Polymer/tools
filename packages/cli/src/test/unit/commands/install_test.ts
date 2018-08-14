@@ -53,5 +53,4 @@ suite('install', () => {
         installCommandSpy.firstCall.args,
         [{offline: false, variants: true}, expectedDefaultConfig]);
   });
-
 });

@@ -30,19 +30,19 @@ suite(ruleId, () => {
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
 
-  setup(async() => {
+  setup(async () => {
     ({analyzer} =
          await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
     warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
-  test('works in the trivial case', async() => {
+  test('works in the trivial case', async () => {
     const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
-  test('warns when deprecated files are used with the right messages', async() => {
+  test('warns when deprecated files are used with the right messages', async () => {
     const {warnings} =
         await linter.lint([`${ruleId}/deprecated-files-before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
@@ -65,7 +65,7 @@ Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the req
   });
 
   let testName = 'applies automatic-safe fixes when deprecated files are used';
-  test(testName, async() => {
+  test(testName, async () => {
     await assertExpectedFixes(
         linter,
         analyzer,
@@ -74,7 +74,7 @@ Run the lint rule \`iron-flex-layout-classes\` with \`--fix\` to include the req
   });
 
   testName = 'warns when iron-flex-layout modules are used but not imported';
-  test(testName, async() => {
+  test(testName, async () => {
     const {warnings} =
         await linter.lint([`${ruleId}/forgot-import-before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
@@ -89,7 +89,7 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
     ]);
   });
 
-  test('adds missing import by inferring the base path', async() => {
+  test('adds missing import by inferring the base path', async () => {
     await assertExpectedFixes(
         linter,
         analyzer,
@@ -97,7 +97,7 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
         `${ruleId}/forgot-import-after-fixes.html`);
   });
 
-  test('adds missing import by defaulting the base path', async() => {
+  test('adds missing import by defaulting the base path', async () => {
     await assertExpectedFixes(
         linter,
         analyzer,
@@ -105,7 +105,7 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
         `${ruleId}/forgot-import-no-imports-after-fixes.html`);
   });
 
-  test('warns when iron-flex-layout modules are imported but not used', async() => {
+  test('warns when iron-flex-layout modules are imported but not used', async () => {
     const {warnings} =
         await linter.lint([`${ruleId}/unnecessary-import-before-fixes.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
@@ -119,7 +119,7 @@ Import iron-flex-layout/iron-flex-layout-classes.html`,
     ]);
   });
 
-  test('removes unnecessary import', async() => {
+  test('removes unnecessary import', async () => {
     await assertExpectedFixes(
         linter,
         analyzer,

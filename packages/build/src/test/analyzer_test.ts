@@ -277,10 +277,8 @@ suite('Analyzer', () => {
     const config = new ProjectConfig({
       root,
       sources,
-      lint: {
-        rules: ['polymer-2'],
-        ignoreWarnings: ['invalid-polymer-expression']
-      }
+      lint:
+          {rules: ['polymer-2'], ignoreWarnings: ['invalid-polymer-expression']}
     });
 
     const analyzer = new BuildAnalyzer(config, null);

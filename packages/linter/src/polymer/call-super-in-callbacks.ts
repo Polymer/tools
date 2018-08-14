@@ -86,7 +86,8 @@ class CallSuperInCallbacks extends Rule {
               warnings.push(new Warning({
                 parsedDocument: document.parsedDocument,
                 code: 'call-super-in-constructor',
-                severity: Severity.ERROR, sourceRange,
+                severity: Severity.ERROR,
+                sourceRange,
                 message: stripWhitespace(`
                   ES6 requires super() in constructors with superclasses.
                 `)
@@ -110,7 +111,10 @@ class CallSuperInCallbacks extends Rule {
               }
               warnings.push(new Warning({
                 parsedDocument: document.parsedDocument,
-                severity: Severity.WARNING, code, sourceRange, message
+                severity: Severity.WARNING,
+                code,
+                sourceRange,
+                message
               }));
             }
           }

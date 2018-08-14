@@ -87,6 +87,4 @@ suite('src/conversion-manifest', () => {
           assert.deepEqual([...actualResult[1]], expectedResult[1]);
         });
   });
-
-
 });

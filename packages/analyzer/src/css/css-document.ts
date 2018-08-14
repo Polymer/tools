@@ -19,7 +19,9 @@ import {ParsedDocument, StringifyOptions} from '../parser/document';
 
 import cssbeautify = require('cssbeautify');
 
-export interface Visitor { visit(node: shady.Node): void; }
+export interface Visitor {
+  visit(node: shady.Node): void;
+}
 
 export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
   readonly type = 'css';

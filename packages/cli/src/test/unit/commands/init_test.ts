@@ -16,7 +16,6 @@ import * as polymerInit from '../../../init/init';
 import {PolymerCli} from '../../../polymer-cli';
 
 suite('init', () => {
-
   teardown(() => {
     sinon.restore();
   });
@@ -42,5 +41,4 @@ suite('init', () => {
     await cli.run();
     assert.isOk(promptSelectionStub.calledOnce);
   });
-
 });

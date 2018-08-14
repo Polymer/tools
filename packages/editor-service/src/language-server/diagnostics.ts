@@ -71,11 +71,11 @@ export default class DiagnosticGenerator extends Handler {
       }
     });
 
-    this.connection.onCodeAction(async(req) => {
+    this.connection.onCodeAction(async (req) => {
       return this.handleErrors(this.getCodeActions(req), []);
     });
 
-    this.connection.onWillSaveTextDocumentWaitUntil(async(req) => {
+    this.connection.onWillSaveTextDocumentWaitUntil(async (req) => {
       if (this.settings.fixOnSave) {
         return this.handleErrors(
             this.getFixesForFile(req.textDocument.uri), []);

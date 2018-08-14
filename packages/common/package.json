@@ -32,7 +32,6 @@
     "gulp": "^4.0.0"
   },
   "devDependencies": {
-    "clang-format": "1.0.46",
     "gulp": "^4.0.0"
   }
 }

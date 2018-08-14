@@ -20,7 +20,7 @@ import URI from 'vscode-uri';
 import {createFileSynchronizer} from './util';
 
 suite('FileSynchronizer', () => {
-  test('reads from the filesystem by default', async() => {
+  test('reads from the filesystem by default', async () => {
     const {synchronizer, baseDir, converter} = createFileSynchronizer();
     fs.writeFileSync(path.join(baseDir, 'index.html'), 'Hello world.\n');
     assert.deepEqual(
@@ -30,7 +30,7 @@ suite('FileSynchronizer', () => {
   });
 
   let testName = 'uses the in-memory version while a file is open';
-  test(testName, async() => {
+  test(testName, async () => {
     const {synchronizer, baseDir, clientConnection, converter} =
         createFileSynchronizer();
     const indexPath = path.join(baseDir, 'index.html');
@@ -92,7 +92,7 @@ suite('FileSynchronizer', () => {
   });
 
   testName = 'passes along notifications about files changed on disk';
-  test(testName, async() => {
+  test(testName, async () => {
     const {synchronizer, baseDir, clientConnection} = createFileSynchronizer();
     const changes = [
       {

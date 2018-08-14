@@ -27,14 +27,14 @@ const fixtureDir = path.join(__dirname, '..', '..', 'src', 'test', 'static');
 suite('DiagnosticGenerator', function() {
   const indexPath = path.join('editor-service', 'index.html');
 
-  test('For a good document we get no warnings', async() => {
+  test('For a good document we get no warnings', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexPath);
     assert.deepEqual(await client.getNextDiagnostics(indexPath), []);
     await client.cleanup();
   });
 
-  test(`Warn on imports of files that aren't found.`, async() => {
+  test(`Warn on imports of files that aren't found.`, async () => {
     const {client, server, underliner} =
         await createTestEnvironment({fixtureDir});
 
@@ -63,7 +63,7 @@ suite('DiagnosticGenerator', function() {
     await client.cleanup();
   });
 
-  test(`Warn on imports of files that don't parse.`, async() => {
+  test(`Warn on imports of files that don't parse.`, async () => {
     const {client, server, underliner} =
         await createTestEnvironment({fixtureDir});
 
@@ -87,7 +87,7 @@ suite('DiagnosticGenerator', function() {
     await client.cleanup();
   });
 
-  test(`Warn on syntax errors in inline javascript documents`, async() => {
+  test(`Warn on syntax errors in inline javascript documents`, async () => {
     const {client, underliner} = await createTestEnvironment({fixtureDir});
 
     const badScript = `\n<script>var var var var var let const;</script>`;
@@ -107,7 +107,7 @@ suite('DiagnosticGenerator', function() {
 
   let testName = `Do not warn on a sibling import ` +
       `if configured with a package url resolver`;
-  test(testName, async() => {
+  test(testName, async () => {
     const testBaseDir = path.join(fixtureDir, 'package-url-resolver');
     const {client} = await createTestEnvironment({fixtureDir: testBaseDir});
     await client.openFile('simple-elem.html');
@@ -118,7 +118,7 @@ suite('DiagnosticGenerator', function() {
 
   testName = `Warn about parse errors in the file ` +
       `we're requesting errors for.`;
-  test(testName, async() => {
+  test(testName, async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     const path = 'js-parse-error.js';
     await client.openFile(path);
@@ -132,7 +132,7 @@ suite('DiagnosticGenerator', function() {
     await client.cleanup();
   });
 
-  test('changes in dependencies update cross-file warnings', async() => {
+  test('changes in dependencies update cross-file warnings', async () => {
     // This is a regression test of a tricky bug that turned out to be in
     // the analyzer, but this is useful to assert that it still works.
     const {client} = await createTestEnvironment({fixtureDir});
@@ -172,7 +172,7 @@ suite('DiagnosticGenerator', function() {
     await client.cleanup();
   });
 
-  test('can be configured to filter out some warning codes', async() => {
+  test('can be configured to filter out some warning codes', async () => {
     const {client} = await createTestEnvironment();
 
     await client.openFile('index.html', `
@@ -224,7 +224,7 @@ suite('DiagnosticGenerator', function() {
     await client.cleanup();
   });
 
-  test('sends diagnostics around polymer.json validation', async() => {
+  test('sends diagnostics around polymer.json validation', async () => {
     const {client, baseDir} = await createTestEnvironment();
 
     writeFileSync(

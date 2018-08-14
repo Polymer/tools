@@ -30,25 +30,25 @@ suite(ruleId, () => {
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
 
-  setup(async() => {
+  setup(async () => {
     ({analyzer} =
          await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
     warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules([ruleId]), analyzer);
   });
 
-  test('works in the trivial case', async() => {
+  test('works in the trivial case', async () => {
     const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
-  test('gives no warnings for a perfectly fine file', async() => {
+  test('gives no warnings for a perfectly fine file', async () => {
     const {warnings} =
         await linter.lint(['perfectly-fine/polymer-element.html']);
     assert.deepEqual([...warnings], []);
   });
 
-  test('warns for a file with a style outside template', async() => {
+  test('warns for a file with a style outside template', async () => {
     const {warnings} =
         await linter.lint([`${ruleId}/style-child-of-dom-module.html`]);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
@@ -64,7 +64,7 @@ suite(ruleId, () => {
     ]);
   });
 
-  test('applies automatic-safe fixes', async() => {
+  test('applies automatic-safe fixes', async () => {
     await assertExpectedFixes(
         linter,
         analyzer,

@@ -196,7 +196,7 @@ suite.skip('AutoCompleter', () => {
   const tagPositionEnd = {line: 7, column: 21};
   const localAttributePosition = {line: 7, column: 31};
 
-  test('Get element completions for an empty text region', async() => {
+  test('Get element completions for an empty text region', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     const completions =
@@ -207,7 +207,7 @@ suite.skip('AutoCompleter', () => {
   });
 
   let testName = `Doesn't send down markdown if the client doesn't support it`;
-  test(testName, async() => {
+  test(testName, async () => {
     const capabilities = clone(defaultClientCapabilities);
     capabilities.textDocument!.completion!.completionItem! = {
       ...(capabilities.textDocument!.completion!.completionItem!),
@@ -224,7 +224,7 @@ suite.skip('AutoCompleter', () => {
         {isIncomplete: false, items: elementCompletionsWithPlainDescriptions});
   });
 
-  test('Get element completions for a start tag', async() => {
+  test('Get element completions for a start tag', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
 
     await client.openFile(indexFile);
@@ -234,7 +234,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Gets element completions with an incomplete tag', async() => {
+  test('Gets element completions with an incomplete tag', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     const incompleteText = `<behav>\n${indexContents}`;
@@ -246,7 +246,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Get element completions for the end of a tag', async() => {
+  test('Get element completions for the end of a tag', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     assert.deepEqual(
@@ -256,7 +256,7 @@ suite.skip('AutoCompleter', () => {
   });
 
   testName = 'Get attribute completions when editing an existing attribute';
-  test(testName, async() => {
+  test(testName, async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     assert.deepEqual(
@@ -265,7 +265,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Get attribute completions when adding a new attribute', async() => {
+  test('Get attribute completions when adding a new attribute', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     const partialContents = [
@@ -286,7 +286,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Get attribute completions when adding a new attribute', async() => {
+  test('Get attribute completions when adding a new attribute', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     const partialContents = [
@@ -308,7 +308,7 @@ suite.skip('AutoCompleter', () => {
   });
 
   testName = 'Get attribute value completions for non-notifying property';
-  test(testName, async() => {
+  test(testName, async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     const testFile = path.join('editor-service', 'value-completion.html');
     const testContents = readFileSync(path.join(fixtureDir, testFile), 'utf-8');
@@ -346,7 +346,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Get attribute value completions for notifying property', async() => {
+  test('Get attribute value completions for notifying property', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     const testFile = path.join('editor-service', 'value-completion.html');
     const testContents = readFileSync(path.join(fixtureDir, testFile), 'utf-8');
@@ -386,7 +386,7 @@ suite.skip('AutoCompleter', () => {
 
   testName =
       'Get attribute value completions for notifying property without brackets';
-  test(testName, async() => {
+  test(testName, async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     const testFile = path.join('editor-service', 'value-completion.html');
     const testContents = readFileSync(path.join(fixtureDir, testFile), 'utf-8');
@@ -424,7 +424,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Inserts slots in autocompletion snippet', async() => {
+  test('Inserts slots in autocompletion snippet', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     const slotFile = path.join('editor-service', 'slot.html');
     await client.openFile(
@@ -463,7 +463,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Recover from references to undefined files', async() => {
+  test('Recover from references to undefined files', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
 
@@ -480,7 +480,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Remain useful in the face of unloadable files', async() => {
+  test('Remain useful in the face of unloadable files', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile);
     assert.deepEqual(
@@ -502,7 +502,7 @@ suite.skip('AutoCompleter', () => {
     await client.cleanup();
   });
 
-  test('Remain useful in the face of syntax errors', async() => {
+  test('Remain useful in the face of syntax errors', async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     const goodContents =
         readFileSync(path.join(fixtureDir, indexFile), 'utf-8');
@@ -534,7 +534,7 @@ suite.skip('AutoCompleter', () => {
   });
 
   testName = `Return JavaScript standard completions inside of script tags`;
-  test(testName, async() => {
+  test(testName, async () => {
     const {client} = await createTestEnvironment({fixtureDir});
     await client.openFile(indexFile, '<script>\n\n</script>\n' + indexContents);
     const completions =
@@ -566,7 +566,7 @@ suite.skip('AutoCompleter', () => {
         },
       ]
     };
-    test('Give autocompletions for positions in databindings', async() => {
+    test('Give autocompletions for positions in databindings', async () => {
       const {client} = await createTestEnvironment({fixtureDir});
       assert.deepEqual(
           await client.getCompletions(
@@ -592,7 +592,7 @@ suite.skip('AutoCompleter', () => {
     const declaractionPosition = {line: 3, column: 16};
     const usePosition = {line: 4, column: 27};
 
-    test(`autocomplete css custom property declarations`, async() => {
+    test(`autocomplete css custom property declarations`, async () => {
       const {client} = await createTestEnvironment();
       await client.openFile('index.html', customPropertyExample);
       assert.deepEqual(
@@ -609,7 +609,7 @@ suite.skip('AutoCompleter', () => {
       await client.cleanup();
     });
 
-    test(`autocomplete css custom property uses`, async() => {
+    test(`autocomplete css custom property uses`, async () => {
       const {client} = await createTestEnvironment();
       await client.openFile('index.html', customPropertyExample);
       assert.deepEqual(await client.getCompletions('index.html', usePosition), {
@@ -625,7 +625,7 @@ suite.skip('AutoCompleter', () => {
     });
   }
 
-  test(`Complete slot names`, async() => {
+  test(`Complete slot names`, async () => {
     const {client} = await createTestEnvironment();
     await client.openFile('index.html', `
       <my-elem>

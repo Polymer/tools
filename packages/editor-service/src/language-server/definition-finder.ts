@@ -36,22 +36,22 @@ export default class DefinitionFinder extends Handler {
       private featureFinder: FeatureFinder, private analyzer: LsAnalyzer,
       settings: Settings) {
     super();
-    this.connection.onDefinition(async(textPosition) => {
+    this.connection.onDefinition(async (textPosition) => {
       return this.handleErrors(this.getDefinition(textPosition), null);
     });
 
-    this.connection.onReferences(async(params) => {
+    this.connection.onReferences(async (params) => {
       return this.handleErrors(this.getReferences(params), []);
     });
 
-    this.connection.onWorkspaceSymbol(async(params) => {
+    this.connection.onWorkspaceSymbol(async (params) => {
       const analysis =
           await this.analyzer.analyzePackage({reason: 'get workspace symbols'});
       const symbols = this.findSymbols(analysis);
       return fuzzaldrin.filter(symbols, params.query, {key: 'name'});
     });
 
-    this.connection.onDocumentSymbol(async(params) => {
+    this.connection.onDocumentSymbol(async (params) => {
       const url = params.textDocument.uri;
       const analysis =
           await this.analyzer.analyze([url], {reason: 'get document symbols'});
@@ -62,7 +62,7 @@ export default class DefinitionFinder extends Handler {
       return this.findSymbols(result.value);
     });
 
-    this.connection.onCodeLens(async(params) => {
+    this.connection.onCodeLens(async (params) => {
       const lenses = [];
       if (settings.referencesCodeLens) {
         lenses.push(...await this.handleErrors(this.getCodeLenses(params), []));

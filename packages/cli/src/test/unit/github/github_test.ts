@@ -24,7 +24,6 @@ use(chaiSubset);
 const temp = tempMod.track();
 
 suite('github/github', () => {
-
   suite('tokenFromFile()', () => {
     test.skip(
         'returns a token from file if that file exists',
@@ -39,7 +38,6 @@ suite('github/github', () => {
   });
 
   suite('extractReleaseTarball()', () => {
-
     test('extracts a tarball from a github tarball url', async () => {
       const tarballUrl = 'http://foo.com/bar.tar';
       let requestedUrl;
@@ -85,11 +83,9 @@ suite('github/github', () => {
           err!.message,
           '404 fetching http://foo.com/bar.tar - TEST MESSAGE - 404');
     });
-
   });
 
   suite('removeUnwantedFiles()', () => {
-
     function makeDirStruct(files: string[]) {
       const tmpDir = temp.mkdirSync();
       files.forEach((file) => {
@@ -127,11 +123,9 @@ suite('github/github', () => {
       assert.deepEqual(fs.readdirSync(tmpDir), ['.gitignore', 'README', 'src']);
       assert.deepEqual(fs.readdirSync(path.join(tmpDir, 'src')), ['base.js']);
     });
-
   });
 
   suite('getSemverRelease()', () => {
-
     let getReleasesStub: sinon.SinonStub;
     let github: Github;
 
@@ -208,5 +202,4 @@ suite('github/github', () => {
           'TEST_OWNER/TEST_REPO has no releases matching ^v3.0.0.');
     });
   });
-
 });

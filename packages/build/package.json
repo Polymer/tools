@@ -89,7 +89,6 @@
   "devDependencies": {
     "@types/fs-extra": "0.0.37",
     "@types/sinon": "^5.0.0",
-    "clang-format": "^1.0.52",
     "depcheck": "^0.6.3",
     "fs-extra": "^5.0.0",
     "istanbul": "^0.4.5",

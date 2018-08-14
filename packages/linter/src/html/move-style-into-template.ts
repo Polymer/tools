@@ -151,7 +151,8 @@ class MoveStyleIntoTemplate extends HtmlRule {
         warnings.push(new Warning({
           code,
           message,
-          severity: Severity.WARNING, parsedDocument,
+          severity: Severity.WARNING,
+          parsedDocument,
           sourceRange: parsedDocument.sourceRangeForNode(linkInShadowDom)!
         }));
       }

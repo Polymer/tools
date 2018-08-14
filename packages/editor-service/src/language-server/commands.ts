@@ -42,7 +42,7 @@ export default class CommandExecutor extends Handler {
       protected connection: IConnection,
       private diagnosticGenerator: DiagnosticGenerator) {
     super();
-    connection.onExecuteCommand(async(req) => {
+    connection.onExecuteCommand(async (req) => {
       if (req.command === applyEditCommandName) {
         return this.handleErrors(
             this.executeApplyEditCommand(req.arguments as [WorkspaceEdit]),
@@ -79,7 +79,7 @@ export default class CommandExecutor extends Handler {
   private async applyEdits(workspaceEdit: WorkspaceEdit) {
     const params: ApplyWorkspaceEditParams = {edit: workspaceEdit};
     return (await this.connection.sendRequest(
-        ApplyWorkspaceEditRequest.type.method,
-        params)) as ApplyWorkspaceEditResponse;
+               ApplyWorkspaceEditRequest.type.method, params)) as
+        ApplyWorkspaceEditResponse;
   }
 }

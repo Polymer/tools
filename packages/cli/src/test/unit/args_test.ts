@@ -16,9 +16,7 @@ import * as argsLib from '../../args';
 import * as cliLib from '../../polymer-cli';
 
 suite('args', () => {
-
   suite('mergeArguments', () => {
-
     test('merges argument lists', () => {
       const merged = argsLib.mergeArguments([
         [
@@ -67,13 +65,10 @@ suite('args', () => {
           group: 'group three',
         },
       ]);
-
     });
-
   });
 
   suite('merging global and command arguments', () => {
-
     test('global and command arguments do not conflict', () => {
       const cli = new cliLib.PolymerCli([]);
       const commands = cli.commands.values();
@@ -107,7 +102,5 @@ suite('args', () => {
         }
       }
     });
-
   });
-
 });

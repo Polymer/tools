@@ -18,17 +18,14 @@ import * as path from 'path';
 import {getComponentDir, getPackageName} from '../config';
 
 suite('getPackageName', () => {
-
   test('reads from bower.json', () => {
     const name =
         getPackageName({root: path.join(__dirname, '..', '..', 'test')});
     assert.equal(name, 'polyserve-test');
   });
-
 });
 
 suite('getComponentDir', () => {
-
   test('defaults to bower_components', () => {
     const dir =
         getComponentDir({root: path.join(__dirname, '..', '..', 'test')});
@@ -40,5 +37,4 @@ suite('getComponentDir', () => {
         {root: path.join(__dirname, '..', '..', 'test', 'bowerrc')});
     assert.equal(dir, 'my_components');
   });
-
 });

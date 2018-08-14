@@ -202,9 +202,8 @@ export class TestClient {
       for (const batch of diagnosticBatches) {
         if (batch.length > 0) {
           throw new Error(
-              `Found unconsumed diagnostics while cleaning up client. Path: ${path
-              } [${batch.map((d) => d.code)
-                  .join(', ')}]`);
+              `Found unconsumed diagnostics while cleaning up client. Path: ${
+                  path} [${batch.map((d) => d.code).join(', ')}]`);
         }
       }
     }
@@ -343,8 +342,8 @@ export class TestClient {
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
     };
     return this.connection.sendRequest(
-        CompletionRequest.type, params,
-        CancellationToken.None) as Promise<CompletionList>;
+               CompletionRequest.type, params, CancellationToken.None) as
+        Promise<CompletionList>;
   }
 
   async getReferences(

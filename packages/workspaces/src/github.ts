@@ -43,7 +43,9 @@ export interface GitHubRepoData {
  * A complete GitHub repo object. Includes all data from GitHub and an optional
  * reference to a specific branch/tag/sha/etc.
  */
-export interface GitHubRepo extends GitHubRepoData { ref?: string; }
+export interface GitHubRepo extends GitHubRepoData {
+  ref?: string;
+}
 
 /**
  * Returns true if the response is a redirect to another repo

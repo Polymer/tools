@@ -31,7 +31,6 @@
     "@types/babel-types": "^6.25.1",
     "@types/clone": "^0.1.30",
     "bower": "^1.8.0",
-    "clang-format": "1.0.48",
     "knuth-shuffle": "^1.0.1",
     "polymer-project-config": "^4.0.0",
     "source-map-support": "^0.4.3",

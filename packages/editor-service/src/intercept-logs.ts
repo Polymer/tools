@@ -42,12 +42,13 @@ import * as winston from 'winston';
  */
 interface ForwardingTransport extends winston.TransportInstance {}
 interface ForwardingTransportStatic {
-  new (options: any): ForwardingTransport;
+  new(options: any): ForwardingTransport;
 
   console: RemoteConsole|undefined;
 }
-const ForwardingTransport = function(this: ForwardingTransport, _options: any) {
-} as any as ForwardingTransportStatic;
+const ForwardingTransport = function(
+                                this: ForwardingTransport, _options: any) {} as
+    any as ForwardingTransportStatic;
 util.inherits(ForwardingTransport, winston.Transport);
 ForwardingTransport.console = undefined;
 

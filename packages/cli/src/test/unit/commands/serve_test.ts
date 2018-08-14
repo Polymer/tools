@@ -15,9 +15,7 @@ import * as sinon from 'sinon';
 import {PolymerCli} from '../../../polymer-cli';
 
 suite('serve', () => {
-
   suite('--npm and --component-dir', () => {
-
     let startServersStub: sinon.SinonStub;
     let getServerUrlsStub: sinon.SinonStub;
 
@@ -80,7 +78,5 @@ suite('serve', () => {
       const serverOptions = startServersStub.args[0][0];
       assert.propertyVal(serverOptions, 'moduleResolution', 'node');
     });
-
   });
-
 });

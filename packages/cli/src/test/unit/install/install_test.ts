@@ -14,9 +14,7 @@ import {assert} from 'chai';
 import * as polymerInstall from '../../../install/install';
 
 suite('install', () => {
-
   suite('_mergeJson', () => {
-
     test('overwrites primitives and arrays', () => {
       const from = {
         'a': 'bar',
@@ -75,5 +73,4 @@ suite('install', () => {
       });
     });
   });
-
 });

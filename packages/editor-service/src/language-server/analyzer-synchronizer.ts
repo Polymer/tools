@@ -115,7 +115,9 @@ export default class AnalyzerSynchronizer extends AutoDisposable {
   }
 }
 
-export interface LsAnalyzeOptions extends AnalyzeOptions { reason?: string; }
+export interface LsAnalyzeOptions extends AnalyzeOptions {
+  reason?: string;
+}
 
 /**
  * An extension of the analyzer that's aware of the LSP versions of

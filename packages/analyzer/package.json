@@ -32,7 +32,6 @@
   },
   "devDependencies": {
     "bower": "^1.7.9",
-    "clang-format": "=1.1.1",
     "depcheck": "^0.6.3",
     "fs-extra": "^0.30.0",
     "knuth-shuffle": "^1.0.8",

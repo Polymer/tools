@@ -62,7 +62,9 @@ export interface AnalyzeOptions {
  * These are the options available to the `_fork` method.  Currently, only the
  * `urlLoader` override is implemented.
  */
-export interface ForkOptions { urlLoader?: UrlLoader; }
+export interface ForkOptions {
+  urlLoader?: UrlLoader;
+}
 
 export class NoKnownParserError extends Error {}
 

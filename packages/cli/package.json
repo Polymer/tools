@@ -91,7 +91,6 @@
     "@types/sinon": "^5.0.0",
     "@types/tmp": "^0.0.33",
     "@types/yeoman-test": "^1.7.3",
-    "clang-format": "=1.1.0",
     "depcheck": "^0.6.3",
     "fs-extra": "^5.0.0",
     "istanbul": "^0.4",

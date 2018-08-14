@@ -60,8 +60,10 @@ var a11ySuiteExport;
             // instantiate fixture
             fixtureElement.create();
 
-            // Make sure lazy-loaded dom is ready (eg <template is='dom-repeat'>)
-            Polymer.dom.flush();
+            if (typeof Polymer !== 'undefined') {
+              // Make sure lazy-loaded dom is ready (eg <template is='dom-repeat'>)
+              Polymer.dom.flush();
+            }
 
             // If we have a beforeEach function, call it
             if (beforeEach) {

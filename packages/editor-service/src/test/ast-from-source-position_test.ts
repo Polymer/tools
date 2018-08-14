@@ -59,7 +59,8 @@ suite('getLocationInfoForPosition', () => {
   test('works for a closed tag with a boolean attribute', () => {
     const allKindsSpaceSeparated = getAllKindsSpaceSeparated('<t a></t>');
     assert.equal(
-        allKindsSpaceSeparated, 'text tagName tagName attribute attribute ' +
+        allKindsSpaceSeparated,
+        'text tagName tagName attribute attribute ' +
             'text endTag endTag endTag text');
   });
 
@@ -79,13 +80,15 @@ suite('getLocationInfoForPosition', () => {
 
     allKindsSpaceSeparated = getAllKindsSpaceSeparated('<t a=""></t>');
     assert.equal(
-        allKindsSpaceSeparated, 'text tagName tagName attribute attribute ' +
+        allKindsSpaceSeparated,
+        'text tagName tagName attribute attribute ' +
             'attributeValue attributeValue attributeValue text ' +
             'endTag endTag endTag text');
 
     allKindsSpaceSeparated = getAllKindsSpaceSeparated('<t a=\'\'></t>');
     assert.equal(
-        allKindsSpaceSeparated, 'text tagName tagName attribute attribute ' +
+        allKindsSpaceSeparated,
+        'text tagName tagName attribute attribute ' +
             'attributeValue attributeValue attributeValue text ' +
             'endTag endTag endTag text');
   });

@@ -86,20 +86,19 @@ export function pushResources(
     if (resources) {
       const root = options.root;
       for (const filename of Object.keys(resources)) {
-        const stream =
-            res.push(filename, {
-                 request: {accept: '*/*'},
-                 response: {
-                   'content-type': mime.getType(filename),
+        const stream = res.push(filename, {
+                            request: {accept: '*/*'},
+                            response: {
+                              'content-type': mime.getType(filename),
 
-                   // Add an X-header to the pushed request so we don't trigger
-                   // pushes for pushes
-                   'x-is-push': 'true'
-                 }
-               })
-                .on('error',
-                    (err: {}) =>
-                        console.error('failed to push', filename, err));
+                              // Add an X-header to the pushed request so we
+                              // don't trigger pushes for pushes
+                              'x-is-push': 'true'
+                            }
+                          })
+                           .on('error',
+                               (err: {}) => console.error(
+                                   'failed to push', filename, err));
         fs.createReadStream(path.join(root, filename)).pipe(stream);
       }
     }

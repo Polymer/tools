@@ -18,7 +18,6 @@ import {PolymerCli} from '../../../polymer-cli';
 import {interceptOutput} from '../../util';
 
 suite('The general CLI', () => {
-
   test('displays general help when no command is called', async () => {
     const cli = new PolymerCli([]);
     const output = await interceptOutput(async () => {
@@ -158,5 +157,4 @@ suite('The general CLI', () => {
       path.resolve(expectedRoot, 'bar.html'),
     ]);
   });
-
 });

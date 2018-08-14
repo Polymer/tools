@@ -15,4 +15,6 @@
 export type LiteralValue =
     string|number|boolean|RegExp|undefined|LiteralArray|LiteralObj|null;
 export interface LiteralArray extends Array<LiteralValue> {}
-export interface LiteralObj { [key: string]: LiteralValue; }
+export interface LiteralObj {
+  [key: string]: LiteralValue;
+}

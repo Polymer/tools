@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "@types/nock": "^8.2.1",
-    "clang-format": "^1.0.55",
     "nock": "^9.0.18"
   },
   "dependencies": {

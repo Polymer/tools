@@ -24,15 +24,14 @@ export type AstLocation = {
   language: 'html',
   document: Document,
   node: HtmlAstLocation,
-} |
-{
+}|{
   language: 'css';
   document: Document;
   node: CssAstLocation;
 };
 
-export type HtmlAstLocation = AttributesSection | AttributeValue | TagName |
-    EndTag | TextNode | ScriptContents | StyleContents | Comment;
+export type HtmlAstLocation = AttributesSection|AttributeValue|TagName|EndTag|
+    TextNode|ScriptContents|StyleContents|Comment;
 
 export type CssAstLocation = shadyCssParser.Node;
 

@@ -16,9 +16,7 @@ import {assert} from 'chai';
 import {heredoc, inMemoryAnalyzer, mindent, undent} from './test-utils';
 
 suite('test-utils', () => {
-
   suite('inMemoryAnalyzer', () => {
-
     test('can load the provided string literals as files', async () => {
       const analyzer = inMemoryAnalyzer({
         'index.html': `
@@ -44,38 +42,41 @@ suite('test-utils', () => {
   });
 
   suite('heredoc', () => {
-
     test('fixes indent level', () => {
-      assert.deepEqual(heredoc`
+      assert.deepEqual(
+          heredoc`
           check
 
         this
             out
-      `, '  check\n\nthis\n    out\n');
+      `,
+          '  check\n\nthis\n    out\n');
     });
   });
 
   suite('mindent', () => {
-
     test('returns the minimum indentation in a string', () => {
       assert.equal(mindent('  x'), 2);
-      assert.equal(mindent(`
+      assert.equal(
+          mindent(`
           x
         y <-- 8 characters indented
             z
-      `), 8);
+      `),
+          8);
     });
   });
 
   suite('undent', () => {
-
     test('removes the minimum indentation from a string', () => {
       assert.deepEqual(undent('  x'), 'x');
-      assert.deepEqual(undent(`
+      assert.deepEqual(
+          undent(`
           x
         y
             z
-      `), '\n  x\ny\n    z\n');
+      `),
+          '\n  x\ny\n    z\n');
     });
   });
 });
