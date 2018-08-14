@@ -34,7 +34,7 @@ export {addListener};
  *
  * @returns Returns true if a gesture event listener was added.
  */
-declare function addListener(node: Node, evType: string, handler: (p0: Event) => void): boolean;
+declare function addListener(node: EventTarget, evType: string, handler: (p0: Event) => void): boolean;
 
 export {removeListener};
 
@@ -44,7 +44,7 @@ export {removeListener};
  *
  * @returns Returns true if a gesture event listener was removed.
  */
-declare function removeListener(node: Node, evType: string, handler: (p0: Event) => void): boolean;
+declare function removeListener(node: EventTarget, evType: string, handler: (p0: Event) => void): boolean;
 
 export {register};
 
@@ -64,7 +64,7 @@ export {setTouchAction};
  * This value is checked on first move, thus it should be called prior to
  * adding event listeners.
  */
-declare function setTouchAction(node: Node, value: string): void;
+declare function setTouchAction(node: EventTarget, value: string): void;
 
 export {prevent};
 
