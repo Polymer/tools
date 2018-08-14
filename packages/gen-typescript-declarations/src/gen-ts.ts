@@ -169,9 +169,7 @@ async function analyzerToAst(
   }
 
   const tsDocs = [];
-  const warningPrinter =
-      new analyzer.WarningPrinter(process.stderr, {maxCodeLines: 1});
-
+  const warnings = [...analysis.getWarnings()];
   for (const [declarationsFilename, analyzerDocs] of declarationDocs) {
     const tsDoc = new ts.Document({
       path: declarationsFilename,
@@ -193,7 +191,7 @@ async function analyzerToAst(
           rootDir,
           config.excludeIdentifiers || []);
       generator.handleDocument();
-      await warningPrinter.printWarnings(generator.warnings);
+      warnings.push(...generator.warnings);
     }
 
     for (const ref of tsDoc.referencePaths) {
@@ -220,6 +218,15 @@ async function analyzerToAst(
     // files than to try and prune the references (especially across packages).
     tsDocs.push(tsDoc);
   }
+
+  const warningPrinter =
+      new analyzer.WarningPrinter(process.stderr, {maxCodeLines: 1});
+  await warningPrinter.printWarnings(warnings);
+  if (warnings.some(
+          (warning) => warning.severity === analyzer.Severity.ERROR)) {
+    throw new Error('An error occured generating types.');
+  }
+
   return tsDocs;
 }
 
