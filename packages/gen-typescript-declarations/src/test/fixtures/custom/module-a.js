@@ -10,3 +10,6 @@ export const notASupportedAnalyzerFeature = 0;
 export {NotResolvable} from './module-b.js';
 
 import {PrivateClass} from './module-b.js';
+
+import * as moduleC from './module-c.js';
+export {moduleC as ModuleC};

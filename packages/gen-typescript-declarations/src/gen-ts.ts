@@ -904,7 +904,8 @@ class TypeGenerator {
       } else {
         // E.g. export {Foo, Bar as Baz}
         for (const specifier of node.specifiers) {
-          if (this.isResolvable(specifier.exported.name, feature)) {
+          if (this.isResolvable(specifier.exported.name, feature) ||
+              this.isResolvable(specifier.local.name, feature)) {
             identifiers.push({
               identifier: specifier.local.name,
               alias: specifier.exported.name,
