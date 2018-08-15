@@ -219,9 +219,19 @@ async function analyzerToAst(
     tsDocs.push(tsDoc);
   }
 
+  const filteredWarnings = warnings.filter((warning) => {
+    const sourcePath =
+        analyzerUrlToRelativePath(warning.sourceRange.file, rootDir);
+    return sourcePath !== undefined &&
+        !excludeFiles.some((pattern) => pattern.match(sourcePath));
+  });
   const warningPrinter =
       new analyzer.WarningPrinter(process.stderr, {maxCodeLines: 1});
-  await warningPrinter.printWarnings(warnings);
+  await warningPrinter.printWarnings(filteredWarnings);
+  if (filteredWarnings.some(
+          (warning) => warning.severity === analyzer.Severity.ERROR)) {
+    throw new Error('Encountered error generating types.');
+  }
 
   return tsDocs;
 }
