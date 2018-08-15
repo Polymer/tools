@@ -212,15 +212,23 @@ window.waitFor = waitFor;
 var _config = {
     environmentScripts: !!window.__wctUseNpm ?
         [
-            'stacky/browser.js', 'async/lib/async.js', 'lodash/index.js',
-            'mocha/mocha.js', 'chai/chai.js', '@polymer/sinonjs/sinon.js',
+            'stacky/browser.js',
+            'async/lib/async.js',
+            'lodash/index.js',
+            'mocha/mocha.js',
+            'chai/chai.js',
+            '@polymer/sinonjs/sinon.js',
             'sinon-chai/lib/sinon-chai.js',
             'accessibility-developer-tools/dist/js/axs_testing.js',
             '@polymer/test-fixture/test-fixture.js'
         ] :
         [
-            'stacky/browser.js', 'async/lib/async.js', 'lodash/lodash.js',
-            'mocha/mocha.js', 'chai/chai.js', 'sinonjs/sinon.js',
+            'stacky/browser.js',
+            'async/lib/async.js',
+            'lodash/lodash.js',
+            'mocha/mocha.js',
+            'chai/chai.js',
+            'sinonjs/sinon.js',
             'sinon-chai/lib/sinon-chai.js',
             'accessibility-developer-tools/dist/js/axs_testing.js'
         ],
@@ -569,11 +577,7 @@ var ChildRunner = /** @class */ (function () {
      */
     ChildRunner.prototype.addEventListener = function (type, listener, target) {
         target.addEventListener(type, listener);
-        var descriptor = {
-            target: target,
-            type: type,
-            listener: listener
-        };
+        var descriptor = { target: target, type: type, listener: listener };
         this.eventListenersToRemoveOnClean.push(descriptor);
     };
     /**
@@ -994,8 +998,18 @@ var STACKY_CONFIG = {
 };
 // https://github.com/visionmedia/mocha/blob/master/lib/runner.js#L36-46
 var MOCHA_EVENTS = [
-    'start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end',
-    'pass', 'fail', 'pending', 'childRunner end'
+    'start',
+    'end',
+    'suite',
+    'suite end',
+    'test',
+    'test end',
+    'hook',
+    'hook end',
+    'pass',
+    'fail',
+    'pending',
+    'childRunner end'
 ];
 // Until a suite has loaded, we assume this many tests in it.
 var ESTIMATED_TESTS_PER_SUITE = 3;
