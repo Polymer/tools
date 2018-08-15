@@ -33,7 +33,7 @@ suite('HoverDocumenter', function() {
 
   let testName = 'it supports getting the element description ' +
       'when asking for docs at its tag name';
-  test(testName, async() => {
+  test(testName, async () => {
     const {client, underliner, converter} =
         await createTestEnvironment({fixtureDir});
 
@@ -50,7 +50,7 @@ suite('HoverDocumenter', function() {
   });
 
   testName = 'it can still get element info after changing a file in memory';
-  test(testName, async() => {
+  test(testName, async () => {
     const {client, server} = await createTestEnvironment({fixtureDir});
 
     const contents = await server.fileSynchronizer.urlLoader.load(
@@ -63,15 +63,15 @@ suite('HoverDocumenter', function() {
 
     assert.deepEqual(await client.getHover(indexFile, tagPosition), null);
     assert.deepEqual(
-        (await client.getHover(indexFile, {
-          line: tagPosition.line + 1,
-          column: tagPosition.column
-        }))!.contents,
+        (await client.getHover(
+            indexFile,
+            {line: tagPosition.line + 1,
+             column: tagPosition.column}))!.contents,
         tagDescription);
     await client.cleanup();
   });
 
-  test('it supports getting an attribute description', async() => {
+  test('it supports getting an attribute description', async () => {
     const {client, underliner, converter} =
         await createTestEnvironment({fixtureDir});
     const {contents, range} = (await client.getHover(
@@ -89,7 +89,7 @@ suite('HoverDocumenter', function() {
 
   testName = 'it supports getting a description of an attribute ' +
       'defined in a behavior';
-  test(testName, async() => {
+  test(testName, async () => {
     const {client, underliner, converter} =
         await createTestEnvironment({fixtureDir});
     const {contents, range} = (await client.getHover(
@@ -107,7 +107,7 @@ suite('HoverDocumenter', function() {
 
   const fooPropUsePosition = {line: 2, column: 16};
   const internalPropUsePosition = {line: 3, column: 12};
-  test(`Give documentation for properties in databindings.`, async() => {
+  test(`Give documentation for properties in databindings.`, async () => {
     const {client, underliner} = await createTestEnvironment({fixtureDir});
 
     const path = 'polymer/element-with-databinding.html';

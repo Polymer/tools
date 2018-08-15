@@ -43,31 +43,30 @@ class AlwaysWarnsRule extends Rule {
 }
 
 suite('Linter', () => {
-
   suite('.lint', () => {
     let analyzer: Analyzer;
     let warningPrinter: WarningPrettyPrinter;
 
-    setup(async() => {
+    setup(async () => {
       ({analyzer} =
            await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
       warningPrinter = new WarningPrettyPrinter();
     });
 
-    test('works in the trivial case', async() => {
+    test('works in the trivial case', async () => {
       const linter = new Linter([], analyzer);
       const {warnings} = await linter.lint([]);
       assert.deepEqual([...warnings], []);
     });
 
-    test('gives no warnings for a perfectly fine file', async() => {
+    test('gives no warnings for a perfectly fine file', async () => {
       const linter = new Linter([], analyzer);
       const {warnings} =
           await linter.lint(['perfectly-fine/polymer-element.html']);
       assert.deepEqual([...warnings], []);
     });
 
-    test('surfaces warnings up from the analyzer', async() => {
+    test('surfaces warnings up from the analyzer', async () => {
       // Even without any rules we still get the warnings from the analyzer.
       const linter = new Linter([], analyzer);
       const {warnings} =
@@ -84,7 +83,7 @@ suite('Linter', () => {
 
     const testName =
         'when linting a package, do not surface warnings from external files';
-    test(testName, async() => {
+    test(testName, async () => {
       const dir = path.join(fixtures_dir, 'package-external');
       const {analyzer} =
           await ProjectConfig.initializeAnalyzerFromDirectory(dir);

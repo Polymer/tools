@@ -14,7 +14,7 @@
 
 import {BrowserCapability} from 'browser-capabilities';
 
-export type JsCompileTarget = 'es5' | 'es2015' | 'es2016' | 'es2017' | 'es2018';
+export type JsCompileTarget = 'es5'|'es2015'|'es2016'|'es2017'|'es2018';
 
 export interface ProjectBuildOptions {
   /**
@@ -111,7 +111,7 @@ export interface ProjectBuildOptions {
   /** Options for processing HTML. */
   html?: {
     /** Minify HTMl by removing comments and whitespace. */
-    minify?: boolean | {
+    minify?: boolean|{
       /** HTML files listed here will not be minified. */
       exclude?: string[],
     },
@@ -120,7 +120,7 @@ export interface ProjectBuildOptions {
   /** Options for processing CSS. */
   css?: {
     /** Minify inlined and external CSS. */
-    minify?: boolean | {
+    minify?: boolean|{
       /** CSS files listed here will not be minified. */
       exclude?: string[],
     },
@@ -129,17 +129,18 @@ export interface ProjectBuildOptions {
   /** Options for processing JavaScript. */
   js?: {
     /** Minify inlined and external JavaScript. */
-    minify?: boolean | {
+    minify?: boolean|{
       /** JavaScript files listed here will not be minified. */
       exclude?: string[],
     },
 
     /** Use babel to compile all ES6 JS down to ES5 for older browsers. */
-    compile?: boolean|JsCompileTarget|{
-      target?: JsCompileTarget;
-      /** JavaScript files listed here will not be compiled. */
-      exclude?: string[],
-    },
+    compile?:
+               boolean|JsCompileTarget|{
+                 target?: JsCompileTarget;
+                 /** JavaScript files listed here will not be compiled. */
+                 exclude?: string[],
+               },
 
     /** Transform ES modules to AMD modules. */
     transformModulesToAmd?: boolean,

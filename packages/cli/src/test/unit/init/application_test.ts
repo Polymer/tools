@@ -17,7 +17,6 @@ import * as helpers from 'yeoman-test';
 import {createApplicationGenerator} from '../../../init/application/application';
 
 suite('init/application', () => {
-
   test(
       'creates expected 1.x files while passed the 1.x template name',
       (done) => {
@@ -130,5 +129,4 @@ suite('init/application', () => {
           done();
         });
   });
-
 });

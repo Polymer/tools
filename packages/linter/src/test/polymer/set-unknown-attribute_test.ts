@@ -30,25 +30,25 @@ suite('set-unknown-attribute', () => {
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
 
-  setup(async() => {
+  setup(async () => {
     ({analyzer} =
          await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
     warningPrinter = new WarningPrettyPrinter();
     linter = new Linter(registry.getRules(['set-unknown-attribute']), analyzer);
   });
 
-  test('works in the trivial case', async() => {
+  test('works in the trivial case', async () => {
     const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
-  test('gives no warnings for a perfectly fine file', async() => {
+  test('gives no warnings for a perfectly fine file', async () => {
     const {warnings} =
         await linter.lint(['perfectly-fine/polymer-element.html']);
     assert.deepEqual([...warnings], []);
   });
 
-  test('warns at the right times', async() => {
+  test('warns at the right times', async () => {
     const {warnings} =
         await linter.lint(['set-unknown-attribute/when-to-warn.html']);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [
@@ -70,7 +70,7 @@ suite('set-unknown-attribute', () => {
     ]);
   });
 
-  test('gives helpful warning messages', async() => {
+  test('gives helpful warning messages', async () => {
     const {warnings} =
         await linter.lint(['set-unknown-attribute/warning-messages.html']);
     assert.deepEqual(warnings.map((w) => w.message), [

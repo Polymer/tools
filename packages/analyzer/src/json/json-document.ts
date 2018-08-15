@@ -16,10 +16,14 @@ import {SourceRange} from '../model/model';
 import {ParsedDocument} from '../parser/document';
 
 export type Json = JsonObject|JsonArray|number|string|boolean|null;
-export interface JsonObject { [key: string]: Json; }
+export interface JsonObject {
+  [key: string]: Json;
+}
 export interface JsonArray extends Array<Json> {}
 
-export interface Visitor { visit(node: Json): void; }
+export interface Visitor {
+  visit(node: Json): void;
+}
 
 export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
   readonly type = 'json';

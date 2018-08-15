@@ -19,7 +19,6 @@ import {invertPromise, fixtureDir as fixturePath} from '../util';
 import {child_process} from 'mz';
 
 suite('polymer lint', function() {
-
   const binPath = path.join(__dirname, '../../../bin/polymer.js');
 
   this.timeout(8 * 1000);
@@ -53,8 +52,7 @@ suite('polymer lint', function() {
     const cwd = getTempCopy(fixtureDir);
     const output = await runCommand(binPath, ['lint', '--fix'], {cwd});
     assert.deepEqual(
-        fs.readFileSync(path.join(cwd, 'toplevel-bad.html'), 'utf-8'),
-        `<style>
+        fs.readFileSync(path.join(cwd, 'toplevel-bad.html'), 'utf-8'), `<style>
   div {
     @apply --foo;
   }
@@ -85,8 +83,7 @@ Fixed 2 warnings.
     const output = await runCommand(
         binPath, ['lint', '--fix', '-i', 'toplevel-bad.html'], {cwd});
     assert.deepEqual(
-        fs.readFileSync(path.join(cwd, 'toplevel-bad.html'), 'utf-8'),
-        `<style>
+        fs.readFileSync(path.join(cwd, 'toplevel-bad.html'), 'utf-8'), `<style>
   div {
     @apply --foo;
   }
@@ -207,7 +204,6 @@ Fixed 4 warnings.
       });
 
   suite('--watch', function() {
-
     this.timeout(12 * 1000);
 
     const delimiter =

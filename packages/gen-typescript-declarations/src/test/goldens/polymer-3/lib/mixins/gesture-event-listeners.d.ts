@@ -41,7 +41,7 @@ interface GestureEventListeners {
    * @param eventName Name of event
    * @param handler Listener function to add
    */
-  _addEventListenerToNode(node: Node, eventName: string, handler: (p0: Event) => void): void;
+  _addEventListenerToNode(node: EventTarget, eventName: string, handler: (p0: Event) => void): void;
 
   /**
    * Remove the event listener to the node if it is a gestures event.
@@ -50,5 +50,5 @@ interface GestureEventListeners {
    * @param eventName Name of event
    * @param handler Listener function to remove
    */
-  _removeEventListenerFromNode(node: Node, eventName: string, handler: (p0: Event) => void): void;
+  _removeEventListenerFromNode(node: EventTarget, eventName: string, handler: (p0: Event) => void): void;
 }

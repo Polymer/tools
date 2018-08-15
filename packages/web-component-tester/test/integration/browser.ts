@@ -172,7 +172,9 @@ const integrationDir = path.resolve(__dirname, '../fixtures/integration');
  * the output for tests.
  */
 function runsIntegrationSuite(
-    dirName: string, options: config.Config, howToRun: 'only'|'skip'|'normal',
+    dirName: string,
+    options: config.Config,
+    howToRun: 'only'|'skip'|'normal',
     contextFunction: (context: TestResults) => void) {
   const suiteName = `integration fixture dir '${dirName}'`;
   let describer: (suiteName: string, spec: () => void) => void = describe;
@@ -194,7 +196,8 @@ function runsIntegrationSuite(
       if (suiteOptions.plugins !== undefined) {
         if (suiteOptions.plugins.local && !testLocalBrowsers) {
           delete suiteOptions.plugins.local;
-        } else if (testLocalBrowsersList.length > 0 &&
+        } else if (
+            testLocalBrowsersList.length > 0 &&
             !testLocalBrowsersList.includes('default') &&
             suiteOptions.plugins.local !== undefined &&
             suiteOptions.plugins.local.browsers !== undefined) {
@@ -204,7 +207,8 @@ function runsIntegrationSuite(
         }
         if (suiteOptions.plugins.sauce && !testRemoteBrowsers) {
           delete suiteOptions.plugins.sauce;
-        } else if (testRemoteBrowsersList.length > 0 &&
+        } else if (
+            testRemoteBrowsersList.length > 0 &&
             suiteOptions.plugins.sauce !== undefined &&
             suiteOptions.plugins.sauce.browsers !== undefined) {
           suiteOptions.plugins.sauce.browsers =
@@ -222,7 +226,8 @@ function runsIntegrationSuite(
               tags: ['org:Polymer', 'repo:web-component-tester'],
             },
           },
-          options, suiteOptions);
+          options,
+          suiteOptions);
       const context = new Context(allOptions);
 
       const addEventHandler = (name: string, handler: Function) => {
@@ -230,8 +235,7 @@ function runsIntegrationSuite(
           try {
             handler.apply(null, arguments);
           } catch (error) {
-            console.error(
-                `Error inside ${name} handler in integration tests:`);
+            console.error(`Error inside ${name} handler in integration tests:`);
             console.error(error.stack);
           }
         });
@@ -263,8 +267,7 @@ function runsIntegrationSuite(
           });
 
       addEventHandler(
-          'browser-end',
-          (browserDef: BrowserDef, error: any, stats: Stats) => {
+          'browser-end', (browserDef: BrowserDef, error: any, stats: Stats) => {
             const variantResults =
                 testResults.getVariantResults(browserDef.variant || '');
             const browserName = getBrowserName(browserDef);
@@ -351,7 +354,10 @@ function assertFailed(context: VariantResults, expectedError: string) {
 
 /** Asserts that all browsers match the given stats. */
 function assertStats(
-    context: VariantResults, passing: number, pending: number, failing: number,
+    context: VariantResults,
+    passing: number,
+    pending: number,
+    failing: number,
     status: 'complete') {
   const expected: Stats = {passing, pending, failing, status};
   expect(context.stats).to.deep.equal(repeatBrowsers(context, expected));
@@ -412,13 +418,19 @@ function assertVariantResultsConformToGolden(
   it('records the correct result stats', function() {
     try {
       assertStats(
-          variantResults, golden.passing, golden.pending, golden.failing,
+          variantResults,
+          golden.passing,
+          golden.pending,
+          golden.failing,
           <any>golden.status);
     } catch (_) {
       // mocha reports twice the failures because reasons
       // https://github.com/mochajs/mocha/issues/2083
       assertStats(
-          variantResults, golden.passing, golden.pending, golden.failing * 2,
+          variantResults,
+          golden.passing,
+          golden.pending,
+          golden.failing * 2,
           <any>golden.status);
     }
   });
@@ -491,8 +503,10 @@ if (testLocalBrowsers) {
       const context = new Context(options);
       context.hook(
           'define:webserver',
-          (app: express.Application, assign: (sub: express.Express) => void,
-          _options: ServerOptions, done: (err?: any) => void) => {
+          (app: express.Application,
+           assign: (sub: express.Express) => void,
+           _options: ServerOptions,
+           done: (err?: any) => void) => {
             const newApp = express();
             newApp.get('*', (request, _response, next) => {
               requestedUrls.push(request.url);
@@ -515,54 +529,56 @@ if (testLocalBrowsers) {
 
   describe('early failures', () => {
     it(`wct doesn't start testing if it's not bower installed locally`,
-      async function() {
-        const log: string[] = [];
-        const options: config.Config = {
-          output: <any>{write: log.push.bind(log)},
-          ttyOutput: false,
-          root: path.join(
-              __dirname, '..', 'fixtures', 'integration', 'components_dir'),
-          browserOptions: <any>{
-            name: 'web-component-tester',
-            tags: ['org:Polymer', 'repo:web-component-tester'],
-          },
-          plugins: <any>{
-            local: {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
-          },
-        };
-        const context = new Context(options);
-        try {
-          await test(context);
-          throw new Error('Expected test() to fail!');
-        } catch (e) {
-          expect(e.message).to.match(
-              /The web-component-tester Bower package is not installed as a dependency of this project/);
-        }
-      });
+       async function() {
+         const log: string[] = [];
+         const options: config.Config = {
+           output: <any>{write: log.push.bind(log)},
+           ttyOutput: false,
+           root: path.join(
+               __dirname, '..', 'fixtures', 'integration', 'components_dir'),
+           browserOptions: <any>{
+             name: 'web-component-tester',
+             tags: ['org:Polymer', 'repo:web-component-tester'],
+           },
+           plugins: <any>{
+             local:
+                 {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
+           },
+         };
+         const context = new Context(options);
+         try {
+           await test(context);
+           throw new Error('Expected test() to fail!');
+         } catch (e) {
+           expect(e.message).to.match(
+               /The web-component-tester Bower package is not installed as a dependency of this project/);
+         }
+       });
 
     it('fails if the client side library is out of allowed version range',
-      async function() {
-        const log: string[] = [];
-        const options: config.Config = {
-          output: <any>{write: log.push.bind(log)},
-          ttyOutput: false,
-          root: path.join(__dirname, '..', 'fixtures', 'early-failure'),
-          browserOptions: <any>{
-            name: 'web-component-tester',
-            tags: ['org:Polymer', 'repo:web-component-tester'],
-          },
-          plugins: <any>{
-            local: {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
-          },
-        };
-        const context = new Context(options);
-        try {
-          await test(context);
-          throw new Error('Expected test() to fail!');
-        } catch (e) {
-          expect(e.message).to.match(
-              /The web-component-tester Bower package installed is incompatible with the\n\s*wct node package you're using/);
-        }
-      });
+       async function() {
+         const log: string[] = [];
+         const options: config.Config = {
+           output: <any>{write: log.push.bind(log)},
+           ttyOutput: false,
+           root: path.join(__dirname, '..', 'fixtures', 'early-failure'),
+           browserOptions: <any>{
+             name: 'web-component-tester',
+             tags: ['org:Polymer', 'repo:web-component-tester'],
+           },
+           plugins: <any>{
+             local:
+                 {browsers: testLocalBrowsersList, skipSeleniumInstall: true},
+           },
+         };
+         const context = new Context(options);
+         try {
+           await test(context);
+           throw new Error('Expected test() to fail!');
+         } catch (e) {
+           expect(e.message).to.match(
+               /The web-component-tester Bower package installed is incompatible with the\n\s*wct node package you're using/);
+         }
+       });
   });
 }

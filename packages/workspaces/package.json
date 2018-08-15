@@ -8,7 +8,7 @@
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
   "scripts": {
-    "format": "find src | grep '\\.js$\\|\\.ts$' | xargs clang-format --style=file -i",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "lint": "tslint -p ./",
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "@types/nock": "^8.2.1",
-    "clang-format": "^1.0.55",
     "nock": "^9.0.18"
   },
   "dependencies": {

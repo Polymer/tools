@@ -136,7 +136,7 @@ class IronFlexLayoutClasses extends HtmlRule {
       // Add fix on first warning, we'll add all the missing modules in the same
       // style node.
       // TODO: we should not mutate warning.fix like this.
-      const warning: {fix: Edit | undefined} = warnings[fixIndex];
+      const warning: {fix: Edit|undefined} = warnings[fixIndex];
       // Fallback to style without include attribute.
       const styleNode = getStyleNodeWithInclude(templateContent) ||
           dom5.query(templateContent, p.hasTagName('style'));
@@ -171,7 +171,7 @@ ${indent}<style include="${missingModules}"></style>`)];
     }
     // Add fix on first warning, we'll add all the missing modules in the same
     // style node.
-    const warning: {fix: Edit | undefined} = warnings[fixIndex];
+    const warning: {fix: Edit|undefined} = warnings[fixIndex];
     const styleNode = getStyleNodeWithInclude(parsedDocument.ast);
     if (styleNode) {
       const include = dom5.getAttribute(styleNode, 'include')!;

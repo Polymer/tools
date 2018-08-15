@@ -28,15 +28,15 @@ interface FakeFile {
 }
 
 function createFakeFileStream(files: FakeFile[]) {
-  const srcStream = new stream.Readable({ objectMode: true });
+  const srcStream = new stream.Readable({objectMode: true});
 
   srcStream._read = function() {
     for (const file of files) {
       this.push(new Vinyl({
         contents: new Buffer(file.contents),
-        cwd:      file.cwd,
-        base:     file.base,
-        path:     file.path
+        cwd: file.cwd,
+        base: file.base,
+        path: file.path
       }));
     }
     this.push(null);
@@ -363,11 +363,10 @@ suite('optimize-streams', () => {
     const expected = `<!DOCTYPE html><style>foo {
             background: blue;
           }</style><script>document.registerElement(\'x-foo\', XFoo);</script><x-foo>bar</x-foo>`;
-    const sourceStream = createFakeFileStream(
-        [
-          {
-            path: 'foo.html',
-            contents: `
+    const sourceStream = createFakeFileStream([
+      {
+        path: 'foo.html',
+        contents: `
         <!doctype html>
         <style>
           foo {
@@ -381,8 +380,8 @@ suite('optimize-streams', () => {
           bar
         </x-foo>
         `,
-          },
-        ]);
+      },
+    ]);
     const op =
         pipeStreams([sourceStream, getOptimizeStreams({html: {minify: true}})]);
     assert.equal(await getOnlyFile(op), expected);
@@ -402,11 +401,10 @@ suite('optimize-streams', () => {
 
   test('minify css (inlined)', async () => {
     const expected = `<style>foo{background:blue;}</style>`;
-    const sourceStream = createFakeFileStream(
-        [
-          {
-            path: 'foo.html',
-            contents: `
+    const sourceStream = createFakeFileStream([
+      {
+        path: 'foo.html',
+        contents: `
           <!doctype html>
           <html>
             <head>
@@ -419,8 +417,8 @@ suite('optimize-streams', () => {
             <body></body>
           </html>
         `,
-          },
-        ]);
+      },
+    ]);
     const op =
         pipeStreams([sourceStream, getOptimizeStreams({css: {minify: true}})]);
 

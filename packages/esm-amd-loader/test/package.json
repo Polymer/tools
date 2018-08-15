@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "clean": "rm -rf lib/",
     "lint": "tslint --project . --format stylish",
     "build": "npm run clean && tsc",
@@ -13,7 +13,6 @@
   "devDependencies": {
     "@polymer/esm-amd-loader": "^1.0.0",
     "@webcomponents/webcomponentsjs": "^1.2.0",
-    "clang-format": "^1.2.3",
     "wct-browser-legacy": "^1.0.0",
     "web-component-tester": "^6.7.0"
   },

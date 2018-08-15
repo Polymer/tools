@@ -3,12 +3,17 @@
     "exclude-me.js"
   ],
   "excludeIdentifiers": [
-    "ExcludeThisClass"
+    "ExcludeThisClass",
+    "exclude_this_method",
+    "exclude_this_property"
   ],
   "autoImport": {
-    "module-b.js": [
-      "AutoImportClass1",
-      "AutoImportClass2"
+    "./module-a.js": [
+      "ClassA1",
+      "ClassA2"
+    ],
+    "@polymer/external-package": [
+      "ExternalPackageClass"
     ]
   }
 }

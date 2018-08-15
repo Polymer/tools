@@ -290,12 +290,11 @@ export class ScannedPolymerElement extends ScannedElement implements
 export interface PolymerExtension extends ElementBase {
   properties: Map<string, PolymerProperty>;
 
-  observers: ImmutableArray < {
-    javascriptNode: babel.Expression|babel.SpreadElement,
-        expression: LiteralValue,
-        parsedExpression: JavascriptDatabindingExpression|undefined;
-  }
-  > ;
+  observers: ImmutableArray<{
+    javascriptNode: babel.Expression | babel.SpreadElement,
+    expression: LiteralValue,
+    parsedExpression: JavascriptDatabindingExpression|undefined;
+  }>;
   listeners: ImmutableArray<{event: string, handler: string}>;
   behaviorAssignments: ImmutableArray<ScannedReference<'behavior'>>;
   localIds: ImmutableArray<LocalId>;

@@ -167,22 +167,19 @@ suite('Class', () => {
           description: 'An exported class.',
           name: 'ExportedClass',
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method1', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method1', return: {type: 'void'}}]
         },
         {
           description: 'A default exported class.',
           name: undefined,
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method2', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method2', return: {type: 'void'}}]
         },
         {
           description: '',
           name: 'ExportedConstClass',
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method3', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method3', return: {type: 'void'}}]
         }
       ]);
     });
@@ -537,22 +534,19 @@ suite('Class', () => {
           description: 'An exported class.',
           name: 'ExportedClass',
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method1', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method1', return: {type: 'void'}}]
         },
         {
           description: 'A default exported class.',
           name: undefined,
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method2', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method2', return: {type: 'void'}}]
         },
         {
           description: '',
           name: 'ExportedConstClass',
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method3', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method3', return: {type: 'void'}}]
         }
       ]);
     });

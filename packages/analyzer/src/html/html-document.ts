@@ -24,7 +24,9 @@ import {ParsedDocument, StringifyOptions} from '../parser/document';
  * The ASTs of the HTML elements needed to represent Polymer elements.
  */
 
-export interface HtmlVisitor { (node: ASTNode): void; }
+export interface HtmlVisitor {
+  (node: ASTNode): void;
+}
 
 export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
   type = 'html';
@@ -89,10 +91,8 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     return {
       file: range.file,
       start: range.start,
-      end: {
-        line: range.start.line,
-        column: range.start.column + attrName.length
-      }
+      end:
+          {line: range.start.line, column: range.start.column + attrName.length}
     };
   }
 

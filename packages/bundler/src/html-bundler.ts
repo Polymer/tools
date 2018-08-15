@@ -56,8 +56,7 @@ export class HtmlBundler {
   protected document: Document<ParsedHtmlDocument>;
 
   constructor(
-      public bundler: Bundler,
-      public assignedBundle: AssignedBundle,
+      public bundler: Bundler, public assignedBundle: AssignedBundle,
       public manifest: BundleManifest) {
   }
 
@@ -105,8 +104,7 @@ export class HtmlBundler {
    * line offset within the final bundle.
    */
   private async _addOrUpdateSourcemapsForInlineScripts(
-      originalDoc: Document,
-      reparsedDoc: ParsedHtmlDocument,
+      originalDoc: Document, reparsedDoc: ParsedHtmlDocument,
       oldBaseUrl: ResolvedUrl) {
     const inlineScripts =
         dom5.queryAll(reparsedDoc.ast, matchers.inlineNonModuleScript);
@@ -805,9 +803,7 @@ export class HtmlBundler {
    * imported from the import URL.
    */
   private _rewriteAstBaseUrl(
-      ast: ASTNode,
-      oldBaseUrl: ResolvedUrl,
-      newBaseUrl: ResolvedUrl) {
+      ast: ASTNode, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl) {
     this._rewriteElementAttrsBaseUrl(ast, oldBaseUrl, newBaseUrl);
     this._rewriteStyleTagsBaseUrl(ast, oldBaseUrl, newBaseUrl);
     this._setDomModuleAssetpaths(ast, oldBaseUrl, newBaseUrl);
@@ -853,8 +849,7 @@ export class HtmlBundler {
    * new base URL.
    */
   private _rewriteCssTextBaseUrl(
-      cssText: string,
-      oldBaseUrl: ResolvedUrl,
+      cssText: string, oldBaseUrl: ResolvedUrl,
       newBaseUrl: ResolvedUrl): string {
     return cssText.replace(constants.URL, (match) => {
       let path = match.replace(/["']/g, '').slice(4, -1);
@@ -868,9 +863,7 @@ export class HtmlBundler {
    * are based on the relationship of the old base URL to the new base URL.
    */
   private _rewriteElementAttrsBaseUrl(
-      ast: ASTNode,
-      oldBaseUrl: ResolvedUrl,
-      newBaseUrl: ResolvedUrl) {
+      ast: ASTNode, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl) {
     const nodes = dom5.queryAll(
         ast,
         matchers.elementsWithUrlAttrsToRewrite,
@@ -899,9 +892,7 @@ export class HtmlBundler {
    * on the relationship of the old base URL to the new base URL.
    */
   private _rewriteStyleTagsBaseUrl(
-      ast: ASTNode,
-      oldBaseUrl: ResolvedUrl,
-      newBaseUrl: ResolvedUrl) {
+      ast: ASTNode, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl) {
     const childNodesOption = this.bundler.rewriteUrlsInTemplates ?
         dom5.childNodesIncludeTemplate :
         dom5.defaultChildNodes;
@@ -943,9 +934,7 @@ export class HtmlBundler {
    * have them if the base URLs are different.
    */
   private _setDomModuleAssetpaths(
-      ast: ASTNode,
-      oldBaseUrl: ResolvedUrl,
-      newBaseUrl: ResolvedUrl) {
+      ast: ASTNode, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl) {
     const domModules = dom5.queryAll(ast, matchers.domModuleWithoutAssetpath);
     for (let i = 0, node: ASTNode; i < domModules.length; i++) {
       node = domModules[i];

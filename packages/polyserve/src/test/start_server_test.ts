@@ -161,8 +161,8 @@ suite('startServer', () => {
     const testCompilation = (options: {
       url: string,
       agent?: string,
-      compile: 'always' | 'never' | 'auto',
-      result: 'compiled' | 'uncompiled'
+           compile: 'always'|'never'|'auto',
+           result: 'compiled'|'uncompiled'
     }) => async () => {
       const url = options.url;
       const agent = options.agent;
@@ -632,10 +632,7 @@ suite('startServers', () => {
             {port: assertNotString(mainlineServer.server.address()).port},
         variants: [
           {name: 'bar', port: assertNotString(barServer.server.address()).port},
-          {
-            name: 'foo',
-            port: assertNotString(fooServer.server.address()).port
-          }
+          {name: 'foo', port: assertNotString(fooServer.server.address()).port}
         ]
       });
       const pageResponse = await dispatchTester.get('/').expect(200);

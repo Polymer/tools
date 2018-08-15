@@ -48,8 +48,7 @@ suite('test', () => {
       });
 
   test('--component-dir flag is passed to WCT', async () => {
-    const wctCliRunStub =
-        sinon.stub(wct.cli, 'run').returns(Promise.resolve());
+    const wctCliRunStub = sinon.stub(wct.cli, 'run').returns(Promise.resolve());
     const cli = new PolymerCli(['test', '--component-dir=path/to/deps/']);
     await cli.run();
 
@@ -59,8 +58,7 @@ suite('test', () => {
   });
 
   test('--module-resolution flag is passed to WCT', async () => {
-    const wctCliRunStub =
-        sinon.stub(wct.cli, 'run').returns(Promise.resolve());
+    const wctCliRunStub = sinon.stub(wct.cli, 'run').returns(Promise.resolve());
     const cli = new PolymerCli(['test', '--module-resolution=none']);
     await cli.run();
 

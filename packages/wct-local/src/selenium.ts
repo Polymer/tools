@@ -1,22 +1,24 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 import chalk from 'chalk';
+import * as child_process from 'child_process';
 import * as cleankill from 'cleankill';
 import * as freeport from 'freeport';
 import * as selenium from 'selenium-standalone';
-import * as which from 'which';
-import * as child_process from 'child_process';
-import * as wct from 'wct';
 import {promisify} from 'util';
+import * as wct from 'wct';
+import * as which from 'which';
 
-const SELENIUM_OVERRIDES: any = require('../package.json')['selenium-overrides'];
+const SELENIUM_OVERRIDES: any =
+    require('../package.json')['selenium-overrides'];
 
 
 type Args = string[];
@@ -25,7 +27,8 @@ export async function checkSeleniumEnvironment(): Promise<void> {
   try {
     await promisify(which)('java');
     return;
-  } catch (error) { /* Handled below */ }
+  } catch (error) { /* Handled below */
+  }
 
   let message = 'java is not present on your PATH.';
   if (process.platform === 'win32') {
@@ -43,7 +46,7 @@ export async function checkSeleniumEnvironment(): Promise<void> {
 }
 
 export async function startSeleniumServer(
-      wct: wct.Context, args: string[]): Promise<number> {
+    wct: wct.Context, args: string[]): Promise<number> {
   wct.emit('log:info', 'Starting Selenium server for local browsers');
   await checkSeleniumEnvironment();
 
@@ -52,7 +55,7 @@ export async function startSeleniumServer(
 }
 
 export async function installAndStartSeleniumServer(
-      wct: wct.Context, args: string[]): Promise<number> {
+    wct: wct.Context, args: string[]): Promise<number> {
   wct.emit(
       'log:info', 'Installing and starting Selenium server for local browsers');
   await checkSeleniumEnvironment();
@@ -62,8 +65,8 @@ export async function installAndStartSeleniumServer(
 }
 
 async function seleniumStart(
-      wct: wct.Context,
-      opts: {args: string[], install: boolean}): Promise<number> {
+    wct: wct.Context,
+    opts: {args: string[], install: boolean}): Promise<number> {
   const port = await promisify(freeport)();
 
   // See below.
@@ -79,7 +82,7 @@ async function seleniumStart(
   // Bookkeeping once the process starts.
   config.spawnCb = function(server: child_process.ChildProcess) {
     // Make sure that we interrupt the selenium server ASAP.
-    cleankill.onInterrupt(async() => {
+    cleankill.onInterrupt(async () => {
       server.kill();
     });
 
@@ -107,6 +110,7 @@ async function seleniumStart(
 
   wct.emit(
       'log:info',
-      'Selenium server running on port', chalk.yellow(port.toString()));
+      'Selenium server running on port',
+      chalk.yellow(port.toString()));
   return port;
 }

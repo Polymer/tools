@@ -76,7 +76,8 @@ class DomCallsToNative extends Rule {
           warnings.push(new Warning({
             parsedDocument: document.parsedDocument,
             code: 'deprecated-dom-call',
-            severity: Severity.WARNING, sourceRange,
+            severity: Severity.WARNING,
+            sourceRange,
             message: stripWhitespace(`
               Polymer.dom no longer needs to be called for "${name}",
               instead "event.${replacement}" may be used.

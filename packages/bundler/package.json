@@ -43,7 +43,6 @@
     "@types/clone": "^0.1.30",
     "@types/parse5": "^2.2.34",
     "@types/source-map": "=0.5.2",
-    "clang-format": "=1.0.49",
     "eslint": "^2.8.0",
     "firebase": "^2.4.1",
     "rewire": "^2.5.2",
@@ -52,7 +51,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "format": "find src | grep \"\\.js$\\|\\.ts$\" | xargs ./node_modules/.bin/clang-format --style=file -i",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "test": "npm run build && tslint -c tslint.json \"src/**/*.ts\" && mocha \"lib/test/**/*_test.js\"",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\""

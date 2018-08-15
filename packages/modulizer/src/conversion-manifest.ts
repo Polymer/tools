@@ -29,7 +29,9 @@ interface PackageFileJson {
 type PackageFilesJson = {
   [originalFilePath: string]: null|PackageFileJson
 };
-export interface PackageScanResultJson { files: PackageFilesJson; }
+export interface PackageScanResultJson {
+  files: PackageFilesJson;
+}
 
 function filterExportsByFile(
     scanResult: JsModuleScanResult,

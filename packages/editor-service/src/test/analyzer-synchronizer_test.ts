@@ -23,8 +23,7 @@ import {createTestEnvironment} from './util';
 // There's otherwise pretty good coverage of this stuff in the other tests.
 
 suite('AnalyzerSynchronizer', function() {
-
-  test('When files are created and deleted we notice', async() => {
+  test('When files are created and deleted we notice', async () => {
     const {client, baseDir} = await createTestEnvironment();
     await client.openFile('foo.html', `<link rel="import" href="./bar.html">`);
     assert.deepEqual(
@@ -45,7 +44,7 @@ suite('AnalyzerSynchronizer', function() {
     await client.cleanup();
   });
 
-  test('When directories are created and deleted we notice', async() => {
+  test('When directories are created and deleted we notice', async () => {
     const {client, baseDir} = await createTestEnvironment();
     await client.openFile(
         'foo.html', `<link rel="import" href="./dir/bar.html">`);

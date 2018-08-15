@@ -28,7 +28,7 @@ suite('databind-with-unknown-property', () => {
   let warningPrinter: WarningPrettyPrinter;
   let linter: Linter;
 
-  setup(async() => {
+  setup(async () => {
     ({analyzer} =
          await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
     warningPrinter = new WarningPrettyPrinter();
@@ -36,18 +36,18 @@ suite('databind-with-unknown-property', () => {
         registry.getRules(['databind-with-unknown-property']), analyzer);
   });
 
-  test('works in the trivial case', async() => {
+  test('works in the trivial case', async () => {
     const {warnings} = await linter.lint([]);
     assert.deepEqual([...warnings], []);
   });
 
-  test('gives no warnings for a perfectly fine file', async() => {
+  test('gives no warnings for a perfectly fine file', async () => {
     const {warnings} =
         await linter.lint(['perfectly-fine/polymer-element.html']);
     assert.deepEqual([...warnings], []);
   });
 
-  test('warns for the proper cases and with the right messages', async() => {
+  test('warns for the proper cases and with the right messages', async () => {
     const {warnings} = await linter.lint(
         ['databind-with-unknown-property/databind-with-unknown-property.html']);
     assert.deepEqual(warningPrinter.prettyPrint(warnings), [

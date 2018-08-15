@@ -13,11 +13,11 @@
     "lint": "tslint -p . && node scripts/depcheck.js",
     "clean": "rm -rf lib/",
     "build": "npm run clean && tsc && node scripts/generate-helpers.js",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "test": "npm run build && npm run lint && mocha \"lib/test/**/*_test.js\"",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
-    "prepublishOnly": "npm test",
-    "format": "find src/ -iname \"*.ts\" -o -iname \"*.js\" | xargs clang-format --style=file -i"
+    "prepublishOnly": "npm test"
   },
   "dependencies": {
     "@babel/core": "^7.0.0-beta.46",
@@ -89,7 +89,6 @@
   "devDependencies": {
     "@types/fs-extra": "0.0.37",
     "@types/sinon": "^5.0.0",
-    "clang-format": "^1.0.52",
     "depcheck": "^0.6.3",
     "fs-extra": "^5.0.0",
     "istanbul": "^0.4.5",

@@ -1,11 +1,12 @@
 /**
  * @license
  * Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
+ * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
+ * be found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by
+ * Google as part of the polymer project is also subject to an additional IP
+ * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 var _ = require('lodash');
 
@@ -38,11 +39,10 @@ function expand(pluginOptions, done) {
     browsers = _.difference(browsers, ['default', 'all']);
   }
 
-  done(null, _.compact(browsers.map(_expandBrowser.bind(
-    null,
-    pluginOptions,
-    _.omit(pluginOptions, PROPERTY_BLACKLIST)
-  ))));
+  done(
+      null,
+      _.compact(browsers.map(_expandBrowser.bind(
+          null, pluginOptions, _.omit(pluginOptions, PROPERTY_BLACKLIST)))));
 }
 
 /**
@@ -59,24 +59,26 @@ function _expandBrowser(options, extend, browser) {
     if (!match) {
       console.log('Invalid sauce browser spec:', browser);
       return null;
-    }
-    else {
+    } else {
       browser = {
         browserName: match[2],
-        platform:    match[1],
-        version:     match[3] || '',
+        platform: match[1],
+        version: match[3] || '',
       };
     }
   }
 
-  return _.extend(browser, {
-    url: {
-      accessKey: options.accessKey,
-      hostname:  'ondemand.saucelabs.com',
-      port:      80,
-      username:  options.username,
-    },
-  }, extend);
+  return _.extend(
+      browser,
+      {
+        url: {
+          accessKey: options.accessKey,
+          hostname: 'ondemand.saucelabs.com',
+          port: 80,
+          username: options.username,
+        },
+      },
+      extend);
 }
 
 module.exports = {

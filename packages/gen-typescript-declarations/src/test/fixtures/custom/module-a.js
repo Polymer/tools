@@ -11,8 +11,5 @@ export {NotResolvable} from './module-b.js';
 
 import {PrivateClass} from './module-b.js';
 
-/**
- * @param {!AutoImportClass1} p
- * @return {!AutoImportClass2}
- */
-export function autoImportFunction(p) { }
+import * as moduleC from './module-c.js';
+export {moduleC as ModuleC};

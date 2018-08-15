@@ -28,11 +28,10 @@ const fixtures_dir = path.resolve(
 // so they don't run by default.
 if (process.env['INTEGRATION_TEST']) {
   suite('integration tests', function() {
-
     // Analyzing and linting 36MB of code takes longer than 2s.
     this.timeout(60 * 1000);
 
-    test(`polymer team's elements lint clean`, async() => {
+    test(`polymer team's elements lint clean`, async () => {
       const {analyzer} =
           await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir);
       const linter =

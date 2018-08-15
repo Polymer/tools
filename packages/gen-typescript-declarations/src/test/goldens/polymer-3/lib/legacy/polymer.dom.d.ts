@@ -189,3 +189,5 @@ export {dom};
 declare function dom(obj?: Node|Event|null): DomApi|EventApi;
 
 export {flush$0 as flush};
+
+export {enqueueDebouncer as addDebouncer};

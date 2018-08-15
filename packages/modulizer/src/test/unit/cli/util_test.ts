@@ -17,9 +17,7 @@ import {parseDependencyMappingInput} from '../../../cli/util';
 
 
 suite('src/cli/util', () => {
-
   suite('parseDependencyMappingInput()', () => {
-
     test(
         'throws an error when more than 3 comma-seperated values are passed',
         () => {
@@ -47,5 +45,4 @@ suite('src/cli/util', () => {
           ]);
     });
   });
-
 });

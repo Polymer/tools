@@ -16,7 +16,6 @@
   "author": "The Polymer Project Authors",
   "license": "BSD-3-Clause",
   "devDependencies": {
-    "clang-format": "=1.0.45",
     "mocha": "^3.1.0",
     "typescript": "^2.0.6",
     "watchy": "^0.6.6"

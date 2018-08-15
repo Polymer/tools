@@ -21,7 +21,6 @@ import {Bundler} from '../bundler';
 import {heredoc, inMemoryAnalyzer} from './test-utils';
 
 suite('import.meta.url', () => {
-
   const analyzer = inMemoryAnalyzer({
     'a.js': `
       const myUrl = import.meta.url;

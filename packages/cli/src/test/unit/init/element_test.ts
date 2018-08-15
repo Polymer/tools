@@ -16,7 +16,6 @@ import * as helpers from 'yeoman-test';
 import {createElementGenerator} from '../../../init/element/element';
 
 suite('init/element', () => {
-
   let testName =
       'creates expected 1.x files while passed the 1.x template name';
   test(testName, (done) => {
@@ -69,6 +68,4 @@ suite('init/element', () => {
           done();
         });
   });
-
-
 });

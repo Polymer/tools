@@ -15,21 +15,21 @@
 import * as bowerConfig from 'bower-config';
 import * as cleankill from 'cleankill';
 import * as express from 'express';
-import { readFileSync, statSync } from 'fs';
+import {readFileSync, statSync} from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
-import { MainlineServer, PolyserveServer, RequestHandler, ServerOptions, startServers, VariantServer } from 'polyserve';
+import {MainlineServer, PolyserveServer, RequestHandler, ServerOptions, startServers, VariantServer} from 'polyserve';
 import * as resolveFrom from 'resolve-from';
 import * as semver from 'semver';
 import * as send from 'send';
 import * as serverDestroy from 'server-destroy';
 
-import { getPackageName, NPMPackage, resolveWctNpmEntrypointNames } from './config';
-import { Context } from './context';
+import {getPackageName, NPMPackage, resolveWctNpmEntrypointNames} from './config';
+import {Context} from './context';
 
 // Template for generated indexes.
 const INDEX_TEMPLATE = _.template(readFileSync(
-  path.resolve(__dirname, '../data/index.html'), { encoding: 'utf-8' }));
+    path.resolve(__dirname, '../data/index.html'), {encoding: 'utf-8'}));
 
 const DEFAULT_HEADERS = {
   'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -39,18 +39,18 @@ const DEFAULT_HEADERS = {
 
 // scripts to be injected into the running test
 const ENVIRONMENT_SCRIPTS: NPMPackage[] = [
-  { name: 'stacky', jsEntrypoint: 'browser.js' },
-  { name: 'async', jsEntrypoint: 'lib/async.js' },
-  { name: 'lodash', jsEntrypoint: 'index.js' },
-  { name: 'mocha', jsEntrypoint: 'mocha.js' },
-  { name: 'chai', jsEntrypoint: 'chai.js' },
-  { name: '@polymer/sinonjs', jsEntrypoint: 'sinon.js' },
-  { name: 'sinon-chai', jsEntrypoint: 'lib/sinon-chai.js' },
+  {name: 'stacky', jsEntrypoint: 'browser.js'},
+  {name: 'async', jsEntrypoint: 'lib/async.js'},
+  {name: 'lodash', jsEntrypoint: 'index.js'},
+  {name: 'mocha', jsEntrypoint: 'mocha.js'},
+  {name: 'chai', jsEntrypoint: 'chai.js'},
+  {name: '@polymer/sinonjs', jsEntrypoint: 'sinon.js'},
+  {name: 'sinon-chai', jsEntrypoint: 'lib/sinon-chai.js'},
   {
     name: 'accessibility-developer-tools',
     jsEntrypoint: 'dist/js/axs_testing.js'
   },
-  { name: '@polymer/test-fixture', jsEntrypoint: 'test-fixture.js' },
+  {name: '@polymer/test-fixture', jsEntrypoint: 'test-fixture.js'},
 ];
 
 /**
@@ -63,7 +63,7 @@ const ENVIRONMENT_SCRIPTS: NPMPackage[] = [
 export function webserver(wct: Context): void {
   const options = wct.options;
 
-  wct.hook('configure', async function () {
+  wct.hook('configure', async function() {
     // For now, you should treat all these options as an implementation detail
     // of WCT. They may be opened up for public configuration, but we need to
     // spend some time rationalizing interactions with external webservers.
@@ -88,7 +88,7 @@ export function webserver(wct: Context): void {
       // ENVIRONMENT_SCRIPTS
       options.clientOptions = options.clientOptions || {};
       options.clientOptions.environmentScripts =
-        options.clientOptions.environmentScripts || [];
+          options.clientOptions.environmentScripts || [];
 
       browserScript = '';
       const npmPackageName = options.wctPackageName || 'wct-browser-legacy';
@@ -96,16 +96,16 @@ export function webserver(wct: Context): void {
         const fromPath = path.resolve(options.root || process.cwd());
         const npmPackageMainPath = resolveFrom(fromPath, npmPackageName);
         const npmPackageRootPath = path.dirname(
-          resolveFrom(fromPath, npmPackageName + '/package.json'));
-          browserScript = npmPackageMainPath.slice(
+            resolveFrom(fromPath, npmPackageName + '/package.json'));
+        browserScript = npmPackageMainPath.slice(
             npmPackageRootPath.length - npmPackageName.length);
-          if (npmPackageName === 'wct-browser-legacy') {
-            options.clientOptions.environmentScripts.push('mocha/mocha.js');
-          } else {
-            browserModule = browserScript;
-            browserScript = '';
-            options.extraScripts.push('../mocha/mocha.js');
-          }
+        if (npmPackageName === 'wct-browser-legacy') {
+          options.clientOptions.environmentScripts.push('mocha/mocha.js');
+        } else {
+          browserModule = browserScript;
+          browserScript = '';
+          options.extraScripts.push('../mocha/mocha.js');
+        }
       } catch (e) {
         // Safely ignore.
       }
@@ -114,10 +114,10 @@ export function webserver(wct: Context): void {
       const isPackageScoped = packageName && packageName[0] === '@';
 
       if (['web-component-tester', 'wct-browser-legacy'].includes(
-        options.wctPackageName)) {
+              options.wctPackageName)) {
         options.clientOptions.environmentScripts =
-          options.clientOptions.environmentScripts.concat(
-            resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
+            options.clientOptions.environmentScripts.concat(
+                resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
       }
 
       if (browserScript && isPackageScoped) {
@@ -126,11 +126,11 @@ export function webserver(wct: Context): void {
     }
 
     const a11ySuiteScript = 'web-component-tester/data/a11ySuite.js';
-    options.webserver._generatedIndexContent = INDEX_TEMPLATE(
-      Object.assign({ browserScript, browserModule, a11ySuiteScript }, options));
+    options.webserver._generatedIndexContent = INDEX_TEMPLATE(Object.assign(
+        {browserScript, browserModule, a11ySuiteScript}, options));
   });
 
-  wct.hook('prepare', async function () {
+  wct.hook('prepare', async function() {
     const wsOptions = options.webserver;
     const additionalRoutes = new Map<string, RequestHandler>();
 
@@ -143,8 +143,8 @@ export function webserver(wct: Context): void {
     if (!options.npm) {
       componentDir = bowerConfig.read(options.root).directory;
       const pathToLocalWct =
-        path.join(options.root, componentDir, 'web-component-tester');
-      let version: string | undefined = undefined;
+          path.join(options.root, componentDir, 'web-component-tester');
+      let version: string|undefined = undefined;
       const mdFilenames = ['package.json', 'bower.json', '.bower.json'];
       for (const mdFilename of mdFilenames) {
         const pathToMetadata = path.join(pathToLocalWct, mdFilename);
@@ -159,7 +159,7 @@ export function webserver(wct: Context): void {
       if (!version) {
         throw new Error(`
 The web-component-tester Bower package is not installed as a dependency of this project (${
-          packageName}).
+            packageName}).
 
 Please run this command to install:
     bower install --save-dev web-component-tester
@@ -171,10 +171,11 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       }
 
       const allowedRange =
-        require(path.join(
-          __dirname, '..',
-          'package.json'))['--private-wct--']['client-side-version-range'] as
-        string;
+          require(path.join(
+              __dirname,
+              '..',
+              'package.json'))['--private-wct--']['client-side-version-range'] as
+          string;
       if (!semver.satisfies(version, allowedRange)) {
         throw new Error(`
     The web-component-tester Bower package installed is incompatible with the
@@ -186,7 +187,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       }
 
       let hasWarnedBrowserJs = false;
-      additionalRoutes.set('/browser.js', function (request, response) {
+      additionalRoutes.set('/browser.js', function(request, response) {
         if (!hasWarnedBrowserJs) {
           console.warn(`
 
@@ -204,7 +205,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
     }
 
     const pathToGeneratedIndex =
-      `/components/${packageName}/generated-index.html`;
+        `/components/${packageName}/generated-index.html`;
     additionalRoutes.set(pathToGeneratedIndex, (_request, response) => {
       response.set(DEFAULT_HEADERS);
       response.send(options.webserver._generatedIndexContent);
@@ -215,30 +216,30 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       // allows user to substitute their own app for the generated polyserve
       // app.
       await wct.emitHook(
-        'define:webserver', app, (substitution: express.Express) => {
-          app = substitution;
-        }, options);
+          'define:webserver', app, (substitution: express.Express) => {
+            app = substitution;
+          }, options);
       return app;
     };
 
     // Serve up project & dependencies via polyserve
     const polyserveResult = await startServers(
-      {
-        root: options.root,
-        componentDir,
-        compile: options.compile,
-        hostname: options.webserver.hostname,
-        port: options.webserver.port,
-        headers: DEFAULT_HEADERS,
-        packageName,
-        additionalRoutes,
-        npm: !!options.npm,
-        moduleResolution: options.moduleResolution,
-        proxy: options.proxy,
-      },
-      appMapper);
+        {
+          root: options.root,
+          componentDir,
+          compile: options.compile,
+          hostname: options.webserver.hostname,
+          port: options.webserver.port,
+          headers: DEFAULT_HEADERS,
+          packageName,
+          additionalRoutes,
+          npm: !!options.npm,
+          moduleResolution: options.moduleResolution,
+          proxy: options.proxy,
+        },
+        appMapper);
 
-    let servers: Array<MainlineServer | VariantServer>;
+    let servers: Array<MainlineServer|VariantServer>;
 
     const onDestroyHandlers: Array<() => Promise<void>> = [];
     const registerServerTeardown = (serverInfo: PolyserveServer) => {
@@ -247,26 +248,32 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       onDestroyHandlers.push(() => {
         destroyableServer.destroy();
         return new Promise<void>(
-          (resolve) => serverInfo.server.on('close', () => resolve()));
+            (resolve) => serverInfo.server.on('close', () => resolve()));
       });
     };
 
     if (polyserveResult.kind === 'mainline') {
       servers = [polyserveResult];
       registerServerTeardown(polyserveResult);
-      wsOptions.port = polyserveResult.server.address().port;
+      const address = polyserveResult.server.address();
+      if (typeof address !== 'string') {
+        wsOptions.port = address.port;
+      }
     } else if (polyserveResult.kind === 'MultipleServers') {
       servers = [polyserveResult.mainline];
       servers = servers.concat(polyserveResult.variants);
-      wsOptions.port = polyserveResult.mainline.server.address().port;
+      const address = polyserveResult.mainline.server.address();
+      if (typeof address !== 'string') {
+        wsOptions.port = address.port;
+      }
       for (const server of polyserveResult.servers) {
         registerServerTeardown(server);
       }
     } else {
       const never: never = polyserveResult;
       throw new Error(
-        `Internal error: Got unknown response from polyserve.startServers:` +
-        `${never}`);
+          `Internal error: Got unknown response from polyserve.startServers:` +
+          `${never}`);
     }
 
     wct._httpServers = servers.map((s) => s.server);
@@ -278,10 +285,11 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
     }
 
     options.webserver._servers = servers.map((s) => {
-      const port = s.server.address().port;
+      const address = s.server.address();
+      const port = typeof address === 'string' ? '' : `:${address.port}`;
       const hostname = s.options.hostname;
       const url = `http://${hostname}:${port}${pathToGeneratedIndex}`;
-      return { url, variant: s.kind === 'mainline' ? '' : s.variantName };
+      return {url, variant: s.kind === 'mainline' ? '' : s.variantName};
     });
 
     // TODO(rictic): re-enable this stuff. need to either move this code into

@@ -60,7 +60,8 @@ class UndefinedElements extends HtmlRule {
           parsedDocument,
           code: 'undefined-elements',
           message: `The element ${ref.tagName} is not defined`,
-          severity: Severity.WARNING, sourceRange
+          severity: Severity.WARNING,
+          sourceRange
         }));
       }
     }

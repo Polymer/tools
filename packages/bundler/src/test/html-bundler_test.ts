@@ -30,7 +30,6 @@ const stripSpace = (html: string): string =>
     html.replace(/>\s+/g, '>').replace(/>/g, '>\n').trim();
 
 suite('HtmlBundler', () => {
-
   test('external script tag inlines an es6 module', async () => {
     const root = 'test/html/inline-es6-modules';
     const analyzer = new Analyzer({
@@ -173,9 +172,7 @@ suite('HtmlBundler', () => {
     });
 
     suite('Path rewriting', async () => {
-
       test('Rewrite URLs', async () => {
-
         const css = `
           x-element {
             background-image: url(foo.jpg);
@@ -206,7 +203,6 @@ suite('HtmlBundler', () => {
       });
 
       suite('Resolve Paths', () => {
-
         test('excluding template elements', () => {
           const html = `
             <link rel="import" href="../polymer/polymer.html">
@@ -309,7 +305,6 @@ suite('HtmlBundler', () => {
     });
 
     suite('Document <base> tag emulation', () => {
-
       test('Resolve Paths with <base href> having a trailing /', () => {
         const htmlBase = `
           <base href="components/my-element/">

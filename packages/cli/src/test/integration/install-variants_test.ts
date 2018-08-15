@@ -20,13 +20,11 @@ import {fixtureDir} from '../util';
 const fixturePath = path.join(fixtureDir, 'install-variants');
 
 suite('install-variants', function() {
-
   const binPath = path.join(__dirname, '../../../bin/polymer.js');
 
   this.timeout(5 * 1000);
 
   test('installs variants', async () => {
-
     const tmpPath = tmp.dirSync().name;
     fs.copySync(fixturePath, tmpPath, {});
 
@@ -43,7 +41,6 @@ suite('install-variants', function() {
     const variant2Dir = path.join(tmpPath, 'bower_components-variant-1');
     assert.isTrue(fs.statSync(variant2Dir).isDirectory());
   });
-
 });
 
 /**

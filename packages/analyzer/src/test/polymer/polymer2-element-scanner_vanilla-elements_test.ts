@@ -84,15 +84,13 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
         description: 'When given the element is totally inactive',
         name: 'disabled',
         type: 'boolean',
-        sourceRange:
-            {start: {column: 6, line: 25}, end: {column: 16, line: 25}}
+        sourceRange: {start: {column: 6, line: 25}, end: {column: 16, line: 25}}
       },
       {
         description: 'When given the element is expanded',
         name: 'open',
         type: 'boolean',
-        sourceRange:
-            {start: {column: 6, line: 27}, end: {column: 12, line: 27}}
+        sourceRange: {start: {column: 6, line: 27}, end: {column: 12, line: 27}}
       },
       {
         description: '',

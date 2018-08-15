@@ -22,10 +22,6 @@ export {ClassB1, ClassC2Alias as ClassC2Alias2} from './module-b.js';
 
 export * from './module-b.js';
 
-export {autoImportFunction};
+import * as moduleC from './module-c.js';
 
-declare function autoImportFunction(p: AutoImportClass1): AutoImportClass2;
-
-import {AutoImportClass1} from './module-b.js';
-
-import {AutoImportClass2} from './module-b.js';
+export {moduleC as ModuleC};
