@@ -30,7 +30,7 @@ suite.skip('DefinitionFinder', function() {
 
   let testName = `it supports getting the definition of ` +
       `an element from its tag`;
-  test(testName, async() => {
+  test(testName, async () => {
     const {client, underliner} = await createTestEnvironment({fixtureDir});
     assert.deepEqual(
         await underliner.underline(
@@ -96,7 +96,7 @@ suite.skip('DefinitionFinder', function() {
   });
 
 
-  test('it supports getting the definition of a local attribute', async() => {
+  test('it supports getting the definition of a local attribute', async () => {
     const {client, underliner} = await createTestEnvironment({fixtureDir});
     assert.deepEqual(
         await underliner.underline(
@@ -117,7 +117,7 @@ suite.skip('DefinitionFinder', function() {
 
   testName = 'it supports getting the definition of an attribute ' +
       'defined in a behavior';
-  test(testName, async() => {
+  test(testName, async () => {
     const {client, underliner} = await createTestEnvironment({fixtureDir});
 
     assert.deepEqual(
@@ -141,7 +141,7 @@ suite.skip('DefinitionFinder', function() {
     await client.cleanup();
   });
 
-  test('it supports properties in databindings.', async() => {
+  test('it supports properties in databindings.', async () => {
     const fooPropUsePosition = {line: 2, column: 16};
     const internalPropUsePosition = {line: 3, column: 12};
     const {client, underliner} = await createTestEnvironment({fixtureDir});
@@ -162,7 +162,7 @@ suite.skip('DefinitionFinder', function() {
 
 
   testName = `it supports getting references to an element from its tag`;
-  test(testName, async() => {
+  test(testName, async () => {
     const contentsPath = path.join('editor-service', 'references.html');
     const {client, underliner} = await createTestEnvironment({fixtureDir});
     await client.openFile(contentsPath);
@@ -208,7 +208,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     await client.cleanup();
   });
 
-  test(`supports getting workspace symbols`, async() => {
+  test(`supports getting workspace symbols`, async () => {
     const {client} = await createTestEnvironment(
         {fixtureDir: path.join(fixtureDir, 'editor-service')});
     assert.deepEqual(
@@ -224,7 +224,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     await client.cleanup();
   });
 
-  test(`supports getting document symbols`, async() => {
+  test(`supports getting document symbols`, async () => {
     const {client} = await createTestEnvironment(
         {fixtureDir: path.join(fixtureDir, 'editor-service')});
     assert.deepEqual(
@@ -242,7 +242,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
 
   testName =
       `it supports finding definitions and references of a css custom property`;
-  test(testName, async() => {
+  test(testName, async () => {
     const {client, underliner} = await createTestEnvironment(
         {fixtureDir: path.join(fixtureDir, 'css-custom-properties')});
     const locations =
@@ -271,7 +271,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
   });
 
   testName = `it supports getting code lenses of custom property declarations`;
-  test(testName, async() => {
+  test(testName, async () => {
     const {client} = await createTestEnvironment(
         {fixtureDir: path.join(fixtureDir, 'css-custom-properties')});
 
@@ -289,7 +289,7 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     await client.cleanup();
   });
 
-  test(`it supports getting code lenses of elements`, async() => {
+  test(`it supports getting code lenses of elements`, async () => {
     const {client, baseDir} = await createTestEnvironment();
     // TODO(rictic): this test should work with entirely in-memory contents,
     //     but we need to mess with InMemoryOverlayUrlLoader's listDirectory
