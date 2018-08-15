@@ -21,3 +21,7 @@ export {ClassA2};
 export {ClassB1, ClassC2Alias as ClassC2Alias2} from './module-b.js';
 
 export * from './module-b.js';
+
+import * as moduleC from './module-c.js';
+
+export {moduleC as ModuleC};

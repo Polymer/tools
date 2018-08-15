@@ -319,6 +319,12 @@ class TypeGenerator {
   public warnings: analyzer.Warning[] = [];
   private excludeIdentifiers: Set<String>;
 
+  /**
+   * Identifiers in this set will always be considered resolvable, e.g.
+   * for when determining what identifiers should be exported.
+   */
+  private forceResolvable = new Set<string>();
+
   constructor(
       private root: ts.Document, private analysis: analyzer.Analysis,
       private analyzerDoc: analyzer.Document, private rootDir: string,
@@ -849,6 +855,7 @@ class TypeGenerator {
             identifier: ts.AllIdentifiers,
             alias: specifier.local.name,
           });
+          this.forceResolvable.add(specifier.local.name);
         }
       }
 
@@ -895,7 +902,8 @@ class TypeGenerator {
       } else {
         // E.g. export {Foo, Bar as Baz}
         for (const specifier of node.specifiers) {
-          if (this.isResolvable(specifier.exported.name, feature)) {
+          if (this.isResolvable(specifier.exported.name, feature) ||
+              this.isResolvable(specifier.local.name, feature)) {
             identifiers.push({
               identifier: specifier.local.name,
               alias: specifier.exported.name,
@@ -925,6 +933,9 @@ class TypeGenerator {
   private isResolvable(
       identifier: string,
       fromFeature: analyzer.JavascriptImport|analyzer.Export) {
+    if (this.forceResolvable.has(identifier)) {
+      return true;
+    }
     const resolved =
         resolveImportExportFeature(fromFeature, identifier, this.analyzerDoc);
     return resolved !== undefined && resolved.feature !== undefined &&
