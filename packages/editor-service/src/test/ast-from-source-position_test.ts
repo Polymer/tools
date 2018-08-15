@@ -59,7 +59,8 @@ suite('getLocationInfoForPosition', () => {
   test('works for a closed tag with a boolean attribute', () => {
     const allKindsSpaceSeparated = getAllKindsSpaceSeparated('<t a></t>');
     assert.equal(
-        allKindsSpaceSeparated, 'text tagName tagName attribute attribute ' +
+        allKindsSpaceSeparated,
+        'text tagName tagName attribute attribute ' +
             'text endTag endTag endTag text');
   });
 
@@ -79,13 +80,15 @@ suite('getLocationInfoForPosition', () => {
 
     allKindsSpaceSeparated = getAllKindsSpaceSeparated('<t a=""></t>');
     assert.equal(
-        allKindsSpaceSeparated, 'text tagName tagName attribute attribute ' +
+        allKindsSpaceSeparated,
+        'text tagName tagName attribute attribute ' +
             'attributeValue attributeValue attributeValue text ' +
             'endTag endTag endTag text');
 
     allKindsSpaceSeparated = getAllKindsSpaceSeparated('<t a=\'\'></t>');
     assert.equal(
-        allKindsSpaceSeparated, 'text tagName tagName attribute attribute ' +
+        allKindsSpaceSeparated,
+        'text tagName tagName attribute attribute ' +
             'attributeValue attributeValue attributeValue text ' +
             'endTag endTag endTag text');
   });
@@ -166,7 +169,8 @@ suite('getLocationInfoForPosition', () => {
    */
   function getAllKindsSpaceSeparated(text: string) {
     const doc = parser.parse(
-        text, 'uninteresting file name.html' as ResolvedUrl,
+        text,
+        'uninteresting file name.html' as ResolvedUrl,
         new PackageUrlResolver());
     return getEveryPosition(text)
         .map((pos) => getHtmlAstLocationForPosition(doc, pos).kind)

@@ -320,10 +320,8 @@ class TypeGenerator {
   private excludeIdentifiers: Set<String>;
 
   constructor(
-      private root: ts.Document,
-      private analysis: analyzer.Analysis,
-      private analyzerDoc: analyzer.Document,
-      private rootDir: string,
+      private root: ts.Document, private analysis: analyzer.Analysis,
+      private analyzerDoc: analyzer.Document, private rootDir: string,
       excludeIdentifiers: string[]) {
     this.excludeIdentifiers = new Set(excludeIdentifiers);
   }

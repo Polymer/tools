@@ -36,5 +36,4 @@ suite('help', () => {
     });
     assert.include(output, 'Usage: `polymer <command>');
   });
-
 });

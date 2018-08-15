@@ -371,7 +371,7 @@ export function getApp(options: ServerOptions): express.Express {
 
     let escapedPath = options.proxy.path;
 
-    for (const char of ['*', '?', '+']) {
+    for (const char of['*', '?', '+']) {
       if (escapedPath.indexOf(char) > -1) {
         console.warn(
             `Proxy path includes character "${char}"` +
@@ -559,11 +559,11 @@ async function tryStartWithPort(
   });
 }
 
-// TODO(usergenic): Something changed in the typings of net.Server.address() in that
-// it can now return AddressInfo OR string.  I don't know the circumstances where the
-// the address() returns a string or how to handle it, so I made this assert function
-// when calling on the address to fix compilation errors and have a runtime error as
-// soon as the address is fetched.
+// TODO(usergenic): Something changed in the typings of net.Server.address() in
+// that it can now return AddressInfo OR string.  I don't know the circumstances
+// where the the address() returns a string or how to handle it, so I made this
+// assert function when calling on the address to fix compilation errors and
+// have a runtime error as soon as the address is fetched.
 export function assertNotString<T>(value: string|T): T {
   assert(typeof value !== 'string');
   return value as T;

@@ -4,9 +4,7 @@
   "description": "Client-side dependencies for web-component-tester tests installed via npm.",
   "main": "browser.js",
   "license": "http://polymer.github.io/LICENSE.txt",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/polymer/web-component-tester.git"

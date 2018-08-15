@@ -58,7 +58,9 @@ export type ResolvedUrl = string&ResolvedUrlBrand;
 
 // Declare these as classes rather than interfaces so that the properties
 // can be private.
-export declare class ResolvedUrlBrand { private ResolvedUrlBrand: never; }
+export declare class ResolvedUrlBrand {
+  private ResolvedUrlBrand: never;
+}
 
 export declare class PackageRelativeUrlBrand {
   private PackageRelativeUrlBrand: never;

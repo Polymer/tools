@@ -71,7 +71,7 @@ export default class AutoCompleter extends Handler {
         !!ourExperimentalCapabilities.doesNotFilterCompletions :
         false;
 
-    this.connection.onCompletion(async(request) => {
+    this.connection.onCompletion(async (request) => {
       const result = await this.handleErrors(
           this.autoComplete(request), {isIncomplete: true, items: []});
       return result;
@@ -378,7 +378,8 @@ export default class AutoCompleter extends Handler {
           label: p.name,
           documentation: p.description || '',
           type: p.type,
-          inheritedFrom: p.inheritedFrom, sortText
+          inheritedFrom: p.inheritedFrom,
+          sortText
         };
       }));
       attributes.push(...[...element.events.values()].map((e) => {
@@ -388,7 +389,8 @@ export default class AutoCompleter extends Handler {
           label: `on-${e.name}`,
           documentation: e.description || '',
           type: e.type || 'CustomEvent',
-          inheritedFrom: e.inheritedFrom, sortText
+          inheritedFrom: e.inheritedFrom,
+          sortText
         };
       }));
     }
@@ -509,7 +511,7 @@ export default class AutoCompleter extends Handler {
  *     -1 means <    0 means ==     1 means >
  */
 function compareAttributeResults<
-    A extends{sortText: string, label: string, inheritedFrom?: string}>(
+    A extends {sortText: string, label: string, inheritedFrom?: string}>(
     a1: A, a2: A): number {
   let comparison = a1.sortText.localeCompare(a2.sortText);
   if (comparison !== 0) {
@@ -523,8 +525,8 @@ function compareAttributeResults<
 }
 
 /**
-* Describes an attribute.
-*/
+ * Describes an attribute.
+ */
 interface AttributeCompletion {
   label: string;
   documentation: string;

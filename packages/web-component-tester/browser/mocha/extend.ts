@@ -9,7 +9,8 @@ const interfaceExtensions: Array<() => void> = [];
 export function extendInterfaces(
     helperName: string,
     helperFactory: (
-        context: any, teardown: (cb: () => void) => void,
+        context: any,
+        teardown: (cb: () => void) => void,
         interfaceName: 'tdd'|'bdd') => void) {
   interfaceExtensions.push(function() {
     const Mocha = window.Mocha;

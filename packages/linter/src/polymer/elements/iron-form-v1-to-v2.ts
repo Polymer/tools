@@ -124,7 +124,8 @@ class IronFormV1ToV2 extends HtmlRule {
         message:
             `<form> should not be extended with \`is="iron-form"\` but instead wrapped with \`<iron-form>\`.`,
         severity: Severity.WARNING,
-        sourceRange: parsedDocument.sourceRangeForAttribute(form, 'is')!, fix
+        sourceRange: parsedDocument.sourceRangeForAttribute(form, 'is')!,
+        fix
       }));
     }
 

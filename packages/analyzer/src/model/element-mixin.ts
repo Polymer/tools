@@ -30,7 +30,9 @@ export class ScannedElementMixin extends ScannedElementBase {
   }
 }
 
-export interface ElementMixinInit extends ElementBaseInit { name: string; }
+export interface ElementMixinInit extends ElementBaseInit {
+  name: string;
+}
 
 declare module './queryable' {
   interface FeatureKindMap {

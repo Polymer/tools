@@ -33,9 +33,7 @@ function createTestGenerator(
 }
 
 suite('init/github', () => {
-
   suite('createGithubGenerator()', () => {
-
     const semverMatchingRelease = {
       tarball_url: 'MATCHING_RELEASE_TARBALL_URL',
       tag_name: 'MATCHING_RELEASE_TAG_NAME',
@@ -104,7 +102,5 @@ suite('init/github', () => {
         done();
       });
     });
-
   });
-
 });

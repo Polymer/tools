@@ -50,8 +50,8 @@ class RootSelectorToHtml extends HtmlRule {
       for (const domModule of domModules) {
         const moduleChildren = domModule.astNode.node.childNodes || [];
         type TemplateElement = parse5.ASTNode&{content: parse5.ASTNode};
-        const template = moduleChildren.find(
-            (m) => m.tagName === 'template') as TemplateElement;
+        const template = moduleChildren.find((m) => m.tagName === 'template') as
+            TemplateElement;
         if (template === undefined ||
             template.content.childNodes === undefined ||
             template.content.childNodes.length === 0) {
@@ -132,7 +132,8 @@ class RootSelectorToHtml extends HtmlRule {
         warnings.push(new Warning({
           parsedDocument: document.parsedDocument,
           code: this.code,
-          severity: Severity.WARNING, sourceRange,
+          severity: Severity.WARNING,
+          sourceRange,
           message: stripWhitespace(`
             The ::root selector should no longer be used
           `),

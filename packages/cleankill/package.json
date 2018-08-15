@@ -8,7 +8,8 @@
   "repository": "github:Polymer/tools",
   "scripts": {
     "build": "npm run clean && tsc",
-    "clean": "rm -f *.js *.d.ts"
+    "clean": "rm -f *.js *.d.ts",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i"
   },
   "main": "index.js",
   "typings": "./index.d.ts",

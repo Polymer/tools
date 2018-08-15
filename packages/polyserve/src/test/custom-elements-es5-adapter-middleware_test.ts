@@ -21,7 +21,6 @@ const root = path.join(__dirname, '..', '..', 'test');
 const adapterScriptName = 'custom-elements-es5-adapter.js';
 
 suite('custom-elements-es5-adapter-middleware', () => {
-
   test('injects into entry point', async () => {
     const app = getApp({root, compile: 'always'});
     await supertest(app).get('/').expect(200).expect(

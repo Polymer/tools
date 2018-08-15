@@ -38,14 +38,13 @@
   },
   "devDependencies": {
     "bower": "^1.8.2",
-    "clang-format": "^1.1.0",
     "rimraf": "^2.6.2",
     "source-map-support": "^0.5.0",
     "tsc-then": "^1.0.1"
   },
   "scripts": {
     "clean": "rimraf lib",
-    "format": "find src -name '*.ts' -not -path 'src/test/fixtures/*' -not -path 'src/test/goldens/*' | xargs clang-format --style=file -i",
+    "format": "find src -name \"*.ts\" -not -path \"src/test/fixtures/*\" -not -path \"src/test/goldens/*\" | xargs clang-format --style=file -i",
     "lint": "tslint --project . --format stylish",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",

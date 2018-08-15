@@ -37,8 +37,7 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
   files = new Map<ResolvedUrl, File>();
 
   constructor(
-      config: ProjectConfig,
-      buildAnalyzer: BuildAnalyzer,
+      config: ProjectConfig, buildAnalyzer: BuildAnalyzer,
       options: Options = {}) {
     super({objectMode: true});
 

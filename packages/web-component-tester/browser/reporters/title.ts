@@ -79,8 +79,11 @@ export default class Title {
  * Draws an arc for the favicon status, relative to the total number of tests.
  */
 function drawFaviconArc(
-    context: CanvasRenderingContext2D, total: number, start: number,
-    length: number, color: string) {
+    context: CanvasRenderingContext2D,
+    total: number,
+    start: number,
+    length: number,
+    color: string) {
   const arcStart = ARC_OFFSET + Math.PI * 2 * (start / total);
   const arcEnd = ARC_OFFSET + Math.PI * 2 * ((start + length) / total);
 

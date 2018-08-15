@@ -18,7 +18,6 @@ import {interceptOutput} from './util';
 
 
 suite('src/package-manifest', () => {
-
   suite('lookupDependencyMapping()', () => {
     test('returns undefined when dependency map is not known', async () => {
       const output = await interceptOutput(async () => {
@@ -60,5 +59,4 @@ suite('src/package-manifest', () => {
           `WARN: bower->npm mapping for "CUSTOM_BOWER_PACKAGE_NAME" not found`);
     });
   });
-
 });

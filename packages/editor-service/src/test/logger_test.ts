@@ -18,8 +18,7 @@ import {join} from 'path';
 import {createTestEnvironment, delay} from './util';
 
 suite('Logger', () => {
-
-  test('will log to a file when asked to', async() => {
+  test('will log to a file when asked to', async () => {
     const {client, baseDir} = await createTestEnvironment();
     const logFile = join(baseDir, 'pes.log');
     await client.changeConfiguration({logToFile: logFile});
@@ -29,5 +28,4 @@ suite('Logger', () => {
         /^\n\n\n\n\nInitialized with workspace path:/);
     await client.cleanup();
   });
-
 });

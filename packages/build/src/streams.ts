@@ -223,8 +223,7 @@ export abstract class AsyncTransformStream<In extends {}, Out extends {}>
    * Passes input into this._inputs.
    */
   _transform(
-      input: In,
-      _encoding: string,
+      input: In, _encoding: string,
       callback: (error?: Error, value?: Out) => void) {
     this._initializeOnce();
     this._inputs.write(input).then(() => {

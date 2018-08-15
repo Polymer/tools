@@ -84,5 +84,4 @@ suite('cli', () => {
   test('launches mainline server', async () => {
     await runCli([]);
   });
-
 });

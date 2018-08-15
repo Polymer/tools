@@ -15,6 +15,7 @@
     "url": "https://github.com/Polymer/wct-sauce.git"
   },
   "scripts": {
+    "format": "find scripts lib -name \"*.js\" | xargs clang-format --style=file -i",
     "postinstall": "node scripts/postinstall.js",
     "test": "mocha"
   },

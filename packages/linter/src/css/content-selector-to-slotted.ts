@@ -67,7 +67,9 @@ class ContentToSlottedUsages extends CssRule {
 
           warnings.push(new Warning({
             code: 'content-selector-to-slotted',
-            severity: Severity.WARNING, parsedDocument, sourceRange,
+            severity: Severity.WARNING,
+            parsedDocument,
+            sourceRange,
             message:
                 'The ::content pseudo-element has been deprecated in favor of ' +
                 'the ::slotted psuedo-element in ShadowDOM v1.',

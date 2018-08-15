@@ -19,7 +19,9 @@ import constants from './constants';
 import {predicates} from 'dom5';
 import * as parse5 from 'parse5';
 
-export interface Matcher { (node: parse5.ASTNode): boolean; }
+export interface Matcher {
+  (node: parse5.ASTNode): boolean;
+}
 
 // TODO(aomarks) Look at what's using this matcher. A number of code paths
 // should probably not be excluding type=module scripts.

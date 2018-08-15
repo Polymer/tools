@@ -113,8 +113,7 @@ export class Bundler {
    * otherwise have been loaded.
    */
   async analyzeContents(
-      url: ResolvedUrl,
-      contents: string,
+      url: ResolvedUrl, contents: string,
       // By default, the contents given to analyzeContents are not kept in the
       // Analyzer's cache and the Analyzer will act as though it never happened.
       // By giving a `true` value to `permanent`, the Analysis cache and the

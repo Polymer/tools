@@ -155,7 +155,8 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
 
       const allowedRange =
           require(path.join(
-              __dirname, '..',
+              __dirname,
+              '..',
               'package.json'))['--private-wct--']['client-side-version-range'] as
           string;
       if (!semver.satisfies(version, allowedRange)) {
@@ -268,7 +269,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
 
     options.webserver._servers = servers.map((s) => {
       const address = s.server.address();
-      const port = typeof address === 'string' ? '' : `:${address.port}`; 
+      const port = typeof address === 'string' ? '' : `:${address.port}`;
       const hostname = s.options.hostname;
       const url = `http://${hostname}${port}${pathToGeneratedIndex}`;
       return {url, variant: s.kind === 'mainline' ? '' : s.variantName};

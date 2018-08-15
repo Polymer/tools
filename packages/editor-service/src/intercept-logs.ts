@@ -42,17 +42,21 @@ import * as winston from 'winston';
  */
 interface ForwardingTransport extends winston.TransportInstance {}
 interface ForwardingTransportStatic {
-  new (options: any): ForwardingTransport;
+  new(options: any): ForwardingTransport;
 
   console: RemoteConsole|undefined;
 }
-const ForwardingTransport = function(this: ForwardingTransport, _options: any) {
-} as any as ForwardingTransportStatic;
+const ForwardingTransport = function(
+                                this: ForwardingTransport, _options: any) {} as
+    any as ForwardingTransportStatic;
 util.inherits(ForwardingTransport, winston.Transport);
 ForwardingTransport.console = undefined;
 
 ForwardingTransport.prototype.log = function(
-    this: ForwardingTransport, level: plylog.Level, msg: string, _meta: any,
+    this: ForwardingTransport,
+    level: plylog.Level,
+    msg: string,
+    _meta: any,
     callback: (err: Error|null, success: boolean) => void) {
   if (typeof msg !== 'string') {
     msg = util.inspect(msg);

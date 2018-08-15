@@ -51,7 +51,10 @@ export function createFileSynchronizer(baseDir?: string, debugging?: boolean) {
   const converter = new AnalyzerLSPConverter(
       URI.file(baseDir), new PackageUrlResolver({packageDir: baseDir}));
   const synchronizer = new FileSynchronizer(
-      serverConnection, textDocuments, baseDir, converter,
+      serverConnection,
+      textDocuments,
+      baseDir,
+      converter,
       new Logger({connection: serverConnection, logToFileFlag: undefined}));
   return {synchronizer, serverConnection, clientConnection, baseDir, converter};
 }
@@ -202,9 +205,8 @@ export class TestClient {
       for (const batch of diagnosticBatches) {
         if (batch.length > 0) {
           throw new Error(
-              `Found unconsumed diagnostics while cleaning up client. Path: ${path
-              } [${batch.map((d) => d.code)
-                  .join(', ')}]`);
+              `Found unconsumed diagnostics while cleaning up client. Path: ${
+                  path} [${batch.map((d) => d.code).join(', ')}]`);
         }
       }
     }
@@ -343,8 +345,8 @@ export class TestClient {
       textDocument: {uri: this.converter.getUriForLocalPath(path)}
     };
     return this.connection.sendRequest(
-        CompletionRequest.type, params,
-        CancellationToken.None) as Promise<CompletionList>;
+               CompletionRequest.type, params, CancellationToken.None) as
+        Promise<CompletionList>;
   }
 
   async getReferences(

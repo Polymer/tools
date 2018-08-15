@@ -34,7 +34,8 @@ describe('config', function() {
 
     it('honors false as an explicit blacklisting', function() {
       const merged = config.merge(
-          <any>{plugins: {foo: {}}}, <any>{plugins: {foo: false}},
+          <any>{plugins: {foo: {}}},
+          <any>{plugins: {foo: false}},
           <any>{plugins: {foo: {}, bar: {}}});
 
       expect(merged).to.deep.equal({plugins: {foo: false, bar: {}}});

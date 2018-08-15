@@ -74,7 +74,8 @@ export default class AnalyzerLSPConverter {
     }
     return {
       start: {line: start.line, column: start.character},
-      end: {line: end.line, column: end.character}, file,
+      end: {line: end.line, column: end.character},
+      file,
     };
   }
 
