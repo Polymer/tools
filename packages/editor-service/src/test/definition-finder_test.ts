@@ -15,6 +15,7 @@
 import {assert} from 'chai';
 import {writeFileSync} from 'fs';
 import * as path from 'path';
+import {SymbolInformation} from 'vscode-languageserver';
 
 import {createTestEnvironment} from './util';
 
@@ -228,8 +229,8 @@ customElements.define('anonymous-class', class extends HTMLElement{});
     const {client} = await createTestEnvironment(
         {fixtureDir: path.join(fixtureDir, 'editor-service')});
     assert.deepEqual(
-        (await client.getDocumentSymbols('slot-test-elem.html'))!.map(
-            (s) => s.name),
+        (await client.getDocumentSymbols('slot-test-elem.html') as
+         SymbolInformation[])!.map((s) => s.name),
         [
           'slot-test-elem',
           'slot-one-test-elem',
