@@ -184,8 +184,8 @@ function runsIntegrationSuite(
     describer = describe.only;
   }
   describer(suiteName, function() {
-    let log: string[] = [];
-    let testResults: TestResults = new TestResults();
+    const log: string[] = [];
+    const testResults: TestResults = new TestResults();
 
     before(async function() {
       const suiteRoot = await makeProperTestDir(dirName);
