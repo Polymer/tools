@@ -1,0 +1,36 @@
+{
+  "name": "wct-mocha",
+  "version": "1.0.0",
+  "description": "Client-side library for testing web-components with Mocha.",
+  "main": "lib/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "cd test && npm run test:wct"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Polymer/tools.git"
+  },
+  "keywords": [
+    "wct",
+    "mocha",
+    "test",
+    "web-components"
+  ],
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Polymer/tools/issues"
+  },
+  "homepage": "https://github.com/Polymer/tools#readme",
+  "dependencies": {
+    "socket.io": "^2.1.1",
+    "stacky": "^1.3.1"
+  },
+  "devDependencies": {
+    "@types/socket.io": "^1.4.36"
+  }
+}
