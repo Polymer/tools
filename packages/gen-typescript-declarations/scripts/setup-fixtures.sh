@@ -27,10 +27,10 @@ while read -r repo commitish dir; do
   git clone $repo $dir
   cd $dir
   git checkout $commitish
-  if [ -e package.json ]; then
-    npm install --production
-  elif [ -e bower.json ]; then
+  if [ -e bower.json ]; then
     bower install --production
+  elif [ -e package.json ]; then
+    npm install --production
   fi
   cd -
 done < ../../../scripts/fixtures.txt
