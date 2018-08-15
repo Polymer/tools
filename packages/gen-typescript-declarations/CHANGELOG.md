@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * `excludeIdentifiers` option now applies to properties and methods.
 * The pattern `import * as foo from 'foo'; export {foo as bar};` is now
   supported.
+* Exit with a non-zero code when an analysis error is encountered.
 
 ## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.
