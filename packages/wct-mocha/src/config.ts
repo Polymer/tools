@@ -42,7 +42,8 @@ export interface Config {
  * The global configuration state for WCT's browser client.
  */
 export let _config: Config = {
-  environmentScripts: !!window.__wctUseNpm ?
+  environmentScripts: [],
+  /*
       [
         'stacky/browser.js', 'async/lib/async.js', 'lodash/index.js',
         'mocha/mocha.js', 'chai/chai.js', '@polymer/sinonjs/sinon.js',
@@ -56,9 +57,12 @@ export let _config: Config = {
         'sinon-chai/lib/sinon-chai.js',
         'accessibility-developer-tools/dist/js/axs_testing.js'
       ],
-
+  */
+  environmentImports: [],
+  /*
   environmentImports: !!window.__wctUseNpm ? [] :
                                              ['test-fixture/test-fixture.html'],
+  */
   root: null as null | string,
   waitForFrameworks: true,
   waitFor: null as null | Function,

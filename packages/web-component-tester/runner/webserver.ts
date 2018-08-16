@@ -37,21 +37,7 @@ const DEFAULT_HEADERS = {
   'Expires': '0',
 };
 
-// scripts to be injected into the running test
-const ENVIRONMENT_SCRIPTS: NPMPackage[] = [
-  {name: 'stacky', jsEntrypoint: 'browser.js'},
-  {name: 'async', jsEntrypoint: 'lib/async.js'},
-  {name: 'lodash', jsEntrypoint: 'index.js'},
-  {name: 'mocha', jsEntrypoint: 'mocha.js'},
-  {name: 'chai', jsEntrypoint: 'chai.js'},
-  {name: '@polymer/sinonjs', jsEntrypoint: 'sinon.js'},
-  {name: 'sinon-chai', jsEntrypoint: 'lib/sinon-chai.js'},
-  {
-    name: 'accessibility-developer-tools',
-    jsEntrypoint: 'dist/js/axs_testing.js'
-  },
-  {name: '@polymer/test-fixture', jsEntrypoint: 'test-fixture.js'},
-];
+const ENVIRONMENT_SCRIPTS: string[] = [];
 
 /**
  * The webserver module is a quasi-plugin. This ensures that it is hooked in a
@@ -80,8 +66,10 @@ export function webserver(wct: Context): void {
     // The generated index needs the correct "browser.js" script. When using
     // npm, the wct-browser-legacy package may be used, so we test for that
     // package and will use its "browser.js" if present.
-    let browserScript = 'web-component-tester/browser.js';
-    let browserModule = '';
+    let browserScript = '../web-component-tester/browser.js';
+
+    const scripts: string[] = [], extraScripts: string[] = [];
+    const modules: string[] = [], extraModules: string[] = [];
 
     if (options.npm) {
       // concat options.clientOptions.environmentScripts with resolved
@@ -97,27 +85,50 @@ export function webserver(wct: Context): void {
         const npmPackageMainPath = resolveFrom(fromPath, npmPackageName);
         const npmPackageRootPath = path.dirname(
             resolveFrom(fromPath, npmPackageName + '/package.json'));
-        browserScript = npmPackageMainPath.slice(
+        browserScript = `${npmPackageRootPath}/browser.js`.slice(
             npmPackageRootPath.length - npmPackageName.length);
-        if (npmPackageName === 'wct-browser-legacy') {
-          options.clientOptions.environmentScripts.push('mocha/mocha.js');
-        } else {
-          browserModule = browserScript;
-          browserScript = '';
-          options.extraScripts.push('../mocha/mocha.js');
-        }
+        // browserScript = npmPackageMainPath.slice(
+        //    npmPackageRootPath.length - npmPackageName.length);
       } catch (e) {
-        // Safely ignore.
+        // There was a problem resolving the package or its package.json
+        // TODO(usergenic): Warn user that the package name they gave is
+        // not actually resolved.
       }
 
       const packageName = getPackageName(options);
       const isPackageScoped = packageName && packageName[0] === '@';
 
+      // WCT used to try to bundle a lot of packages for end-users, but because
+      // of `node_modules` layout, these need to actually be resolved from the
+      // package as installed, to ensure the desired version is loaded.  Here we
+      // list the legacy packages and attempt to resolve them from the WCT
+      // package.
+      console.log('OH HAI THER MAH PACKAGENAME IZ ' + options.wctPackageName);
       if (['web-component-tester', 'wct-browser-legacy'].includes(
               options.wctPackageName)) {
+        const legacyNpmSupportPackages: NPMPackage[] = [
+          {name: 'stacky', jsEntrypoint: 'browser.js'},
+          {name: 'async', jsEntrypoint: 'lib/async.js'},
+          {name: 'lodash', jsEntrypoint: 'index.js'},
+          {name: 'mocha', jsEntrypoint: 'mocha.js'},
+          {name: 'chai', jsEntrypoint: 'chai.js'},
+          {name: '@polymer/sinonjs', jsEntrypoint: 'sinon.js'},
+          {name: 'sinon-chai', jsEntrypoint: 'lib/sinon-chai.js'},
+          {
+            name: 'accessibility-developer-tools',
+            jsEntrypoint: 'dist/js/axs_testing.js'
+          },
+          {name: '@polymer/test-fixture', jsEntrypoint: 'test-fixture.js'},
+        ];
+
         options.clientOptions.environmentScripts =
             options.clientOptions.environmentScripts.concat(
-                resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
+                resolveWctNpmEntrypointNames(
+                    options, legacyNpmSupportPackages));
+      } else {
+        scripts.push(...resolveWctNpmEntrypointNames(options, [
+                       {name: 'mocha', jsEntrypoint: 'mocha.js'}
+                     ]).map((s) => `../${s}`));
       }
 
       if (browserScript && isPackageScoped) {
@@ -125,9 +136,16 @@ export function webserver(wct: Context): void {
       }
     }
 
-    const a11ySuiteScript = 'web-component-tester/data/a11ySuite.js';
-    options.webserver._generatedIndexContent = INDEX_TEMPLATE(Object.assign(
-        {browserScript, browserModule, a11ySuiteScript}, options));
+    if (browserScript) {
+      scripts.push(`../${browserScript}`);
+    }
+
+    if (!options.npm) {
+      scripts.push('web-component-tester/data/a11ysuite.js');
+    }
+
+    options.webserver._generatedIndexContent =
+        INDEX_TEMPLATE({scripts, extraScripts: [], modules, ...options});
   });
 
   wct.hook('prepare', async function() {
@@ -270,9 +288,9 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
         registerServerTeardown(server);
       }
     } else {
-      const never: never = polyserveResult;
+      const never: any = polyserveResult;
       throw new Error(
-          `Internal error: Got unknown response from polyserve.startServers:` +
+          'Internal error: Got unknown response from polyserve.startServers: ' +
           `${never}`);
     }
 
@@ -288,11 +306,12 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       const address = s.server.address();
       const port = typeof address === 'string' ? '' : `:${address.port}`;
       const hostname = s.options.hostname;
-      const url = `http://${hostname}:${port}${pathToGeneratedIndex}`;
+      const url = `http://${hostname}${port}${pathToGeneratedIndex}`;
       return {url, variant: s.kind === 'mainline' ? '' : s.variantName};
     });
 
-    // TODO(rictic): re-enable this stuff. need to either move this code into
+    // TODO(rictic): re-enable this stuff. need to either move this code
+    // into
     //     polyserve or let the polyserve API expose this stuff.
     // app.use('/httpbin', httpbin.httpbin);
 

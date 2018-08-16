@@ -108,19 +108,22 @@ export default class CLISocket {
       return done();
     }
 
-    util.loadScript(SOCKETIO_LIBRARY, function (error: any) {
+    util.loadScript(SOCKETIO_LIBRARY, function(error: any) {
       if (error) {
         return done(error);
       }
 
       const server = io(SOCKETIO_ENDPOINT);
-      const sockets = server.sockets;
-      const errorListener = function (error?: any) {
+      // WTF(usergenic): The typings are super wrong or something.  The object
+      // returned by io() doesn't seem to map to the SocketIO.Server type at
+      // all.
+      const sockets = server as any as SocketIO.Namespace;  // server.sockets;
+      const errorListener = function(error?: any) {
         sockets.off('error', errorListener);
         done(error);
       };
       sockets.on('error', errorListener);
-      const connectListener = function () {
+      const connectListener = function() {
         sockets.off('connect', connectListener);
         done(null, new CLISocket(browserId, sockets as any));
       };
