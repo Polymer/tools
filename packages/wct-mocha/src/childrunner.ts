@@ -34,7 +34,7 @@ export default class ChildRunner {
   private iframe?: HTMLIFrameElement;
   private onRunComplete: (error?: any) => void;
   private share: SharedState;
-  private state: 'initializing' | 'loading' | 'complete';
+  private state: 'initializing'|'loading'|'complete';
   private timeoutId?: number;
   private url: string;
 
@@ -45,9 +45,7 @@ export default class ChildRunner {
 
     const urlBits = util.parseUrl(url);
     util.mergeParams(
-      urlBits.params,
-      util.getParams(parentScope.location.search)
-    );
+        urlBits.params, util.getParams(parentScope.location.search));
     delete urlBits.params.cli_browser_id;
 
     this.url = `${urlBits.base}${util.paramsToQuery(urlBits.params)}`;
@@ -62,16 +60,10 @@ export default class ChildRunner {
    * @param target event target
    */
   private addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    target: EventTarget
-  ): void {
+      type: string, listener: EventListenerOrEventListenerObject,
+      target: EventTarget): void {
     target.addEventListener(type, listener);
-    const descriptor: EventListenerDescriptor = {
-      target,
-      type,
-      listener
-    };
+    const descriptor: EventListenerDescriptor = {target, type, listener};
     this.eventListenersToRemoveOnClean.push(descriptor);
   }
 
@@ -80,9 +72,9 @@ export default class ChildRunner {
    * on an instance of ChildRunner.
    */
   private removeAllEventListeners(): void {
-    this.eventListenersToRemoveOnClean.forEach(({ target, type, listener }) =>
-      target.removeEventListener(type, listener)
-    );
+    this.eventListenersToRemoveOnClean.forEach(
+        ({target, type, listener}) =>
+            target.removeEventListener(type, listener));
   }
 
   // ChildRunners get a pretty generous load timeout by default.
@@ -90,7 +82,7 @@ export default class ChildRunner {
 
   // We can't maintain properties on iframe elements in Firefox/Safari/???, so
   // we track childRunners by URL.
-  private static byUrl: { [url: string]: undefined | ChildRunner } = {};
+  private static byUrl: {[url: string]: undefined|ChildRunner} = {};
 
   /**
    * @return {ChildRunner} The `ChildRunner` that was registered for this
@@ -114,8 +106,7 @@ export default class ChildRunner {
       // Top window.
       if (traversal) {
         console.warn(
-          'Subsuite loaded but was never registered. This most likely is due to wonky history behavior. Reloading...'
-        );
+            'Subsuite loaded but was never registered. This most likely is due to wonky history behavior. Reloading...');
         window.location.reload();
       }
       return null;
@@ -142,7 +133,7 @@ export default class ChildRunner {
       document.body.appendChild(container as Node);
     }
 
-    const { container } = this;
+    const {container} = this;
 
     const iframe = (this.iframe = document.createElement('iframe'));
     iframe.classList.add('subsuite');
@@ -155,20 +146,15 @@ export default class ChildRunner {
     ChildRunner.byUrl[url] = this;
 
     this.timeoutId = window.setTimeout(
-      () => this.loaded(new Error('Timed out loading ' + url)),
-      ChildRunner.loadTimeout
-    );
+        () => this.loaded(new Error('Timed out loading ' + url)),
+        ChildRunner.loadTimeout);
 
     this.addEventListener(
-      'error',
-      () => this.loaded(new Error('Failed to load document ' + this.url)),
-      iframe
-    );
+        'error',
+        () => this.loaded(new Error('Failed to load document ' + this.url)),
+        iframe);
     this.addEventListener(
-      'DOMContentLoaded',
-      () => this.loaded(),
-      iframe.contentWindow
-    );
+        'DOMContentLoaded', () => this.loaded(), iframe.contentWindow);
   }
 
   /**

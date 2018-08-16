@@ -13,6 +13,9 @@
 			"path": "packages/bundler"
 		},
 		{
+			"path": "packages/cleankill"
+		},
+		{
 			"path": "packages/cli"
 		},
 		{
@@ -20,6 +23,9 @@
 		},
 		{
 			"path": "packages/editor-service"
+		},
+		{
+			"path": "packages/esm-amd-loader"
 		},
 		{
 			"path": "packages/gen-typescript-declarations"
@@ -41,6 +47,12 @@
 		},
 		{
 			"path": "packages/wct-local"
+		},
+		{
+			"path": "packages/wct-mocha"
+		},
+		{
+			"path": "packages/wct-sauce"
 		},
 		{
 			"path": "packages/web-component-tester"

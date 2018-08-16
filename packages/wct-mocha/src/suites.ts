@@ -74,7 +74,8 @@ export function loadJsSuites(
 }
 
 export function runSuites(
-    reporter: MultiReporter, childSuites: string[],
+    reporter: MultiReporter,
+    childSuites: string[],
     done: (error?: any) => void) {
   util.debug('runSuites');
 
@@ -121,7 +122,8 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
   const mocha = window.mocha;
   const Mocha = window.Mocha;
 
-  mocha.reporter(reporter.childReporter(window.location) as any as Mocha.Reporter);
+  mocha.reporter(
+      reporter.childReporter(window.location) as any as Mocha.Reporter);
   mocha.suite.title = reporter.suiteTitle(window.location);
   mocha.grep(GREP);
 

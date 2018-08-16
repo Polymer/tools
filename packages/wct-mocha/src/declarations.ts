@@ -1,7 +1,6 @@
 import * as ChaiStatic from 'chai';
 import * as SinonStatic from 'sinon';
 import * as SocketIOStatic from 'socket.io';
-import * as StackyStatic from 'stacky';
 
 import {default as ChildRunner, SharedState} from './childrunner';
 import {Config} from './config';
@@ -58,7 +57,6 @@ declare global {
     suite: Mocha.Suite;
   }
 
-  var Stacky: typeof StackyStatic;
   var io: typeof SocketIOStatic;
   var Platform: PlatformStatic;
   var sinon: typeof SinonStatic;

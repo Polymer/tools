@@ -8,11 +8,11 @@
     <script type="module">
       import '../my-test-element.js';
       suite('something', () => {
-        test('is normal', () => {
+        test('equality', () => {
           chai.assert.equal(1, 1, '1 really should equal 1');
         });
-        test('is bromken', () => {
-          chai.assert.equal(1, 2, '2 is not 1 you dingus!');
+        test('unequality', () => {
+          chai.assert.notEqual(1, 2, '2 is not 1, ya dingus!');
         });
       });
     </script>

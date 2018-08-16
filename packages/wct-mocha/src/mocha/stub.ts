@@ -27,7 +27,6 @@ import {extendInterfaces} from './extend';
  * });
  */
 extendInterfaces('stub', function(_context, teardown) {
-
   return function stub(tagName: string, implementation: object) {
     // Find the prototype of the element being stubbed:
     const proto = document.createElement(tagName).constructor.prototype;

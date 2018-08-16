@@ -43,53 +43,58 @@ extendInterfaces('replace', function(_context, teardown) {
         const originalImportNode = document.importNode;
 
         // Use Sinon to stub `document.ImportNode`:
-        (sinon as any).stub(
-            document, 'importNode', function(origContent: any, deep: boolean) {
-              const templateClone = document.createElement('template');
-              const content = templateClone.content;
-              const inertDoc = content.ownerDocument;
+        (sinon as any)
+            .stub(
+                document,
+                'importNode',
+                function(origContent: any, deep: boolean) {
+                  const templateClone = document.createElement('template');
+                  const content = templateClone.content;
+                  const inertDoc = content.ownerDocument;
 
-              // imports node from inertDoc which holds inert nodes.
-              templateClone.content.appendChild(
-                  inertDoc.importNode(origContent, true));
+                  // imports node from inertDoc which holds inert nodes.
+                  templateClone.content.appendChild(
+                      inertDoc.importNode(origContent, true));
 
-              // optional arguments are not optional on IE.
-              const nodeIterator = document.createNodeIterator(
-                  content, NodeFilter.SHOW_ELEMENT, null, true);
-              let node;
+                  // optional arguments are not optional on IE.
+                  const nodeIterator = document.createNodeIterator(
+                      content, NodeFilter.SHOW_ELEMENT, null, true);
+                  let node;
 
-              // Traverses the tree. A recently-replaced node will be put next,
-              // so if a node is replaced, it will be checked if it needs to be
-              // replaced again.
-              while (node = nodeIterator.nextNode() as Element) {
-                let currentTagName = node.tagName.toLowerCase();
+                  // Traverses the tree. A recently-replaced node will be put
+                  // next, so if a node is replaced, it will be checked if it
+                  // needs to be replaced again.
+                  while (node = nodeIterator.nextNode() as Element) {
+                    let currentTagName = node.tagName.toLowerCase();
 
-                if (replacements.hasOwnProperty(currentTagName)) {
-                  currentTagName = replacements[currentTagName];
+                    if (replacements.hasOwnProperty(currentTagName)) {
+                      currentTagName = replacements[currentTagName];
 
-                  // find the final tag name.
-                  while (replacements[currentTagName]) {
-                    currentTagName = replacements[currentTagName];
+                      // find the final tag name.
+                      while (replacements[currentTagName]) {
+                        currentTagName = replacements[currentTagName];
+                      }
+
+                      // Create a replacement:
+                      const replacement =
+                          document.createElement(currentTagName);
+
+                      // For all attributes in the original node..
+                      for (let index = 0; index < node.attributes.length;
+                           ++index) {
+                        // Set that attribute on the replacement:
+                        replacement.setAttribute(
+                            node.attributes[index].name,
+                            node.attributes[index].value);
+                      }
+
+                      // Replace the original node with the replacement node:
+                      node.parentNode.replaceChild(replacement, node as Node);
+                    }
                   }
 
-                  // Create a replacement:
-                  const replacement = document.createElement(currentTagName);
-
-                  // For all attributes in the original node..
-                  for (let index = 0; index < node.attributes.length; ++index) {
-                    // Set that attribute on the replacement:
-                    replacement.setAttribute(
-                        node.attributes[index].name,
-                        node.attributes[index].value);
-                  }
-
-                  // Replace the original node with the replacement node:
-                  node.parentNode.replaceChild(replacement, node as Node);
-                }
-              }
-
-              return originalImportNode.call(this, content, deep);
-            });
+                  return originalImportNode.call(this, content, deep);
+                });
 
         if (!replaceTeardownAttached) {
           // After each test...

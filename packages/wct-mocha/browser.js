@@ -587,11 +587,7 @@
          */
         ChildRunner.prototype.addEventListener = function (type, listener, target) {
             target.addEventListener(type, listener);
-            var descriptor = {
-                target: target,
-                type: type,
-                listener: listener
-            };
+            var descriptor = { target: target, type: type, listener: listener };
             this.eventListenersToRemoveOnClean.push(descriptor);
         };
         /**
@@ -1032,6 +1028,244 @@
     /**
      * @license
      * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+     *
+     * This code may only be used under the BSD style license found at
+     * polymer.github.io/LICENSE.txt The complete set of authors may be found at
+     * polymer.github.io/AUTHORS.txt The complete set of contributors may be found
+     * at polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as part of
+     * the polymer project is also subject to an additional IP rights grant found at
+     * polymer.github.io/PATENTS.txt
+     */
+    function parse(stack) {
+        var rawLines = stack.split('\n');
+        var stackyLines = compact(rawLines.map(parseStackyLine));
+        if (stackyLines.length === rawLines.length)
+            return stackyLines;
+        var v8Lines = compact(rawLines.map(parseV8Line));
+        if (v8Lines.length > 0)
+            return v8Lines;
+        var geckoLines = compact(rawLines.map(parseGeckoLine));
+        if (geckoLines.length > 0)
+            return geckoLines;
+        throw new Error('Unknown stack format: ' + stack);
+    }
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Stack
+    var GECKO_LINE = /^(?:([^@]*)@)?(.*?):(\d+)(?::(\d+))?$/;
+    function parseGeckoLine(line) {
+        var match = line.match(GECKO_LINE);
+        if (!match)
+            return null;
+        return {
+            method: match[1] || '',
+            location: match[2] || '',
+            line: parseInt(match[3]) || 0,
+            column: parseInt(match[4]) || 0,
+        };
+    }
+    // https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi
+    var V8_OUTER1 = /^\s*(eval )?at (.*) \((.*)\)$/;
+    var V8_OUTER2 = /^\s*at()() (\S+)$/;
+    var V8_INNER = /^\(?([^\(]+):(\d+):(\d+)\)?$/;
+    function parseV8Line(line) {
+        var outer = line.match(V8_OUTER1) || line.match(V8_OUTER2);
+        if (!outer) {
+            return null;
+        }
+        var inner = outer[3].match(V8_INNER);
+        if (!inner) {
+            return null;
+        }
+        var method = outer[2] || '';
+        if (outer[1]) {
+            method = 'eval at ' + method;
+        }
+        return {
+            method: method,
+            location: inner[1] || '',
+            line: parseInt(inner[2]) || 0,
+            column: parseInt(inner[3]) || 0,
+        };
+    }
+    var STACKY_LINE = /^\s*(.+) at (.+):(\d+):(\d+)$/;
+    function parseStackyLine(line) {
+        var match = line.match(STACKY_LINE);
+        if (!match)
+            return null;
+        return {
+            method: match[1] || '',
+            location: match[2] || '',
+            line: parseInt(match[3]) || 0,
+            column: parseInt(match[4]) || 0,
+        };
+    }
+    // Helpers
+    function compact(array) {
+        var result = [];
+        array.forEach(function (value) { return value && result.push(value); });
+        return result;
+    }
+
+    /**
+     * @license
+     * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+     *
+     * This code may only be used under the BSD style license found at
+     * polymer.github.io/LICENSE.txt The complete set of authors may be found at
+     * polymer.github.io/AUTHORS.txt The complete set of contributors may be found
+     * at polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as part of
+     * the polymer project is also subject to an additional IP rights grant found at
+     * polymer.github.io/PATENTS.txt
+     */
+    var defaults = {
+        maxMethodPadding: 40,
+        indent: '',
+        methodPlaceholder: '<unknown>',
+        locationStrip: [],
+        unimportantLocation: [],
+        filter: function () {
+            return false;
+        },
+        styles: {
+            method: passthrough,
+            location: passthrough,
+            line: passthrough,
+            column: passthrough,
+            unimportant: passthrough,
+        },
+    };
+    function pretty(stackOrParsed, options) {
+        options = mergeDefaults(options || {}, defaults);
+        var lines = Array.isArray(stackOrParsed) ? stackOrParsed : parse(stackOrParsed);
+        lines = clean(lines, options);
+        var padSize = methodPadding(lines, options);
+        var parts = lines.map(function (line) {
+            var method = line.method || options.methodPlaceholder;
+            var pad = options.indent + padding(padSize - method.length);
+            var locationBits = [
+                options.styles.location(line.location),
+                options.styles.line(line.line.toString()),
+            ];
+            if ('column' in line) {
+                locationBits.push(options.styles.column(line.column.toString()));
+            }
+            var location = locationBits.join(':');
+            var text = pad + options.styles.method(method) + ' at ' + location;
+            if (!line.important) {
+                text = options.styles.unimportant(text);
+            }
+            return text;
+        });
+        return parts.join('\n');
+    }
+    function clean(lines, options) {
+        var result = [];
+        for (var i = 0, line; line = lines[i]; i++) {
+            if (options.filter(line))
+                continue;
+            line.location = cleanLocation$1(line.location, options);
+            line.important = isImportant(line, options);
+            result.push(line);
+        }
+        return result;
+    }
+    // Utility
+    function passthrough(text) {
+        return text;
+    }
+    function mergeDefaults(options, defaults) {
+        var result = Object.create(defaults);
+        Object.keys(options).forEach(function (key) {
+            var value = options[key];
+            if (typeof value === 'object' && !Array.isArray(value)) {
+                value = mergeDefaults(value, defaults[key]);
+            }
+            result[key] = value;
+        });
+        return result;
+    }
+    function methodPadding(lines, options) {
+        var size = options.methodPlaceholder.length;
+        for (var i = 0, line; line = lines[i]; i++) {
+            size =
+                Math.min(options.maxMethodPadding, Math.max(size, line.method.length));
+        }
+        return size;
+    }
+    function padding(length) {
+        var result = '';
+        for (var i = 0; i < length; i++) {
+            result = result + ' ';
+        }
+        return result;
+    }
+    function cleanLocation$1(location, options) {
+        if (options.locationStrip) {
+            for (var i = 0, matcher; matcher = options.locationStrip[i]; i++) {
+                location = location.replace(matcher, '');
+            }
+        }
+        return location;
+    }
+    function isImportant(line, options) {
+        if (options.unimportantLocation) {
+            for (var i = 0, matcher; matcher = options.unimportantLocation[i]; i++) {
+                if (line.location.match(matcher))
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @license
+     * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+     *
+     * This code may only be used under the BSD style license found at
+     * polymer.github.io/LICENSE.txt The complete set of authors may be found at
+     * polymer.github.io/AUTHORS.txt The complete set of contributors may be found
+     * at polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as part of
+     * the polymer project is also subject to an additional IP rights grant found at
+     * polymer.github.io/PATENTS.txt
+     */
+    function normalize(error, prettyOptions) {
+        if (error.parsedStack) {
+            return error;
+        }
+        var message = error.message || error.description || error || '<unknown error>';
+        var parsedStack = [];
+        try {
+            parsedStack = parse(error.stack || error.toString());
+        }
+        catch (error) {
+            // Ah well.
+        }
+        if (parsedStack.length === 0 && error.fileName) {
+            parsedStack.push({
+                method: '',
+                location: error.fileName,
+                line: error.lineNumber,
+                column: error.columnNumber,
+            });
+        }
+        if (!prettyOptions || !prettyOptions.showColumns) {
+            for (var i = 0, line; line = parsedStack[i]; i++) {
+                delete line.column;
+            }
+        }
+        var prettyStack = message;
+        if (parsedStack.length > 0) {
+            prettyStack = prettyStack + '\n' + pretty(parsedStack, prettyOptions);
+        }
+        var cleanErr = Object.create(Error.prototype);
+        cleanErr.message = message;
+        cleanErr.stack = prettyStack;
+        cleanErr.parsedStack = parsedStack;
+        return cleanErr;
+    }
+
+    /**
+     * @license
+     * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
      * This code may only be used under the BSD style license found at
      * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
      * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
@@ -1051,8 +1285,18 @@
     };
     // https://github.com/visionmedia/mocha/blob/master/lib/runner.js#L36-46
     var MOCHA_EVENTS = [
-        'start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end',
-        'pass', 'fail', 'pending', 'childRunner end'
+        'start',
+        'end',
+        'suite',
+        'suite end',
+        'test',
+        'test end',
+        'hook',
+        'hook end',
+        'pass',
+        'fail',
+        'pending',
+        'childRunner end'
     ];
     // Until a suite has loaded, we assume this many tests in it.
     var ESTIMATED_TESTS_PER_SUITE = 3;
@@ -1109,7 +1353,8 @@
             this.flushPendingEvents();
             this.emit('end');
         };
-        MultiReporter.prototype.epilogue = function () { };
+        MultiReporter.prototype.epilogue = function () {
+        };
         /**
          * Emit a top level test that is not part of any suite managed by this
          * reporter.
@@ -1218,10 +1463,10 @@
             }
             // Normalize errors
             if (eventName === 'fail') {
-                extraArgs[1] = Stacky.normalize(extraArgs[1], STACKY_CONFIG);
+                extraArgs[1] = normalize(extraArgs[1], STACKY_CONFIG);
             }
             if (extraArgs[0] && extraArgs[0].err) {
-                extraArgs[0].err = Stacky.normalize(extraArgs[0].err, STACKY_CONFIG);
+                extraArgs[0].err = normalize(extraArgs[0].err, STACKY_CONFIG);
             }
         };
         /**
@@ -1784,7 +2029,8 @@
                     // implementation for later:
                     var originalImportNode = document.importNode;
                     // Use Sinon to stub `document.ImportNode`:
-                    sinon.stub(document, 'importNode', function (origContent, deep) {
+                    sinon
+                        .stub(document, 'importNode', function (origContent, deep) {
                         var templateClone = document.createElement('template');
                         var content = templateClone.content;
                         var inertDoc = content.ownerDocument;
@@ -1793,9 +2039,9 @@
                         // optional arguments are not optional on IE.
                         var nodeIterator = document.createNodeIterator(content, NodeFilter.SHOW_ELEMENT, null, true);
                         var node;
-                        // Traverses the tree. A recently-replaced node will be put next,
-                        // so if a node is replaced, it will be checked if it needs to be
-                        // replaced again.
+                        // Traverses the tree. A recently-replaced node will be put
+                        // next, so if a node is replaced, it will be checked if it
+                        // needs to be replaced again.
                         while (node = nodeIterator.nextNode()) {
                             var currentTagName = node.tagName.toLowerCase();
                             if (replacements.hasOwnProperty(currentTagName)) {

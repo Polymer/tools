@@ -8,6 +8,7 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
+import {normalize} from '../stacktrace/normalization';
 import * as util from '../util';
 
 const STACKY_CONFIG = {
@@ -23,8 +24,18 @@ const STACKY_CONFIG = {
 
 // https://github.com/visionmedia/mocha/blob/master/lib/runner.js#L36-46
 const MOCHA_EVENTS = [
-  'start', 'end', 'suite', 'suite end', 'test', 'test end', 'hook', 'hook end',
-  'pass', 'fail', 'pending', 'childRunner end'
+  'start',
+  'end',
+  'suite',
+  'suite end',
+  'test',
+  'test end',
+  'hook',
+  'hook end',
+  'pass',
+  'fail',
+  'pending',
+  'childRunner end'
 ];
 
 // Until a suite has loaded, we assume this many tests in it.
@@ -32,7 +43,9 @@ const ESTIMATED_TESTS_PER_SUITE = 3;
 
 export interface Reporter {}
 
-export interface ReporterFactory { new(parent: MultiReporter): Reporter; }
+export interface ReporterFactory {
+  new(parent: MultiReporter): Reporter;
+}
 
 interface ExtendedTest extends Mocha.ITest {
   err: any;
@@ -105,8 +118,9 @@ export default class MultiReporter implements Reporter {
     this.emit('end');
   }
 
-  epilogue(): void {}
-  
+  epilogue(): void {
+  }
+
   /**
    * Emit a top level test that is not part of any suite managed by this
    * reporter.
@@ -178,7 +192,8 @@ export default class MultiReporter implements Reporter {
     const extraArgs = Array.prototype.slice.call(arguments, 2);
     if (this.complete) {
       console.warn(
-          'out of order Mocha event for ' + runner.name + ':', eventName,
+          'out of order Mocha event for ' + runner.name + ':',
+          eventName,
           extraArgs);
       return;
     }
@@ -223,10 +238,10 @@ export default class MultiReporter implements Reporter {
 
     // Normalize errors
     if (eventName === 'fail') {
-      extraArgs[1] = Stacky.normalize(extraArgs[1], STACKY_CONFIG);
+      extraArgs[1] = normalize(extraArgs[1], STACKY_CONFIG);
     }
     if (extraArgs[0] && extraArgs[0].err) {
-      extraArgs[0].err = Stacky.normalize(extraArgs[0].err, STACKY_CONFIG);
+      extraArgs[0].err = normalize(extraArgs[0].err, STACKY_CONFIG);
     }
   }
 

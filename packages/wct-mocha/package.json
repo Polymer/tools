@@ -10,6 +10,7 @@
     "build": "npm run build:compile && npm run build:browserjs",
     "build:browserjs": "rollup --input lib/index.js --format iife --file browser.js",
     "build:compile": "tsc",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "test": "npm run test:integration",
     "test:integration": "cd test && npm run test:wct"
   },
