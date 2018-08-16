@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+<!-- ## [Unreleased] -->
+<!-- Add new, unreleased changes here. -->
+
+## [1.5.0] - 2018-08-15
 * Legacy Polymer function components will no longer have a `_template`
   property.
 * Functions defined within exported Polymer function calls or exported objects
@@ -25,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * `excludeIdentifiers` option now applies to properties and methods.
 * The pattern `import * as foo from 'foo'; export {foo as bar};` is now
   supported.
+* Exit with a non-zero code when an analysis error is encountered.
 
 ## [1.4.0] - 2018-07-25
 - Support for ES module imports and exports.

@@ -1,9 +1,13 @@
 # Changelog
 
-## Unreleased
+<!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
+
+## v1.8.0 [08-15-2018]
 * Fix a case where the CustomElementsEs5Adapter script was not added to the 
   builds when the `js.compile` is an object with a target property of es5.
+* Updated web-component-tester to v6.8.0, which changes the set of browsers
+  when testing on Travis CI.
 
 ## v1.7.7 [06-28-2018]
 * Update dependencies.

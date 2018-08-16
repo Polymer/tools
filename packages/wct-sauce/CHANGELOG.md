@@ -3,6 +3,10 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## 2.1.0 - 2018-08-15
+
+- Updated browsers used when testing on Travis CI.
+
 ## 2.0.3 - 2018-06-28
 
 - Fix NPM audit warnings.
