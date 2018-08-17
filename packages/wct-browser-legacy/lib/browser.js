@@ -1,6 +1,8 @@
-import { initialize } from 'wct-mocha';
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const wct_mocha_1 = require("wct-mocha");
 window['__useNpm'] = true;
-var environmentScripts = [
+const environmentScripts = [
     'stacky/browser.js',
     'async/lib/async.js',
     'lodash/index.js',
@@ -11,5 +13,5 @@ var environmentScripts = [
     'accessibility-developer-tools/dist/js/axs_testing.js',
     '@polymer/test-fixture/test-fixture.js'
 ];
-initialize({ environmentScripts: environmentScripts });
+wct_mocha_1.initialize({ environmentScripts });
 //# sourceMappingURL=browser.js.map

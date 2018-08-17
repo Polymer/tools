@@ -1,5 +1,6 @@
 {
   "npm": true,
+  "wctPackageName": "wct-browser-legacy",
   "moduleResolution": "node",
   "suites": [
     "static/y/suite.html",
@@ -8,7 +9,9 @@
   "plugins": {
     "local": {
       "disabled": true,
-      "browsers": ["all"]
+      "browsers": [
+        "all"
+      ]
     },
     "sauce": {
       "disabled": true,

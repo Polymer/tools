@@ -1,8 +1,6 @@
 {
+    "extends": "../../tsconfig-base.json",
     "compilerOptions": {
-        "target": "es5",
-        "module": "es6",
-        "moduleResolution": "node",
         "isolatedModules": false,
         "noImplicitAny": true,
         "noUnusedLocals": false,
@@ -18,9 +16,7 @@
         "lib": [
             "dom",
             "es2017"
-        ],
-        "sourceMap": true,
-        "pretty": true
+        ]
     },
     "exclude": [
         "node_modules"

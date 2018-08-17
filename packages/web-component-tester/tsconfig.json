@@ -10,9 +10,11 @@
         "node_modules"
     ],
     "include": [
+        "browser/*.ts",
         "runner/*.ts",
         "test/**/*.ts",
         "custom_typings/*.d.ts",
-        "node_modules/@types/mocha/index.d.ts"
+        "node_modules/@types/mocha/index.d.ts",
+        "node_modules/wct-mocha/**/*.d.ts"
     ]
 }
