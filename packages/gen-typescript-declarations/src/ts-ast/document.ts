@@ -13,6 +13,11 @@ import {Declaration} from './declarations';
 import {formatComment} from './formatting';
 import {Export, Node} from './index';
 
+export interface TsLintDisable {
+  ruleName: string;
+  why: string;
+}
+
 export class Document {
   readonly kind = 'document';
   path: string;
@@ -20,19 +25,21 @@ export class Document {
   referencePaths: Set<string>;
   header: string;
   isEsModule: boolean;
+  tsLintDisables: TsLintDisable[];
 
   constructor(data: {
     path: string,
     members?: Declaration[],
     referencePaths?: Iterable<string>,
     header?: string,
-    isEsModule?: boolean,
+    isEsModule?: boolean, tsLintDisables: TsLintDisable[],
   }) {
     this.path = data.path;
     this.members = data.members || [];
     this.referencePaths = new Set(Array.from(data.referencePaths || []));
     this.header = data.header || '';
     this.isEsModule = data.isEsModule || false;
+    this.tsLintDisables = data.tsLintDisables;
   }
 
   /**
@@ -62,6 +69,21 @@ export class Document {
     if (this.header) {
       out += formatComment(this.header, 0) + '\n';
     }
+    const disables = this.tsLintDisables.slice();
+    for (const node of this.traverse()) {
+      if (node.kind === 'name' && node.name === 'any') {
+        // TODO: replace `any` with `unknown`
+        disables.push({
+          ruleName: 'no-any',
+          why: 'describes the API as best we are able today'
+        });
+      }
+    }
+    out += '\n';
+    for (const disble of this.tsLintDisables) {
+      out += `// tslint:disable:${disble.ruleName} ${disble.why}\n`;
+    }
+    out += '\n';
     if (this.referencePaths.size > 0) {
       for (const ref of this.referencePaths) {
         out += `/// <reference path="${ref}" />\n`;

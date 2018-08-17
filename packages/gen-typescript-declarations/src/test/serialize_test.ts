@@ -146,8 +146,12 @@ declare class MyClass extends MyBase {
         './other-types.d.ts',
         '../more/types.d.ts',
       ],
+      tsLintDisables: [{ruleName: 'dumb-jokes', why: 'just ignore him'}]
     });
-    assert.equal(d.serialize(), `/// <reference path="./other-types.d.ts" />
+    assert.equal(d.serialize(), `
+// tslint-disable:dumb-jokes: just ignore him
+
+/// <reference path="./other-types.d.ts" />
 /// <reference path="../more/types.d.ts" />
 
 interface MyInterface {

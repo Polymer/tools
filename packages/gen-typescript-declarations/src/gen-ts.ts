@@ -74,6 +74,20 @@ export interface Config {
    * file.
    */
   autoImport?: {[modulePath: string]: string[]};
+
+  /**
+   * If true, outputs declarations in 'goog:' modules instead of using
+   * simple ES modules. This is a temporary hack to account for how modules are
+   * resolved for TypeScript inside google3. This is probably not at all useful
+   * for anyone but the Polymer team.
+   */
+  googModules?: boolean;
+
+  /**
+   * If true, does not log warnings detected when analyzing code,
+   * only diagnostics of Error severity.
+   */
+  hideWarnings?: boolean;
 }
 
 const defaultExclude = [
@@ -176,6 +190,10 @@ async function analyzerToAst(
       header: makeHeader(
           analyzerDocs.map((d) => analyzerUrlToRelativePath(d.url, rootDir))
               .filter((url): url is string => url !== undefined)),
+      tsLintDisables: [{
+        ruleName: 'variable-name',
+        why: `API description`,
+      }],
     });
     for (const analyzerDoc of analyzerDocs) {
       if (isEsModuleDocument(analyzerDoc)) {
@@ -213,6 +231,7 @@ async function analyzerToAst(
     }
     addAutoImports(tsDoc, autoImportMap);
     tsDoc.simplify();
+
     // Include even documents with no members. They might be dependencies of
     // other files via the HTML import graph, and it's simpler to have empty
     // files than to try and prune the references (especially across packages).
@@ -220,6 +239,9 @@ async function analyzerToAst(
   }
 
   const filteredWarnings = warnings.filter((warning) => {
+    if (config.hideWarnings && warning.severity !== analyzer.Severity.ERROR) {
+      return false;
+    }
     const sourcePath =
         analyzerUrlToRelativePath(warning.sourceRange.file, rootDir);
     return sourcePath !== undefined &&
@@ -233,6 +255,9 @@ async function analyzerToAst(
     throw new Error('Encountered error generating types.');
   }
 
+  if (config.googModules) {
+    return tsDocs.map((d) => transformToGoogStyle(d, rootDir));
+  }
   return tsDocs;
 }
 
@@ -270,6 +295,88 @@ function addAutoImports(tsDoc: ts.Document, autoImport: Map<string, string>) {
       alreadyImported.add(node.name);
     }
   }
+}
+
+function getPackageName(rootDir: string) {
+  let packageInfo: {name?: string};
+  try {
+    packageInfo = JSON.parse(
+        fsExtra.readFileSync(path.join(rootDir, 'package.json'), 'utf-8'));
+  } catch {
+    return undefined;
+  }
+  return packageInfo.name;
+}
+function googModuleForNameBasedImportSpecifier(spec: string) {
+  let name =
+      // remove trailing .d.ts and .js
+      spec.replace(/(\.d\.ts|\.js)$/, '')
+          // foo-bar.dom becomes fooBarDom
+          .replace(/[-\.](\w)/g, (_, s) => s.toUpperCase())
+          // remove leading @
+          .replace(/^@/g, '')
+          // slash separated paths becomes dot separated namespace
+          .replace(/\//g, '.');
+
+  // the last segment is capitalized
+  const lastDotIdx = name.lastIndexOf('.');
+  if (lastDotIdx === -1) {
+    return undefined;
+  }
+  name = name.slice(0, lastDotIdx + 1) +
+      name.charAt(lastDotIdx + 1).toUpperCase() + name.slice(lastDotIdx + 2);
+  // add goog:npm. at the beginning
+  return `goog:npm.${name}`;
+}
+
+/* Note: this function modifies tsDoc. */
+function transformToGoogStyle(tsDoc: ts.Document, rootDir: string) {
+  const packageName = getPackageName(rootDir);
+  if (!tsDoc.isEsModule || !packageName) {
+    return tsDoc;
+  }
+
+  for (const child of tsDoc.traverse()) {
+    if (child.kind === 'import' || child.kind === 'export') {
+      if (!child.fromModuleSpecifier) {
+        continue;
+      }
+      let spec = child.fromModuleSpecifier;
+      if (spec.startsWith('.')) {
+        spec = path.join(
+            packageName,
+            path.relative(
+                    rootDir, path.join(rootDir, path.dirname(tsDoc.path), spec))
+                .replace(/^\.\//, ''));
+      }
+      const elementName = spec.split('/')[1];
+      let trailingComment: undefined|string = undefined;
+      if (elementName && !/\./.test(elementName)) {
+        trailingComment =
+            ` // from //third_party/javascript/polymer/v2/${elementName}`;
+      }
+      const googSpecifier = googModuleForNameBasedImportSpecifier(spec);
+      if (googSpecifier !== undefined) {
+        child.fromModuleSpecifier = googSpecifier;
+        child.trailingComment = trailingComment;
+      }
+    }
+  }
+
+  let googModuleName =
+      googModuleForNameBasedImportSpecifier(path.join(packageName, tsDoc.path));
+  if (googModuleName === undefined) {
+    googModuleName = tsDoc.path;
+  }
+  return new ts.Document({
+    path: tsDoc.path,
+    header: tsDoc.header,
+    referencePaths: tsDoc.referencePaths,
+    tsLintDisables: tsDoc.tsLintDisables,
+    isEsModule: false,
+    members: [new ts.Namespace(
+        {name: googModuleName, members: tsDoc.members, style: 'module'})]
+  });
 }
 
 /**
