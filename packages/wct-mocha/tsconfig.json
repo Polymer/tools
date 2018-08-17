@@ -20,7 +20,8 @@
       "es2017"
     ],
     "sourceMap": true,
-    "pretty": true
+    "pretty": true,
+    "declaration": true
   },
   "exclude": [
     "node_modules"

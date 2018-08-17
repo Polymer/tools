@@ -17,25 +17,25 @@ export interface Config {
    *
    * Paths are relative to `scriptPrefix`.
    */
-  environmentScripts: string[];
-  environmentImports: string[];
+  environmentScripts?: string[];
+  environmentImports?: string[];
   /** Absolute root for client scripts. Detected in `setup()` if not set. */
-  root: null|string;
+  root?: null|string;
   /** By default, we wait for any web component frameworks to load. */
-  waitForFrameworks: boolean;
+  waitForFrameworks?: boolean;
   /**
    * Alternate callback for waiting for tests.
    * `this` for the callback will be the window currently running tests.
    */
-  waitFor: null|Function;
+  waitFor?: null|Function;
   /** How many `.html` suites that can be concurrently loaded & run. */
-  numConcurrentSuites: number;
+  numConcurrentSuites?: number;
   /** Whether `console.error` should be treated as a test failure. */
-  trackConsoleError: boolean;
+  trackConsoleError?: boolean;
   /** Configuration passed to mocha.setup. */
-  mochaOptions: MochaSetupOptions;
+  mochaOptions?: MochaSetupOptions;
   /** Whether WCT should emit (extremely verbose) debugging log messages. */
-  verbose: boolean;
+  verbose?: boolean;
 }
 
 /**
@@ -81,13 +81,13 @@ export let _config: Config = {
 export function setup(options: Config) {
   const childRunner = ChildRunner.current();
   if (childRunner) {
-    _deepMerge(_config, childRunner.parentScope.WCT._config);
+    deepMerge(_config, childRunner.parentScope.WCT._config);
     // But do not force the mocha UI
     delete _config.mochaOptions.ui;
   }
 
   if (options && typeof options === 'object') {
-    _deepMerge(_config, options);
+    deepMerge(_config, options);
   }
 
   if (!_config.root) {
@@ -108,12 +108,11 @@ export function get<K extends keyof Config>(key: K): Config[K] {
   return _config[key];
 }
 
-// Internal
-function _deepMerge(target: Partial<Config>, source: Config) {
+export function deepMerge(target: Partial<Config>, source: Config) {
   Object.keys(source).forEach(function(key) {
     if (target[key] !== null && typeof target[key] === 'object' &&
         !Array.isArray(target[key])) {
-      _deepMerge(target[key], source[key]);
+      deepMerge(target[key], source[key]);
     } else {
       target[key] = source[key];
     }

@@ -44,7 +44,7 @@
   ],
   "scripts": {
     "lint": "gulp lint",
-    "build": "tsc && gulp build",
+    "build": "tsc && rollup -c && gulp build",
     "test": "tsc && gulp test",
     "prepublishOnly": "gulp prepublish",
     "test:unit": "mocha \"test/unit/**/*.js\"",
@@ -78,6 +78,7 @@
     "sinon-chai": "^2.10.0",
     "socket.io": "^2.0.3",
     "stacky": "^1.3.1",
+    "wct-mocha": "^1.0.0",
     "wd": "^1.2.0"
   },
   "optionalDependencies": {
@@ -116,11 +117,11 @@
     "gulp-typescript": "^3.1.2",
     "lazypipe": "^1.0.1",
     "rimraf": "^2.5.4",
-    "rollup": "^0.25.1",
     "run-sequence": "^1.0.1",
     "source-map-support": "^0.5.4",
     "watch": "^0.18.0",
     "wct-local": "^2.1.1",
+    "wct-mocha": "^1.0.0",
     "wct-sauce": "^2.0.2"
   },
   "engines": {

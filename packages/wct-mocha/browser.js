@@ -242,12 +242,12 @@
     function setup(options) {
         var childRunner = ChildRunner.current();
         if (childRunner) {
-            _deepMerge(_config, childRunner.parentScope.WCT._config);
+            deepMerge(_config, childRunner.parentScope.WCT._config);
             // But do not force the mocha UI
             delete _config.mochaOptions.ui;
         }
         if (options && typeof options === 'object') {
-            _deepMerge(_config, options);
+            deepMerge(_config, options);
         }
         if (!_config.root) {
             // Sibling dependencies.
@@ -264,12 +264,11 @@
     function get(key) {
         return _config[key];
     }
-    // Internal
-    function _deepMerge(target, source) {
+    function deepMerge(target, source) {
         Object.keys(source).forEach(function (key) {
             if (target[key] !== null && typeof target[key] === 'object' &&
                 !Array.isArray(target[key])) {
-                _deepMerge(target[key], source[key]);
+                deepMerge(target[key], source[key]);
             }
             else {
                 target[key] = source[key];
@@ -2169,70 +2168,76 @@
      * Google as part of the polymer project is also subject to an additional IP
      * rights grant found at http://polymer.github.io/PATENTS.txt
      */
-    // You can configure WCT before it has loaded by assigning your custom
-    // configuration to the global `WCT`.
-    setup(window.WCT);
-    // Maybe some day we'll expose WCT as a module to whatever module registry you
-    // are using (aka the UMD approach), or as an es6 module.
-    var WCT = window.WCT = {
-        // A generic place to hang data about the current suite. This object is
-        // reported
-        // back via the `sub-suite-start` and `sub-suite-end` events.
-        share: {},
-        // Until then, we get to rely on it to expose parent runners to their
-        // children.
-        _ChildRunner: ChildRunner,
-        _reporter: undefined,
-        _config: _config,
-        // Public API
-        /**
-         * Loads suites of tests, supporting both `.js` and `.html` files.
-         *
-         * @param {!Array.<string>} files The files to load.
-         */
-        loadSuites: loadSuites,
-    };
-    // Load Process
-    listenForErrors();
-    stubInterfaces();
-    loadSync();
-    // Give any scripts on the page a chance to declare tests and muck with things.
-    document.addEventListener('DOMContentLoaded', function () {
-        debug('DOMContentLoaded');
-        ensureDependenciesPresent();
-        // We need the socket built prior to building its reporter.
-        CLISocket.init(function (error, socket) {
-            if (error)
-                throw error;
-            // Are we a child of another run?
-            var current = ChildRunner.current();
-            var parent = current && current.parentScope.WCT._reporter;
-            debug('parentReporter:', parent);
-            var childSuites = activeChildSuites();
-            var reportersToUse = determineReporters(socket, parent);
-            // +1 for any local tests.
-            var reporter = new MultiReporter(childSuites.length + 1, reportersToUse, parent);
-            WCT._reporter = reporter; // For environment/compatibility.js
-            // We need the reporter so that we can report errors during load.
-            loadJsSuites(reporter, function (error) {
-                // Let our parent know that we're about to start the tests.
-                if (current)
-                    current.ready(error);
+    function initialize(initConfig) {
+        // You can configure WCT before it has loaded by assigning your custom
+        // configuration to the global `WCT`.
+        initConfig = deepMerge(initConfig || {}, window.WCT || {});
+        setup(initConfig);
+        // Maybe some day we'll expose WCT as a module to whatever module registry you
+        // are using (aka the UMD approach), or as an es6 module.
+        var WCT = window.WCT = {
+            // A generic place to hang data about the current suite. This object is
+            // reported
+            // back via the `sub-suite-start` and `sub-suite-end` events.
+            share: {},
+            // Until then, we get to rely on it to expose parent runners to their
+            // children.
+            _ChildRunner: ChildRunner,
+            _reporter: undefined,
+            _config: _config,
+            // Public API
+            /**
+             * Loads suites of tests, supporting both `.js` and `.html` files.
+             *
+             * @param {!Array.<string>} files The files to load.
+             */
+            loadSuites: loadSuites,
+        };
+        // Load Process
+        listenForErrors();
+        stubInterfaces();
+        loadSync();
+        // Give any scripts on the page a chance to declare tests and muck with
+        // things.
+        document.addEventListener('DOMContentLoaded', function () {
+            debug('DOMContentLoaded');
+            ensureDependenciesPresent();
+            // We need the socket built prior to building its reporter.
+            CLISocket.init(function (error, socket) {
                 if (error)
                     throw error;
-                // Emit any errors we've encountered up til now
-                globalErrors.forEach(function onError(error) {
-                    reporter.emitOutOfBandTest('Test Suite Initialization', error);
-                });
-                runSuites(reporter, childSuites, function (error) {
-                    // Make sure to let our parent know that we're done.
+                // Are we a child of another run?
+                var current = ChildRunner.current();
+                var parent = current && current.parentScope.WCT._reporter;
+                debug('parentReporter:', parent);
+                var childSuites = activeChildSuites();
+                var reportersToUse = determineReporters(socket, parent);
+                // +1 for any local tests.
+                var reporter = new MultiReporter(childSuites.length + 1, reportersToUse, parent);
+                WCT._reporter = reporter; // For environment/compatibility.js
+                // We need the reporter so that we can report errors during load.
+                loadJsSuites(reporter, function (error) {
+                    // Let our parent know that we're about to start the tests.
                     if (current)
-                        current.done();
+                        current.ready(error);
                     if (error)
                         throw error;
+                    // Emit any errors we've encountered up til now
+                    globalErrors.forEach(function onError(error) {
+                        reporter.emitOutOfBandTest('Test Suite Initialization', error);
+                    });
+                    runSuites(reporter, childSuites, function (error) {
+                        // Make sure to let our parent know that we're done.
+                        if (current)
+                            current.done();
+                        if (error)
+                            throw error;
+                    });
                 });
             });
         });
-    });
+    }
+
+    initialize();
 
 }());
