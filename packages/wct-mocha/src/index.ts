@@ -28,10 +28,9 @@ import * as util from './util';
 export function initialize(initConfig?: config.Config) {
   // You can configure WCT before it has loaded by assigning your custom
   // configuration to the global `WCT`.
-  initConfig = config.deepMerge(
-                   initConfig || {},
-                   window.WCT as any as config.Config || {} as config.Config) as
-      any as config.Config;
+  if (initConfig && window.WCT) {
+    config.deepMerge(initConfig, window.WCT as any as config.Config);
+  }
 
   config.setup(initConfig);
 
@@ -68,7 +67,6 @@ export function initialize(initConfig?: config.Config) {
   // things.
   document.addEventListener('DOMContentLoaded', function() {
     util.debug('DOMContentLoaded');
-
     environment.ensureDependenciesPresent();
 
     // We need the socket built prior to building its reporter.

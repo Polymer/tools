@@ -1804,8 +1804,7 @@
             var url = expandUrl(path, get('root'));
             debug('Loading environment script:', url);
             // Synchronous load.
-            document.write('<script src="' + encodeURI(url) +
-                '"></script>'); // jshint ignore:line
+            document.write("<script src=\"" + encodeURI(url) + "\"></script>");
         });
         debug('Environment scripts loaded');
         var imports = get('environmentImports');
@@ -1813,8 +1812,7 @@
             var url = expandUrl(path, get('root'));
             debug('Loading environment import:', url);
             // Synchronous load.
-            document.write('<link rel="import" href="' + encodeURI(url) +
-                '">'); // jshint ignore:line
+            document.write("<link rel=\"import\" href=\"" + encodeURI(url) + "\">");
         });
         debug('Environment imports loaded');
     }
@@ -2171,7 +2169,9 @@
     function initialize(initConfig) {
         // You can configure WCT before it has loaded by assigning your custom
         // configuration to the global `WCT`.
-        initConfig = deepMerge(initConfig || {}, window.WCT || {});
+        if (initConfig && window.WCT) {
+            deepMerge(initConfig, window.WCT);
+        }
         setup(initConfig);
         // Maybe some day we'll expose WCT as a module to whatever module registry you
         // are using (aka the UMD approach), or as an es6 module.

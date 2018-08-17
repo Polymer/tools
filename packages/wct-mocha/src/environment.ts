@@ -33,20 +33,15 @@ export function loadSync() {
     const url = util.expandUrl(path, config.get('root'));
     util.debug('Loading environment script:', url);
     // Synchronous load.
-    document.write(
-        '<script src="' + encodeURI(url) +
-        '"></script>');  // jshint ignore:line
+    document.write(`<script src="${encodeURI(url)}"></script>`);
   });
   util.debug('Environment scripts loaded');
-
   const imports = config.get('environmentImports');
   imports.forEach(function(path) {
     const url = util.expandUrl(path, config.get('root'));
     util.debug('Loading environment import:', url);
     // Synchronous load.
-    document.write(
-        '<link rel="import" href="' + encodeURI(url) +
-        '">');  // jshint ignore:line
+    document.write(`<link rel="import" href="${encodeURI(url)}">`);
   });
   util.debug('Environment imports loaded');
 }

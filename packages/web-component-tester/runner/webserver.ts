@@ -103,7 +103,6 @@ export function webserver(wct: Context): void {
       // package as installed, to ensure the desired version is loaded.  Here we
       // list the legacy packages and attempt to resolve them from the WCT
       // package.
-      console.log('OH HAI THER MAH PACKAGENAME IZ ' + options.wctPackageName);
       if (['web-component-tester', 'wct-browser-legacy'].includes(
               options.wctPackageName)) {
         const legacyNpmSupportPackages: NPMPackage[] = [
