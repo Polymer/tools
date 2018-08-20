@@ -87,6 +87,20 @@ suite('capabilities', function() {
         ['es2015', 'es2016', 'es2017', 'push', 'serviceworker', 'modules']);
   });
 
+  test('opera is detected', () => {
+    assertBrowserCapabilities(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36 OPR/52.0.2871.99',
+        [
+          'es2015',
+          'es2016',
+          'es2017',
+          'es2018',
+          'push',
+          'serviceworker',
+          'modules',
+        ]);
+  });
+
   test('parseVersion parses with fallback to -1', () => {
     assert.deepEqual(capabilities.parseVersion('37'), [37]);
     assert.deepEqual(capabilities.parseVersion('10.987.00.1'), [10, 987, 0, 1]);
