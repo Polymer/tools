@@ -51,7 +51,7 @@ const browserPredicates: {
   'Chrome': chrome,
   'Chromium': chrome,
   'Chrome Headless': chrome,
-  'OPR': {
+  'Opera': {
     es2015: since(36),
     es2016: since(45),
     es2017: since(45),

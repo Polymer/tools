@@ -3,6 +3,9 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [1.1.2] - 2018-08-20
+* Opera is now detected.
+
 ## [1.1.1] - 2018-06-28
 * Chrome for iOS is now handled correctly, by delegating to the corresponding
   Safari feature matrix.
