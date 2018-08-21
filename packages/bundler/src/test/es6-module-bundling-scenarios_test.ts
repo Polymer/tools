@@ -92,6 +92,7 @@ suite('Es6 Module Bundling', () => {
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, cUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        import { b } from './shared_bundle_1.js';
         export { b } from './shared_bundle_1.js';
         var a = {
           b: b
@@ -104,6 +105,7 @@ suite('Es6 Module Bundling', () => {
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        import { b } from './b.js';
         export { b } from './b.js';
         var a = {
           b: b

@@ -1,20 +1,32 @@
 {
-    "extends": "../../tsconfig-base.json",
-    "compilerOptions": {
-        "noUnusedLocals": false,
-        "noImplicitThis": false,
-        "strictNullChecks": false,
-        "suppressImplicitAnyIndexErrors": true,
-    },
-    "exclude": [
-        "node_modules"
-    ],
-    "include": [
-        "browser/*.ts",
-        "runner/*.ts",
-        "test/**/*.ts",
-        "custom_typings/*.d.ts",
-        "node_modules/@types/mocha/index.d.ts",
-        "node_modules/wct-mocha/**/*.d.ts"
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "strict": false,
+    "isolatedModules": false,
+    "noImplicitAny": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "noImplicitThis": false,
+    "strictNullChecks": false,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "lib": [
+      "dom",
+      "es2017"
     ]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "browser/*.ts",
+    "runner/*.ts",
+    "test/**/*.ts",
+    "custom_typings/*.d.ts",
+    "node_modules/@types/mocha/index.d.ts",
+    "node_modules/wct-mocha/lib/*.d.ts"
+  ]
 }

@@ -1,6 +1,6 @@
 import {initialize} from 'wct-mocha';
 
-window['__useNpm'] = false;
+window.__useNpm = false;
 
 const environmentScripts = [
   'stacky/browser.js',

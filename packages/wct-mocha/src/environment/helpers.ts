@@ -25,7 +25,7 @@ const nativeRequestAnimationFrame = window.requestAnimationFrame;
  * @param {function()} callback
  * @param {function()} stepFn
  */
-function safeStep(callback: (error?: any) => void, stepFn: () => void) {
+export function safeStep(callback: (error?: any) => void, stepFn: () => void) {
   let err;
   try {
     stepFn();
@@ -47,7 +47,7 @@ function safeStep(callback: (error?: any) => void, stepFn: () => void) {
  * @param {function(?function())} testFn The test function. If an argument is
  *     accepted, the test will be treated as async, just like Mocha tests.
  */
-function testImmediate(name: string, testFn: Function) {
+export function testImmediate(name: string, testFn: Function) {
   if (testFn.length > 0) {
     return testImmediateAsync(name, testFn);
   }
@@ -69,7 +69,7 @@ function testImmediate(name: string, testFn: Function) {
  * @param {string} name
  * @param {function(?function())} testFn
  */
-function testImmediateAsync(name: string, testFn: Function) {
+export function testImmediateAsync(name: string, testFn: Function) {
   let testComplete = false;
   let err: any;
 
@@ -100,7 +100,7 @@ function testImmediateAsync(name: string, testFn: Function) {
  *
  * @param {function()} callback
  */
-function flush(callback: () => void) {
+export function flush(callback: () => void) {
   // Ideally, this function would be a call to Polymer.dom.flush, but that
   // doesn't support a callback yet
   // (https://github.com/Polymer/polymer-dev/issues/851),
@@ -147,7 +147,7 @@ function flush(callback: () => void) {
  * Calls `flush`, `requestAnimationFrame`, `flush`, and `callback` sequentially
  * @param {function()} callback
  */
-function animationFrameFlush(callback: () => void) {
+export function animationFrameFlush(callback: () => void) {
   flush(function() {
     nativeRequestAnimationFrame(function() {
       flush(callback);
@@ -159,7 +159,7 @@ function animationFrameFlush(callback: () => void) {
  * DEPRECATED: Use `flush`.
  * @param {function} callback
  */
-function asyncPlatformFlush(callback: () => void) {
+export function asyncPlatformFlush(callback: () => void) {
   console.warn(
       'asyncPlatformFlush is deprecated in favor of the more terse flush()');
   return window.flush(callback);
@@ -172,7 +172,7 @@ export interface MutationEl {
 /**
  *
  */
-function waitFor(
+export function waitFor(
     fn: () => void,
     next: () => void,
     intervalOrMutationEl: number|MutationEl,

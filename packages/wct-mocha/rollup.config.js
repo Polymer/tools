@@ -7,7 +7,7 @@ export default {
     file: 'browser.js',
     format: 'iife'
   },
-  name: 'WctBrowserLegacy',
+  name: 'WctMocha',
   plugins: [
     resolve(),
     commonjs()

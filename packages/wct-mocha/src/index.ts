@@ -25,6 +25,12 @@ import MultiReporter from './reporters/multi';
 import * as suites from './suites';
 import * as util from './util';
 
+declare global {
+  interface Window {
+    __useNpm: boolean;
+  }
+}
+
 export function initialize(initConfig?: config.Config) {
   // You can configure WCT before it has loaded by assigning your custom
   // configuration to the global `WCT`.

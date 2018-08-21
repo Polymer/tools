@@ -1,4 +1,4 @@
-var WctBrowserLegacy = (function () {
+var WctBrowser = (function () {
 	'use strict';
 
 	function unwrapExports (x) {
@@ -2529,24 +2529,24 @@ var WctBrowserLegacy = (function () {
 	var browser = createCommonjsModule(function (module, exports) {
 	Object.defineProperty(exports, "__esModule", { value: true });
 
-	window['__useNpm'] = true;
+	window.__useNpm = false;
 	const environmentScripts = [
 	    'stacky/browser.js',
 	    'async/lib/async.js',
-	    'lodash/index.js',
+	    'lodash/lodash.js',
 	    'mocha/mocha.js',
 	    'chai/chai.js',
-	    '@polymer/sinonjs/sinon.js',
+	    'sinonjs/sinon.js',
 	    'sinon-chai/lib/sinon-chai.js',
-	    'accessibility-developer-tools/dist/js/axs_testing.js',
-	    '@polymer/test-fixture/test-fixture.js'
+	    'accessibility-developer-tools/dist/js/axs_testing.js'
 	];
-	lib.initialize({ environmentScripts });
+	const environmentImports = ['test-fixture/test-fixture.html'];
+	lib.initialize({ environmentScripts, environmentImports });
 
 	});
 
-	var browser$1 = unwrapExports(browser);
+	var index$1 = unwrapExports(browser);
 
-	return browser$1;
+	return index$1;
 
 }());
