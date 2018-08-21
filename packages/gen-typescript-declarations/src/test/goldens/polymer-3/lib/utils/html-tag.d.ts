@@ -58,7 +58,7 @@ export {html};
  *
  * @returns Constructed HTMLTemplateElement
  */
-declare function html(strings: TemplateStringsArray, ...values: any[]): HTMLTemplateElement;
+declare function html(strings: TemplateStringsArray|string[], ...values: any[]): HTMLTemplateElement;
 
 export {htmlLiteral};
 
@@ -85,4 +85,4 @@ export {htmlLiteral};
  *
  * @returns Constructed literal string
  */
-declare function htmlLiteral(strings: TemplateStringsArray, ...values: any[]): LiteralString;
+declare function htmlLiteral(strings: TemplateStringsArray|string[], ...values: any[]): LiteralString;

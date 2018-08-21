@@ -194,7 +194,7 @@ const renameMap = new Map<string, string>([
   // will concede that technicality.)
   ['Object', 'object'],
   // The tagged template literal function argument.
-  ['ITemplateArray', 'TemplateStringsArray'],
+  ['ITemplateArray', 'TemplateStringsArray|string[]'],
 ]);
 
 /*
