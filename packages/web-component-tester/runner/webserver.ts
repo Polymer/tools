@@ -66,7 +66,7 @@ export function webserver(wct: Context): void {
     // The generated index needs the correct "browser.js" script. When using
     // npm, the wct-browser-legacy package may be used, so we test for that
     // package and will use its "browser.js" if present.
-    let browserScript = '../web-component-tester/browser.js';
+    let browserScript = 'web-component-tester/browser.js';
 
     const scripts: string[] = [], extraScripts: string[] = [];
     const modules: string[] = [], extraModules: string[] = [];

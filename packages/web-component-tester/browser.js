@@ -237,26 +237,7 @@ var WctBrowser = (function () {
 	 */
 	exports._config = {
 	    environmentScripts: [],
-	    /*
-	        [
-	          'stacky/browser.js', 'async/lib/async.js', 'lodash/index.js',
-	          'mocha/mocha.js', 'chai/chai.js', '@polymer/sinonjs/sinon.js',
-	          'sinon-chai/lib/sinon-chai.js',
-	          'accessibility-developer-tools/dist/js/axs_testing.js',
-	          '@polymer/test-fixture/test-fixture.js'
-	        ] :
-	        [
-	          'stacky/browser.js', 'async/lib/async.js', 'lodash/lodash.js',
-	          'mocha/mocha.js', 'chai/chai.js', 'sinonjs/sinon.js',
-	          'sinon-chai/lib/sinon-chai.js',
-	          'accessibility-developer-tools/dist/js/axs_testing.js'
-	        ],
-	    */
 	    environmentImports: [],
-	    /*
-	    environmentImports: !!window.__wctUseNpm ? [] :
-	                                               ['test-fixture/test-fixture.html'],
-	    */
 	    root: null,
 	    waitForFrameworks: true,
 	    waitFor: null,
@@ -2521,7 +2502,6 @@ var WctBrowser = (function () {
 
 	window.__useNpm = false;
 	const environmentScripts = [
-	    'stacky/browser.js',
 	    'async/lib/async.js',
 	    'lodash/lodash.js',
 	    'mocha/mocha.js',

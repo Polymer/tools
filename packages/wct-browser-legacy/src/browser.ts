@@ -3,7 +3,6 @@ import {initialize} from 'wct-mocha';
 window['__useNpm'] = true;
 
 const environmentScripts = [
-  'stacky/browser.js',
   'async/lib/async.js',
   'lodash/index.js',
   'mocha/mocha.js',

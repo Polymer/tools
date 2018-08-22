@@ -189,14 +189,17 @@ export function resolveWctNpmEntrypointNames(
   const rootNodeModules = path.join(config.root, 'node_modules');
 
   for (const npmPackage of npmPackages) {
-    const absoluteFilepath = resolve.sync(
-        path.join(npmPackage.name, npmPackage.jsEntrypoint),
-        {basedir: wctPackageRoot});
-    const relativeFilepath = path.relative(rootNodeModules, absoluteFilepath);
-    const relativeUrl = (process.platform === 'win32') ?
-        relativeFilepath.replace(/\\/g, '/') :
-        relativeFilepath;
-    resolvedEntrypoints.push(relativeUrl);
+    try {
+      const absoluteFilepath = resolve.sync(
+          path.join(npmPackage.name, npmPackage.jsEntrypoint),
+          {basedir: wctPackageRoot});
+      const relativeFilepath = path.relative(rootNodeModules, absoluteFilepath);
+      const relativeUrl = (process.platform === 'win32') ?
+          relativeFilepath.replace(/\\/g, '/') :
+          relativeFilepath;
+      resolvedEntrypoints.push(relativeUrl);
+    } catch {
+    }
   }
 
   return resolvedEntrypoints;
