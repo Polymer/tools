@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig-base.json",
   "compilerOptions": {
+    "target": "es5",
     "strict": false,
     "isolatedModules": false,
     "noImplicitAny": true,

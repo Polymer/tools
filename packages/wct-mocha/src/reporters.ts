@@ -64,6 +64,9 @@ function _injectPrototype(klass: any, prototype: any) {
   Object.keys(klass.prototype).forEach(function(key) {
     newPrototype[key] = klass.prototype[key];
   });
-
+  // Since prototype is readonly on actual classes, we have to use
+  // defineProperty instead of `klass.prototype = newPrototype`;
+  // Object.defineProperty(
+  //    klass, 'prototype', {value: newPrototype, configurable: true});
   klass.prototype = newPrototype;
 }

@@ -63,7 +63,7 @@
     "inquirer": "^1.0.2",
     "merge-stream": "^1.0.1",
     "mz": "^2.6.0",
-    "plylog": "^0.5.0",
+    "plylog": "^1.0.0",
     "polymer-analyzer": "^3.0.1",
     "polymer-build": "^3.0.3",
     "polymer-bundler": "^4.0.1",

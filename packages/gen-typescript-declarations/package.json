@@ -17,7 +17,7 @@
     "node": ">=8"
   },
   "dependencies": {
-    "@babel/types": "^7.0.0-beta.42",
+    "@babel/types": "^7.0.0-rc.2",
     "@types/command-line-args": "^5.0.0",
     "@types/command-line-usage": "^5.0.1",
     "@types/doctrine": "0.0.3",

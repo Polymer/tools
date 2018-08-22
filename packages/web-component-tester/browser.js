@@ -22,9 +22,9 @@ var WctBrowser = (function () {
 	 */
 	Object.defineProperty(exports, "__esModule", { value: true });
 	// Make sure that we use native timers, in case they're being stubbed out.
-	const nativeSetInterval = window.setInterval;
-	const nativeSetTimeout = window.setTimeout;
-	const nativeRequestAnimationFrame = window.requestAnimationFrame;
+	var nativeSetInterval = window.setInterval;
+	var nativeSetTimeout = window.setTimeout;
+	var nativeRequestAnimationFrame = window.requestAnimationFrame;
 	/**
 	 * Runs `stepFn`, catching any error and passing it to `callback` (Node-style).
 	 * Otherwise, calls `callback` with no arguments on success.
@@ -33,7 +33,7 @@ var WctBrowser = (function () {
 	 * @param {function()} stepFn
 	 */
 	function safeStep(callback, stepFn) {
-	    let err;
+	    var err;
 	    try {
 	        stepFn();
 	    }
@@ -59,7 +59,7 @@ var WctBrowser = (function () {
 	    if (testFn.length > 0) {
 	        return testImmediateAsync(name, testFn);
 	    }
-	    let err;
+	    var err;
 	    try {
 	        testFn();
 	    }
@@ -78,10 +78,10 @@ var WctBrowser = (function () {
 	 * @param {function(?function())} testFn
 	 */
 	function testImmediateAsync(name, testFn) {
-	    let testComplete = false;
-	    let err;
+	    var testComplete = false;
+	    var err;
 	    test(name, function (done) {
-	        const intervalId = nativeSetInterval(function () {
+	        var intervalId = nativeSetInterval(function () {
 	            if (!testComplete)
 	                return;
 	            clearInterval(intervalId);
@@ -114,21 +114,21 @@ var WctBrowser = (function () {
 	    // ...and there's cross-browser flakiness to deal with.
 	    // Make sure that we're invoking the callback with no arguments so that the
 	    // caller can pass Mocha callbacks, etc.
-	    let done = function done() {
+	    var done = function done() {
 	        callback();
 	    };
 	    // Because endOfMicrotask is flaky for IE, we perform microtask checkpoints
 	    // ourselves (https://github.com/Polymer/polymer-dev/issues/114):
-	    const isIE = navigator.appName === 'Microsoft Internet Explorer';
+	    var isIE = navigator.appName === 'Microsoft Internet Explorer';
 	    if (isIE && window.Platform && window.Platform.performMicrotaskCheckpoint) {
-	        const reallyDone = done;
+	        var reallyDone_1 = done;
 	        done = function doneIE() {
 	            Platform.performMicrotaskCheckpoint();
-	            nativeSetTimeout(reallyDone, 0);
+	            nativeSetTimeout(reallyDone_1, 0);
 	        };
 	    }
 	    // Everyone else gets a regular flush.
-	    let scope;
+	    var scope;
 	    if (window.Polymer && window.Polymer.dom && window.Polymer.dom.flush) {
 	        scope = window.Polymer.dom;
 	    }
@@ -272,7 +272,7 @@ var WctBrowser = (function () {
 	 *     reference.
 	 */
 	function setup(options) {
-	    const childRunner = childrunner.default.current();
+	    var childRunner = childrunner.default.current();
 	    if (childRunner) {
 	        deepMerge(exports._config, childRunner.parentScope.WCT._config);
 	        // But do not force the mocha UI
@@ -283,7 +283,7 @@ var WctBrowser = (function () {
 	    }
 	    if (!exports._config.root) {
 	        // Sibling dependencies.
-	        const root = util.scriptPrefix('browser.js');
+	        var root = util.scriptPrefix('browser.js');
 	        exports._config.root = util.basePath(root.substr(0, root.length - 1));
 	        if (!exports._config.root) {
 	            throw new Error('Unable to detect root URL for WCT sources. Please set WCT.root before including browser.js');
@@ -338,7 +338,7 @@ var WctBrowser = (function () {
 	 */
 	function whenFrameworksReady(callback) {
 	    debug('whenFrameworksReady');
-	    const done = function () {
+	    var done = function () {
 	        debug('whenFrameworksReady done');
 	        callback();
 	    };
@@ -373,7 +373,7 @@ var WctBrowser = (function () {
 	 * @param {function} done
 	 */
 	function loadScript(path, done) {
-	    const script = document.createElement('script');
+	    var script = document.createElement('script');
 	    script.src = path;
 	    if (done) {
 	        script.onload = done.bind(null, null);
@@ -387,7 +387,7 @@ var WctBrowser = (function () {
 	 * @param {function} done
 	 */
 	function loadStyle(path, done) {
-	    const link = document.createElement('link');
+	    var link = document.createElement('link');
 	    link.rel = 'stylesheet';
 	    link.href = path;
 	    if (done) {
@@ -401,11 +401,15 @@ var WctBrowser = (function () {
 	 * @param {...*} var_args Logs values to the console when the `debug`
 	 *     configuration option is true.
 	 */
-	function debug(...var_args) {
+	function debug() {
+	    var var_args = [];
+	    for (var _i = 0; _i < arguments.length; _i++) {
+	        var_args[_i] = arguments[_i];
+	    }
 	    if (!config.get('verbose')) {
 	        return;
 	    }
-	    const args = [window.location.pathname, ...var_args];
+	    var args = [window.location.pathname].concat(var_args);
 	    (console.debug || console.log).apply(console, args);
 	}
 	exports.debug = debug;
@@ -415,7 +419,7 @@ var WctBrowser = (function () {
 	 * @return {{base: string, params: string}}
 	 */
 	function parseUrl(url) {
-	    const parts = url.match(/^(.*?)(?:\?(.*))?$/);
+	    var parts = url.match(/^(.*?)(?:\?(.*))?$/);
 	    return {
 	        base: parts[1],
 	        params: getParams(parts[2] || ''),
@@ -455,15 +459,15 @@ var WctBrowser = (function () {
 	    }
 	    if (query === '')
 	        return {};
-	    const result = {};
+	    var result = {};
 	    query.split('&').forEach(function (part) {
-	        const pair = part.split('=');
+	        var pair = part.split('=');
 	        if (pair.length !== 2) {
 	            console.warn('Invalid URL query part:', part);
 	            return;
 	        }
-	        const key = decodeURIComponent(pair[0]);
-	        const value = decodeURIComponent(pair[1]);
+	        var key = decodeURIComponent(pair[0]);
+	        var value = decodeURIComponent(pair[1]);
 	        if (!result[key]) {
 	            result[key] = [];
 	        }
@@ -492,7 +496,7 @@ var WctBrowser = (function () {
 	 * @return {?string} The first value for `param`, if found.
 	 */
 	function getParam(param) {
-	    const params = getParams();
+	    var params = getParams();
 	    return params[param] ? params[param][0] : null;
 	}
 	exports.getParam = getParam;
@@ -501,7 +505,7 @@ var WctBrowser = (function () {
 	 * @return {string} `params` encoded as a URI query.
 	 */
 	function paramsToQuery(params) {
-	    const pairs = [];
+	    var pairs = [];
 	    Object.keys(params).forEach(function (key) {
 	        params[key].forEach(function (value) {
 	            pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
@@ -518,7 +522,7 @@ var WctBrowser = (function () {
 	}
 	exports.basePath = basePath;
 	function relativeLocation(location, basePath) {
-	    let path = getPathName(location);
+	    var path = getPathName(location);
 	    if (path.indexOf(basePath) === 0) {
 	        path = path.substring(basePath.length);
 	    }
@@ -526,7 +530,7 @@ var WctBrowser = (function () {
 	}
 	exports.relativeLocation = relativeLocation;
 	function cleanLocation(location) {
-	    let path = getPathName(location);
+	    var path = getPathName(location);
 	    if (path.slice(-11) === '/index.html') {
 	        path = path.slice(0, path.length - 10);
 	    }
@@ -534,7 +538,7 @@ var WctBrowser = (function () {
 	}
 	exports.cleanLocation = cleanLocation;
 	function parallel(runners, maybeLimit, done) {
-	    let limit;
+	    var limit;
 	    if (typeof maybeLimit !== 'number') {
 	        done = maybeLimit;
 	        limit = 0;
@@ -545,10 +549,10 @@ var WctBrowser = (function () {
 	    if (!runners.length) {
 	        return done();
 	    }
-	    let called = false;
-	    const total = runners.length;
-	    let numActive = 0;
-	    let numDone = 0;
+	    var called = false;
+	    var total = runners.length;
+	    var numActive = 0;
+	    var numDone = 0;
 	    function runnerDone(error) {
 	        if (called) {
 	            return;
@@ -583,11 +587,11 @@ var WctBrowser = (function () {
 	 * @return {string?}
 	 */
 	function scriptPrefix(filename) {
-	    const scripts = document.querySelectorAll('script[src*="' + filename + '"]');
+	    var scripts = document.querySelectorAll('script[src*="' + filename + '"]');
 	    if (scripts.length !== 1) {
 	        return null;
 	    }
-	    const script = scripts[0].src;
+	    var script = scripts[0].src;
 	    return script.substring(0, script.indexOf(filename));
 	}
 	exports.scriptPrefix = scriptPrefix;
@@ -629,14 +633,14 @@ var WctBrowser = (function () {
 	 * A Mocha suite (or suites) run within a child iframe, but reported as if they
 	 * are part of the current context.
 	 */
-	class ChildRunner {
-	    constructor(url, parentScope) {
+	var ChildRunner = /** @class */ (function () {
+	    function ChildRunner(url, parentScope) {
 	        this.eventListenersToRemoveOnClean = [];
 	        this.parentScope = parentScope;
-	        const urlBits = util.parseUrl(url);
+	        var urlBits = util.parseUrl(url);
 	        util.mergeParams(urlBits.params, util.getParams(parentScope.location.search));
 	        delete urlBits.params.cli_browser_id;
-	        this.url = `${urlBits.base}${util.paramsToQuery(urlBits.params)}`;
+	        this.url = "" + urlBits.base + util.paramsToQuery(urlBits.params);
 	        this.state = 'initializing';
 	    }
 	    /**
@@ -646,32 +650,35 @@ var WctBrowser = (function () {
 	     * @param listener object which receives a notification
 	     * @param target event target
 	     */
-	    addEventListener(type, listener, target) {
+	    ChildRunner.prototype.addEventListener = function (type, listener, target) {
 	        target.addEventListener(type, listener);
-	        const descriptor = { target, type, listener };
+	        var descriptor = { target: target, type: type, listener: listener };
 	        this.eventListenersToRemoveOnClean.push(descriptor);
-	    }
+	    };
 	    /**
 	     * Removes all event listeners added by a method addEventListener defined
 	     * on an instance of ChildRunner.
 	     */
-	    removeAllEventListeners() {
-	        this.eventListenersToRemoveOnClean.forEach(({ target, type, listener }) => target.removeEventListener(type, listener));
-	    }
+	    ChildRunner.prototype.removeAllEventListeners = function () {
+	        this.eventListenersToRemoveOnClean.forEach(function (_a) {
+	            var target = _a.target, type = _a.type, listener = _a.listener;
+	            return target.removeEventListener(type, listener);
+	        });
+	    };
 	    /**
 	     * @return {ChildRunner} The `ChildRunner` that was registered for this
 	     * window.
 	     */
-	    static current() {
+	    ChildRunner.current = function () {
 	        return ChildRunner.get(window);
-	    }
+	    };
 	    /**
 	     * @param {!Window} target A window to find the ChildRunner of.
 	     * @param {boolean} traversal Whether this is a traversal from a child window.
 	     * @return {ChildRunner} The `ChildRunner` that was registered for `target`.
 	     */
-	    static get(target, traversal) {
-	        const childRunner = ChildRunner.byUrl[target.location.href];
+	    ChildRunner.get = function (target, traversal) {
+	        var childRunner = ChildRunner.byUrl[target.location.href];
 	        if (childRunner) {
 	            return childRunner;
 	        }
@@ -685,40 +692,41 @@ var WctBrowser = (function () {
 	        }
 	        // Otherwise, traverse.
 	        return window.parent.WCT._ChildRunner.get(target, true);
-	    }
+	    };
 	    /**
 	     * Loads and runs the subsuite.
 	     *
 	     * @param {function} done Node-style callback.
 	     */
-	    run(done) {
+	    ChildRunner.prototype.run = function (done) {
+	        var _this = this;
 	        util.debug('ChildRunner#run', this.url);
 	        this.state = 'loading';
 	        this.onRunComplete = done;
 	        this.container = document.getElementById('subsuites');
 	        if (!this.container) {
-	            const container = (this.container = document.createElement('div'));
-	            container.id = 'subsuites';
-	            document.body.appendChild(container);
+	            var container_1 = (this.container = document.createElement('div'));
+	            container_1.id = 'subsuites';
+	            document.body.appendChild(container_1);
 	        }
-	        const { container } = this;
-	        const iframe = (this.iframe = document.createElement('iframe'));
+	        var container = this.container;
+	        var iframe = (this.iframe = document.createElement('iframe'));
 	        iframe.classList.add('subsuite');
 	        iframe.src = this.url;
 	        // Let the iframe expand the URL for us.
-	        const url = (this.url = iframe.src);
+	        var url = (this.url = iframe.src);
 	        container.appendChild(iframe);
 	        ChildRunner.byUrl[url] = this;
-	        this.timeoutId = window.setTimeout(() => this.loaded(new Error('Timed out loading ' + url)), ChildRunner.loadTimeout);
-	        this.addEventListener('error', () => this.loaded(new Error('Failed to load document ' + this.url)), iframe);
-	        this.addEventListener('DOMContentLoaded', () => this.loaded(), iframe.contentWindow);
-	    }
+	        this.timeoutId = window.setTimeout(function () { return _this.loaded(new Error('Timed out loading ' + url)); }, ChildRunner.loadTimeout);
+	        this.addEventListener('error', function () { return _this.loaded(new Error('Failed to load document ' + _this.url)); }, iframe);
+	        this.addEventListener('DOMContentLoaded', function () { return _this.loaded(); }, iframe.contentWindow);
+	    };
 	    /**
 	     * Called when the sub suite's iframe has loaded (or errored during load).
 	     *
 	     * @param {*} error The error that occured, if any.
 	     */
-	    loaded(error) {
+	    ChildRunner.prototype.loaded = function (error) {
 	        util.debug('ChildRunner#loaded', this.url, error);
 	        if (this.iframe.contentWindow == null && error) {
 	            this.signalRunComplete(error);
@@ -733,14 +741,14 @@ var WctBrowser = (function () {
 	            this.signalRunComplete(error);
 	            this.done();
 	        }
-	    }
+	    };
 	    /**
 	     * Called in mocha/run.js when all dependencies have loaded, and the child is
 	     * ready to start running tests
 	     *
 	     * @param {*} error The error that occured, if any.
 	     */
-	    ready(error) {
+	    ChildRunner.prototype.ready = function (error) {
 	        util.debug('ChildRunner#ready', this.url, error);
 	        if (this.timeoutId) {
 	            clearTimeout(this.timeoutId);
@@ -749,11 +757,12 @@ var WctBrowser = (function () {
 	            this.signalRunComplete(error);
 	            this.done();
 	        }
-	    }
+	    };
 	    /**
 	     * Called when the sub suite's tests are complete, so that it can clean up.
 	     */
-	    done() {
+	    ChildRunner.prototype.done = function () {
+	        var _this = this;
 	        util.debug('ChildRunner#done', this.url, arguments);
 	        // Make sure to clear that timeout.
 	        this.ready();
@@ -761,27 +770,28 @@ var WctBrowser = (function () {
 	        if (this.iframe) {
 	            // Be safe and avoid potential browser crashes when logic attempts to
 	            // interact with the removed iframe.
-	            setTimeout(() => {
-	                this.removeAllEventListeners();
-	                this.container.removeChild(this.iframe);
-	                this.iframe = undefined;
-	                this.share = null;
+	            setTimeout(function () {
+	                _this.removeAllEventListeners();
+	                _this.container.removeChild(_this.iframe);
+	                _this.iframe = undefined;
+	                _this.share = null;
 	            }, 0);
 	        }
-	    }
-	    signalRunComplete(error) {
+	    };
+	    ChildRunner.prototype.signalRunComplete = function (error) {
 	        if (this.onRunComplete) {
 	            this.state = 'complete';
 	            this.onRunComplete(error);
 	            this.onRunComplete = null;
 	        }
-	    }
-	}
-	// ChildRunners get a pretty generous load timeout by default.
-	ChildRunner.loadTimeout = 60000;
-	// We can't maintain properties on iframe elements in Firefox/Safari/???, so
-	// we track childRunners by URL.
-	ChildRunner.byUrl = {};
+	    };
+	    // ChildRunners get a pretty generous load timeout by default.
+	    ChildRunner.loadTimeout = 60000;
+	    // We can't maintain properties on iframe elements in Firefox/Safari/???, so
+	    // we track childRunners by URL.
+	    ChildRunner.byUrl = {};
+	    return ChildRunner;
+	}());
 	exports.default = ChildRunner;
 
 	});
@@ -802,16 +812,16 @@ var WctBrowser = (function () {
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 
-	const SOCKETIO_ENDPOINT = window.location.protocol + '//' + window.location.host;
-	const SOCKETIO_LIBRARY = SOCKETIO_ENDPOINT + '/socket.io/socket.io.js';
+	var SOCKETIO_ENDPOINT = window.location.protocol + '//' + window.location.host;
+	var SOCKETIO_LIBRARY = SOCKETIO_ENDPOINT + '/socket.io/socket.io.js';
 	/**
 	 * A socket for communication between the CLI and browser runners.
 	 *
 	 * @param {string} browserId An ID generated by the CLI runner.
 	 * @param {!io.Socket} socket The socket.io `Socket` to communicate over.
 	 */
-	class CLISocket {
-	    constructor(browserId, socket) {
+	var CLISocket = /** @class */ (function () {
+	    function CLISocket(browserId, socket) {
 	        this.browserId = browserId;
 	        this.socket = socket;
 	    }
@@ -819,7 +829,8 @@ var WctBrowser = (function () {
 	     * @param {!Mocha.Runner} runner The Mocha `Runner` to observe, reporting
 	     *     interesting events back to the CLI runner.
 	     */
-	    observe(runner) {
+	    CLISocket.prototype.observe = function (runner) {
+	        var _this = this;
 	        this.emitEvent('browser-start', {
 	            url: window.location.toString(),
 	        });
@@ -829,52 +840,52 @@ var WctBrowser = (function () {
 	        //
 	        // For all possible mocha events, see:
 	        // https://github.com/visionmedia/mocha/blob/master/lib/runner.js#L36
-	        runner.on('test', (test) => {
-	            this.emitEvent('test-start', { test: getTitles(test) });
+	        runner.on('test', function (test) {
+	            _this.emitEvent('test-start', { test: getTitles(test) });
 	        });
-	        runner.on('test end', (test) => {
-	            this.emitEvent('test-end', {
+	        runner.on('test end', function (test) {
+	            _this.emitEvent('test-end', {
 	                state: getState(test),
 	                test: getTitles(test),
 	                duration: test.duration,
 	                error: test.err,
 	            });
 	        });
-	        runner.on('fail', (test, err) => {
+	        runner.on('fail', function (test, err) {
 	            // fail the test run if we catch errors outside of a test function
 	            if (test.type !== 'test') {
-	                this.emitEvent('browser-fail', 'Error thrown outside of test function: ' + err.stack);
+	                _this.emitEvent('browser-fail', 'Error thrown outside of test function: ' + err.stack);
 	            }
 	        });
-	        runner.on('childRunner start', (childRunner) => {
-	            this.emitEvent('sub-suite-start', childRunner.share);
+	        runner.on('childRunner start', function (childRunner) {
+	            _this.emitEvent('sub-suite-start', childRunner.share);
 	        });
-	        runner.on('childRunner end', (childRunner) => {
-	            this.emitEvent('sub-suite-end', childRunner.share);
+	        runner.on('childRunner end', function (childRunner) {
+	            _this.emitEvent('sub-suite-end', childRunner.share);
 	        });
-	        runner.on('end', () => {
-	            this.emitEvent('browser-end');
+	        runner.on('end', function () {
+	            _this.emitEvent('browser-end');
 	        });
-	    }
+	    };
 	    /**
 	     * @param {string} event The name of the event to fire.
 	     * @param {*} data Additional data to pass with the event.
 	     */
-	    emitEvent(event, data) {
+	    CLISocket.prototype.emitEvent = function (event, data) {
 	        this.socket.emit('client-event', {
 	            browserId: this.browserId,
 	            event: event,
 	            data: data,
 	        });
-	    }
+	    };
 	    /**
 	     * Builds a `CLISocket` if we are within a CLI-run environment; short-circuits
 	     * otherwise.
 	     *
 	     * @param {function(*, CLISocket)} done Node-style callback.
 	     */
-	    static init(done) {
-	        const browserId = util.getParam('cli_browser_id');
+	    CLISocket.init = function (done) {
+	        var browserId = util.getParam('cli_browser_id');
 	        if (!browserId) {
 	            return done();
 	        }
@@ -886,24 +897,25 @@ var WctBrowser = (function () {
 	            if (error) {
 	                return done(error);
 	            }
-	            const server = io(SOCKETIO_ENDPOINT);
+	            var server = io(SOCKETIO_ENDPOINT);
 	            // WTF(usergenic): The typings are super wrong or something.  The object
 	            // returned by io() doesn't seem to map to the SocketIO.Server type at
 	            // all.
-	            const sockets = server; // server.sockets;
-	            const errorListener = function (error) {
+	            var sockets = server; // server.sockets;
+	            var errorListener = function (error) {
 	                sockets.off('error', errorListener);
 	                done(error);
 	            };
 	            sockets.on('error', errorListener);
-	            const connectListener = function () {
+	            var connectListener = function () {
 	                sockets.off('connect', connectListener);
 	                done(null, new CLISocket(browserId, sockets));
 	            };
 	            sockets.on('connect', connectListener);
 	        });
-	    }
-	}
+	    };
+	    return CLISocket;
+	}());
 	exports.default = CLISocket;
 	// Misc Utility
 	/**
@@ -911,7 +923,7 @@ var WctBrowser = (function () {
 	 * @return {!Array.<string>} The titles of the runnable and its parents.
 	 */
 	function getTitles(runnable) {
-	    const titles = [];
+	    var titles = [];
 	    while (runnable && !runnable.root && runnable.title) {
 	        titles.unshift(runnable.title);
 	        runnable = runnable.parent;
@@ -956,9 +968,9 @@ var WctBrowser = (function () {
 
 	// We capture console events when running tests; so make sure we have a
 	// reference to the original one.
-	const console = window.console;
-	const FONT = ';font: normal 13px "Roboto", "Helvetica Neue", "Helvetica", sans-serif;';
-	const STYLES = {
+	var console = window.console;
+	var FONT = ';font: normal 13px "Roboto", "Helvetica Neue", "Helvetica", sans-serif;';
+	var STYLES = {
 	    plain: FONT,
 	    suite: 'color: #5c6bc0' + FONT,
 	    test: FONT,
@@ -969,11 +981,11 @@ var WctBrowser = (function () {
 	    results: FONT + 'font-size: 16px',
 	};
 	// I don't think we can feature detect this one...
-	const userAgent = navigator.userAgent.toLowerCase();
-	const CAN_STYLE_LOG = userAgent.match('firefox') || userAgent.match('webkit');
-	const CAN_STYLE_GROUP = userAgent.match('webkit');
+	var userAgent = navigator.userAgent.toLowerCase();
+	var CAN_STYLE_LOG = userAgent.match('firefox') || userAgent.match('webkit');
+	var CAN_STYLE_GROUP = userAgent.match('webkit');
 	// Track the indent for faked `console.group`
-	let logIndent = '';
+	var logIndent = '';
 	function log(text, style) {
 	    text = text.split('\n')
 	        .map(function (l) {
@@ -1013,11 +1025,11 @@ var WctBrowser = (function () {
 	/**
 	 * A Mocha reporter that logs results out to the web `console`.
 	 */
-	class Console {
+	var Console = /** @class */ (function () {
 	    /**
 	     * @param runner The runner that is being reported on.
 	     */
-	    constructor(runner) {
+	    function Console(runner) {
 	        Mocha.reporters.Base.call(this, runner);
 	        runner.on('suite', function (suite) {
 	            if (suite.root) {
@@ -1046,7 +1058,7 @@ var WctBrowser = (function () {
 	        runner.on('end', this.logSummary.bind(this));
 	    }
 	    /** Prints out a final summary of test results. */
-	    logSummary() {
+	    Console.prototype.logSummary = function () {
 	        logGroup('Test Results', 'results');
 	        if (this.stats.failures > 0) {
 	            log(util.pluralizedStat(this.stats.failures, 'failing'), 'failing');
@@ -1061,8 +1073,9 @@ var WctBrowser = (function () {
 	        log('Evaluated ' + this.stats.tests + ' tests in ' +
 	            this.stats.duration + 'ms.');
 	        logGroupEnd();
-	    }
-	}
+	    };
+	    return Console;
+	}());
 	exports.default = Console;
 
 	});
@@ -1087,7 +1100,7 @@ var WctBrowser = (function () {
 	 * @param {!Mocha.Runner} runner The runner that is being reported on.
 	 */
 	function HTML(runner) {
-	    const output = document.createElement('div');
+	    var output = document.createElement('div');
 	    output.id = 'mocha';
 	    document.body.appendChild(output);
 	    runner.on('suite', function (_test) {
@@ -1098,45 +1111,8 @@ var WctBrowser = (function () {
 	exports.default = HTML;
 	// Woo! What a hack. This just saves us from adding a bunch of complexity around
 	// style loading.
-	const style = document.createElement('style');
-	style.textContent = `
-    html, body {
-      position: relative;
-      height: 100%;
-      width:  100%;
-      min-width: 900px;
-    }
-    #mocha, #subsuites {
-      height: 100%;
-      position: absolute;
-      top: 0;
-    }
-    #mocha {
-      box-sizing: border-box;
-      margin: 0 !important;
-      padding: 60px 20px;
-      right: 0;
-      left: 500px;
-    }
-    #subsuites {
-      -ms-flex-direction: column;
-      -webkit-flex-direction: column;
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-      flex-direction: column;
-      left: 0;
-      width: 500px;
-    }
-    #subsuites .subsuite {
-      border: 0;
-      width: 100%;
-      height: 100%;
-    }
-    #mocha .test.pass .duration {
-      color: #555 !important;
-    }
-`;
+	var style = document.createElement('style');
+	style.textContent = "\n    html, body {\n      position: relative;\n      height: 100%;\n      width:  100%;\n      min-width: 900px;\n    }\n    #mocha, #subsuites {\n      height: 100%;\n      position: absolute;\n      top: 0;\n    }\n    #mocha {\n      box-sizing: border-box;\n      margin: 0 !important;\n      padding: 60px 20px;\n      right: 0;\n      left: 500px;\n    }\n    #subsuites {\n      -ms-flex-direction: column;\n      -webkit-flex-direction: column;\n      display: -ms-flexbox;\n      display: -webkit-flex;\n      display: flex;\n      flex-direction: column;\n      left: 0;\n      width: 500px;\n    }\n    #subsuites .subsuite {\n      border: 0;\n      width: 100%;\n      height: 100%;\n    }\n    #mocha .test.pass .duration {\n      color: #555 !important;\n    }\n";
 	document.head.appendChild(style);
 
 	});
@@ -1171,7 +1147,7 @@ var WctBrowser = (function () {
 	}
 	exports.parse = parse;
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Stack
-	const GECKO_LINE = /^(?:([^@]*)@)?(.*?):(\d+)(?::(\d+))?$/;
+	var GECKO_LINE = /^(?:([^@]*)@)?(.*?):(\d+)(?::(\d+))?$/;
 	function parseGeckoLine(line) {
 	    var match = line.match(GECKO_LINE);
 	    if (!match)
@@ -1185,9 +1161,9 @@ var WctBrowser = (function () {
 	}
 	exports.parseGeckoLine = parseGeckoLine;
 	// https://code.google.com/p/v8/wiki/JavaScriptStackTraceApi
-	const V8_OUTER1 = /^\s*(eval )?at (.*) \((.*)\)$/;
-	const V8_OUTER2 = /^\s*at()() (\S+)$/;
-	const V8_INNER = /^\(?([^\(]+):(\d+):(\d+)\)?$/;
+	var V8_OUTER1 = /^\s*(eval )?at (.*) \((.*)\)$/;
+	var V8_OUTER2 = /^\s*at()() (\S+)$/;
+	var V8_INNER = /^\(?([^\(]+):(\d+):(\d+)\)?$/;
 	function parseV8Line(line) {
 	    var outer = line.match(V8_OUTER1) || line.match(V8_OUTER2);
 	    if (!outer) {
@@ -1209,7 +1185,7 @@ var WctBrowser = (function () {
 	    };
 	}
 	exports.parseV8Line = parseV8Line;
-	const STACKY_LINE = /^\s*(.+) at (.+):(\d+):(\d+)$/;
+	var STACKY_LINE = /^\s*(.+) at (.+):(\d+):(\d+)$/;
 	function parseStackyLine(line) {
 	    var match = line.match(STACKY_LINE);
 	    if (!match)
@@ -1225,7 +1201,7 @@ var WctBrowser = (function () {
 	// Helpers
 	function compact(array) {
 	    var result = [];
-	    array.forEach((value) => value && result.push(value));
+	    array.forEach(function (value) { return value && result.push(value); });
 	    return result;
 	}
 
@@ -1270,21 +1246,21 @@ var WctBrowser = (function () {
 	};
 	function pretty(stackOrParsed, options) {
 	    options = mergeDefaults(options || {}, exports.defaults);
-	    let lines = Array.isArray(stackOrParsed) ? stackOrParsed : parsing.parse(stackOrParsed);
+	    var lines = Array.isArray(stackOrParsed) ? stackOrParsed : parsing.parse(stackOrParsed);
 	    lines = clean(lines, options);
-	    const padSize = methodPadding(lines, options);
-	    const parts = lines.map(function (line) {
-	        const method = line.method || options.methodPlaceholder;
-	        const pad = options.indent + padding(padSize - method.length);
-	        const locationBits = [
+	    var padSize = methodPadding(lines, options);
+	    var parts = lines.map(function (line) {
+	        var method = line.method || options.methodPlaceholder;
+	        var pad = options.indent + padding(padSize - method.length);
+	        var locationBits = [
 	            options.styles.location(line.location),
 	            options.styles.line(line.line.toString()),
 	        ];
 	        if ('column' in line) {
 	            locationBits.push(options.styles.column(line.column.toString()));
 	        }
-	        const location = locationBits.join(':');
-	        let text = pad + options.styles.method(method) + ' at ' + location;
+	        var location = locationBits.join(':');
+	        var text = pad + options.styles.method(method) + ' at ' + location;
 	        if (!line.important) {
 	            text = options.styles.unimportant(text);
 	        }
@@ -1377,8 +1353,8 @@ var WctBrowser = (function () {
 	    if (error.parsedStack) {
 	        return error;
 	    }
-	    const message = error.message || error.description || error || '<unknown error>';
-	    let parsedStack = [];
+	    var message = error.message || error.description || error || '<unknown error>';
+	    var parsedStack = [];
 	    try {
 	        parsedStack = parsing.parse(error.stack || error.toString());
 	    }
@@ -1429,18 +1405,18 @@ var WctBrowser = (function () {
 	 */
 
 
-	const STACKY_CONFIG = {
+	var STACKY_CONFIG = {
 	    indent: '  ',
 	    locationStrip: [
 	        /^https?:\/\/[^\/]+/,
 	        /\?.*$/,
 	    ],
-	    filter(line) {
+	    filter: function (line) {
 	        return !!line.location.match(/\/web-component-tester\/[^\/]+(\?.*)?$/);
 	    },
 	};
 	// https://github.com/visionmedia/mocha/blob/master/lib/runner.js#L36-46
-	const MOCHA_EVENTS = [
+	var MOCHA_EVENTS = [
 	    'start',
 	    'end',
 	    'suite',
@@ -1455,11 +1431,11 @@ var WctBrowser = (function () {
 	    'childRunner end'
 	];
 	// Until a suite has loaded, we assume this many tests in it.
-	const ESTIMATED_TESTS_PER_SUITE = 3;
+	var ESTIMATED_TESTS_PER_SUITE = 3;
 	/**
 	 * A Mocha-like reporter that combines the output of multiple Mocha suites.
 	 */
-	class MultiReporter {
+	var MultiReporter = /** @class */ (function () {
 	    /**
 	     * @param numSuites The number of suites that will be run, in order to
 	     *     estimate the total number of tests that will be performed.
@@ -1467,9 +1443,10 @@ var WctBrowser = (function () {
 	     *     should receive the unified event stream.
 	     * @param parent The parent reporter, if present.
 	     */
-	    constructor(numSuites, reporters, parent) {
-	        this.reporters = reporters.map((reporter) => {
-	            return new reporter(this);
+	    function MultiReporter(numSuites, reporters, parent) {
+	        var _this = this;
+	        this.reporters = reporters.map(function (reporter) {
+	            return new reporter(_this);
 	        });
 	        this.parent = parent;
 	        this.basePath = parent && parent.basePath || util.basePath(window.location);
@@ -1486,29 +1463,30 @@ var WctBrowser = (function () {
 	     * @return A reporter-like "class" for each child suite
 	     *     that should be passed to `mocha.run`.
 	     */
-	    childReporter(location) {
+	    MultiReporter.prototype.childReporter = function (location) {
 	        var _a;
-	        const name = this.suiteTitle(location);
+	        var name = this.suiteTitle(location);
 	        // The reporter is used as a constructor, so we can't depend on `this` being
 	        // properly bound.
-	        const self = this;
-	        return _a = class ChildReporter {
-	                constructor(runner) {
+	        var self = this;
+	        return _a = /** @class */ (function () {
+	                function ChildReporter(runner) {
 	                    runner.name = window.name;
 	                    self.bindChildRunner(runner);
 	                }
-	            },
+	                return ChildReporter;
+	            }()),
 	            _a.title = window.name,
 	            _a;
-	    }
+	    };
 	    /** Must be called once all runners have finished. */
-	    done() {
+	    MultiReporter.prototype.done = function () {
 	        this.complete = true;
 	        this.flushPendingEvents();
 	        this.emit('end');
-	    }
-	    epilogue() {
-	    }
+	    };
+	    MultiReporter.prototype.epilogue = function () {
+	    };
 	    /**
 	     * Emit a top level test that is not part of any suite managed by this
 	     * reporter.
@@ -1522,17 +1500,17 @@ var WctBrowser = (function () {
 	     * @param estimated If this test was included in the original
 	     *     estimate of `numSuites`.
 	     */
-	    emitOutOfBandTest(title, error, suiteTitle, estimated) {
+	    MultiReporter.prototype.emitOutOfBandTest = function (title, error, suiteTitle, estimated) {
 	        util.debug('MultiReporter#emitOutOfBandTest(', arguments, ')');
-	        const root = new Mocha.Suite(suiteTitle || '');
-	        const test = new Mocha.Test(title, function () { });
+	        var root = new Mocha.Suite(suiteTitle || '');
+	        var test = new Mocha.Test(title, function () { });
 	        test.parent = root;
 	        test.state = error ? 'failed' : 'passed';
 	        test.err = error;
 	        if (!estimated) {
 	            this.total = this.total + ESTIMATED_TESTS_PER_SUITE;
 	        }
-	        const runner = { total: 1 };
+	        var runner = { total: 1 };
 	        this.proxyEvent('start', runner);
 	        this.proxyEvent('suite', runner, root);
 	        this.proxyEvent('test', runner, test);
@@ -1545,23 +1523,24 @@ var WctBrowser = (function () {
 	        this.proxyEvent('test end', runner, test);
 	        this.proxyEvent('suite end', runner, root);
 	        this.proxyEvent('end', runner);
-	    }
+	    };
 	    /**
 	     * @param {!Location|string} location
 	     * @return {string}
 	     */
-	    suiteTitle(location) {
-	        let path = util.relativeLocation(location, this.basePath);
+	    MultiReporter.prototype.suiteTitle = function (location) {
+	        var path = util.relativeLocation(location, this.basePath);
 	        path = util.cleanLocation(path);
 	        return path;
-	    }
+	    };
 	    // Internal Interface
 	    /** @param {!Mocha.runners.Base} runner The runner to listen to events for. */
-	    bindChildRunner(runner) {
-	        MOCHA_EVENTS.forEach((eventName) => {
-	            runner.on(eventName, this.proxyEvent.bind(this, eventName, runner));
+	    MultiReporter.prototype.bindChildRunner = function (runner) {
+	        var _this = this;
+	        MOCHA_EVENTS.forEach(function (eventName) {
+	            runner.on(eventName, _this.proxyEvent.bind(_this, eventName, runner));
 	        });
-	    }
+	    };
 	    /**
 	     * Evaluates an event fired by `runner`, proxying it forward or buffering it.
 	     *
@@ -1569,8 +1548,12 @@ var WctBrowser = (function () {
 	     * @param {!Mocha.runners.Base} runner The runner that emitted this event.
 	     * @param {...*} var_args Any additional data passed as part of the event.
 	     */
-	    proxyEvent(eventName, runner, ..._args) {
-	        const extraArgs = Array.prototype.slice.call(arguments, 2);
+	    MultiReporter.prototype.proxyEvent = function (eventName, runner) {
+	        var _args = [];
+	        for (var _i = 2; _i < arguments.length; _i++) {
+	            _args[_i - 2] = arguments[_i];
+	        }
+	        var extraArgs = Array.prototype.slice.call(arguments, 2);
 	        if (this.complete) {
 	            console.warn('out of order Mocha event for ' + runner.name + ':', eventName, extraArgs);
 	            return;
@@ -1597,7 +1580,7 @@ var WctBrowser = (function () {
 	            this.cleanEvent(eventName, runner, extraArgs);
 	            this.emit.apply(this, [eventName].concat(extraArgs));
 	        }
-	    }
+	    };
 	    /**
 	     * Cleans or modifies an event if needed.
 	     *
@@ -1605,7 +1588,7 @@ var WctBrowser = (function () {
 	     * @param runner The runner that emitted this event.
 	     * @param extraArgs
 	     */
-	    cleanEvent(eventName, _runner, extraArgs) {
+	    MultiReporter.prototype.cleanEvent = function (eventName, _runner, extraArgs) {
 	        // Suite hierarchy
 	        if (extraArgs[0]) {
 	            extraArgs[0] = this.showRootSuite(extraArgs[0]);
@@ -1617,48 +1600,50 @@ var WctBrowser = (function () {
 	        if (extraArgs[0] && extraArgs[0].err) {
 	            extraArgs[0].err = normalization.normalize(extraArgs[0].err, STACKY_CONFIG);
 	        }
-	    }
+	    };
 	    /**
 	     * We like to show the root suite's title, which requires a little bit of
 	     * trickery in the suite hierarchy.
 	     *
 	     * @param {!Mocha.Runnable} node
 	     */
-	    showRootSuite(node) {
-	        const leaf = node = Object.create(node);
+	    MultiReporter.prototype.showRootSuite = function (node) {
+	        var leaf = node = Object.create(node);
 	        while (node && node.parent) {
-	            const wrappedParent = Object.create(node.parent);
+	            var wrappedParent = Object.create(node.parent);
 	            node.parent = wrappedParent;
 	            node = wrappedParent;
 	        }
 	        node.root = false;
 	        return leaf;
-	    }
+	    };
 	    /** @param {!Mocha.runners.Base} runner */
-	    onRunnerStart(runner) {
+	    MultiReporter.prototype.onRunnerStart = function (runner) {
 	        util.debug('MultiReporter#onRunnerStart:', runner.name);
 	        this.total = this.total - ESTIMATED_TESTS_PER_SUITE + runner.total;
 	        this.currentRunner = runner;
-	    }
+	    };
 	    /** @param {!Mocha.runners.Base} runner */
-	    onRunnerEnd(runner) {
+	    MultiReporter.prototype.onRunnerEnd = function (runner) {
 	        util.debug('MultiReporter#onRunnerEnd:', runner.name);
 	        this.currentRunner = null;
 	        this.flushPendingEvents();
-	    }
+	    };
 	    /**
 	     * Flushes any buffered events and runs them through `proxyEvent`. This will
 	     * loop until all buffered runners are complete, or we have run out of
 	     * buffered events.
 	     */
-	    flushPendingEvents() {
-	        const events = this.pendingEvents;
+	    MultiReporter.prototype.flushPendingEvents = function () {
+	        var _this = this;
+	        var events = this.pendingEvents;
 	        this.pendingEvents = [];
-	        events.forEach((eventArgs) => {
-	            this.proxyEvent.apply(this, eventArgs);
+	        events.forEach(function (eventArgs) {
+	            _this.proxyEvent.apply(_this, eventArgs);
 	        });
-	    }
-	}
+	    };
+	    return MultiReporter;
+	}());
 	exports.default = MultiReporter;
 
 	});
@@ -1678,68 +1663,69 @@ var WctBrowser = (function () {
 	 * rights grant found at http://polymer.github.io/PATENTS.txt
 	 */
 
-	const ARC_OFFSET = 0; // start at the right.
-	const ARC_WIDTH = 6;
+	var ARC_OFFSET = 0; // start at the right.
+	var ARC_WIDTH = 6;
 	/**
 	 * A Mocha reporter that updates the document's title and favicon with
 	 * at-a-glance stats.
 	 *
 	 * @param {!Mocha.Runner} runner The runner that is being reported on.
 	 */
-	class Title {
-	    constructor(runner) {
+	var Title = /** @class */ (function () {
+	    function Title(runner) {
 	        Mocha.reporters.Base.call(this, runner);
 	        runner.on('test end', this.report.bind(this));
 	    }
 	    /** Reports current stats via the page title and favicon. */
-	    report() {
+	    Title.prototype.report = function () {
 	        this.updateTitle();
 	        this.updateFavicon();
-	    }
+	    };
 	    /** Updates the document title with a summary of current stats. */
-	    updateTitle() {
+	    Title.prototype.updateTitle = function () {
 	        if (this.stats.failures > 0) {
 	            document.title = util.pluralizedStat(this.stats.failures, 'failing');
 	        }
 	        else {
 	            document.title = util.pluralizedStat(this.stats.passes, 'passing');
 	        }
-	    }
+	    };
 	    /** Updates the document's favicon w/ a summary of current stats. */
-	    updateFavicon() {
-	        const canvas = document.createElement('canvas');
+	    Title.prototype.updateFavicon = function () {
+	        var canvas = document.createElement('canvas');
 	        canvas.height = canvas.width = 32;
-	        const context = canvas.getContext('2d');
-	        const passing = this.stats.passes;
-	        const pending = this.stats.pending;
-	        const failing = this.stats.failures;
-	        const total = Math.max(this.runner.total, passing + pending + failing);
+	        var context = canvas.getContext('2d');
+	        var passing = this.stats.passes;
+	        var pending = this.stats.pending;
+	        var failing = this.stats.failures;
+	        var total = Math.max(this.runner.total, passing + pending + failing);
 	        drawFaviconArc(context, total, 0, passing, '#0e9c57');
 	        drawFaviconArc(context, total, passing, pending, '#f3b300');
 	        drawFaviconArc(context, total, pending + passing, failing, '#ff5621');
 	        this.setFavicon(canvas.toDataURL());
-	    }
+	    };
 	    /** Sets the current favicon by URL. */
-	    setFavicon(url) {
-	        const current = document.head.querySelector('link[rel="icon"]');
+	    Title.prototype.setFavicon = function (url) {
+	        var current = document.head.querySelector('link[rel="icon"]');
 	        if (current) {
 	            document.head.removeChild(current);
 	        }
-	        const link = document.createElement('link');
+	        var link = document.createElement('link');
 	        link.rel = 'icon';
 	        link.type = 'image/x-icon';
 	        link.href = url;
 	        link.setAttribute('sizes', '32x32');
 	        document.head.appendChild(link);
-	    }
-	}
+	    };
+	    return Title;
+	}());
 	exports.default = Title;
 	/**
 	 * Draws an arc for the favicon status, relative to the total number of tests.
 	 */
 	function drawFaviconArc(context, total, start, length, color) {
-	    const arcStart = ARC_OFFSET + Math.PI * 2 * (start / total);
-	    const arcEnd = ARC_OFFSET + Math.PI * 2 * ((start + length) / total);
+	    var arcStart = ARC_OFFSET + Math.PI * 2 * (start / total);
+	    var arcEnd = ARC_OFFSET + Math.PI * 2 * ((start + length) / total);
 	    context.beginPath();
 	    context.strokeStyle = color;
 	    context.lineWidth = ARC_WIDTH;
@@ -1769,7 +1755,7 @@ var WctBrowser = (function () {
 	exports.htmlSuites = [];
 	exports.jsSuites = [];
 	// We process grep ourselves to avoid loading suites that will be filtered.
-	let GREP = util.getParam('grep');
+	var GREP = util.getParam('grep');
 	// work around mocha bug (https://github.com/mochajs/mocha/issues/2070)
 	if (GREP) {
 	    GREP = GREP.replace(/\\\./g, '.');
@@ -1798,10 +1784,10 @@ var WctBrowser = (function () {
 	 *     those that would not match `GREP`.
 	 */
 	function activeChildSuites() {
-	    let subsuites = exports.htmlSuites;
+	    var subsuites = exports.htmlSuites;
 	    if (GREP) {
-	        const cleanSubsuites = [];
-	        for (let i = 0, subsuite; subsuite = subsuites[i]; i++) {
+	        var cleanSubsuites = [];
+	        for (var i = 0, subsuite = void 0; subsuite = subsuites[i]; i++) {
 	            if (GREP.indexOf(util.cleanLocation(subsuite)) !== -1) {
 	                cleanSubsuites.push(subsuite);
 	            }
@@ -1816,7 +1802,7 @@ var WctBrowser = (function () {
 	 */
 	function loadJsSuites(_reporter, done) {
 	    util.debug('loadJsSuites', exports.jsSuites);
-	    const loaders = exports.jsSuites.map(function (file) {
+	    var loaders = exports.jsSuites.map(function (file) {
 	        // We only support `.js` dependencies for now.
 	        return util.loadScript.bind(util, file);
 	    });
@@ -1825,14 +1811,14 @@ var WctBrowser = (function () {
 	exports.loadJsSuites = loadJsSuites;
 	function runSuites(reporter, childSuites, done) {
 	    util.debug('runSuites');
-	    const suiteRunners = [
+	    var suiteRunners = [
 	        // Run the local tests (if any) first, not stopping on error;
 	        _runMocha.bind(null, reporter),
 	    ];
 	    // As well as any sub suites. Again, don't stop on error.
 	    childSuites.forEach(function (file) {
 	        suiteRunners.push(function (next) {
-	            const childRunner = new childrunner.default(file, window);
+	            var childRunner = new childrunner.default(file, window);
 	            reporter.emit('childRunner start', childRunner);
 	            childRunner.run(function (error) {
 	                reporter.emit('childRunner end', childRunner);
@@ -1856,19 +1842,19 @@ var WctBrowser = (function () {
 	 */
 	function _runMocha(reporter, done, waited) {
 	    if (config.get('waitForFrameworks') && !waited) {
-	        const waitFor = (config.get('waitFor') || util.whenFrameworksReady).bind(window);
+	        var waitFor = (config.get('waitFor') || util.whenFrameworksReady).bind(window);
 	        waitFor(_runMocha.bind(null, reporter, done, true));
 	        return;
 	    }
 	    util.debug('_runMocha');
-	    const mocha = window.mocha;
-	    const Mocha = window.Mocha;
+	    var mocha = window.mocha;
+	    var Mocha = window.Mocha;
 	    mocha.reporter(reporter.childReporter(window.location));
 	    mocha.suite.title = reporter.suiteTitle(window.location);
 	    mocha.grep(GREP);
 	    // We can't use `mocha.run` because it bashes over grep, invert, and friends.
 	    // See https://github.com/visionmedia/mocha/blob/master/support/tail.js#L137
-	    const runner = Mocha.prototype.run.call(mocha, function (_error) {
+	    var runner = Mocha.prototype.run.call(mocha, function (_error) {
 	        if (document.getElementById('mocha')) {
 	            Mocha.utils.highlightTags('code');
 	        }
@@ -1934,7 +1920,7 @@ var WctBrowser = (function () {
 	        return [parent.childReporter(window.location)];
 	    }
 	    // Otherwise, we get to run wild without any parental supervision!
-	    const reporters = [title.default, console_1.default];
+	    var reporters = [title.default, console_1.default];
 	    if (socket) {
 	        reporters.push(function (runner) {
 	            socket.observe(runner);
@@ -1957,11 +1943,15 @@ var WctBrowser = (function () {
 	}
 	exports.injectMocha = injectMocha;
 	function _injectPrototype(klass, prototype) {
-	    const newPrototype = Object.create(prototype);
+	    var newPrototype = Object.create(prototype);
 	    // Only support
 	    Object.keys(klass.prototype).forEach(function (key) {
 	        newPrototype[key] = klass.prototype[key];
 	    });
+	    // Since prototype is readonly on actual classes, we have to use
+	    // defineProperty instead of `klass.prototype = newPrototype`;
+	    // Object.defineProperty(
+	    //    klass, 'prototype', {value: newPrototype, configurable: true});
 	    klass.prototype = newPrototype;
 	}
 
@@ -1993,9 +1983,9 @@ var WctBrowser = (function () {
 	 */
 	function loadSync() {
 	    util.debug('Loading environment scripts:');
-	    const a11ySuiteScriptPath = 'web-component-tester/data/a11ySuite.js';
-	    const scripts = config.get('environmentScripts');
-	    const a11ySuiteWillBeLoaded = window.__generatedByWct || scripts.indexOf(a11ySuiteScriptPath) > -1;
+	    var a11ySuiteScriptPath = 'web-component-tester/data/a11ySuite.js';
+	    var scripts = config.get('environmentScripts');
+	    var a11ySuiteWillBeLoaded = window.__generatedByWct || scripts.indexOf(a11ySuiteScriptPath) > -1;
 	    // We can't inject a11ySuite when running the npm version because it is a
 	    // module-based script that needs `<script type=module>` and compilation
 	    // for browsers without module support.
@@ -2004,18 +1994,18 @@ var WctBrowser = (function () {
 	        scripts.push(a11ySuiteScriptPath);
 	    }
 	    scripts.forEach(function (path) {
-	        const url = util.expandUrl(path, config.get('root'));
+	        var url = util.expandUrl(path, config.get('root'));
 	        util.debug('Loading environment script:', url);
 	        // Synchronous load.
-	        document.write(`<script src="${encodeURI(url)}"></script>`);
+	        document.write("<script src=\"" + encodeURI(url) + "\"></script>");
 	    });
 	    util.debug('Environment scripts loaded');
-	    const imports = config.get('environmentImports');
+	    var imports = config.get('environmentImports');
 	    imports.forEach(function (path) {
-	        const url = util.expandUrl(path, config.get('root'));
+	        var url = util.expandUrl(path, config.get('root'));
 	        util.debug('Loading environment import:', url);
 	        // Synchronous load.
-	        document.write(`<link rel="import" href="${encodeURI(url)}">`);
+	        document.write("<link rel=\"import\" href=\"" + encodeURI(url) + "\">");
 	    });
 	    util.debug('Environment imports loaded');
 	}
@@ -2031,13 +2021,13 @@ var WctBrowser = (function () {
 	}
 	exports.ensureDependenciesPresent = ensureDependenciesPresent;
 	function _ensureMocha() {
-	    const Mocha = window.Mocha;
+	    var Mocha = window.Mocha;
 	    if (!Mocha) {
 	        throw new Error('WCT requires Mocha. Please ensure that it is present in WCT.environmentScripts, or that you load it before loading web-component-tester/browser.js');
 	    }
 	    reporters.injectMocha(Mocha);
 	    // Magic loading of mocha's stylesheet
-	    const mochaPrefix = util.scriptPrefix('mocha.js');
+	    var mochaPrefix = util.scriptPrefix('mocha.js');
 	    // only load mocha stylesheet for the test runner output
 	    // Not the end of the world, if it doesn't load.
 	    if (mochaPrefix && window.top === window.self) {
@@ -2083,8 +2073,8 @@ var WctBrowser = (function () {
 	        exports.globalErrors.push(event.error);
 	    });
 	    // Also, we treat `console.error` as a test failure. Unless you prefer not.
-	    const origConsole = console;
-	    const origError = console.error;
+	    var origConsole = console;
+	    var origError = console.error;
 	    console.error = function wctShimmedError() {
 	        origError.apply(origConsole, arguments);
 	        if (config.get('trackConsoleError')) {
@@ -2102,7 +2092,7 @@ var WctBrowser = (function () {
 
 	var extend = createCommonjsModule(function (module, exports) {
 	Object.defineProperty(exports, "__esModule", { value: true });
-	const interfaceExtensions = [];
+	var interfaceExtensions = [];
 	/**
 	 * Registers an extension that extends the global `Mocha` implementation
 	 * with new helper methods. These helper methods will be added to the `window`
@@ -2110,16 +2100,16 @@ var WctBrowser = (function () {
 	 */
 	function extendInterfaces(helperName, helperFactory) {
 	    interfaceExtensions.push(function () {
-	        const Mocha = window.Mocha;
+	        var Mocha = window.Mocha;
 	        // For all Mocha interfaces (probably just TDD and BDD):
 	        Object.keys(Mocha.interfaces)
 	            .forEach(function (interfaceName) {
 	            // This is the original callback that defines the interface (TDD or
 	            // BDD):
-	            const originalInterface = Mocha.interfaces[interfaceName];
+	            var originalInterface = Mocha.interfaces[interfaceName];
 	            // This is the name of the "teardown" or "afterEach" property for the
 	            // current interface:
-	            const teardownProperty = interfaceName === 'tdd' ? 'teardown' : 'afterEach';
+	            var teardownProperty = interfaceName === 'tdd' ? 'teardown' : 'afterEach';
 	            // The original callback is monkey patched with a new one that appends
 	            // to the global context however we want it to:
 	            Mocha.interfaces[interfaceName] = function (suite) {
@@ -2131,7 +2121,7 @@ var WctBrowser = (function () {
 	                suite.on('pre-require', function (context, _file, _mocha) {
 	                    // Capture a bound reference to the teardown function as a
 	                    // convenience:
-	                    const teardown = context[teardownProperty].bind(context);
+	                    var teardown = context[teardownProperty].bind(context);
 	                    // Add our new helper to the testing context. The helper is
 	                    // generated by a factory method that receives the context,
 	                    // the teardown function and the interface name and returns
@@ -2215,9 +2205,9 @@ var WctBrowser = (function () {
 	extend.extendInterfaces('stub', function (_context, teardown) {
 	    return function stub(tagName, implementation) {
 	        // Find the prototype of the element being stubbed:
-	        const proto = document.createElement(tagName).constructor.prototype;
+	        var proto = document.createElement(tagName).constructor.prototype;
 	        // For all keys in the implementation to stub with..
-	        const stubs = Object.keys(implementation).map(function (key) {
+	        var stubs = Object.keys(implementation).map(function (key) {
 	            // Stub the method on the element prototype with Sinon:
 	            return sinon.stub(proto, key, implementation[key]);
 	        });
@@ -2238,8 +2228,8 @@ var WctBrowser = (function () {
 	Object.defineProperty(exports, "__esModule", { value: true });
 
 	// replacement map stores what should be
-	let replacements = {};
-	let replaceTeardownAttached = false;
+	var replacements = {};
+	var replaceTeardownAttached = false;
 	/**
 	 * replace
 	 *
@@ -2272,23 +2262,23 @@ var WctBrowser = (function () {
 	                }
 	                // Keep a reference to the original `document.importNode`
 	                // implementation for later:
-	                const originalImportNode = document.importNode;
+	                var originalImportNode = document.importNode;
 	                // Use Sinon to stub `document.ImportNode`:
 	                sinon
 	                    .stub(document, 'importNode', function (origContent, deep) {
-	                    const templateClone = document.createElement('template');
-	                    const content = templateClone.content;
-	                    const inertDoc = content.ownerDocument;
+	                    var templateClone = document.createElement('template');
+	                    var content = templateClone.content;
+	                    var inertDoc = content.ownerDocument;
 	                    // imports node from inertDoc which holds inert nodes.
 	                    templateClone.content.appendChild(inertDoc.importNode(origContent, true));
 	                    // optional arguments are not optional on IE.
-	                    const nodeIterator = document.createNodeIterator(content, NodeFilter.SHOW_ELEMENT, null, true);
-	                    let node;
+	                    var nodeIterator = document.createNodeIterator(content, NodeFilter.SHOW_ELEMENT, null, true);
+	                    var node;
 	                    // Traverses the tree. A recently-replaced node will be put
 	                    // next, so if a node is replaced, it will be checked if it
 	                    // needs to be replaced again.
 	                    while (node = nodeIterator.nextNode()) {
-	                        let currentTagName = node.tagName.toLowerCase();
+	                        var currentTagName = node.tagName.toLowerCase();
 	                        if (replacements.hasOwnProperty(currentTagName)) {
 	                            currentTagName = replacements[currentTagName];
 	                            // find the final tag name.
@@ -2296,9 +2286,9 @@ var WctBrowser = (function () {
 	                                currentTagName = replacements[currentTagName];
 	                            }
 	                            // Create a replacement:
-	                            const replacement = document.createElement(currentTagName);
+	                            var replacement = document.createElement(currentTagName);
 	                            // For all attributes in the original node..
-	                            for (let index = 0; index < node.attributes.length; ++index) {
+	                            for (var index = 0; index < node.attributes.length; ++index) {
 	                                // Set that attribute on the replacement:
 	                                replacement.setAttribute(node.attributes[index].name, node.attributes[index].value);
 	                            }
@@ -2313,7 +2303,7 @@ var WctBrowser = (function () {
 	                    teardown(function () {
 	                        replaceTeardownAttached = true;
 	                        // Restore the stubbed version of `document.importNode`:
-	                        const documentImportNode = document.importNode;
+	                        var documentImportNode = document.importNode;
 	                        if (documentImportNode.isSinonProxy) {
 	                            documentImportNode.restore();
 	                        }
@@ -2351,7 +2341,7 @@ var WctBrowser = (function () {
 	//
 	// Keys are the method for a particular interface; values are their analog in
 	// the opposite interface.
-	const MOCHA_EXPORTS = {
+	var MOCHA_EXPORTS = {
 	    // https://github.com/visionmedia/mocha/blob/master/lib/interfaces/tdd.js
 	    tdd: {
 	        'setup': '"before"',
@@ -2384,7 +2374,7 @@ var WctBrowser = (function () {
 	 * The assumption is that it is a one-off (sub-)suite of tests being run.
 	 */
 	function stubInterfaces() {
-	    const keys = Object.keys(MOCHA_EXPORTS);
+	    var keys = Object.keys(MOCHA_EXPORTS);
 	    keys.forEach(function (ui) {
 	        Object.keys(MOCHA_EXPORTS[ui]).forEach(function (key) {
 	            window[key] = function wrappedMochaFunction() {
@@ -2404,9 +2394,9 @@ var WctBrowser = (function () {
 	 * @param {string} alternate The matching method in the opposite interface.
 	 */
 	function _setupMocha(ui, key, alternate) {
-	    const mochaOptions = config.get('mochaOptions');
+	    var mochaOptions = config.get('mochaOptions');
 	    if (mochaOptions.ui && mochaOptions.ui !== ui) {
-	        const message = 'Mixing ' + mochaOptions.ui + ' and ' + ui +
+	        var message = 'Mixing ' + mochaOptions.ui + ' and ' + ui +
 	            ' Mocha styles is not supported. ' +
 	            'You called "' + key + '". Did you mean ' + alternate + '?';
 	        throw new Error(message);
@@ -2457,7 +2447,7 @@ var WctBrowser = (function () {
 	    config.setup(initConfig);
 	    // Maybe some day we'll expose WCT as a module to whatever module registry you
 	    // are using (aka the UMD approach), or as an es6 module.
-	    const WCT = window.WCT = {
+	    var WCT = window.WCT = {
 	        // A generic place to hang data about the current suite. This object is
 	        // reported
 	        // back via the `sub-suite-start` and `sub-suite-end` events.
@@ -2489,13 +2479,13 @@ var WctBrowser = (function () {
 	            if (error)
 	                throw error;
 	            // Are we a child of another run?
-	            const current = childrunner.default.current();
-	            const parent = current && current.parentScope.WCT._reporter;
+	            var current = childrunner.default.current();
+	            var parent = current && current.parentScope.WCT._reporter;
 	            util.debug('parentReporter:', parent);
-	            const childSuites = suites.activeChildSuites();
-	            const reportersToUse = reporters.determineReporters(socket, parent);
+	            var childSuites = suites.activeChildSuites();
+	            var reportersToUse = reporters.determineReporters(socket, parent);
 	            // +1 for any local tests.
-	            const reporter = new multi.default(childSuites.length + 1, reportersToUse, parent);
+	            var reporter = new multi.default(childSuites.length + 1, reportersToUse, parent);
 	            WCT._reporter = reporter; // For environment/compatibility.js
 	            // We need the reporter so that we can report errors during load.
 	            suites.loadJsSuites(reporter, function (error) {
