@@ -15,10 +15,10 @@
     "test": "npm run build && npm run test:unit",
     "test:all": "npm run test:unit && npm run test:integration",
     "test:all:parallel": "npm run test:unit && npm run test:integration:parallel",
-    "test:integration": "lerna run test:integration --stream",
+    "test:integration": "lerna run test:integration --stream --concurrency 1",
     "test:integration:parallel": "lerna run test:integration --stream --parallel",
     "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester --ignore @polymer/esm-amd-loader --parallel",
-    "test:unit": "lerna run test:unit --stream",
+    "test:unit": "lerna run test:unit --stream --concurrency 1",
     "test:unit:parallel": "lerna run test:unit --stream --parallel",
     "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester --ignore @polymer/gen-typescript-declarations",
     "update-goldens": "lerna run update-goldens --stream"
@@ -30,7 +30,7 @@
     "@types/sinon-chai": "^2.7.32",
     "chai-as-promised": "^7.1.1",
     "chai-subset": "^1.6.0",
-    "lerna": "^3.0.0-beta.18",
+    "lerna": "^3.0.0",
     "sinon-chai": "^3.1.0"
   },
   "engines": {
