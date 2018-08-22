@@ -1,4 +1,6 @@
 import {initialize} from 'wct-mocha';
+import * as replace from './replace';
+import * as stub from './stub';
 
 window['__useNpm'] = true;
 

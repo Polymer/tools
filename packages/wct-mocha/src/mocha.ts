@@ -9,8 +9,6 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 import './mocha/fixture';
-import './mocha/stub';
-import './mocha/replace';
 
 import * as config from './config';
 import {applyExtensions} from './mocha/extend';

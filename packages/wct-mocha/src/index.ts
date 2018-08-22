@@ -14,6 +14,7 @@
 // Registers a bunch of globals:
 import './environment/helpers';
 
+export { extendInterfaces } from './mocha/extend';
 import ChildRunner from './childrunner';
 import CLISocket from './clisocket';
 import * as config from './config';

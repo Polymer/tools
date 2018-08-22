@@ -1,4 +1,4 @@
-import {extendInterfaces} from './extend';
+import {extendInterfaces} from 'wct-mocha';
 
 /**
  * stub
@@ -34,7 +34,7 @@ extendInterfaces('stub', function(_context, teardown) {
     // For all keys in the implementation to stub with..
     const stubs = Object.keys(implementation).map(function(key) {
       // Stub the method on the element prototype with Sinon:
-      return (sinon as any).stub(proto, key, implementation[key]);
+      return (window['sinon'] as any).stub(proto, key, implementation[key]);
     });
 
     // After all tests..

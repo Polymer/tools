@@ -1,4 +1,6 @@
 import {initialize} from 'wct-mocha';
+import * as replace from 'wct-browser-legacy/lib/replace';
+import * as stub from 'wct-browser-legacy/lib/stub';
 
 window.__useNpm = false;
 

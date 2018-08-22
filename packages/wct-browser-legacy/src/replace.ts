@@ -1,4 +1,4 @@
-import {extendInterfaces} from './extend';
+import {extendInterfaces} from 'wct-mocha';
 
 // replacement map stores what should be
 let replacements = {};
@@ -33,9 +33,10 @@ extendInterfaces('replace', function(_context, teardown) {
           return;
         }
 
-        if (!window.Polymer.Element) {
-          window.Polymer.Element = function() {};
-          window.Polymer.Element.prototype._stampTemplate = function() {};
+        const polymer = window['Polymer'] as any;
+        if (!polymer.Element) {
+          polymer.Element = function() {};
+          polymer.Element.prototype._stampTemplate = function() {};
         }
 
         // Keep a reference to the original `document.importNode`
@@ -43,7 +44,7 @@ extendInterfaces('replace', function(_context, teardown) {
         const originalImportNode = document.importNode;
 
         // Use Sinon to stub `document.ImportNode`:
-        (sinon as any)
+        (window['sinon'] as any)
             .stub(
                 document,
                 'importNode',
