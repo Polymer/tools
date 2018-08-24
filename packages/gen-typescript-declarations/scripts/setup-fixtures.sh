@@ -22,7 +22,8 @@ mkdir -p fixtures
 cd fixtures
 
 while read -r repo commitish dir; do
-  if [ -d $dir ]; then continue; fi  # Already set up.
+  if [ -f $dir/INSTALLED ]; then continue; fi  # Already set up successfully.
+  rm -rf $dir
   # Note you can't do a shallow clone of a SHA.
   git clone $repo $dir
   cd $dir
@@ -32,5 +33,6 @@ while read -r repo commitish dir; do
   elif [ -e package.json ]; then
     npm install --production
   fi
+  touch INSTALLED
   cd -
 done < ../../../scripts/fixtures.txt
