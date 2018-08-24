@@ -8,6 +8,8 @@
  *   lib/utils/flush.js
  */
 
+import {Debouncer} from '../utils/debounce.js';
+
 export {enqueueDebouncer};
 
 
@@ -25,5 +27,3 @@ export {flush};
  * - ShadyDOM distribution
  */
 declare function flush(): void;
-
-import {Debouncer} from './debounce.js';

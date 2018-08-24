@@ -63,8 +63,8 @@ export class ScannedReference<K extends keyof FeatureKindMap> extends
     let feature: undefined|FeatureKindMap[DK];
     const warnings = [...this.warnings];
 
-    const scopedResult =
-        resolveScopedAt(this.astPath, this.identifier, document, kind);
+    const scopedResult = resolveScopedAt(
+        this.astPath, this.identifier, document, kind, this.sourceRange);
     if (scopedResult.successful) {
       feature = scopedResult.value;
     } else {
@@ -112,15 +112,34 @@ export class ScannedReference<K extends keyof FeatureKindMap> extends
 }
 
 function resolveScopedAt<K extends keyof FeatureKindMap>(
-    path: NodePath, identifier: string, document: Document, kind: K):
-    Result<FeatureKindMap[K], Warning|undefined> {
-  // TODO(https://github.com/Polymer/polymer-analyzer/issues/919): we need to
-  //     emit warnings from this function.
-
+    path: NodePath,
+    identifier: string,
+    document: Document,
+    kind: K,
+    sourceRange: SourceRange|
+    undefined): Result<FeatureKindMap[K], Warning|undefined> {
   // Handle all kinds of imports except namespace imports (see below for them).
   if (isSomeKindOfImport(path)) {
     const exportedIdentifier = getExportedIdentifier(path.node, identifier);
-    return resolveThroughImport(path, exportedIdentifier, document, kind);
+    if (exportedIdentifier === undefined) {
+      if (sourceRange === undefined) {
+        return {successful: false, error: undefined};
+      } else {
+        return {
+          successful: false,
+          error: new Warning({
+            code: 'could-not-resolve-reference',
+            message: `Could not resolve reference to '${identifier}' ` +
+                `with kind ${kind}`,
+            severity: Severity.WARNING,
+            sourceRange,
+            parsedDocument: document.parsedDocument,
+          }),
+        };
+      }
+    }
+    return resolveThroughImport(
+        path, exportedIdentifier, document, kind, sourceRange);
   }
 
   if (babel.isExportNamedDeclaration(path.node) && !path.node.source) {
@@ -129,7 +148,8 @@ function resolveScopedAt<K extends keyof FeatureKindMap>(
           specifier.exported.name === identifier) {
         // In cases like `export {foo as bar}`, we need to look for a feature
         // called `foo` instead of `bar`.
-        return resolveScopedAt(path, specifier.local.name, document, kind);
+        return resolveScopedAt(
+            path, specifier.local.name, document, kind, sourceRange);
       }
     }
   }
@@ -157,7 +177,7 @@ function resolveScopedAt<K extends keyof FeatureKindMap>(
       const node = namespaceBinding.path.node;
       if (babel.isImportNamespaceSpecifier(node)) {
         return resolveThroughImport(
-            namespaceBinding.path, name, document, kind);
+            namespaceBinding.path, name, document, kind, sourceRange);
       }
     }
   }
@@ -165,12 +185,16 @@ function resolveScopedAt<K extends keyof FeatureKindMap>(
   if (binding === undefined || binding.path.node === path.node) {
     return {successful: false, error: undefined};
   }
-  return resolveScopedAt(binding.path, identifier, document, kind);
+  return resolveScopedAt(binding.path, identifier, document, kind, sourceRange);
 }
 
 function resolveThroughImport<K extends keyof FeatureKindMap>(
-    path: NodePath, exportedAs: string, document: Document, kind: K):
-    Result<FeatureKindMap[K], Warning|undefined> {
+    path: NodePath,
+    exportedAs: string,
+    document: Document,
+    kind: K,
+    sourceRange: SourceRange|
+    undefined): Result<FeatureKindMap[K], Warning|undefined> {
   const statement = esutil.getCanonicalStatement(path);
   if (statement === undefined) {
     throw new Error(`Internal error, could not get statement for node of type ${
@@ -190,7 +214,7 @@ function resolveThroughImport<K extends keyof FeatureKindMap>(
     return {successful: false, error: undefined};
   }
   return resolveScopedAt(
-      export_.astNodePath, exportedAs, import_.document, kind);
+      export_.astNodePath, exportedAs, import_.document, kind, sourceRange);
 }
 
 // We handle ImportNamespaceSpecifiers separately, as resolving their bindings
@@ -205,7 +229,8 @@ function isSomeKindOfImport(path: NodePath): path is NodePath<ImportIndicator> {
       (babel.isExportAllDeclaration(node));
 }
 
-function getExportedIdentifier(node: ImportIndicator, localIdentifier: string) {
+function getExportedIdentifier(
+    node: ImportIndicator, localIdentifier: string): string|undefined {
   switch (node.type) {
     case 'ImportDefaultSpecifier':
       return 'default';
@@ -215,8 +240,7 @@ function getExportedIdentifier(node: ImportIndicator, localIdentifier: string) {
           return specifier.local.name;
         }
       }
-      throw new Error(`Internal error: could not find import specifier for '${
-          localIdentifier}'. Please report this bug.`);
+      return undefined;
     case 'ExportAllDeclaration':
       // Can't rename through an export all, the name we're looking for in
       // this file is the same name in the next file.
