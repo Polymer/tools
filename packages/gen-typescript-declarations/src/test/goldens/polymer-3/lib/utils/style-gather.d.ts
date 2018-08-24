@@ -8,6 +8,8 @@
  *   lib/utils/style-gather.js
  */
 
+import {DomModule} from '../elements/dom-module.js';
+
 import {resolveCss} from './resolve-url.js';
 
 export {stylesFromModules};
