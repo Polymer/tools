@@ -23,7 +23,7 @@ cd fixtures
 
 while read -r repo commitish dir; do
   if [ -f $dir/INSTALLED ] &&
-     # Did we update the fixture commitish since we last ran setup?
+     # Is the SHA for this fixture the same since we last ran setup?
      (cd $dir && [ $(git rev-list -1 $commitish) == $(git rev-list -1 HEAD) ])
   then
     continue
