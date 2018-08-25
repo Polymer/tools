@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- ## [Unreleased] -->
 <!-- Add new, unreleased changes here. -->
 
+## [1.5.1] - 2018-08-25
+* Legacy Polymer function element interfaces are now exported from ES modules.
+
 ## [1.5.0] - 2018-08-15
 * Legacy Polymer function components will no longer have a `_template`
   property.

@@ -25,6 +25,8 @@ interface PaperButtonElement extends PaperButtonBehavior, LegacyElementMixin, HT
   _calculateElevation(): void;
 }
 
+export {PaperButtonElement};
+
 declare global {
 
   interface HTMLElementTagNameMap {
