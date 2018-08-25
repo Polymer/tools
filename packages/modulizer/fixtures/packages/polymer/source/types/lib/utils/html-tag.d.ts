@@ -59,7 +59,7 @@ declare namespace Polymer {
    *
    * @returns Constructed HTMLTemplateElement
    */
-  function html(strings: TemplateStringsArray, ...values: any[]): HTMLTemplateElement;
+  function html(strings: TemplateStringsArray|string[], ...values: any[]): HTMLTemplateElement;
 
 
   /**
@@ -82,5 +82,5 @@ declare namespace Polymer {
    *
    * @returns Constructed literal string
    */
-  function htmlLiteral(strings: TemplateStringsArray, ...values: any[]): LiteralString;
+  function htmlLiteral(strings: TemplateStringsArray|string[], ...values: any[]): LiteralString;
 }
