@@ -18,6 +18,8 @@ interface PaperMenuGrowHeightAnimationElement extends NeonAnimationBehavior, Leg
   configure(config: any): any;
 }
 
+export {PaperMenuGrowHeightAnimationElement};
+
 declare global {
 
   interface HTMLElementTagNameMap {
@@ -32,10 +34,16 @@ interface PaperMenuGrowWidthAnimationElement extends NeonAnimationBehavior, Lega
   configure(config: any): any;
 }
 
+export {PaperMenuGrowWidthAnimationElement};
+
 interface PaperMenuShrinkWidthAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }
 
+export {PaperMenuShrinkWidthAnimationElement};
+
 interface PaperMenuShrinkHeightAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
   configure(config: any): any;
 }
+
+export {PaperMenuShrinkHeightAnimationElement};
