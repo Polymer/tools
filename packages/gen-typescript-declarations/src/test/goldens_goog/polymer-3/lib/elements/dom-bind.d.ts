@@ -8,43 +8,49 @@
  *   lib/elements/dom-bind.js
  */
 
-import {PropertyEffects} from '../mixins/property-effects.js';
 
-import {OptionalMutableData} from '../mixins/mutable-data.js';
+// tslint:disable:variable-name API description
 
-import {GestureEventListeners} from '../mixins/gesture-event-listeners.js';
+declare module 'goog:npm.polymer.polymer.lib.elements.DomBind' {
 
-export {DomBind};
+  import {PropertyEffects} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
-/**
- * Custom element to allow using Polymer's template features (data binding,
- * declarative event listeners, etc.) in the main document without defining
- * a new custom element.
- *
- * `<template>` tags utilizing bindings may be wrapped with the `<dom-bind>`
- * element, which will immediately stamp the wrapped template into the main
- * document and bind elements to the `dom-bind` element itself as the
- * binding scope.
- */
-declare class DomBind extends
-  PropertyEffects(
-  OptionalMutableData(
-  GestureEventListeners(
-  HTMLElement))) {
-  attributeChangedCallback(): void;
-  connectedCallback(): void;
-  disconnectedCallback(): void;
+  import {OptionalMutableData} from 'goog:npm.polymer.polymer.lib.mixins.MutableData'; // from //third_party/javascript/polymer/v2/polymer
+
+  import {GestureEventListeners} from 'goog:npm.polymer.polymer.lib.mixins.GestureEventListeners'; // from //third_party/javascript/polymer/v2/polymer
+
+  export {DomBind};
 
   /**
-   * Forces the element to render its content. This is typically only
-   * necessary to call if HTMLImports with the async attribute are used.
+   * Custom element to allow using Polymer's template features (data binding,
+   * declarative event listeners, etc.) in the main document without defining
+   * a new custom element.
+   *
+   * `<template>` tags utilizing bindings may be wrapped with the `<dom-bind>`
+   * element, which will immediately stamp the wrapped template into the main
+   * document and bind elements to the `dom-bind` element itself as the
+   * binding scope.
    */
-  render(): void;
-}
+  class DomBind extends
+    PropertyEffects(
+    OptionalMutableData(
+    GestureEventListeners(
+    HTMLElement))) {
+    attributeChangedCallback(): void;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
 
-declare global {
+    /**
+     * Forces the element to render its content. This is typically only
+     * necessary to call if HTMLImports with the async attribute are used.
+     */
+    render(): void;
+  }
 
-  interface HTMLElementTagNameMap {
-    "dom-bind": DomBind;
+  global {
+
+    interface HTMLElementTagNameMap {
+      "dom-bind": DomBind;
+    }
   }
 }

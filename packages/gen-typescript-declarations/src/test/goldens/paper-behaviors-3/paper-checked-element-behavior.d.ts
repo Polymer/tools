@@ -8,6 +8,9 @@
  *   paper-checked-element-behavior.js
  */
 
+
+// tslint:disable:variable-name API description
+
 import {PaperInkyFocusBehavior} from './paper-inky-focus-behavior.js';
 
 import {PaperRippleBehavior} from './paper-ripple-behavior.js';

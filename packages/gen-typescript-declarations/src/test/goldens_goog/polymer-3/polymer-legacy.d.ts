@@ -8,8 +8,14 @@
  *   polymer-legacy.js
  */
 
-import {LegacyElementMixin} from './lib/legacy/legacy-element-mixin.js';
 
-export {Polymer} from './lib/legacy/polymer-fn.js';
+// tslint:disable:variable-name API description
 
-export {html} from './lib/utils/html-tag.js';
+declare module 'goog:npm.polymer.polymer.PolymerLegacy' {
+
+  import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+
+  export {Polymer} from 'goog:npm.polymer.polymer.lib.legacy.PolymerFn'; // from //third_party/javascript/polymer/v2/polymer
+
+  export {html} from 'goog:npm.polymer.polymer.lib.utils.HtmlTag'; // from //third_party/javascript/polymer/v2/polymer
+}

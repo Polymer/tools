@@ -8,6 +8,9 @@
  *   lib/utils/case-map.js
  */
 
+
+// tslint:disable:variable-name API description
+
 export {dashToCamelCase};
 
 

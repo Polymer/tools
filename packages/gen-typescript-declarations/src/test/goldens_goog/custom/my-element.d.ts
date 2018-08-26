@@ -8,6 +8,9 @@
  *   my-element.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /**
  * I'm an HTML comment that contains JavaScript comments which must be escaped:
  *

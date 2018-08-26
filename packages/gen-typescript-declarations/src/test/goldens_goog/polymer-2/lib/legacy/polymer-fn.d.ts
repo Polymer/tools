@@ -8,6 +8,9 @@
  *   lib/legacy/polymer-fn.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="class.d.ts" />
 
 

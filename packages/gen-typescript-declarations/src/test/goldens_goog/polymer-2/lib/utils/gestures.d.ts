@@ -8,6 +8,9 @@
  *   lib/utils/gestures.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="boot.d.ts" />
 /// <reference path="async.d.ts" />
 /// <reference path="debounce.d.ts" />

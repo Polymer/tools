@@ -8,57 +8,64 @@
  *   lib/mixins/disable-upgrade-mixin.js
  */
 
-import {ElementMixin} from './element-mixin.js';
 
-import {dedupingMixin} from '../utils/mixin.js';
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
-export {DisableUpgradeMixin};
+declare module 'goog:npm.polymer.polymer.lib.mixins.DisableUpgradeMixin' {
+
+  import {ElementMixin} from 'goog:npm.polymer.polymer.lib.mixins.ElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+
+  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+
+  export {DisableUpgradeMixin};
 
 
-/**
- * Element class mixin that allows the element to boot up in a non-enabled
- * state when the `disable-upgrade` attribute is present. This mixin is
- * designed to be used with element classes like PolymerElement that perform
- * initial startup work when they are first connected. When the
- * `disable-upgrade` attribute is removed, if the element is connected, it
- * boots up and "enables" as it otherwise would; if it is not connected, the
- * element boots up when it is next connected.
- *
- * Using `disable-upgrade` with PolymerElement prevents any data propagation
- * to the element, any element DOM from stamping, or any work done in
- * connected/disconnctedCallback from occuring, but it does not prevent work
- * done in the element constructor.
- *
- * Note, this mixin must be applied on top of any element class that
- * itself implements a `connectedCallback` so that it can control the work
- * done in `connectedCallback`. For example,
- *
- *     MyClass = DisableUpgradeMixin(class extends BaseClass {...});
- */
-declare function DisableUpgradeMixin<T extends new (...args: any[]) => {}>(base: T): T & DisableUpgradeMixinConstructor & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor;
+  /**
+   * Element class mixin that allows the element to boot up in a non-enabled
+   * state when the `disable-upgrade` attribute is present. This mixin is
+   * designed to be used with element classes like PolymerElement that perform
+   * initial startup work when they are first connected. When the
+   * `disable-upgrade` attribute is removed, if the element is connected, it
+   * boots up and "enables" as it otherwise would; if it is not connected, the
+   * element boots up when it is next connected.
+   *
+   * Using `disable-upgrade` with PolymerElement prevents any data propagation
+   * to the element, any element DOM from stamping, or any work done in
+   * connected/disconnctedCallback from occuring, but it does not prevent work
+   * done in the element constructor.
+   *
+   * Note, this mixin must be applied on top of any element class that
+   * itself implements a `connectedCallback` so that it can control the work
+   * done in `connectedCallback`. For example,
+   *
+   *     MyClass = DisableUpgradeMixin(class extends BaseClass {...});
+   */
+  function DisableUpgradeMixin<T extends new (...args: any[]) => {}>(base: T): T & DisableUpgradeMixinConstructor & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor;
 
-import {ElementMixinConstructor} from './element-mixin.js';
+  import {ElementMixinConstructor} from 'goog:npm.polymer.polymer.lib.mixins.ElementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-import {PropertyEffectsConstructor, PropertyEffects} from './property-effects.js';
+  import {PropertyEffectsConstructor, PropertyEffects} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
-import {TemplateStampConstructor, TemplateStamp} from './template-stamp.js';
+  import {TemplateStampConstructor, TemplateStamp} from 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp'; // from //third_party/javascript/polymer/v2/polymer
 
-import {PropertyAccessorsConstructor, PropertyAccessors} from './property-accessors.js';
+  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-import {PropertiesChangedConstructor, PropertiesChanged} from './properties-changed.js';
+  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
-import {PropertiesMixinConstructor, PropertiesMixin} from './properties-mixin.js';
+  import {PropertiesMixinConstructor, PropertiesMixin} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-interface DisableUpgradeMixinConstructor {
-  new(...args: any[]): DisableUpgradeMixin;
-}
+  interface DisableUpgradeMixinConstructor {
+    new(...args: any[]): DisableUpgradeMixin;
+  }
 
-export {DisableUpgradeMixinConstructor};
+  export {DisableUpgradeMixinConstructor};
 
-interface DisableUpgradeMixin extends ElementMixin, PropertyEffects, TemplateStamp, PropertyAccessors, PropertiesChanged, PropertiesMixin {
-  _initializeProperties(): void;
-  _enableProperties(): void;
-  attributeChangedCallback(name: any, old: any, value: any, namespace: any): void;
-  connectedCallback(): void;
-  disconnectedCallback(): void;
+  interface DisableUpgradeMixin extends ElementMixin, PropertyEffects, TemplateStamp, PropertyAccessors, PropertiesChanged, PropertiesMixin {
+    _initializeProperties(): void;
+    _enableProperties(): void;
+    attributeChangedCallback(name: any, old: any, value: any, namespace: any): void;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
+  }
 }

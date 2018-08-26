@@ -8,55 +8,62 @@
  *   lib/mixins/dir-mixin.js
  */
 
-import {PropertyAccessors} from './property-accessors.js';
 
-import {dedupingMixin} from '../utils/mixin.js';
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
-export {DirMixin};
+declare module 'goog:npm.polymer.polymer.lib.mixins.DirMixin' {
 
+  import {PropertyAccessors} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-/**
- * Element class mixin that allows elements to use the `:dir` CSS Selector to
- * have text direction specific styling.
- *
- * With this mixin, any stylesheet provided in the template will transform
- * `:dir` into `:host([dir])` and sync direction with the page via the
- * element's `dir` attribute.
- *
- * Elements can opt out of the global page text direction by setting the `dir`
- * attribute directly in `ready()` or in HTML.
- *
- * Caveats:
- * - Applications must set `<html dir="ltr">` or `<html dir="rtl">` to sync
- *   direction
- * - Automatic left-to-right or right-to-left styling is sync'd with the
- *   `<html>` element only.
- * - Changing `dir` at runtime is supported.
- * - Opting out of the global direction styling is permanent
- */
-declare function DirMixin<T extends new (...args: any[]) => {}>(base: T): T & DirMixinConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor;
+  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-import {PropertyAccessorsConstructor} from './property-accessors.js';
+  export {DirMixin};
 
-import {PropertiesChangedConstructor, PropertiesChanged} from './properties-changed.js';
-
-interface DirMixinConstructor {
-  new(...args: any[]): DirMixin;
-  _processStyleText(cssText: any, baseURI: any): any;
 
   /**
-   * Replace `:dir` in the given CSS text
+   * Element class mixin that allows elements to use the `:dir` CSS Selector to
+   * have text direction specific styling.
    *
-   * @param text CSS text to replace DIR
-   * @returns Modified CSS
+   * With this mixin, any stylesheet provided in the template will transform
+   * `:dir` into `:host([dir])` and sync direction with the page via the
+   * element's `dir` attribute.
+   *
+   * Elements can opt out of the global page text direction by setting the `dir`
+   * attribute directly in `ready()` or in HTML.
+   *
+   * Caveats:
+   * - Applications must set `<html dir="ltr">` or `<html dir="rtl">` to sync
+   *   direction
+   * - Automatic left-to-right or right-to-left styling is sync'd with the
+   *   `<html>` element only.
+   * - Changing `dir` at runtime is supported.
+   * - Opting out of the global direction styling is permanent
    */
-  _replaceDirInCssText(text: string): string;
-}
+  function DirMixin<T extends new (...args: any[]) => {}>(base: T): T & DirMixinConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor;
 
-export {DirMixinConstructor};
+  import {PropertyAccessorsConstructor} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-interface DirMixin extends PropertyAccessors, PropertiesChanged {
-  ready(): void;
-  connectedCallback(): void;
-  disconnectedCallback(): void;
+  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+
+  interface DirMixinConstructor {
+    new(...args: any[]): DirMixin;
+    _processStyleText(cssText: any, baseURI: any): any;
+
+    /**
+     * Replace `:dir` in the given CSS text
+     *
+     * @param text CSS text to replace DIR
+     * @returns Modified CSS
+     */
+    _replaceDirInCssText(text: string): string;
+  }
+
+  export {DirMixinConstructor};
+
+  interface DirMixin extends PropertyAccessors, PropertiesChanged {
+    ready(): void;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
+  }
 }

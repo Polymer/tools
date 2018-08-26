@@ -8,6 +8,10 @@
  *   lib/utils/templatize.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="boot.d.ts" />
 /// <reference path="../mixins/property-effects.d.ts" />
 /// <reference path="../mixins/mutable-data.d.ts" />

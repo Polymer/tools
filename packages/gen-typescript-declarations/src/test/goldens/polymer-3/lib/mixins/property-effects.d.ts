@@ -8,11 +8,17 @@
  *   lib/mixins/property-effects.js
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 import {dedupingMixin} from '../utils/mixin.js';
 
 import {root as root$0, isAncestor, isDescendant, get as get$0, translate, isPath as isPath$0, set as set$0, normalize} from '../utils/path.js';
 
-import {camelToDashCase, dashToCamelCase} from '../utils/case-map.js';
+import * as caseMap from '../utils/case-map.js';
+
+import {camelToDashCase as camelToDashCase$0, dashToCamelCase} from '../utils/case-map.js';
 
 import {PropertyAccessors} from './property-accessors.js';
 

@@ -8,6 +8,9 @@
  *   lib/elements/dom-if.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="../../polymer-element.d.ts" />
 /// <reference path="../utils/templatize.d.ts" />
 /// <reference path="../utils/debounce.d.ts" />

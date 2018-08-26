@@ -8,6 +8,10 @@
  *   lib/legacy/legacy-element-mixin.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../mixins/element-mixin.d.ts" />
 /// <reference path="../mixins/gesture-event-listeners.d.ts" />
 /// <reference path="../mixins/dir-mixin.d.ts" />

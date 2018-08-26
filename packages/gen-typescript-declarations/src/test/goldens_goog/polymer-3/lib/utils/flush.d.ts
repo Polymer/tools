@@ -8,22 +8,28 @@
  *   lib/utils/flush.js
  */
 
-import {Debouncer} from '../utils/debounce.js';
 
-export {enqueueDebouncer};
+// tslint:disable:variable-name API description
 
+declare module 'goog:npm.polymer.polymer.lib.utils.Flush' {
 
-/**
- * Adds a `Debouncer` to a list of globally flushable tasks.
- */
-declare function enqueueDebouncer(debouncer: Debouncer): void;
-
-export {flush};
+  export {enqueueDebouncer};
 
 
-/**
- * Forces several classes of asynchronously queued tasks to flush:
- * - Debouncers added via `enqueueDebouncer`
- * - ShadyDOM distribution
- */
-declare function flush(): void;
+  /**
+   * Adds a `Debouncer` to a list of globally flushable tasks.
+   */
+  function enqueueDebouncer(debouncer: Debouncer): void;
+
+  export {flush};
+
+
+  /**
+   * Forces several classes of asynchronously queued tasks to flush:
+   * - Debouncers added via `enqueueDebouncer`
+   * - ShadyDOM distribution
+   */
+  function flush(): void;
+
+  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
+}

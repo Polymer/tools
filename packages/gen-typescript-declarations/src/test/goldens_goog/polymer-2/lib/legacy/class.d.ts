@@ -8,6 +8,9 @@
  *   lib/legacy/class.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="legacy-element-mixin.d.ts" />
 
 declare namespace Polymer {

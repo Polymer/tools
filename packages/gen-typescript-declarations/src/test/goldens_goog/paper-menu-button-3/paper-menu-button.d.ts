@@ -8,180 +8,187 @@
  *   paper-menu-button.js
  */
 
-import {IronA11yKeysBehavior} from '@polymer/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 
-import {IronControlState} from '@polymer/iron-behaviors/iron-control-state.js';
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
-import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+declare module 'goog:npm.polymer.paperMenuButton.PaperMenuButton' {
 
-import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';
+  import {IronA11yKeysBehavior} from 'goog:npm.polymer.ironA11yKeysBehavior.IronA11yKeysBehavior'; // from //third_party/javascript/polymer/v2/iron-a11y-keys-behavior
 
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+  import {IronControlState} from 'goog:npm.polymer.ironBehaviors.IronControlState'; // from //third_party/javascript/polymer/v2/iron-behaviors
 
-export {PaperMenuButton};
+  import {Polymer} from 'goog:npm.polymer.polymer.lib.legacy.PolymerFn'; // from //third_party/javascript/polymer/v2/polymer
 
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin.js';
+  import {dom} from 'goog:npm.polymer.polymer.lib.legacy.PolymerDom'; // from //third_party/javascript/polymer/v2/polymer
 
-declare class PaperMenuButton {
+  import {html} from 'goog:npm.polymer.polymer.lib.utils.HtmlTag'; // from //third_party/javascript/polymer/v2/polymer
 
-  /**
-   * True if the content is currently displayed.
-   */
-  opened: boolean|null|undefined;
+  export {PaperMenuButton};
 
-  /**
-   * The orientation against which to align the menu dropdown
-   * horizontally relative to the dropdown trigger.
-   */
-  horizontalAlign: string|null|undefined;
+  import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  /**
-   * The orientation against which to align the menu dropdown
-   * vertically relative to the dropdown trigger.
-   */
-  verticalAlign: string|null|undefined;
+  class PaperMenuButton {
 
-  /**
-   * If true, the `horizontalAlign` and `verticalAlign` properties will
-   * be considered preferences instead of strict requirements when
-   * positioning the dropdown and may be changed if doing so reduces
-   * the area of the dropdown falling outside of `fitInto`.
-   */
-  dynamicAlign: boolean|null|undefined;
+    /**
+     * True if the content is currently displayed.
+     */
+    opened: boolean|null|undefined;
 
-  /**
-   * A pixel value that will be added to the position calculated for the
-   * given `horizontalAlign`. Use a negative value to offset to the
-   * left, or a positive value to offset to the right.
-   */
-  horizontalOffset: number|null|undefined;
+    /**
+     * The orientation against which to align the menu dropdown
+     * horizontally relative to the dropdown trigger.
+     */
+    horizontalAlign: string|null|undefined;
 
-  /**
-   * A pixel value that will be added to the position calculated for the
-   * given `verticalAlign`. Use a negative value to offset towards the
-   * top, or a positive value to offset towards the bottom.
-   */
-  verticalOffset: number|null|undefined;
+    /**
+     * The orientation against which to align the menu dropdown
+     * vertically relative to the dropdown trigger.
+     */
+    verticalAlign: string|null|undefined;
 
-  /**
-   * If true, the dropdown will be positioned so that it doesn't overlap
-   * the button.
-   */
-  noOverlap: boolean|null|undefined;
+    /**
+     * If true, the `horizontalAlign` and `verticalAlign` properties will
+     * be considered preferences instead of strict requirements when
+     * positioning the dropdown and may be changed if doing so reduces
+     * the area of the dropdown falling outside of `fitInto`.
+     */
+    dynamicAlign: boolean|null|undefined;
 
-  /**
-   * Set to true to disable animations when opening and closing the
-   * dropdown.
-   */
-  noAnimations: boolean|null|undefined;
+    /**
+     * A pixel value that will be added to the position calculated for the
+     * given `horizontalAlign`. Use a negative value to offset to the
+     * left, or a positive value to offset to the right.
+     */
+    horizontalOffset: number|null|undefined;
 
-  /**
-   * Set to true to disable automatically closing the dropdown after
-   * a selection has been made.
-   */
-  ignoreSelect: boolean|null|undefined;
+    /**
+     * A pixel value that will be added to the position calculated for the
+     * given `verticalAlign`. Use a negative value to offset towards the
+     * top, or a positive value to offset towards the bottom.
+     */
+    verticalOffset: number|null|undefined;
 
-  /**
-   * Set to true to enable automatically closing the dropdown after an
-   * item has been activated, even if the selection did not change.
-   */
-  closeOnActivate: boolean|null|undefined;
+    /**
+     * If true, the dropdown will be positioned so that it doesn't overlap
+     * the button.
+     */
+    noOverlap: boolean|null|undefined;
 
-  /**
-   * An animation config. If provided, this will be used to animate the
-   * opening of the dropdown.
-   */
-  openAnimationConfig: object|null|undefined;
+    /**
+     * Set to true to disable animations when opening and closing the
+     * dropdown.
+     */
+    noAnimations: boolean|null|undefined;
 
-  /**
-   * An animation config. If provided, this will be used to animate the
-   * closing of the dropdown.
-   */
-  closeAnimationConfig: object|null|undefined;
+    /**
+     * Set to true to disable automatically closing the dropdown after
+     * a selection has been made.
+     */
+    ignoreSelect: boolean|null|undefined;
 
-  /**
-   * By default, the dropdown will constrain scrolling on the page
-   * to itself when opened.
-   * Set to true in order to prevent scroll from being constrained
-   * to the dropdown when it opens.
-   */
-  allowOutsideScroll: boolean|null|undefined;
+    /**
+     * Set to true to enable automatically closing the dropdown after an
+     * item has been activated, even if the selection did not change.
+     */
+    closeOnActivate: boolean|null|undefined;
 
-  /**
-   * Whether focus should be restored to the button when the menu closes.
-   */
-  restoreFocusOnClose: boolean|null|undefined;
+    /**
+     * An animation config. If provided, this will be used to animate the
+     * opening of the dropdown.
+     */
+    openAnimationConfig: object|null|undefined;
 
-  /**
-   * This is the element intended to be bound as the focus target
-   * for the `iron-dropdown` contained by `paper-menu-button`.
-   */
-  _dropdownContent: object|null|undefined;
-  hostAttributes: object|null;
+    /**
+     * An animation config. If provided, this will be used to animate the
+     * closing of the dropdown.
+     */
+    closeAnimationConfig: object|null|undefined;
 
-  /**
-   * The content element that is contained by the menu button, if any.
-   *    
-   */
-  readonly contentElement: any;
+    /**
+     * By default, the dropdown will constrain scrolling on the page
+     * to itself when opened.
+     * Set to true in order to prevent scroll from being constrained
+     * to the dropdown when it opens.
+     */
+    allowOutsideScroll: boolean|null|undefined;
 
-  /**
-   * If the dropdown is open when disabled becomes true, close the
-   * dropdown.
-   *
-   * @param disabled True if disabled, otherwise false.
-   */
-  _disabledChanged(disabled: boolean): void;
+    /**
+     * Whether focus should be restored to the button when the menu closes.
+     */
+    restoreFocusOnClose: boolean|null|undefined;
 
-  /**
-   * Toggles the dropdown content between opened and closed.
-   */
-  toggle(): void;
+    /**
+     * This is the element intended to be bound as the focus target
+     * for the `iron-dropdown` contained by `paper-menu-button`.
+     */
+    _dropdownContent: object|null|undefined;
+    hostAttributes: object|null;
 
-  /**
-   * Make the dropdown content appear as an overlay positioned relative
-   * to the dropdown trigger.
-   */
-  open(): void;
+    /**
+     * The content element that is contained by the menu button, if any.
+     *    
+     */
+    readonly contentElement: any;
 
-  /**
-   * Hide the dropdown content.
-   */
-  close(): void;
+    /**
+     * If the dropdown is open when disabled becomes true, close the
+     * dropdown.
+     *
+     * @param disabled True if disabled, otherwise false.
+     */
+    _disabledChanged(disabled: boolean): void;
 
-  /**
-   * When an `iron-select` event is received, the dropdown should
-   * automatically close on the assumption that a value has been chosen.
-   *
-   * @param event A CustomEvent instance with type
-   * set to `"iron-select"`.
-   */
-  _onIronSelect(event: CustomEvent|null): void;
+    /**
+     * Toggles the dropdown content between opened and closed.
+     */
+    toggle(): void;
 
-  /**
-   * Closes the dropdown when an `iron-activate` event is received if
-   * `closeOnActivate` is true.
-   *
-   * @param event A CustomEvent of type 'iron-activate'.
-   */
-  _onIronActivate(event: CustomEvent|null): void;
+    /**
+     * Make the dropdown content appear as an overlay positioned relative
+     * to the dropdown trigger.
+     */
+    open(): void;
 
-  /**
-   * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
-   * When the dropdown closes, the `paper-menu-button` fires `paper-close`.
-   *
-   * @param opened True if the dropdown is opened, otherwise false.
-   * @param oldOpened The previous value of `opened`.
-   */
-  _openedChanged(opened: boolean, oldOpened: boolean): void;
-}
+    /**
+     * Hide the dropdown content.
+     */
+    close(): void;
 
-interface PaperMenuButton extends IronA11yKeysBehavior, IronControlState, LegacyElementMixin, HTMLElement {
-}
+    /**
+     * When an `iron-select` event is received, the dropdown should
+     * automatically close on the assumption that a value has been chosen.
+     *
+     * @param event A CustomEvent instance with type
+     * set to `"iron-select"`.
+     */
+    _onIronSelect(event: CustomEvent|null): void;
 
-declare global {
+    /**
+     * Closes the dropdown when an `iron-activate` event is received if
+     * `closeOnActivate` is true.
+     *
+     * @param event A CustomEvent of type 'iron-activate'.
+     */
+    _onIronActivate(event: CustomEvent|null): void;
 
-  interface HTMLElementTagNameMap {
-    "paper-menu-button": PaperMenuButton;
+    /**
+     * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
+     * When the dropdown closes, the `paper-menu-button` fires `paper-close`.
+     *
+     * @param opened True if the dropdown is opened, otherwise false.
+     * @param oldOpened The previous value of `opened`.
+     */
+    _openedChanged(opened: boolean, oldOpened: boolean): void;
+  }
+
+  interface PaperMenuButton extends IronA11yKeysBehavior, IronControlState, LegacyElementMixin, HTMLElement {
+  }
+
+  global {
+
+    interface HTMLElementTagNameMap {
+      "paper-menu-button": PaperMenuButton;
+    }
   }
 }

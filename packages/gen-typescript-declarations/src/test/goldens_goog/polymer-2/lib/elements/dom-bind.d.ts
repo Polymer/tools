@@ -8,6 +8,9 @@
  *   lib/elements/dom-bind.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="../utils/boot.d.ts" />
 /// <reference path="../mixins/property-effects.d.ts" />
 /// <reference path="../mixins/mutable-data.d.ts" />

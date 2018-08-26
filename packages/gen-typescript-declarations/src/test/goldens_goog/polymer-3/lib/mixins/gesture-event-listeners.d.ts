@@ -8,47 +8,54 @@
  *   lib/mixins/gesture-event-listeners.js
  */
 
-import {dedupingMixin} from '../utils/mixin.js';
 
-import * as gestures$0 from '../utils/gestures.js';
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
-export {GestureEventListeners};
+declare module 'goog:npm.polymer.polymer.lib.mixins.GestureEventListeners' {
 
+  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-/**
- * Element class mixin that provides API for adding Polymer's cross-platform
- * gesture events to nodes.
- *
- * The API is designed to be compatible with override points implemented
- * in `TemplateStamp` such that declarative event listeners in
- * templates will support gesture events when this mixin is applied along with
- * `TemplateStamp`.
- */
-declare function GestureEventListeners<T extends new (...args: any[]) => {}>(base: T): T & GestureEventListenersConstructor;
+  import * as gestures$0 from 'goog:npm.polymer.polymer.lib.utils.Gestures'; // from //third_party/javascript/polymer/v2/polymer
 
-interface GestureEventListenersConstructor {
-  new(...args: any[]): GestureEventListeners;
-}
+  export {GestureEventListeners};
 
-export {GestureEventListenersConstructor};
-
-interface GestureEventListeners {
 
   /**
-   * Add the event listener to the node if it is a gestures event.
+   * Element class mixin that provides API for adding Polymer's cross-platform
+   * gesture events to nodes.
    *
-   * @param node Node to add event listener to
-   * @param eventName Name of event
-   * @param handler Listener function to add
+   * The API is designed to be compatible with override points implemented
+   * in `TemplateStamp` such that declarative event listeners in
+   * templates will support gesture events when this mixin is applied along with
+   * `TemplateStamp`.
    */
-  _addEventListenerToNode(node: EventTarget, eventName: string, handler: (p0: Event) => void): void;
+  function GestureEventListeners<T extends new (...args: any[]) => {}>(base: T): T & GestureEventListenersConstructor;
 
-  /**
-   * Remove the event listener to the node if it is a gestures event.
-   *
-   * @param node Node to remove event listener from
-   * @param eventName Name of event
-   * @param handler Listener function to remove
-   */
-  _removeEventListenerFromNode(node: EventTarget, eventName: string, handler: (p0: Event) => void): void;
+  interface GestureEventListenersConstructor {
+    new(...args: any[]): GestureEventListeners;
+  }
+
+  export {GestureEventListenersConstructor};
+
+  interface GestureEventListeners {
+
+    /**
+     * Add the event listener to the node if it is a gestures event.
+     *
+     * @param node Node to add event listener to
+     * @param eventName Name of event
+     * @param handler Listener function to add
+     */
+    _addEventListenerToNode(node: EventTarget, eventName: string, handler: (p0: Event) => void): void;
+
+    /**
+     * Remove the event listener to the node if it is a gestures event.
+     *
+     * @param node Node to remove event listener from
+     * @param eventName Name of event
+     * @param handler Listener function to remove
+     */
+    _removeEventListenerFromNode(node: EventTarget, eventName: string, handler: (p0: Event) => void): void;
+  }
 }

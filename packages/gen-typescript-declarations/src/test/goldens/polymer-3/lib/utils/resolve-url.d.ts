@@ -8,6 +8,9 @@
  *   lib/utils/resolve-url.js
  */
 
+
+// tslint:disable:variable-name API description
+
 export {resolveUrl};
 
 

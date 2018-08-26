@@ -9,4 +9,5 @@
  */
 
 
-export {};
+// tslint:disable:variable-name API description
+

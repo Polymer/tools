@@ -8,6 +8,9 @@
  *   lib/elements/custom-style.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="../utils/style-gather.d.ts" />
 
 declare namespace Polymer {

@@ -8,6 +8,10 @@
  *   paper-ripple-behavior.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../polymer/types/polymer.d.ts" />
 /// <reference path="../iron-behaviors/iron-button-state.d.ts" />
 /// <reference path="../paper-ripple/paper-ripple.d.ts" />

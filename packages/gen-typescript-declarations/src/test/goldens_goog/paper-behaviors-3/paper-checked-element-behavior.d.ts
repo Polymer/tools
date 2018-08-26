@@ -8,28 +8,34 @@
  *   paper-checked-element-behavior.js
  */
 
-import {PaperInkyFocusBehavior} from './paper-inky-focus-behavior.js';
 
-import {PaperRippleBehavior} from './paper-ripple-behavior.js';
+// tslint:disable:variable-name API description
 
-/**
- * Use `PaperCheckedElementBehavior` to implement a custom element that has a
- * `checked` property similar to `IronCheckedElementBehavior` and is compatible
- * with having a ripple effect.
- */
-interface PaperCheckedElementBehavior extends PaperInkyFocusBehavior, IronCheckedElementBehavior {
+declare module 'goog:npm.polymer.paperBehaviors.PaperCheckedElementBehavior' {
+
+  import {PaperInkyFocusBehavior} from 'goog:npm.polymer.paperBehaviors.PaperInkyFocusBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
+
+  import {PaperRippleBehavior} from 'goog:npm.polymer.paperBehaviors.PaperRippleBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
 
   /**
-   * Synchronizes the element's `active` and `checked` state.
+   * Use `PaperCheckedElementBehavior` to implement a custom element that has a
+   * `checked` property similar to `IronCheckedElementBehavior` and is compatible
+   * with having a ripple effect.
    */
-  _buttonStateChanged(): void;
+  interface PaperCheckedElementBehavior extends PaperInkyFocusBehavior, IronCheckedElementBehavior {
 
-  /**
-   * Synchronizes the element's checked state with its ripple effect.
-   */
-  _checkedChanged(): void;
+    /**
+     * Synchronizes the element's `active` and `checked` state.
+     */
+    _buttonStateChanged(): void;
+
+    /**
+     * Synchronizes the element's checked state with its ripple effect.
+     */
+    _checkedChanged(): void;
+  }
+
+  const PaperCheckedElementBehavior: object;
+
+  export {PaperCheckedElementBehavior};
 }
-
-declare const PaperCheckedElementBehavior: object;
-
-export {PaperCheckedElementBehavior};

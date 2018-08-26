@@ -8,6 +8,9 @@
  *   lib/utils/style-gather.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="resolve-url.d.ts" />
 
 declare namespace Polymer {

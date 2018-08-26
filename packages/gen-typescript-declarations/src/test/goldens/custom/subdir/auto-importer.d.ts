@@ -8,6 +8,9 @@
  *   subdir/auto-importer.js
  */
 
+
+// tslint:disable:variable-name API description
+
 export {autoImportFunction};
 
 declare function autoImportFunction(p1: ClassA1, p2: ClassA2): ExternalPackageClass;

@@ -8,6 +8,10 @@
  *   lib/utils/settings.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="boot.d.ts" />
 /// <reference path="resolve-url.d.ts" />
 

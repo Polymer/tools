@@ -8,41 +8,48 @@
  *   paper-button-behavior.js
  */
 
-import {IronButtonState} from '@polymer/iron-behaviors/iron-button-state.js';
 
-import {IronControlState} from '@polymer/iron-behaviors/iron-control-state.js';
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
-import {PaperRippleBehavior} from './paper-ripple-behavior.js';
+declare module 'goog:npm.polymer.paperBehaviors.PaperButtonBehavior' {
 
-interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior {
+  import {IronButtonState} from 'goog:npm.polymer.ironBehaviors.IronButtonState'; // from //third_party/javascript/polymer/v2/iron-behaviors
 
-  /**
-   * The z-depth of this element, from 0-5. Setting to 0 will remove the
-   * shadow, and each increasing number greater than 0 will be "deeper"
-   * than the last.
-   */
-  readonly elevation: number|null|undefined;
-  hostAttributes: object|null;
+  import {IronControlState} from 'goog:npm.polymer.ironBehaviors.IronControlState'; // from //third_party/javascript/polymer/v2/iron-behaviors
 
-  /**
-   * In addition to `IronButtonState` behavior, when space key goes down,
-   * create a ripple down effect.
-   *
-   * @param event .
-   */
-  _spaceKeyDownHandler(event: KeyboardEvent): void;
+  import {PaperRippleBehavior} from 'goog:npm.polymer.paperBehaviors.PaperRippleBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
 
-  /**
-   * In addition to `IronButtonState` behavior, when space key goes up,
-   * create a ripple up effect.
-   *
-   * @param event .
-   */
-  _spaceKeyUpHandler(event: KeyboardEvent): void;
-  _calculateElevation(): void;
-  _computeKeyboardClass(receivedFocusFromKeyboard: any): void;
+  interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior {
+
+    /**
+     * The z-depth of this element, from 0-5. Setting to 0 will remove the
+     * shadow, and each increasing number greater than 0 will be "deeper"
+     * than the last.
+     */
+    readonly elevation: number|null|undefined;
+    hostAttributes: object|null;
+
+    /**
+     * In addition to `IronButtonState` behavior, when space key goes down,
+     * create a ripple down effect.
+     *
+     * @param event .
+     */
+    _spaceKeyDownHandler(event: KeyboardEvent): void;
+
+    /**
+     * In addition to `IronButtonState` behavior, when space key goes up,
+     * create a ripple up effect.
+     *
+     * @param event .
+     */
+    _spaceKeyUpHandler(event: KeyboardEvent): void;
+    _calculateElevation(): void;
+    _computeKeyboardClass(receivedFocusFromKeyboard: any): void;
+  }
+
+  const PaperButtonBehavior: object;
+
+  export {PaperButtonBehavior};
 }
-
-declare const PaperButtonBehavior: object;
-
-export {PaperButtonBehavior};

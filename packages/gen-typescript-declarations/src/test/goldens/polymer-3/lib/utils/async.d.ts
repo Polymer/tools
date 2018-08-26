@@ -8,6 +8,9 @@
  *   lib/utils/async.js
  */
 
+
+// tslint:disable:variable-name API description
+
 /**
  * Async interface wrapper around `setTimeout`.
  */

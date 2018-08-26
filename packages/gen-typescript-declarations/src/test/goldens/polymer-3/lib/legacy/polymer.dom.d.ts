@@ -8,11 +8,13 @@
  *   lib/legacy/polymer.dom.js
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 import {FlattenedNodesObserver} from '../utils/flattened-nodes-observer.js';
 
-export {flush, enqueueDebouncer as addDebouncer} from '../utils/flush.js';
-
-import {Debouncer} from '../utils/debounce.js';
+import {flush as flush$0, enqueueDebouncer} from '../utils/flush.js';
 
 export {matchesSelector};
 
@@ -58,14 +60,14 @@ declare class DomApi {
   constructor(node: Node|null);
 
   /**
-   * Returns an instance of `FlattenedNodesObserver` that
+   * Returns an instance of `Polymer.FlattenedNodesObserver` that
    * listens for node changes on this element.
    *
    * @param callback Called when direct or distributed children
    *   of this element changes
    * @returns Observer instance
    */
-  observeNodes(callback: (p0: {target: Element, addedNodes: Element[], removedNodes: Element[]}) => void): FlattenedNodesObserver;
+  observeNodes(callback: (p0: Element, p1: {target: Element, addedNodes: Element[], removedNodes: Element[]}) => void): FlattenedNodesObserver;
 
   /**
    * Disconnects an observer previously created via `observeNodes`
@@ -151,10 +153,8 @@ declare class DomApi {
   querySelectorAll(selector: string): NodeListOf<Element>;
 }
 
-export {EventApi};
-
 /**
- * Event API wrapper class returned from `dom.(target)` when
+ * Event API wrapper class returned from `Polymer.dom.(target)` when
  * `target` is an `Event`.
  */
 declare class EventApi {
@@ -191,3 +191,7 @@ export {dom};
  * @returns Wrapper providing either node API or event API
  */
 declare function dom(obj?: Node|Event|null): DomApi|EventApi;
+
+export {flush$0 as flush};
+
+export {enqueueDebouncer as addDebouncer};

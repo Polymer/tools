@@ -8,6 +8,10 @@
  *   lib/utils/flattened-nodes-observer.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="boot.d.ts" />
 /// <reference path="array-splice.d.ts" />
 /// <reference path="async.d.ts" />

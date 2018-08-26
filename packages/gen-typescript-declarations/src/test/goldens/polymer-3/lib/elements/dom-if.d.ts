@@ -8,6 +8,9 @@
  *   lib/elements/dom-if.js
  */
 
+
+// tslint:disable:variable-name API description
+
 import {PolymerElement} from '../../polymer-element.js';
 
 import {templatize} from '../utils/templatize.js';

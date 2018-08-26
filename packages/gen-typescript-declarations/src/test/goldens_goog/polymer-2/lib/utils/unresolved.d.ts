@@ -8,3 +8,6 @@
  *   lib/utils/unresolved.html
  */
 
+
+// tslint:disable:variable-name API description
+

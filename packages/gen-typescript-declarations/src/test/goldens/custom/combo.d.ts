@@ -9,6 +9,9 @@
  *   combo.js
  */
 
+
+// tslint:disable:variable-name API description
+
 declare function B(): void;
 
 declare function C(): void;

@@ -8,6 +8,9 @@
  *   paper-button.js
  */
 
+
+// tslint:disable:variable-name API description
+
 import {PaperButtonBehavior} from '@polymer/paper-behaviors/paper-button-behavior.js';
 
 import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';

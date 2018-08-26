@@ -8,6 +8,10 @@
  *   lib/elements/dom-repeat.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../../polymer-element.d.ts" />
 /// <reference path="../utils/templatize.d.ts" />
 /// <reference path="../utils/debounce.d.ts" />

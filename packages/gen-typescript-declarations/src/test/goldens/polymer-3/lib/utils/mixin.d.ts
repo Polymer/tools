@@ -8,6 +8,9 @@
  *   lib/utils/mixin.js
  */
 
+
+// tslint:disable:variable-name API description
+
 export {dedupingMixin};
 
 

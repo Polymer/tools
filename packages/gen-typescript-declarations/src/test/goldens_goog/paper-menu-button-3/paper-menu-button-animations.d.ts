@@ -8,42 +8,49 @@
  *   paper-menu-button-animations.js
  */
 
-import {NeonAnimationBehavior} from '@polymer/neon-animation/neon-animation-behavior.js';
 
-import {Polymer} from '@polymer/polymer/lib/legacy/polymer-fn.js';
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
-import {LegacyElementMixin} from '@polymer/polymer/lib/legacy/legacy-element-mixin.js';
+declare module 'goog:npm.polymer.paperMenuButton.PaperMenuButtonAnimations' {
 
-interface PaperMenuGrowHeightAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
-  configure(config: any): any;
-}
+  import {NeonAnimationBehavior} from 'goog:npm.polymer.neonAnimation.NeonAnimationBehavior'; // from //third_party/javascript/polymer/v2/neon-animation
 
-export {PaperMenuGrowHeightAnimationElement};
+  import {Polymer} from 'goog:npm.polymer.polymer.lib.legacy.PolymerFn'; // from //third_party/javascript/polymer/v2/polymer
 
-declare global {
+  import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  interface HTMLElementTagNameMap {
-    "paper-menu-grow-height-animation": PaperMenuGrowHeightAnimationElement;
-    "paper-menu-grow-width-animation": PaperMenuGrowWidthAnimationElement;
-    "paper-menu-shrink-width-animation": PaperMenuShrinkWidthAnimationElement;
-    "paper-menu-shrink-height-animation": PaperMenuShrinkHeightAnimationElement;
+  interface PaperMenuGrowHeightAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
+    configure(config: any): any;
   }
+
+  export {PaperMenuGrowHeightAnimationElement};
+
+  global {
+
+    interface HTMLElementTagNameMap {
+      "paper-menu-grow-height-animation": PaperMenuGrowHeightAnimationElement;
+      "paper-menu-grow-width-animation": PaperMenuGrowWidthAnimationElement;
+      "paper-menu-shrink-width-animation": PaperMenuShrinkWidthAnimationElement;
+      "paper-menu-shrink-height-animation": PaperMenuShrinkHeightAnimationElement;
+    }
+  }
+
+  interface PaperMenuGrowWidthAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
+    configure(config: any): any;
+  }
+
+  export {PaperMenuGrowWidthAnimationElement};
+
+  interface PaperMenuShrinkWidthAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
+    configure(config: any): any;
+  }
+
+  export {PaperMenuShrinkWidthAnimationElement};
+
+  interface PaperMenuShrinkHeightAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
+    configure(config: any): any;
+  }
+
+  export {PaperMenuShrinkHeightAnimationElement};
 }
-
-interface PaperMenuGrowWidthAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
-  configure(config: any): any;
-}
-
-export {PaperMenuGrowWidthAnimationElement};
-
-interface PaperMenuShrinkWidthAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
-  configure(config: any): any;
-}
-
-export {PaperMenuShrinkWidthAnimationElement};
-
-interface PaperMenuShrinkHeightAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
-  configure(config: any): any;
-}
-
-export {PaperMenuShrinkHeightAnimationElement};

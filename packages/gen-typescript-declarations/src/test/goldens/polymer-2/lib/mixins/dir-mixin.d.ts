@@ -8,6 +8,10 @@
  *   lib/mixins/dir-mixin.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="property-accessors.d.ts" />
 
 declare namespace Polymer {

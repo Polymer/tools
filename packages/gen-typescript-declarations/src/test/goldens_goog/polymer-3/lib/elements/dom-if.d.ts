@@ -8,73 +8,79 @@
  *   lib/elements/dom-if.js
  */
 
-import {PolymerElement} from '../../polymer-element.js';
 
-import {templatize} from '../utils/templatize.js';
+// tslint:disable:variable-name API description
 
-import {Debouncer} from '../utils/debounce.js';
+declare module 'goog:npm.polymer.polymer.lib.elements.DomIf' {
 
-import {enqueueDebouncer, flush} from '../utils/flush.js';
+  import {PolymerElement} from 'goog:npm.polymer.polymer.PolymerElement'; // from //third_party/javascript/polymer/v2/polymer
 
-import {microTask} from '../utils/async.js';
+  import {templatize} from 'goog:npm.polymer.polymer.lib.utils.Templatize'; // from //third_party/javascript/polymer/v2/polymer
 
-import {root as root$0} from '../utils/path.js';
+  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
 
-export {DomIf};
+  import {enqueueDebouncer, flush} from 'goog:npm.polymer.polymer.lib.utils.Flush'; // from //third_party/javascript/polymer/v2/polymer
 
-/**
- * The `<dom-if>` element will stamp a light-dom `<template>` child when
- * the `if` property becomes truthy, and the template can use Polymer
- * data-binding and declarative event features when used in the context of
- * a Polymer element's template.
- *
- * When `if` becomes falsy, the stamped content is hidden but not
- * removed from dom. When `if` subsequently becomes truthy again, the content
- * is simply re-shown. This approach is used due to its favorable performance
- * characteristics: the expense of creating template content is paid only
- * once and lazily.
- *
- * Set the `restamp` property to true to force the stamped content to be
- * created / destroyed when the `if` condition changes.
- */
-declare class DomIf extends PolymerElement {
+  import {microTask} from 'goog:npm.polymer.polymer.lib.utils.Async'; // from //third_party/javascript/polymer/v2/polymer
+
+  import {root as root$0} from 'goog:npm.polymer.polymer.lib.utils.Path'; // from //third_party/javascript/polymer/v2/polymer
+
+  export {DomIf};
 
   /**
-   * A boolean indicating whether this template should stamp.
+   * The `<dom-if>` element will stamp a light-dom `<template>` child when
+   * the `if` property becomes truthy, and the template can use Polymer
+   * data-binding and declarative event features when used in the context of
+   * a Polymer element's template.
+   *
+   * When `if` becomes falsy, the stamped content is hidden but not
+   * removed from dom. When `if` subsequently becomes truthy again, the content
+   * is simply re-shown. This approach is used due to its favorable performance
+   * characteristics: the expense of creating template content is paid only
+   * once and lazily.
+   *
+   * Set the `restamp` property to true to force the stamped content to be
+   * created / destroyed when the `if` condition changes.
    */
-  if: boolean|null|undefined;
+  class DomIf extends PolymerElement {
 
-  /**
-   * When true, elements will be removed from DOM and discarded when `if`
-   * becomes false and re-created and added back to the DOM when `if`
-   * becomes true.  By default, stamped elements will be hidden but left
-   * in the DOM when `if` becomes false, which is generally results
-   * in better performance.
-   */
-  restamp: boolean|null|undefined;
-  connectedCallback(): void;
-  disconnectedCallback(): void;
+    /**
+     * A boolean indicating whether this template should stamp.
+     */
+    if: boolean|null|undefined;
 
-  /**
-   * Forces the element to render its content. Normally rendering is
-   * asynchronous to a provoking change. This is done for efficiency so
-   * that multiple changes trigger only a single render. The render method
-   * should be called if, for example, template rendering is required to
-   * validate application state.
-   */
-  render(): void;
+    /**
+     * When true, elements will be removed from DOM and discarded when `if`
+     * becomes false and re-created and added back to the DOM when `if`
+     * becomes true.  By default, stamped elements will be hidden but left
+     * in the DOM when `if` becomes false, which is generally results
+     * in better performance.
+     */
+    restamp: boolean|null|undefined;
+    connectedCallback(): void;
+    disconnectedCallback(): void;
 
-  /**
-   * Shows or hides the template instance top level child elements. For
-   * text nodes, `textContent` is removed while "hidden" and replaced when
-   * "shown."
-   */
-  _showHideChildren(): void;
-}
+    /**
+     * Forces the element to render its content. Normally rendering is
+     * asynchronous to a provoking change. This is done for efficiency so
+     * that multiple changes trigger only a single render. The render method
+     * should be called if, for example, template rendering is required to
+     * validate application state.
+     */
+    render(): void;
 
-declare global {
+    /**
+     * Shows or hides the template instance top level child elements. For
+     * text nodes, `textContent` is removed while "hidden" and replaced when
+     * "shown."
+     */
+    _showHideChildren(): void;
+  }
 
-  interface HTMLElementTagNameMap {
-    "dom-if": DomIf;
+  global {
+
+    interface HTMLElementTagNameMap {
+      "dom-if": DomIf;
+    }
   }
 }

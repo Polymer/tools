@@ -8,75 +8,82 @@
  *   lib/mixins/properties-mixin.js
  */
 
-import {dedupingMixin} from '../utils/mixin.js';
 
-import {PropertiesChanged} from './properties-changed.js';
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
-export {PropertiesMixin};
+declare module 'goog:npm.polymer.polymer.lib.mixins.PropertiesMixin' {
 
+  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-/**
- * Mixin that provides a minimal starting point to using the PropertiesChanged
- * mixin by providing a mechanism to declare properties in a static
- * getter (e.g. static get properties() { return { foo: String } }). Changes
- * are reported via the `_propertiesChanged` method.
- *
- * This mixin provides no specific support for rendering. Users are expected
- * to create a ShadowRoot and put content into it and update it in whatever
- * way makes sense. This can be done in reaction to properties changing by
- * implementing `_propertiesChanged`.
- */
-declare function PropertiesMixin<T extends new (...args: any[]) => {}>(base: T): T & PropertiesMixinConstructor & PropertiesChangedConstructor;
+  import {PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
-import {PropertiesChangedConstructor} from './properties-changed.js';
+  export {PropertiesMixin};
 
-interface PropertiesMixinConstructor {
-  new(...args: any[]): PropertiesMixin;
 
   /**
-   * Overrides `PropertiesChanged` method to return type specified in the
-   * static `properties` object for the given property.
+   * Mixin that provides a minimal starting point to using the PropertiesChanged
+   * mixin by providing a mechanism to declare properties in a static
+   * getter (e.g. static get properties() { return { foo: String } }). Changes
+   * are reported via the `_propertiesChanged` method.
    *
-   * @param name Name of property
-   * @returns Type to which to deserialize attribute
+   * This mixin provides no specific support for rendering. Users are expected
+   * to create a ShadowRoot and put content into it and update it in whatever
+   * way makes sense. This can be done in reaction to properties changing by
+   * implementing `_propertiesChanged`.
    */
-  typeForProperty(name: string): any;
+  function PropertiesMixin<T extends new (...args: any[]) => {}>(base: T): T & PropertiesMixinConstructor & PropertiesChangedConstructor;
 
-  /**
-   * Finalizes an element definition, including ensuring any super classes
-   * are also finalized. This includes ensuring property
-   * accessors exist on the element prototype. This method calls
-   * `_finalizeClass` to finalize each constructor in the prototype chain.
-   */
-  finalize(): void;
+  import {PropertiesChangedConstructor} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
-  /**
-   * Finalize an element class. This includes ensuring property
-   * accessors exist on the element prototype. This method is called by
-   * `finalize` and finalizes the class constructor.
-   */
-  _finalizeClass(): void;
-}
+  interface PropertiesMixinConstructor {
+    new(...args: any[]): PropertiesMixin;
 
-export {PropertiesMixinConstructor};
+    /**
+     * Overrides `PropertiesChanged` method to return type specified in the
+     * static `properties` object for the given property.
+     *
+     * @param name Name of property
+     * @returns Type to which to deserialize attribute
+     */
+    typeForProperty(name: string): any;
 
-interface PropertiesMixin extends PropertiesChanged {
+    /**
+     * Finalizes an element definition, including ensuring any super classes
+     * are also finalized. This includes ensuring property
+     * accessors exist on the element prototype. This method calls
+     * `_finalizeClass` to finalize each constructor in the prototype chain.
+     */
+    finalize(): void;
 
-  /**
-   * Overrides `PropertiesChanged` method and adds a call to
-   * `finalize` which lazily configures the element's property accessors.
-   */
-  _initializeProperties(): void;
+    /**
+     * Finalize an element class. This includes ensuring property
+     * accessors exist on the element prototype. This method is called by
+     * `finalize` and finalizes the class constructor.
+     */
+    _finalizeClass(): void;
+  }
 
-  /**
-   * Called when the element is added to a document.
-   * Calls `_enableProperties` to turn on property system from
-   * `PropertiesChanged`.
-   */
-  connectedCallback(): void;
+  export {PropertiesMixinConstructor};
 
-  /**
-   * Called when the element is removed from a document
-   */
-  disconnectedCallback(): void;
+  interface PropertiesMixin extends PropertiesChanged {
+
+    /**
+     * Overrides `PropertiesChanged` method and adds a call to
+     * `finalize` which lazily configures the element's property accessors.
+     */
+    _initializeProperties(): void;
+
+    /**
+     * Called when the element is added to a document.
+     * Calls `_enableProperties` to turn on property system from
+     * `PropertiesChanged`.
+     */
+    connectedCallback(): void;
+
+    /**
+     * Called when the element is removed from a document
+     */
+    disconnectedCallback(): void;
+  }
 }

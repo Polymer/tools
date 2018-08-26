@@ -8,6 +8,9 @@
  *   lib/legacy/templatizer-behavior.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="../utils/templatize.d.ts" />
 
 declare namespace Polymer {

@@ -8,6 +8,10 @@
  *   lib/mixins/properties-changed.js
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 import {dedupingMixin} from '../utils/mixin.js';
 
 import {microTask} from '../utils/async.js';

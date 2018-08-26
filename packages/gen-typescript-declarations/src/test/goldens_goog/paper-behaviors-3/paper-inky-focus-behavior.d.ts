@@ -8,21 +8,28 @@
  *   paper-inky-focus-behavior.js
  */
 
-import {IronButtonState} from '@polymer/iron-behaviors/iron-button-state.js';
 
-import {IronControlState} from '@polymer/iron-behaviors/iron-control-state.js';
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
-import {PaperRippleBehavior} from './paper-ripple-behavior.js';
+declare module 'goog:npm.polymer.paperBehaviors.PaperInkyFocusBehavior' {
 
-/**
- * `PaperInkyFocusBehavior` implements a ripple when the element has keyboard
- * focus.
- */
-interface PaperInkyFocusBehavior extends IronButtonState, IronControlState, PaperRippleBehavior {
-  _createRipple(): any;
-  _focusedChanged(receivedFocusFromKeyboard: any): void;
+  import {IronButtonState} from 'goog:npm.polymer.ironBehaviors.IronButtonState'; // from //third_party/javascript/polymer/v2/iron-behaviors
+
+  import {IronControlState} from 'goog:npm.polymer.ironBehaviors.IronControlState'; // from //third_party/javascript/polymer/v2/iron-behaviors
+
+  import {PaperRippleBehavior} from 'goog:npm.polymer.paperBehaviors.PaperRippleBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
+
+  /**
+   * `PaperInkyFocusBehavior` implements a ripple when the element has keyboard
+   * focus.
+   */
+  interface PaperInkyFocusBehavior extends IronButtonState, IronControlState, PaperRippleBehavior {
+    _createRipple(): any;
+    _focusedChanged(receivedFocusFromKeyboard: any): void;
+  }
+
+  const PaperInkyFocusBehavior: object;
+
+  export {PaperInkyFocusBehavior};
 }
-
-declare const PaperInkyFocusBehavior: object;
-
-export {PaperInkyFocusBehavior};

@@ -8,6 +8,10 @@
  *   paper-ripple-behavior.js
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 import {dom} from '@polymer/polymer/lib/legacy/polymer.dom.js';
 
 export {PaperRippleBehavior};

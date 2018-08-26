@@ -8,24 +8,30 @@
  *   lib/utils/case-map.js
  */
 
-export {dashToCamelCase};
+
+// tslint:disable:variable-name API description
+
+declare module 'goog:npm.polymer.polymer.lib.utils.CaseMap' {
+
+  export {dashToCamelCase};
 
 
-/**
- * Converts "dash-case" identifier (e.g. `foo-bar-baz`) to "camelCase"
- * (e.g. `fooBarBaz`).
- *
- * @returns Camel-case representation of the identifier
- */
-declare function dashToCamelCase(dash: string): string;
+  /**
+   * Converts "dash-case" identifier (e.g. `foo-bar-baz`) to "camelCase"
+   * (e.g. `fooBarBaz`).
+   *
+   * @returns Camel-case representation of the identifier
+   */
+  function dashToCamelCase(dash: string): string;
 
-export {camelToDashCase};
+  export {camelToDashCase};
 
 
-/**
- * Converts "camelCase" identifier (e.g. `fooBarBaz`) to "dash-case"
- * (e.g. `foo-bar-baz`).
- *
- * @returns Dash-case representation of the identifier
- */
-declare function camelToDashCase(camel: string): string;
+  /**
+   * Converts "camelCase" identifier (e.g. `fooBarBaz`) to "dash-case"
+   * (e.g. `foo-bar-baz`).
+   *
+   * @returns Dash-case representation of the identifier
+   */
+  function camelToDashCase(camel: string): string;
+}

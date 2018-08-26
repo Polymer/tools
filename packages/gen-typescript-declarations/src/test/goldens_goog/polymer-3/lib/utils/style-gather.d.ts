@@ -8,102 +8,106 @@
  *   lib/utils/style-gather.js
  */
 
-import {DomModule} from '../elements/dom-module.js';
 
-import {resolveCss} from './resolve-url.js';
+// tslint:disable:variable-name API description
 
-export {stylesFromModules};
+declare module 'goog:npm.polymer.polymer.lib.utils.StyleGather' {
 
+  import {resolveCss} from 'goog:npm.polymer.polymer.lib.utils.ResolveUrl'; // from //third_party/javascript/polymer/v2/polymer
 
-/**
- * Returns a list of <style> elements in a space-separated list of `dom-module`s.
- *
- * @returns Array of contained <style> elements
- */
-declare function stylesFromModules(moduleIds: string): HTMLStyleElement[];
-
-export {stylesFromModule};
+  export {stylesFromModules};
 
 
-/**
- * Returns a list of <style> elements in a given `dom-module`.
- * Styles in a `dom-module` can come either from `<style>`s within the
- * first `<template>`, or else from one or more
- * `<link rel="import" type="css">` links outside the template.
- *
- * @returns Array of contained styles.
- */
-declare function stylesFromModule(moduleId: string): HTMLStyleElement[];
+  /**
+   * Returns a list of <style> elements in a space-separated list of `dom-module`s.
+   *
+   * @returns Array of contained <style> elements
+   */
+  function stylesFromModules(moduleIds: string): HTMLStyleElement[];
 
-export {stylesFromTemplate};
+  export {stylesFromModule};
 
 
-/**
- * Returns the `<style>` elements within a given template.
- *
- * @returns Array of styles
- */
-declare function stylesFromTemplate(template: HTMLTemplateElement, baseURI: string): HTMLStyleElement[];
+  /**
+   * Returns a list of <style> elements in a given `dom-module`.
+   * Styles in a `dom-module` can come either from `<style>`s within the
+   * first `<template>`, or else from one or more
+   * `<link rel="import" type="css">` links outside the template.
+   *
+   * @returns Array of contained styles.
+   */
+  function stylesFromModule(moduleId: string): HTMLStyleElement[];
 
-export {stylesFromModuleImports};
-
-
-/**
- * Returns a list of <style> elements  from stylesheets loaded via `<link rel="import" type="css">` links within the specified `dom-module`.
- *
- * @returns Array of contained styles.
- */
-declare function stylesFromModuleImports(moduleId: string): HTMLStyleElement[];
-
-export {cssFromModules};
+  export {stylesFromTemplate};
 
 
-/**
- * Returns CSS text of styles in a space-separated list of `dom-module`s.
- * Note: This method is deprecated, use `stylesFromModules` instead.
- *
- * @returns Concatenated CSS content from specified `dom-module`s
- */
-declare function cssFromModules(moduleIds: string): string;
+  /**
+   * Returns the `<style>` elements within a given template.
+   *
+   * @returns Array of styles
+   */
+  function stylesFromTemplate(template: HTMLTemplateElement, baseURI: string): HTMLStyleElement[];
 
-export {cssFromModule};
-
-
-/**
- * Returns CSS text of styles in a given `dom-module`.  CSS in a `dom-module`
- * can come either from `<style>`s within the first `<template>`, or else
- * from one or more `<link rel="import" type="css">` links outside the
- * template.
- *
- * Any `<styles>` processed are removed from their original location.
- * Note: This method is deprecated, use `styleFromModule` instead.
- *
- * @returns Concatenated CSS content from specified `dom-module`
- */
-declare function cssFromModule(moduleId: string): string;
-
-export {cssFromTemplate};
+  export {stylesFromModuleImports};
 
 
-/**
- * Returns CSS text of `<styles>` within a given template.
- *
- * Any `<styles>` processed are removed from their original location.
- * Note: This method is deprecated, use `styleFromTemplate` instead.
- *
- * @returns Concatenated CSS content from specified template
- */
-declare function cssFromTemplate(template: HTMLTemplateElement, baseURI: string): string;
+  /**
+   * Returns a list of <style> elements  from stylesheets loaded via `<link rel="import" type="css">` links within the specified `dom-module`.
+   *
+   * @returns Array of contained styles.
+   */
+  function stylesFromModuleImports(moduleId: string): HTMLStyleElement[];
 
-export {cssFromModuleImports};
+  export {cssFromModules};
 
 
-/**
- * Returns CSS text from stylesheets loaded via `<link rel="import" type="css">`
- * links within the specified `dom-module`.
- *
- * Note: This method is deprecated, use `stylesFromModuleImports` instead.
- *
- * @returns Concatenated CSS content from links in specified `dom-module`
- */
-declare function cssFromModuleImports(moduleId: string): string;
+  /**
+   * Returns CSS text of styles in a space-separated list of `dom-module`s.
+   * Note: This method is deprecated, use `stylesFromModules` instead.
+   *
+   * @returns Concatenated CSS content from specified `dom-module`s
+   */
+  function cssFromModules(moduleIds: string): string;
+
+  export {cssFromModule};
+
+
+  /**
+   * Returns CSS text of styles in a given `dom-module`.  CSS in a `dom-module`
+   * can come either from `<style>`s within the first `<template>`, or else
+   * from one or more `<link rel="import" type="css">` links outside the
+   * template.
+   *
+   * Any `<styles>` processed are removed from their original location.
+   * Note: This method is deprecated, use `styleFromModule` instead.
+   *
+   * @returns Concatenated CSS content from specified `dom-module`
+   */
+  function cssFromModule(moduleId: string): string;
+
+  export {cssFromTemplate};
+
+
+  /**
+   * Returns CSS text of `<styles>` within a given template.
+   *
+   * Any `<styles>` processed are removed from their original location.
+   * Note: This method is deprecated, use `styleFromTemplate` instead.
+   *
+   * @returns Concatenated CSS content from specified template
+   */
+  function cssFromTemplate(template: HTMLTemplateElement, baseURI: string): string;
+
+  export {cssFromModuleImports};
+
+
+  /**
+   * Returns CSS text from stylesheets loaded via `<link rel="import" type="css">`
+   * links within the specified `dom-module`.
+   *
+   * Note: This method is deprecated, use `stylesFromModuleImports` instead.
+   *
+   * @returns Concatenated CSS content from links in specified `dom-module`
+   */
+  function cssFromModuleImports(moduleId: string): string;
+}

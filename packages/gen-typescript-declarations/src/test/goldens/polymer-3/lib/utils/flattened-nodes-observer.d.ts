@@ -8,6 +8,10 @@
  *   lib/utils/flattened-nodes-observer.js
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 import {calculateSplices} from './array-splice.js';
 
 import {microTask} from './async.js';
@@ -59,7 +63,7 @@ declare class FlattenedNodesObserver {
    * @param callback Function called when there are additions
    * or removals from the target's list of flattened nodes.
    */
-  constructor(target: Element, callback: ((p0: {target: Element, addedNodes: Element[], removedNodes: Element[]}) => void)|null);
+  constructor(target: Element|null, callback: ((p0: Element, p1: {target: Element, addedNodes: Element[], removedNodes: Element[]}) => void)|null);
 
   /**
    * Returns the list of flattened nodes for the given `node`.
@@ -70,11 +74,10 @@ declare class FlattenedNodesObserver {
    * nodes list is `<a></a><div></div><b></b>`. If the `<slot>` has other
    * `<slot>` elements assigned to it, these are flattened as well.
    *
-   * @param node The node for which to
-   *      return the list of flattened nodes.
+   * @param node The node for which to return the list of flattened nodes.
    * @returns The list of flattened nodes for the given `node`.
    */
-  static getFlattenedNodes(node: HTMLElement|HTMLSlotElement): Node[];
+  static getFlattenedNodes(node: HTMLElement|HTMLSlotElement|null): any[]|null;
 
   /**
    * Activates an observer. This method is automatically called when

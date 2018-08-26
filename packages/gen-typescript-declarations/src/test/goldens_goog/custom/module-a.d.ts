@@ -8,6 +8,9 @@
  *   module-a.js
  */
 
+
+// tslint:disable:variable-name API description
+
 export {ClassA1};
 
 declare class ClassA1 {

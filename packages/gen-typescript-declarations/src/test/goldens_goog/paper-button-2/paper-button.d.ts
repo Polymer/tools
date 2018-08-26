@@ -8,6 +8,9 @@
  *   paper-button.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="../polymer/types/polymer.d.ts" />
 /// <reference path="../iron-flex-layout/iron-flex-layout.d.ts" />
 /// <reference path="../paper-behaviors/paper-button-behavior.d.ts" />

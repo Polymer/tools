@@ -8,24 +8,30 @@
  *   lib/legacy/polymer-fn.js
  */
 
-import {Class} from './class.js';
+
+// tslint:disable:variable-name API description
+
+declare module 'goog:npm.polymer.polymer.lib.legacy.PolymerFn' {
+
+  import {Class} from 'goog:npm.polymer.polymer.lib.legacy.Class'; // from //third_party/javascript/polymer/v2/polymer
 
 
-/**
- * Legacy class factory and registration helper for defining Polymer
- * elements.
- *
- * This method is equivalent to
- *
- *     import {Class} from '@polymer/polymer/lib/legacy/class.js';
- *     customElements.define(info.is, Class(info));
- *
- * See `Class` for details on valid legacy metadata format for `info`.
- *
- * @returns Generated class
- */
-declare function Polymer(info: PolymerInit): {new(): HTMLElement};
+  /**
+   * Legacy class factory and registration helper for defining Polymer
+   * elements.
+   *
+   * This method is equivalent to
+   *
+   *     import {Class} from '@polymer/polymer/lib/legacy/class.js';
+   *     customElements.define(info.is, Class(info));
+   *
+   * See `Class` for details on valid legacy metadata format for `info`.
+   *
+   * @returns Generated class
+   */
+  function Polymer(info: PolymerInit): {new(): HTMLElement};
 
-export {Polymer};
+  export {Polymer};
 
-import {PolymerInit} from '../../interfaces';
+  import {PolymerInit} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+}

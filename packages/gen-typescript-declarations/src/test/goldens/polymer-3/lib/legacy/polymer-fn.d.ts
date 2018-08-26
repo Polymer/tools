@@ -8,6 +8,9 @@
  *   lib/legacy/polymer-fn.js
  */
 
+
+// tslint:disable:variable-name API description
+
 import {Class} from './class.js';
 
 

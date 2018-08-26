@@ -8,46 +8,37 @@
  *   lib/utils/settings.js
  */
 
-import {pathFromUrl} from './resolve-url.js';
 
-export {setRootPath};
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
+declare module 'goog:npm.polymer.polymer.lib.utils.Settings' {
 
-/**
- * Sets the global rootPath property used by `ElementMixin` and
- * available via `rootPath`.
- */
-declare function setRootPath(path: string): void;
+  import {pathFromUrl} from 'goog:npm.polymer.polymer.lib.utils.ResolveUrl'; // from //third_party/javascript/polymer/v2/polymer
 
-export {setSanitizeDOMValue};
+  export {setRootPath};
 
 
-/**
- * Sets the global sanitizeDOMValue available via this module's exported
- * `sanitizeDOMValue` variable.
- */
-declare function setSanitizeDOMValue(newSanitizeDOMValue: ((p0: any, p1: string, p2: string, p3: Node|null) => any)|undefined): void;
+  /**
+   * Sets the global rootPath property used by `ElementMixin` and
+   * available via `rootPath`.
+   */
+  function setRootPath(path: string): void;
 
-export {setPassiveTouchGestures};
-
-
-/**
- * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
- */
-declare function setPassiveTouchGestures(usePassive: boolean): void;
-
-export {setStrictTemplatePolicy};
+  export {setSanitizeDOMValue};
 
 
-/**
- * Sets `strictTemplatePolicy` globally for all elements
- */
-declare function setStrictTemplatePolicy(useStrictPolicy: boolean): void;
+  /**
+   * Sets the global sanitizeDOMValue available via this module's exported
+   * `sanitizeDOMValue` variable.
+   */
+  function setSanitizeDOMValue(newSanitizeDOMValue: ((p0: any, p1: string, p2: string, p3: Node|null) => any)|undefined): void;
 
-export {setAllowTemplateFromDomModule};
+  export {setPassiveTouchGestures};
 
 
-/**
- * Sets `lookupTemplateFromDomModule` globally for all elements
- */
-declare function setAllowTemplateFromDomModule(allowDomModule: boolean): void;
+  /**
+   * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
+   */
+  function setPassiveTouchGestures(usePassive: boolean): void;
+}

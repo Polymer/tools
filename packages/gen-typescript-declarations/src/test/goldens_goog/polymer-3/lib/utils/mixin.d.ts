@@ -8,12 +8,18 @@
  *   lib/utils/mixin.js
  */
 
-export {dedupingMixin};
+
+// tslint:disable:variable-name API description
+
+declare module 'goog:npm.polymer.polymer.lib.utils.Mixin' {
+
+  export {dedupingMixin};
 
 
-/**
- * Wraps an ES6 class expression mixin such that the mixin is only applied
- * if it has not already been applied its base argument. Also memoizes mixin
- * applications.
- */
-declare function dedupingMixin<T>(mixin: T): T;
+  /**
+   * Wraps an ES6 class expression mixin such that the mixin is only applied
+   * if it has not already been applied its base argument. Also memoizes mixin
+   * applications.
+   */
+  function dedupingMixin<T>(mixin: T): T;
+}

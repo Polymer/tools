@@ -8,6 +8,10 @@
  *   lib/elements/array-selector.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../../polymer-element.d.ts" />
 /// <reference path="../utils/mixin.d.ts" />
 /// <reference path="../utils/array-splice.d.ts" />

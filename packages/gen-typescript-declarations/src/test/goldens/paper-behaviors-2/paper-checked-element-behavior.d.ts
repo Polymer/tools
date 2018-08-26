@@ -8,6 +8,9 @@
  *   paper-checked-element-behavior.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="../polymer/types/polymer.d.ts" />
 /// <reference path="../iron-checked-element-behavior/iron-checked-element-behavior.d.ts" />
 /// <reference path="paper-inky-focus-behavior.d.ts" />

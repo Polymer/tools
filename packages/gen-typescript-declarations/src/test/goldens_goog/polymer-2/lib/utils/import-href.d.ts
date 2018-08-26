@@ -8,6 +8,9 @@
  *   lib/utils/import-href.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="boot.d.ts" />
 
 declare namespace Polymer {

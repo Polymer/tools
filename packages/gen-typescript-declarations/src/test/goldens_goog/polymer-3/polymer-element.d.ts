@@ -8,18 +8,24 @@
  *   polymer-element.js
  */
 
-import {ElementMixin} from './lib/mixins/element-mixin.js';
 
-export {html} from './lib/utils/html-tag.js';
+// tslint:disable:variable-name API description
 
-export {PolymerElement};
+declare module 'goog:npm.polymer.polymer.PolymerElement' {
 
-/**
- * Base class that provides the core API for Polymer's meta-programming
- * features including template stamping, data-binding, attribute deserialization,
- * and property change observation.
- */
-declare class PolymerElement extends
-  ElementMixin(
-  HTMLElement) {
+  import {ElementMixin} from 'goog:npm.polymer.polymer.lib.mixins.ElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+
+  export {html} from 'goog:npm.polymer.polymer.lib.utils.HtmlTag'; // from //third_party/javascript/polymer/v2/polymer
+
+  export {PolymerElement};
+
+  /**
+   * Base class that provides the core API for Polymer's meta-programming
+   * features including template stamping, data-binding, attribute deserialization,
+   * and property change observation.
+   */
+  class PolymerElement extends
+    ElementMixin(
+    HTMLElement) {
+  }
 }

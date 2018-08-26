@@ -8,6 +8,10 @@
  *   lib/utils/settings.js
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 import {pathFromUrl} from './resolve-url.js';
 
 export {setRootPath};
@@ -35,19 +39,3 @@ export {setPassiveTouchGestures};
  * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
  */
 declare function setPassiveTouchGestures(usePassive: boolean): void;
-
-export {setStrictTemplatePolicy};
-
-
-/**
- * Sets `strictTemplatePolicy` globally for all elements
- */
-declare function setStrictTemplatePolicy(useStrictPolicy: boolean): void;
-
-export {setAllowTemplateFromDomModule};
-
-
-/**
- * Sets `lookupTemplateFromDomModule` globally for all elements
- */
-declare function setAllowTemplateFromDomModule(allowDomModule: boolean): void;

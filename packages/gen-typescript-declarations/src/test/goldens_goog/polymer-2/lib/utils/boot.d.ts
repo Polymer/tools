@@ -8,6 +8,9 @@
  *   lib/utils/boot.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="../../extra-types.d.ts" />
 
 /**

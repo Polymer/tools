@@ -8,6 +8,9 @@
  *   polymer-legacy.js
  */
 
+
+// tslint:disable:variable-name API description
+
 import {LegacyElementMixin} from './lib/legacy/legacy-element-mixin.js';
 
 export {Polymer} from './lib/legacy/polymer-fn.js';

@@ -8,6 +8,10 @@
  *   paper-inky-focus-behavior.js
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 import {IronButtonState} from '@polymer/iron-behaviors/iron-button-state.js';
 
 import {IronControlState} from '@polymer/iron-behaviors/iron-control-state.js';

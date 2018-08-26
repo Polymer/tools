@@ -8,6 +8,10 @@
  *   lib/legacy/polymer.dom.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../utils/boot.d.ts" />
 /// <reference path="../utils/settings.d.ts" />
 /// <reference path="../utils/flattened-nodes-observer.d.ts" />

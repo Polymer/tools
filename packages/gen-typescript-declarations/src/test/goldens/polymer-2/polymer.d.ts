@@ -8,6 +8,9 @@
  *   polymer.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="lib/legacy/legacy-element-mixin.d.ts" />
 /// <reference path="lib/legacy/polymer-fn.d.ts" />
 /// <reference path="lib/legacy/templatizer-behavior.d.ts" />

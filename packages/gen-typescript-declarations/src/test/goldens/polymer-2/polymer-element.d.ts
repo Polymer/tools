@@ -8,6 +8,9 @@
  *   polymer-element.html
  */
 
+
+// tslint:disable:variable-name API description
+
 /// <reference path="lib/mixins/element-mixin.d.ts" />
 /// <reference path="lib/utils/html-tag.d.ts" />
 

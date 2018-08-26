@@ -8,6 +8,10 @@
  *   lib/legacy/mutable-data-behavior.html
  */
 
+
+// tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../mixins/mutable-data.d.ts" />
 
 declare namespace Polymer {

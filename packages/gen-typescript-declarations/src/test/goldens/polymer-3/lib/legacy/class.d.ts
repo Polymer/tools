@@ -8,7 +8,12 @@
  *   lib/legacy/class.js
  */
 
+
+// tslint:disable:variable-name API description
+
 import {LegacyElementMixin} from './legacy-element-mixin.js';
+
+import {DomModule} from '../elements/dom-module.js';
 
 export {mixinBehaviors};
 
@@ -23,7 +28,7 @@ export {mixinBehaviors};
  * @returns Returns a new Element class extended by the
  * passed in `behaviors` and also by `LegacyElementMixin`.
  */
-declare function mixinBehaviors<T>(behaviors: object|object[], klass: {new(): T}): any;
+declare function mixinBehaviors<T>(behaviors: object|object[], klass: {new(): T}): {new(): T};
 
 export {Class};
 
