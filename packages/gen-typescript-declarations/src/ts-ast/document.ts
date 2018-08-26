@@ -77,10 +77,11 @@ export class Document {
           ruleName: 'no-any',
           why: 'describes the API as best we are able today'
         });
+        break;
       }
     }
     out += '\n';
-    for (const disble of this.tsLintDisables) {
+    for (const disble of disables) {
       out += `// tslint:disable:${disble.ruleName} ${disble.why}\n`;
     }
     out += '\n';
