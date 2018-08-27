@@ -1,5 +1,3 @@
-import {extendInterfaces} from 'wct-mocha';
-
 /**
  * stub
  *
@@ -26,7 +24,7 @@ import {extendInterfaces} from 'wct-mocha';
  *   });
  * });
  */
-extendInterfaces('stub', function(_context, teardown) {
+export function stub(_context: any, teardown: Function) {
   return function stub(tagName: string, implementation: object) {
     // Find the prototype of the element being stubbed:
     const proto = document.createElement(tagName).constructor.prototype;
@@ -44,4 +42,4 @@ extendInterfaces('stub', function(_context, teardown) {
       });
     });
   };
-});
+}

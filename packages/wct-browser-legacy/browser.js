@@ -2031,7 +2031,7 @@ var WctBrowserLegacy = (function () {
 	    // We can't inject a11ySuite when running the npm version because it is a
 	    // module-based script that needs `<script type=module>` and compilation
 	    // for browsers without module support.
-	    if (!a11ySuiteWillBeLoaded && !window.__wctUseNpm) {
+	    if (!a11ySuiteWillBeLoaded && window.__wctUseNpm === false) {
 	        // wct is running as a bower dependency, load a11ySuite from data/
 	        scripts.push(a11ySuiteScriptPath);
 	    }
@@ -2351,10 +2351,164 @@ var WctBrowserLegacy = (function () {
 	var lib_1 = lib.extendInterfaces;
 	var lib_2 = lib.initialize;
 
+	var replace_1 = createCommonjsModule(function (module, exports) {
+	Object.defineProperty(exports, "__esModule", { value: true });
+	/**
+	 * replace
+	 *
+	 * The replace addon allows the tester to replace all usages of one element with
+	 * another element within all Polymer elements created within the time span of
+	 * the test. Usage example:
+	 *
+	 * beforeEach(function() {
+	 *   replace('x-foo').with('x-fake-foo');
+	 * });
+	 *
+	 * All annotations and attributes will be set on the placement element the way
+	 * they were set for the original element.
+	 */
+	function replace(_context, teardown) {
+	    return function replace(oldTagName) {
+	        return {
+	            with: function (tagName) {
+	                // Standardizes our replacements map
+	                oldTagName = oldTagName.toLowerCase();
+	                tagName = tagName.toLowerCase();
+	                replacements[oldTagName] = tagName;
+	                // If the function is already a stub, restore it to original
+	                if (document.importNode.isSinonProxy) {
+	                    return;
+	                }
+	                const polymer = window['Polymer'];
+	                if (!polymer.Element) {
+	                    polymer.Element = function () { };
+	                    polymer.Element.prototype._stampTemplate = function () { };
+	                }
+	                // Keep a reference to the original `document.importNode`
+	                // implementation for later:
+	                const originalImportNode = document.importNode;
+	                // Use Sinon to stub `document.ImportNode`:
+	                window['sinon']
+	                    .stub(document, 'importNode', function (origContent, deep) {
+	                    const templateClone = document.createElement('template');
+	                    const content = templateClone.content;
+	                    const inertDoc = content.ownerDocument;
+	                    // imports node from inertDoc which holds inert nodes.
+	                    templateClone.content.appendChild(inertDoc.importNode(origContent, true));
+	                    // optional arguments are not optional on IE.
+	                    const nodeIterator = document.createNodeIterator(content, NodeFilter.SHOW_ELEMENT, null, true);
+	                    let node;
+	                    // Traverses the tree. A recently-replaced node will be put
+	                    // next, so if a node is replaced, it will be checked if it
+	                    // needs to be replaced again.
+	                    while (node = nodeIterator.nextNode()) {
+	                        let currentTagName = node.tagName.toLowerCase();
+	                        if (replacements.hasOwnProperty(currentTagName)) {
+	                            currentTagName = replacements[currentTagName];
+	                            // find the final tag name.
+	                            while (replacements[currentTagName]) {
+	                                currentTagName = replacements[currentTagName];
+	                            }
+	                            // Create a replacement:
+	                            const replacement = document.createElement(currentTagName);
+	                            // For all attributes in the original node..
+	                            for (let index = 0; index < node.attributes.length; ++index) {
+	                                // Set that attribute on the replacement:
+	                                replacement.setAttribute(node.attributes[index].name, node.attributes[index].value);
+	                            }
+	                            // Replace the original node with the replacement node:
+	                            node.parentNode.replaceChild(replacement, node);
+	                        }
+	                    }
+	                    return originalImportNode.call(this, content, deep);
+	                });
+	                if (!replaceTeardownAttached) {
+	                    // After each test...
+	                    teardown(function () {
+	                        replaceTeardownAttached = true;
+	                        // Restore the stubbed version of `document.importNode`:
+	                        const documentImportNode = document.importNode;
+	                        if (documentImportNode.isSinonProxy) {
+	                            documentImportNode.restore();
+	                        }
+	                        // Empty the replacement map
+	                        replacements = {};
+	                    });
+	                }
+	            }
+	        };
+	    };
+	}
+	exports.replace = replace;
+	// replacement map stores what should be
+	let replacements = {};
+	let replaceTeardownAttached = false;
+
+	});
+
+	unwrapExports(replace_1);
+	var replace_2 = replace_1.replace;
+
+	var stub_1 = createCommonjsModule(function (module, exports) {
+	Object.defineProperty(exports, "__esModule", { value: true });
+	/**
+	 * stub
+	 *
+	 * The stub addon allows the tester to partially replace the implementation of
+	 * an element with some custom implementation. Usage example:
+	 *
+	 * beforeEach(function() {
+	 *   stub('x-foo', {
+	 *     attached: function() {
+	 *       // Custom implementation of the `attached` method of element `x-foo`..
+	 *     },
+	 *     otherMethod: function() {
+	 *       // More custom implementation..
+	 *     },
+	 *     getterSetterProperty: {
+	 *       get: function() {
+	 *         // Custom getter implementation..
+	 *       },
+	 *       set: function() {
+	 *         // Custom setter implementation..
+	 *       }
+	 *     },
+	 *     // etc..
+	 *   });
+	 * });
+	 */
+	function stub(_context, teardown) {
+	    return function stub(tagName, implementation) {
+	        // Find the prototype of the element being stubbed:
+	        const proto = document.createElement(tagName).constructor.prototype;
+	        // For all keys in the implementation to stub with..
+	        const stubs = Object.keys(implementation).map(function (key) {
+	            // Stub the method on the element prototype with Sinon:
+	            return window['sinon'].stub(proto, key, implementation[key]);
+	        });
+	        // After all tests..
+	        teardown(function () {
+	            stubs.forEach(function (stub) {
+	                stub.restore();
+	            });
+	        });
+	    };
+	}
+	exports.stub = stub;
+
+	});
+
+	unwrapExports(stub_1);
+	var stub_2 = stub_1.stub;
+
 	var browser = createCommonjsModule(function (module, exports) {
 	Object.defineProperty(exports, "__esModule", { value: true });
 
+
+
 	window['__useNpm'] = true;
+	lib.extendInterfaces('replace', replace_1.replace);
+	lib.extendInterfaces('stub', stub_1.stub);
 	const environmentScripts = [
 	    'async/lib/async.js',
 	    'lodash/index.js',

@@ -13,7 +13,9 @@
   "devDependencies": {
     "@polymer/esm-amd-loader": "^1.0.0",
     "@webcomponents/webcomponentsjs": "^1.2.4",
-    "wct-browser-legacy": "^1.0.0",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.7.0"
   },
   "dependencies": {}

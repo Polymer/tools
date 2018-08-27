@@ -25,7 +25,7 @@ export function loadSync() {
   // We can't inject a11ySuite when running the npm version because it is a
   // module-based script that needs `<script type=module>` and compilation
   // for browsers without module support.
-  if (!a11ySuiteWillBeLoaded && !window.__wctUseNpm) {
+  if (!a11ySuiteWillBeLoaded && window.__wctUseNpm === false) {
     // wct is running as a bower dependency, load a11ySuite from data/
     scripts.push(a11ySuiteScriptPath);
   }

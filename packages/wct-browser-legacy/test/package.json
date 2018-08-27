@@ -4,9 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm run pack:wct-mocha && npm run pack:wct-browser-legacy && npm install --no-save ../../wct-mocha/wct-mocha-*.tgz ../wct-browser-legacy-*.tgz",
-    "pack:wct-mocha": "cd ../../wct-mocha && npm pack",
-    "pack:wct-browser-legacy": "cd ../ && npm pack",
     "test:wct": "bash run-wct.sh"
   },
   "author": "",

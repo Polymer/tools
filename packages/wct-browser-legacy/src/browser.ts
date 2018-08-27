@@ -1,8 +1,12 @@
-import {initialize} from 'wct-mocha';
-import * as replace from './replace';
-import * as stub from './stub';
+import {extendInterfaces, initialize} from 'wct-mocha';
+
+import {replace} from './replace';
+import {stub} from './stub';
 
 window['__useNpm'] = true;
+
+extendInterfaces('replace', replace);
+extendInterfaces('stub', stub);
 
 const environmentScripts = [
   'async/lib/async.js',

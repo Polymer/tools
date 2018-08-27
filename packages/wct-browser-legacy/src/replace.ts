@@ -1,9 +1,3 @@
-import {extendInterfaces} from 'wct-mocha';
-
-// replacement map stores what should be
-let replacements = {};
-let replaceTeardownAttached = false;
-
 /**
  * replace
  *
@@ -18,7 +12,7 @@ let replaceTeardownAttached = false;
  * All annotations and attributes will be set on the placement element the way
  * they were set for the original element.
  */
-extendInterfaces('replace', function(_context, teardown) {
+export function replace(_context: any, teardown: Function) {
   return function replace(oldTagName: string) {
     return {
       with: function(tagName: string) {
@@ -114,4 +108,8 @@ extendInterfaces('replace', function(_context, teardown) {
       }
     };
   };
-});
+}
+
+// replacement map stores what should be
+let replacements = {};
+let replaceTeardownAttached = false;

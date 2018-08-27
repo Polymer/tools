@@ -1,6 +1,6 @@
 {
   "npm": true,
-  "wctPackageName": "wct-browser-legacy",
+  "wctPackageName": "wct-mocha",
   "moduleResolution": "node",
   "suites": [
     "static/y/suite.html",

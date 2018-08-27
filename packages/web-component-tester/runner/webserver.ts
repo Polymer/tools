@@ -125,9 +125,10 @@ export function webserver(wct: Context): void {
                 resolveWctNpmEntrypointNames(
                     options, legacyNpmSupportPackages));
       } else {
-        scripts.push(...resolveWctNpmEntrypointNames(options, [
-                       {name: 'mocha', jsEntrypoint: 'mocha.js'}
-                     ]).map((s) => `../${s}`));
+        scripts.push(
+            ...resolveWctNpmEntrypointNames(options, [
+              {name: 'mocha', jsEntrypoint: 'mocha.js'}
+            ]).map((s) => `${isPackageScoped ? '../../' : '../'}${s}`));
       }
 
       if (browserScript && isPackageScoped) {

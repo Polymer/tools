@@ -1,6 +1,9 @@
-import {initialize} from 'wct-mocha';
-import * as replace from 'wct-browser-legacy/lib/replace';
-import * as stub from 'wct-browser-legacy/lib/stub';
+import {replace} from 'wct-browser-legacy/lib/replace';
+import {stub} from 'wct-browser-legacy/lib/stub';
+import {extendInterfaces, initialize} from 'wct-mocha';
+
+extendInterfaces('replace', replace);
+extendInterfaces('stub', stub);
 
 window.__useNpm = false;
 
