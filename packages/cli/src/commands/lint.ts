@@ -128,7 +128,15 @@ export class LintCommand implements Command {
         content: collectionsDocs.join('\n\n'),
         raw: true
       },
-      {header: 'Lint Rules', content: rulesDocs.join('\n\n'), raw: true}
+      {
+        header: 'Lint Rules',
+        // Here we replace special characters with chalk's escape
+        // syntax (`\$&`) to avoid chalk trying to re-process our input.
+        // This is needed because chalk supports a form of `{var}`
+        // interpolation.
+        content: rulesDocs.join('\n\n').replace(/[{}\\]/g, '\\$&'),
+        raw: true
+      }
     ];
   }
 
