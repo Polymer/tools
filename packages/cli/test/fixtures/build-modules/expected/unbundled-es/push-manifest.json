@@ -11,6 +11,13 @@
     "node_modules/dep1/dep1.js": {
       "type": "script",
       "weight": 1
+    },
+    "esm-mod1.mjs": {
+      "type": "script",
+      "weight": 1
+    },
+    "esm-mod2.mjs": {
+      "weight": 1
     }
   }
 }
