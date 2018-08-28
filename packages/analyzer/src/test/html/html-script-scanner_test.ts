@@ -97,9 +97,12 @@ suite('HtmlScriptScanner', () => {
         throw new Error(`could not get document js-modules.html`);
       }
       const htmlScripts = [...result.value.getFeatures({kind: 'html-script'})];
-      assert.equal(htmlScripts.length, 1);
-      const js = htmlScripts[0].document!.parsedDocument as JavaScriptDocument;
+      assert.equal(htmlScripts.length, 2);
+      let js = htmlScripts[0].document!.parsedDocument as JavaScriptDocument;
       assert.equal(js.url, analyzer.resolveUrl('javascript/module.js')!);
+      assert.equal(js.parsedAsSourceType, 'module');
+      js = htmlScripts[1].document!.parsedDocument as JavaScriptDocument;
+      assert.equal(js.url, analyzer.resolveUrl('javascript/esm-module.mjs')!);
       assert.equal(js.parsedAsSourceType, 'module');
     });
 

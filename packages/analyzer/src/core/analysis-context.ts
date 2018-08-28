@@ -71,6 +71,7 @@ export class AnalysisContext {
   readonly parsers = new Map<string, Parser<ParsedDocument>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
+    ['mjs', new JavaScriptParser()],
     ['css', new CssParser()],
     ['json', new JsonParser()],
   ]);
