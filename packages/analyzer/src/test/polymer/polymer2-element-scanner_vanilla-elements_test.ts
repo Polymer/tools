@@ -55,7 +55,8 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
       'class-expression',
       'vanilla-with-observed-attributes',
       'register-before-declaration',
-      'register-before-expression'
+      'register-before-expression',
+      'vanilla-with-lifecycle-methods',
     ].sort());
     assert.deepEqual(elementsList.map((e) => e.className).sort(), [
       undefined,
@@ -63,7 +64,8 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
       'ClassExpression',
       'WithObservedAttributes',
       'RegisterBeforeDeclaration',
-      'RegisterBeforeExpression'
+      'RegisterBeforeExpression',
+      'WithLifeCycleMethods',
     ].sort());
     assert.deepEqual(
         elementsList.map((e) => e.superClass && e.superClass.identifier).sort(),
@@ -74,7 +76,16 @@ suite('Polymer2ElementScanner - Vanilla Element Scanning', () => {
           'HTMLElement',
           'HTMLElement',
           'HTMLElement',
+          'HTMLElement',
         ].sort());
+  });
+
+  test('Ignores lifecycle methods', () => {
+    const element = elements.get('vanilla-with-lifecycle-methods')!;
+
+    assert.deepEqual(Array.from(element.methods.values()).map((m) => m.name), [
+      'validMethod'
+    ]);
   });
 
   test('Extracts attributes from observedAttributes', () => {

@@ -5,8 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
-<!-- Add new, unreleased changes here. -->
+## Unreleased
+* Ignore custom element life-cycle methods when scanning element classes
 
 ## [3.1.3] - 2018-10-15
 * Make `HtmlDocument#stringify()` faster by only cloning the ast and stringifing

@@ -35,6 +35,13 @@ import {JavaScriptScanner} from './javascript-scanner';
 import * as jsdoc from './jsdoc';
 
 
+const lifeCycleMethods: string[] = [
+  'connectedCallback',
+  'disconnectedCallback',
+  'adoptedCallback',
+  'attributeChangedCallback'
+];
+
 /**
  * Represents the first argument of a call to customElements.define.
  */
@@ -293,6 +300,11 @@ export class ClassScanner implements JavaScriptScanner {
         class_.properties.set(prop.name, finalProp);
       }
       methods = getMethods(astNode.node, document);
+
+      for (const lifeCycleMethod of lifeCycleMethods) {
+        methods.delete(lifeCycleMethod);
+      }
+
       staticMethods = getStaticMethods(astNode.node, document);
     }
 

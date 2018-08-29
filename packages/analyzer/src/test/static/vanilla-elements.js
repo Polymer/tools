@@ -32,3 +32,12 @@ class WithObservedAttributes extends HTMLElement {
 
 customElements.define(
     'vanilla-with-observed-attributes', WithObservedAttributes);
+
+class WithLifeCycleMethods extends HTMLElement {
+  connectedCallback() {}
+  disconnectedCallback() {}
+  attributeChangedCallback() {}
+  adoptedCallback() {}
+  validMethod() {}
+}
+customElements.define('vanilla-with-lifecycle-methods', WithLifeCycleMethods);
