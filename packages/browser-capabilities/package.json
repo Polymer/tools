@@ -13,6 +13,7 @@
     "node": ">=8.0"
   },
   "scripts": {
+    "lint": "tslint -p .",
     "build": "rm -Rf lib/ && tsc",
     "build:watch": "tsc --watch",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
