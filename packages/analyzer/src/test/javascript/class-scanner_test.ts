@@ -224,6 +224,13 @@ suite('Class', () => {
           cls.properties.get('__customPropertyOnProtoPrivate'),
           {name: '__customPropertyOnProtoPrivate', privacy: 'private'});
 
+      assert.deepInclude(
+          cls.properties.get('constructorJSDocGetter'),
+          {
+            name: 'constructorJSDocGetter',
+            description: 'a getter with constructor jsdoc'
+          });
+
       assert.deepEqual(await getTestProps(cls), {
         name: 'Class',
         constructorMethod: {description: '', name: 'constructor'},
@@ -232,6 +239,7 @@ suite('Class', () => {
         properties: [
           {name: 'customPropertyWithValue'},
           {name: 'customPropertyWithJSDoc'},
+          {name: 'constructorJSDocGetter'},
           {name: 'customPropertyGetter'},
           {name: 'customPropertyGetterType'},
           {name: 'customPropertyWithGetterSetter'},

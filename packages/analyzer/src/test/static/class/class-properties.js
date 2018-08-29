@@ -45,7 +45,11 @@ class Class {
     this.customPropertyWithValue = 5;
     /** @public a jsdoc property */
     this.customPropertyWithJSDoc;
+    /** @public a getter with constructor jsdoc */
+    this.constructorJSDocGetter;
   }
+
+  get constructorJSDocGetter() { return true; }
 }
 
 /** @type {string} */
