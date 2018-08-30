@@ -36,6 +36,7 @@ const mainHelpers = [
   'set',
   'setPrototypeOf',
   'superPropBase',
+  'isNativeFunction',
   'wrapNativeSuper',
 
   // es2015 array-spread
