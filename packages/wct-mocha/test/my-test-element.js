@@ -1,4 +1,4 @@
-import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
+import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 class MyTestElement extends PolymerElement {
   static get template() {
@@ -8,7 +8,7 @@ class MyTestElement extends PolymerElement {
   }
 
   static get properties() {
-    return {title: {type: String}};
+    return { title: { type: String } };
   }
 
   constructor() {
@@ -16,3 +16,5 @@ class MyTestElement extends PolymerElement {
     this.title = 'untitled';
   }
 }
+
+customElements.define('my-test-element', MyTestElement);
