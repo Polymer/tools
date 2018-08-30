@@ -139,9 +139,7 @@ suite('integration tests', function() {
                       .withPrompts({name: 'my-app'})  // Mock the prompt answers
                       .toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
-      // Temporary disabled until https://github.com/Polymer/polymer/pull/5300
-      // is released.
-      // await runCommand(binPath, ['lint'], {cwd: dir});
+      await runCommand(binPath, ['lint'], {cwd: dir});
       await runCommand(binPath, ['test'], {cwd: dir});
       await runCommand(binPath, ['build'], {cwd: dir});
     });

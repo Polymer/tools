@@ -35,3 +35,19 @@ export {setPassiveTouchGestures};
  * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
  */
 declare function setPassiveTouchGestures(usePassive: boolean): void;
+
+export {setStrictTemplatePolicy};
+
+
+/**
+ * Sets `strictTemplatePolicy` globally for all elements
+ */
+declare function setStrictTemplatePolicy(useStrictPolicy: boolean): void;
+
+export {setAllowTemplateFromDomModule};
+
+
+/**
+ * Sets `lookupTemplateFromDomModule` globally for all elements
+ */
+declare function setAllowTemplateFromDomModule(allowDomModule: boolean): void;

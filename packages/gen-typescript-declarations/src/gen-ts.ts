@@ -484,6 +484,12 @@ class TypeGenerator {
           ...legacyPolymerInterfaces,
         ],
       }));
+
+      if (isPolymerElement(feature) && feature.isLegacyFactoryCall &&
+          this.root.isEsModule) {
+        this.root.members.push(
+            new ts.Export({identifiers: [{identifier: shortName}]}));
+      }
     }
 
     // The `HTMLElementTagNameMap` global interface maps custom element tag

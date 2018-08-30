@@ -1,7 +1,8 @@
 # Changelog
 
-<!-- ## Unreleased -->
-<!-- Add new, unreleased items here. -->
+## Unreleased
+* Fix an issue where we were passing lint rule help text through chalk
+  with unescaped chalk-specific syntax, causing chalk parsing errors.
 
 ## v1.8.0 [08-15-2018]
 * Fix a case where the CustomElementsEs5Adapter script was not added to the 
