@@ -14,7 +14,6 @@
 // Registers a bunch of globals:
 import './environment/helpers';
 
-export { extendInterfaces } from './mocha/extend';
 import ChildRunner from './childrunner';
 import CLISocket from './clisocket';
 import * as config from './config';
@@ -25,6 +24,9 @@ import * as reporters from './reporters';
 import MultiReporter from './reporters/multi';
 import * as suites from './suites';
 import * as util from './util';
+
+export {extendInterfaces} from './mocha/extend';
+export {ChildRunner};
 
 declare global {
   interface Window {
