@@ -55,6 +55,9 @@
 			"path": "packages/wct-sauce"
 		},
 		{
+			"path": "packages/wct-sinon"
+		},
+		{
 			"path": "packages/web-component-tester"
 		},
 		{
@@ -74,8 +77,11 @@
 			"**/package-lock.json": true,
 			"**/npm-shrinkwrap.json": true,
 			"**/integration/fixtures": true,
-			"packages/web-component-tester/browser.js": true,
-			"packages/web-component-tester/browser.js.map": true
+			"packages/**/*.js.map": true,
+			"packages/wct-browser-legacy/browser.js": true,
+			"packages/wct-mocha/browser.js": true,
+			"packages/wct-sinon/browser.js": true,
+			"packages/web-component-tester/browser.js": true
 		}
 	}
 }

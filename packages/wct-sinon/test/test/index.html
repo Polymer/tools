@@ -14,12 +14,6 @@
       </template>
     </test-fixture>
 
-    <test-fixture id="mte2">
-      <template>
-        <my-test-element></my-test-element>
-      </template>
-    </test-fixture>
-
     <script type="module">
       import '../my-test-element.js';
       import '../my-other-test-element.js';
@@ -43,8 +37,8 @@
             replace('my-test-element').with('my-other-test-element')
           });
           test('sinon replacing element by tag name', () => {
-            const mte2 = fixture('mte2');
-            chai.assert.equal(mte2.title, 'FUNtitled', '"FUNtitled" by default');
+            const mte1 = fixture('mte1');
+            chai.assert.equal(mte1.title, 'FUNtitled', '"FUNtitled" by default');
           });
         });
         test('has a title', () => {

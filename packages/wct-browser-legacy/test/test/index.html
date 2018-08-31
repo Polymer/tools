@@ -11,7 +11,31 @@
 
     <script type="module">
       import '../my-test-element.js';
+      import '../my-other-test-element.js';
+
       suite('my-test-element', () => {
+        suite('stub', () => {
+          setup(() => {
+            stub('my-test-element', {
+              setTitle(text) {
+                this.title = text + '!';
+              }
+            });
+          });
+          test('sinon stubbing of setTitle works', () => {
+            const mte1 = fixture('mte1');
+            chai.assert.equal(mte1.title, 'untitled!', '"untitled!" by default');
+          });
+        });
+        suite('replace', () => {
+          setup(() => {
+            replace('my-test-element').with('my-other-test-element')
+          });
+          test('sinon replacing element by tag name', () => {
+            const mte1 = fixture('mte1');
+            chai.assert.equal(mte1.title, 'FUNtitled', '"FUNtitled" by default');
+          });
+        });
         test('has a title', () => {
           const mte1 = fixture('mte1');
           chai.assert.equal(mte1.title, 'untitled', '"untitled" by default');
@@ -20,4 +44,3 @@
     </script>
   </body>
 </html>
-

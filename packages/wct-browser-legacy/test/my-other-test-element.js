@@ -1,6 +1,6 @@
 import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
 
-class MyTestElement extends PolymerElement {
+class MyOtherTestElement extends PolymerElement {
   static get template() {
     return html`
       <h1>[[title]]</h1>
@@ -17,8 +17,8 @@ class MyTestElement extends PolymerElement {
 
   constructor() {
     super();
-    this.setTitle('untitled');
+    this.setTitle('FUNtitled');
   }
 }
 
-customElements.define('my-test-element', MyTestElement);
+customElements.define('my-other-test-element', MyOtherTestElement);
