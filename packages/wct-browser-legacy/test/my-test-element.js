@@ -16,3 +16,5 @@ class MyTestElement extends PolymerElement {
     this.title = 'untitled';
   }
 }
+
+customElements.define('my-test-element', MyTestElement);

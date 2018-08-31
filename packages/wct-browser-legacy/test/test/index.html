@@ -3,14 +3,18 @@
   <body>
     <script src="../node_modules/wct-browser-legacy/browser.js"></script>
 
+    <test-fixture id="mte1">
+      <template>
+        <my-test-element></my-test-element>
+      </template>
+    </test-fixture>
+
     <script type="module">
       import '../my-test-element.js';
-      suite('something', () => {
-        test('equality', () => {
-          chai.assert.equal(1, 1, '1 really should equal 1');
-        });
-        test('unequality', () => {
-          chai.assert.notEqual(1, 2, '2 is not 1, ya dingus!');
+      suite('my-test-element', () => {
+        test('has a title', () => {
+          const mte1 = fixture('mte1');
+          chai.assert.equal(mte1.title, 'untitled', '"untitled" by default');
         });
       });
     </script>
