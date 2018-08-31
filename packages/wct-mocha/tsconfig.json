@@ -27,5 +27,5 @@
     "custom_typings/*.d.ts",
     "src/*.ts",
     "src/**/*.ts"
-  ],
+  ]
 }

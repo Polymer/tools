@@ -2381,30 +2381,30 @@ var WctBrowserLegacy = (function () {
 	                if (document.importNode.isSinonProxy) {
 	                    return;
 	                }
-	                const polymer = window['Polymer'];
-	                if (!polymer.Element) {
+	                var polymer = window['Polymer'];
+	                if (polymer && !polymer.Element) {
 	                    polymer.Element = function () { };
 	                    polymer.Element.prototype._stampTemplate = function () { };
 	                }
 	                // Keep a reference to the original `document.importNode`
 	                // implementation for later:
-	                const originalImportNode = document.importNode;
+	                var originalImportNode = document.importNode;
 	                // Use Sinon to stub `document.ImportNode`:
 	                window['sinon']
 	                    .stub(document, 'importNode', function (origContent, deep) {
-	                    const templateClone = document.createElement('template');
-	                    const content = templateClone.content;
-	                    const inertDoc = content.ownerDocument;
+	                    var templateClone = document.createElement('template');
+	                    var content = templateClone.content;
+	                    var inertDoc = content.ownerDocument;
 	                    // imports node from inertDoc which holds inert nodes.
 	                    templateClone.content.appendChild(inertDoc.importNode(origContent, true));
 	                    // optional arguments are not optional on IE.
-	                    const nodeIterator = document.createNodeIterator(content, NodeFilter.SHOW_ELEMENT, null, true);
-	                    let node;
+	                    var nodeIterator = document.createNodeIterator(content, NodeFilter.SHOW_ELEMENT, null, true);
+	                    var node;
 	                    // Traverses the tree. A recently-replaced node will be put
 	                    // next, so if a node is replaced, it will be checked if it
 	                    // needs to be replaced again.
 	                    while (node = nodeIterator.nextNode()) {
-	                        let currentTagName = node.tagName.toLowerCase();
+	                        var currentTagName = node.tagName.toLowerCase();
 	                        if (replacements.hasOwnProperty(currentTagName)) {
 	                            currentTagName = replacements[currentTagName];
 	                            // find the final tag name.
@@ -2412,9 +2412,9 @@ var WctBrowserLegacy = (function () {
 	                                currentTagName = replacements[currentTagName];
 	                            }
 	                            // Create a replacement:
-	                            const replacement = document.createElement(currentTagName);
+	                            var replacement = document.createElement(currentTagName);
 	                            // For all attributes in the original node..
-	                            for (let index = 0; index < node.attributes.length; ++index) {
+	                            for (var index = 0; index < node.attributes.length; ++index) {
 	                                // Set that attribute on the replacement:
 	                                replacement.setAttribute(node.attributes[index].name, node.attributes[index].value);
 	                            }
@@ -2429,7 +2429,7 @@ var WctBrowserLegacy = (function () {
 	                    teardown(function () {
 	                        replaceTeardownAttached = true;
 	                        // Restore the stubbed version of `document.importNode`:
-	                        const documentImportNode = document.importNode;
+	                        var documentImportNode = document.importNode;
 	                        if (documentImportNode.isSinonProxy) {
 	                            documentImportNode.restore();
 	                        }
@@ -2443,8 +2443,8 @@ var WctBrowserLegacy = (function () {
 	}
 	exports.replace = replace;
 	// replacement map stores what should be
-	let replacements = {};
-	let replaceTeardownAttached = false;
+	var replacements = {};
+	var replaceTeardownAttached = false;
 
 	});
 
@@ -2482,9 +2482,9 @@ var WctBrowserLegacy = (function () {
 	function stub(_context, teardown) {
 	    return function stub(tagName, implementation) {
 	        // Find the prototype of the element being stubbed:
-	        const proto = document.createElement(tagName).constructor.prototype;
+	        var proto = document.createElement(tagName).constructor.prototype;
 	        // For all keys in the implementation to stub with..
-	        const stubs = Object.keys(implementation).map(function (key) {
+	        var stubs = Object.keys(implementation).map(function (key) {
 	            // Stub the method on the element prototype with Sinon:
 	            return window['sinon'].stub(proto, key, implementation[key]);
 	        });

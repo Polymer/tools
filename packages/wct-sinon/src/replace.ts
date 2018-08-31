@@ -28,7 +28,7 @@ export function replace(_context: any, teardown: Function) {
         }
 
         const polymer = window['Polymer'] as any;
-        if (!polymer.Element) {
+        if (polymer && !polymer.Element) {
           polymer.Element = function() {};
           polymer.Element.prototype._stampTemplate = function() {};
         }

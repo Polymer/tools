@@ -41,7 +41,8 @@
     "mocha": "^3.4.2",
     "sinon": "^1.17.1",
     "sinon-chai": "^2.10.0",
-    "wct-mocha": "^1.0.0"
+    "wct-mocha": "^1.0.0",
+    "wct-sinon": "^1.0.0"
   },
   "devDependencies": {
     "@types/sinon": "^5.0.1"

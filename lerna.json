@@ -4,7 +4,8 @@
     "packages/*",
     "packages/esm-amd-loader/test",
     "packages/wct-browser-legacy/test",
-    "packages/wct-mocha/test"
+    "packages/wct-mocha/test",
+    "packages/wct-sinon/test"
   ],
   "version": "independent",
   "command": {

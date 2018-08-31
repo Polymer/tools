@@ -27,6 +27,7 @@
     "test/**/*.ts",
     "custom_typings/*.d.ts",
     "node_modules/@types/mocha/index.d.ts",
-    "node_modules/wct-mocha/lib/*.d.ts"
+    "node_modules/wct-mocha/lib/*.d.ts",
+    "node_modules/wct-sinon/lib/*.d.ts"
   ]
 }

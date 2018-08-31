@@ -1,6 +1,6 @@
-import {replace} from 'wct-browser-legacy/lib/replace';
-import {stub} from 'wct-browser-legacy/lib/stub';
 import {ChildRunner, extendInterfaces, initialize} from 'wct-mocha';
+import {replace} from 'wct-sinon/lib/replace';
+import {stub} from 'wct-sinon/lib/stub';
 
 extendInterfaces('replace', replace);
 extendInterfaces('stub', stub);

@@ -11,9 +11,13 @@ class MyTestElement extends PolymerElement {
     return {title: {type: String}};
   }
 
+  setTitle(text) {
+    this.title = text;
+  }
+
   constructor() {
     super();
-    this.title = 'untitled';
+    this.setTitle('untitled');
   }
 }
 

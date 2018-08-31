@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const wct_mocha_1 = require("wct-mocha");
-const replace_1 = require("./replace");
-const stub_1 = require("./stub");
+const replace_1 = require("wct-sinon/lib/replace");
+const stub_1 = require("wct-sinon/lib/stub");
 window['__useNpm'] = true;
 wct_mocha_1.extendInterfaces('replace', replace_1.replace);
 wct_mocha_1.extendInterfaces('stub', stub_1.stub);

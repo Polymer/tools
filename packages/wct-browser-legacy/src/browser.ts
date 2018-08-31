@@ -1,7 +1,6 @@
 import {ChildRunner, extendInterfaces, initialize} from 'wct-mocha';
-
-import {replace} from './replace';
-import {stub} from './stub';
+import {replace} from 'wct-sinon/lib/replace';
+import {stub} from 'wct-sinon/lib/stub';
 
 window['__useNpm'] = true;
 
