@@ -33,6 +33,10 @@ export interface BrowserDef extends wd.Capabilities {
   variant?: string;
 }
 
+const SLEEP_DONE = Symbol('SLEEP_DONE');
+const sleep = (ms: number) =>
+    new Promise(resolve => setTimeout(() => resolve(SLEEP_DONE), ms));
+
 // Browser abstraction, responsible for spinning up a browser instance via wd.js
 // and executing runner.html test files passed in options.files
 export class BrowserRunner {
@@ -53,6 +57,11 @@ export class BrowserRunner {
 
   private _resolve: () => void;
   private _reject: (err: any) => void;
+
+  private _maxNavigationAttempts: number;
+  private _navigationAttemptTimeout: number;
+  private _resolveNavigationSuccessPromise: undefined|Function;
+  private _navigationSuccessPromise: undefined|Promise<void>;
 
   /**
    * @param emitter The emitter to send updates about test progress to.
@@ -75,6 +84,11 @@ export class BrowserRunner {
     this.timeout = options.testTimeout;
     this.emitter = emitter;
     this.url = url;
+
+    this._maxNavigationAttempts = 3;
+    this._navigationAttemptTimeout = Math.min(this.timeout / 2, 10000);
+    this._resolveNavigationSuccessPromise = undefined;
+    this._navigationSuccessPromise = undefined;
 
     this.stats = {status: 'initializing'};
 
@@ -173,23 +187,54 @@ export class BrowserRunner {
     } else {
       this.sessionId = sessionId;
       this.startTest();
-      this.extendTimeout();
     }
   }
 
-  startTest() {
+  async startTest() {
     const paramDelim = (this.url.indexOf('?') === -1 ? '?' : '&');
     const extra = `${paramDelim}cli_browser_id=${this.def.id}`;
-    this.browser.get(this.url + extra, (error) => {
-      if (error) {
-        this.done(error.data || error);
-      } else {
-        this.extendTimeout();
+    await this._attemptNavigation(this.url + extra);
+    this.extendTimeout();
+  }
+
+  private async _attemptNavigation(url: string) {
+    for (let attemptsRemaining = this._maxNavigationAttempts;
+         attemptsRemaining >= 0;
+         attemptsRemaining--) {
+      this._navigationSuccessPromise = new Promise((resolve) => {
+        this._resolveNavigationSuccessPromise = resolve;
+      });
+
+      this.browser.get(url, (error) => {
+        if (error) {
+          this.done(error.data || error);
+        } else {
+          this.extendTimeout();
+        }
+      });
+
+      const raceResult = await Promise.race([
+        this._navigationSuccessPromise,
+        sleep(this._navigationAttemptTimeout)
+      ]);
+      if (raceResult !== SLEEP_DONE) {
+        return;
       }
-    });
+
+      console.log(
+          `Timed out waiting for navigation for ` +
+          `${this._navigationAttemptTimeout}ms. Retrying... (` +
+          `${attemptsRemaining - 1} attempts remaining)`);
+    }
+
+    this.done(new Error('Could not navigate the browser to the test page.'));
   }
 
   onEvent(event: string, data: any) {
+    if (typeof this._resolveNavigationSuccessPromise === 'function') {
+      this._resolveNavigationSuccessPromise();
+    }
+
     this.extendTimeout();
     if (event === 'browser-start') {
       // Always assign, to handle re-runs (no browser-init).
