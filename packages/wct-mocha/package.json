@@ -30,10 +30,11 @@
     "url": "https://github.com/Polymer/tools/issues"
   },
   "homepage": "https://github.com/Polymer/tools#readme",
-  "dependencies": {
-    "socket.io": "^2.1.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/socket.io": "^1.4.36"
+  },
+  "peerDependencies": {
+    "mocha": "*"
   }
 }
