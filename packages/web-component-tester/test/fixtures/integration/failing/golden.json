@@ -1,8 +1,10 @@
 {
-  "passing": 3,
-  "pending": 0,
-  "failing": 3,
-  "status": "complete",
+  "stats": {
+    "passing": 3,
+    "pending": 0,
+    "failing": 3,
+    "status": "complete"
+  },
   "tests": {
     "test/": {
       "failing test": {
