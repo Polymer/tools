@@ -1,6 +1,6 @@
 {
   "name": "wct-sinon",
-  "version": "1.0.0",
+  "version": "1.0.0-pre.1",
   "description": "Convenience features for web-component-tester using sinon to stub and substitute custom element behaviors and references.",
   "main": "browser.js",
   "scripts": {
@@ -28,6 +28,6 @@
   },
   "homepage": "https://github.com/polymer/tools#readme",
   "dependencies": {
-    "wct-mocha": "^1.0.0"
+    "wct-mocha": "^1.0.0-pre.1"
   }
 }
