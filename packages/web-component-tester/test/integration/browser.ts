@@ -419,7 +419,7 @@ function assertVariantResultsConformToGolden(
       // mocha reports twice the failures because reasons
       // https://github.com/mochajs/mocha/issues/2083
       const modifiedStats = Object.assign({}, golden.stats);
-      if (typeof modifiedStats.failing === "number") {
+      if (typeof modifiedStats.failing === 'number') {
         modifiedStats.failing *= 2;
       }
       assertStats(variantResults, modifiedStats);
@@ -428,9 +428,9 @@ function assertVariantResultsConformToGolden(
 
   const goldenStats = golden.stats;
   const goldenStatsTestSum =
-    (goldenStats.passing !== undefined ? goldenStats.passing : 0) +
-    (goldenStats.pending !== undefined ? goldenStats.pending : 0) +
-    (goldenStats.failing !== undefined ? goldenStats.failing : 0);
+      (goldenStats.passing !== undefined ? goldenStats.passing : 0) +
+      (goldenStats.pending !== undefined ? goldenStats.pending : 0) +
+      (goldenStats.failing !== undefined ? goldenStats.failing : 0);
   if (goldenStatsTestSum === 0 && !golden.tests) {
     return;
   }
