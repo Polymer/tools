@@ -165,10 +165,12 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
 
   stringify(options: StringifyOptions) {
     options = options || {};
+    const {prettyPrint = true} = options;
     const formatOptions = {
-      comments: true,
+      comments: prettyPrint,
       retainLines: false,
       quotes: 'single' as 'single',
+      minified: !prettyPrint,
     };
 
     const code = generate(this.ast, formatOptions).code + '\n';

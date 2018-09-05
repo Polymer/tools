@@ -176,6 +176,8 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
 
   stringify(options?: StringifyOptions) {
     options = options || {};
+    const {prettyPrint = true} = options;
+
     /**
      * We want to mutate this.ast with the results of stringifying our inline
      * documents. This will mutate this.ast even if no one else has mutated it
@@ -204,28 +206,38 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       const docContainingNode = doc.astNode.node;
       const docContainingLocation = docContainingNode.__location;
       let expectedIndentation;
-      if (docContainingLocation &&
-          !isElementLocationInfo(docContainingLocation)) {
-        expectedIndentation = docContainingLocation.col;
+      if (prettyPrint) {
+        if (docContainingLocation &&
+            !isElementLocationInfo(docContainingLocation)) {
+          expectedIndentation = docContainingLocation.col;
 
-        const parentLocation = docContainingNode.parentNode &&
-            docContainingNode.parentNode.__location;
-        if (parentLocation && !isElementLocationInfo(parentLocation)) {
-          expectedIndentation -= parentLocation.col;
+          const parentLocation = docContainingNode.parentNode &&
+              docContainingNode.parentNode.__location;
+          if (parentLocation && !isElementLocationInfo(parentLocation)) {
+            expectedIndentation -= parentLocation.col;
+          }
         }
-      }
-      if (expectedIndentation === undefined) {
-        expectedIndentation = 2;
+        if (expectedIndentation === undefined) {
+          expectedIndentation = 2;
+        }
       }
 
       // update the cloned copy of docContainingNode with the
       // inlined document stringification.
       const clonedDocContainingNode =
           this._findClonedContainingNode(astClone, docContainingNode);
-      dom5.setTextContent(clonedDocContainingNode!, '\n' + doc.stringify({
-        indent: expectedIndentation,
-        inlineDocuments: otherDocuments
-      }) + '  '.repeat(expectedIndentation - 1));
+
+      const inlineStringifyOptions = Object.assign(
+          {},
+          options,
+          {indent: expectedIndentation, inlineDocuments: otherDocuments});
+
+      const endingSpace =
+          expectedIndentation ? '  '.repeat(expectedIndentation - 1) : '';
+
+      dom5.setTextContent(
+          clonedDocContainingNode!,
+          '\n' + doc.stringify(inlineStringifyOptions) + endingSpace);
     }
 
     removeFakeNodes(astClone);
