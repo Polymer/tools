@@ -1,10 +1,12 @@
 {
   "variants": {
     "": {
-      "passing": 1,
-      "pending": 0,
-      "failing": 0,
-      "status": "complete",
+      "stats": {
+        "passing": 1,
+        "pending": 0,
+        "failing": 0,
+        "status": "complete"
+      },
       "tests": {
         "test/": {
           "only works with mainline components": {
@@ -14,10 +16,12 @@
       }
     },
     "foo": {
-      "passing": 0,
-      "pending": 0,
-      "failing": 1,
-      "status": "complete",
+      "stats": {
+        "passing": 0,
+        "pending": 0,
+        "failing": 1,
+        "status": "complete"
+      },
       "tests": {
         "test/": {
           "only works with mainline components": {
@@ -35,10 +39,12 @@
       }
     },
     "bar": {
-      "passing": 0,
-      "pending": 0,
-      "failing": 1,
-      "status": "complete",
+      "stats": {
+        "passing": 0,
+        "pending": 0,
+        "failing": 1,
+        "status": "complete"
+      },
       "tests": {
         "test/": {
           "only works with mainline components": {
