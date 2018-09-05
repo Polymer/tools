@@ -56,6 +56,11 @@ matrix:
   - node_js: '10'
     addons:
       sauce_connect: true
+      apt:
+        sources:
+          - google-chrome
+        packages:
+          - google-chrome-stable
     env:
     # We can't run Sauce without credentials. PRs from forks don't get secure
     # environment variables. Only run Sauce if we have those vars. Note this
