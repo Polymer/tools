@@ -1713,6 +1713,9 @@ extendInterfaces('replace', function (_context, teardown) {
                     // so if a node is replaced, it will be checked if it needs to be
                     // replaced again.
                     while (node = nodeIterator.nextNode()) {
+                        if (!node.tagName) {
+                            continue;
+                        }
                         var currentTagName = node.tagName.toLowerCase();
                         if (replacements.hasOwnProperty(currentTagName)) {
                             currentTagName = replacements[currentTagName];
