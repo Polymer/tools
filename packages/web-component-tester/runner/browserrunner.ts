@@ -23,6 +23,7 @@ export interface Stats {
   passing?: number;
   pending?: number;
   failing?: number;
+  total?: number;
 }
 
 export interface BrowserDef extends wd.Capabilities {
@@ -198,12 +199,18 @@ export class BrowserRunner {
         passing: 0,
         pending: 0,
         failing: 0,
+        total: 0,
       };
+    } else if (event === 'test-start') {
+      this.stats['total'] = this.stats['total'] + 1;
     } else if (event === 'test-end') {
       this.stats[data.state] = this.stats[data.state] + 1;
     }
 
     if (event === 'browser-end' || event === 'browser-fail') {
+      if ((this.stats['passing'] + this.stats['pending'] + this.stats['failing']) !== this.stats['total']) {
+        this.stats['failing'] = this.stats['total'] - this.stats['passing'] - this.stats['pending'];
+      }
       this.done(data);
     } else {
       this.emitter.emit(event, this.def, data, this.stats, this.browser);

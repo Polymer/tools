@@ -82,6 +82,7 @@ interface VariantResultGolden {
   passing: number;
   pending: number;
   failing: number;
+  total: number;
   status: string;
   tests: TestNode;
   errors: TestErrorExpectation;
@@ -358,8 +359,9 @@ function assertStats(
     passing: number,
     pending: number,
     failing: number,
+    total: number,
     status: 'complete') {
-  const expected: Stats = {passing, pending, failing, status};
+  const expected: Stats = {passing, pending, failing, total, status};
   expect(context.stats).to.deep.equal(repeatBrowsers(context, expected));
 }
 
@@ -422,6 +424,7 @@ function assertVariantResultsConformToGolden(
           golden.passing,
           golden.pending,
           golden.failing,
+          golden.total,
           <any>golden.status);
     } catch (_) {
       // mocha reports twice the failures because reasons
@@ -431,6 +434,7 @@ function assertVariantResultsConformToGolden(
           golden.passing,
           golden.pending,
           golden.failing * 2,
+          golden.total,
           <any>golden.status);
     }
   });
