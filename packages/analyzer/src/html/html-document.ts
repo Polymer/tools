@@ -227,10 +227,11 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
       const clonedDocContainingNode =
           this._findClonedContainingNode(astClone, docContainingNode);
 
-      const inlineStringifyOptions = Object.assign(
-          {},
-          options,
-          {indent: expectedIndentation, inlineDocuments: otherDocuments});
+      const inlineStringifyOptions = {
+        ...options,
+        indent: expectedIndentation,
+        inlineDocuments: otherDocuments
+      };
 
       const endingSpace =
           expectedIndentation ? '  '.repeat(expectedIndentation - 1) : '';
