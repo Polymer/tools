@@ -1692,7 +1692,7 @@ extendInterfaces('replace', function (_context, teardown) {
                 if (document.importNode.isSinonProxy) {
                     return;
                 }
-                if (!window.Polymer.Element) {
+                if (window.Polymer && !window.Polymer.Element) {
                     window.Polymer.Element = function () { };
                     window.Polymer.Element.prototype._stampTemplate = function () { };
                 }
