@@ -7,7 +7,7 @@
   },
   "tests": {
     "test/": {
-      "inline passing test": {"state": "passing"}
+      "This test does nothing!": {"state": "passing"}
     }
   }
 }
