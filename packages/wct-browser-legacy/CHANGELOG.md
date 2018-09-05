@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 * Fixed memory leak.
+* Fixed bug where window.Polymer.Element wasn't available.
 <!-- Add new, unreleased items here. -->
 
 ## 1.0.1 - 2018-05-17
