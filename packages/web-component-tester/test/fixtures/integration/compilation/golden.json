@@ -1,10 +1,8 @@
 {
-  "stats": {
-    "passing": 1,
-    "pending": 0,
-    "failing": 0,
-    "status": "complete"
-  },
+  "passing": 1,
+  "pending": 0,
+  "failing": 0,
+  "status": "complete",
   "tests": {
     "test/": {
       "ES6 works": {

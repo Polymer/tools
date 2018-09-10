@@ -1,10 +1,8 @@
 {
-  "stats": {
-    "passing": 4,
-    "pending": 0,
-    "failing": 0,
-    "status": "complete"
-  },
+  "passing": 4,
+  "pending": 0,
+  "failing": 0,
+  "status": "complete",
   "tests": {
     "test/": {"js test": {"state": "passing"}},
     "test/one/tests.html": {"test": {"state": "passing"}},
