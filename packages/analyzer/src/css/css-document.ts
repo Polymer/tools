@@ -50,8 +50,7 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
     return this.sourceRangeForShadyRange(node.range);
   }
 
-  stringify(options?: StringifyOptions) {
-    options = options || {};
+  stringify(options: StringifyOptions = {}) {
     const {prettyPrint = true} = options;
     const beautifulResults = cssbeautify(shadyStringifier.stringify(this.ast), {
       indent: prettyPrint ? '  ' : '',

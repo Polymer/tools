@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   inline documents into the cloned ast.
 * Add `prettyPrint` option to `StringifyOptions`
 * Implement behavior changes based on `prettyPrint` flag for
-  `HtmlDocument`, `JavascriptDocument`, and `CssDocument`
+  `HtmlDocument`, `JavascriptDocument`, `CssDocument`, and `JsonDocument`
 <!-- Add new, unreleased changes here. -->
 
 ## [3.1.2] - 2018-08-23

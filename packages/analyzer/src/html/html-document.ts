@@ -174,8 +174,7 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     }
   }
 
-  stringify(options?: StringifyOptions) {
-    options = options || {};
+  stringify(options: StringifyOptions = {}) {
     const {prettyPrint = true} = options;
 
     /**
@@ -204,9 +203,11 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
             `we already checked for this condition in partition()`);
       }
       const docContainingNode = doc.astNode.node;
-      const docContainingLocation = docContainingNode.__location;
+
       let expectedIndentation;
+
       if (prettyPrint) {
+        const docContainingLocation = docContainingNode.__location;
         if (docContainingLocation &&
             !isElementLocationInfo(docContainingLocation)) {
           expectedIndentation = docContainingLocation.col;

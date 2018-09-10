@@ -163,8 +163,7 @@ export class JavaScriptDocument extends ParsedDocument<Node, Visitor> {
     };
   }
 
-  stringify(options: StringifyOptions) {
-    options = options || {};
+  stringify(options: StringifyOptions = {}) {
     const {prettyPrint = true} = options;
     const formatOptions = {
       comments: prettyPrint,
