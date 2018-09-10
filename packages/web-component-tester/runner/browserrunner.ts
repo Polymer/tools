@@ -220,18 +220,31 @@ export class BrowserRunner {
    */
   private async _attemptNavigation(
       url: string, attemptCount: number, timeoutDuration: number) {
-    for (let remaining = attemptCount; remaining > 0; remaining--) {
-      this.browser.get(url, (error) => {
-        if (error) {
-          this.done(error.data || error);
-        } else {
-          this.extendTimeout();
-        }
+    for (let remaining = attemptCount; remaining > 0; --remaining) {
+      const wdGetFailed = Symbol('wdGetFailed');
+      const wdGetPromise = new Promise((resolve, _reject) => {
+        const requestAttempt = remaining;
+        this.browser.get(url, (error) => {
+          // Ignore result if we're already on to another request.
+          if (remaining !== requestAttempt) {
+            return;
+          }
+          if (error) {
+            this.done(error.data || error);
+            resolve(wdGetFailed);
+          } else {
+            this.extendTimeout();
+          }
+        });
       });
 
       const timeoutToken = Symbol('timeoutToken');
-      const raceResult = await Promise.race(
-          [this._navigationSucceeded, timeout(timeoutDuration, timeoutToken)]);
+      const navigationTimeout = timeout(timeoutDuration, timeoutToken);
+      const raceResult = await Promise.race([
+        wdGetPromise,
+        this._navigationSucceeded,
+        navigationTimeout,
+      ]);
       if (raceResult !== timeoutToken) {
         return;
       }
@@ -244,7 +257,9 @@ export class BrowserRunner {
     this._resolveNavigationSucceeded();
 
     this.extendTimeout();
-    if (event === 'browser-start') {
+
+    if ((this.stats.status !== 'completed' && this.stats.status !== 'error') &&
+        event === 'browser-start') {
       // Always assign, to handle re-runs (no browser-init).
       this.stats = {
         status: 'running',
@@ -252,7 +267,7 @@ export class BrowserRunner {
         pending: 0,
         failing: 0,
       };
-    } else if (event === 'test-end') {
+    } else if (this.stats.status === 'running' && event === 'test-end') {
       this.stats[data.state] = this.stats[data.state] + 1;
     }
 
@@ -278,7 +293,6 @@ export class BrowserRunner {
     }
     const browser = this.browser;
     this.browser = null;
-
     this.stats.status = error ? 'error' : 'complete';
     if (!error && this.stats.failing > 0) {
       error = this.stats.failing + ' failed tests';
