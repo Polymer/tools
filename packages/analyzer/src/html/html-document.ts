@@ -158,6 +158,22 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     return this.offsetsToSourceRange(location.startOffset, location.endOffset);
   }
 
+  private _findClonedContainingNode(
+      clonedAst: ASTNode, docContainingNode: ASTNode) {
+    const cloneIterator = dom5.depthFirst(clonedAst);
+    /**
+     * since the clonedAst is a perfect copy, the cloned docContainingNode
+     * should be in the same position w.r.t depthFirst iteration in the
+     * cloned ast
+     */
+    for (const node of dom5.depthFirst(this.ast)) {
+      const cloneNode = cloneIterator.next().value;
+      if (node === docContainingNode) {
+        return cloneNode;
+      }
+    }
+  }
+
   stringify(options?: StringifyOptions) {
     options = options || {};
     /**
@@ -166,27 +182,18 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
      * yet, because our inline documents' stringifiers may not perfectly
      * reproduce their input. However, we don't want to mutate any analyzer
      * object after they've been produced and cached, ParsedHtmlDocuments
-     * included. So we want to clone first.
-     *
-     * Because our inline documents contain references into this.ast, we need to
-     * make of copy of `this` and the inline documents such the
-     * inlineDoc.astNode references into this.ast are maintained. Fortunately,
-     * clone() does this! So we'll clone them all together in a single call by
-     * putting them all into an array.
+     * included. So we want to clone the ast before modifiying it, and update
+     * the cloned version of the node representing the inline document.
      */
-    const immutableDocuments = options.inlineDocuments || [];
-    immutableDocuments.unshift(this);
-
-    // We can modify these, as they don't escape this method.
-    const mutableDocuments = clone(immutableDocuments);
-    const selfClone: this = mutableDocuments.shift()! as this;
+    const astClone = clone(this.ast);
+    const inlineDocuments = options.inlineDocuments || [];
 
     // We must handle documents that are inline to us but mutated here.
     // If they're not inline us, we'll pass them along to our child documents
     // when stringifying them.
     const [ourInlineDocuments, otherDocuments] = partition(
-        mutableDocuments,
-        (d) => d.astNode != null && d.astNode.containingDocument === selfClone);
+        inlineDocuments,
+        (d) => d.astNode != null && d.astNode.containingDocument === this);
 
     for (const doc of ourInlineDocuments) {
       if (doc.astNode == null || doc.astNode.language !== 'html') {
@@ -211,14 +218,18 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
         expectedIndentation = 2;
       }
 
-      dom5.setTextContent(docContainingNode, '\n' + doc.stringify({
+      // update the cloned copy of docContainingNode with the
+      // inlined document stringification.
+      const clonedDocContainingNode =
+          this._findClonedContainingNode(astClone, docContainingNode);
+      dom5.setTextContent(clonedDocContainingNode!, '\n' + doc.stringify({
         indent: expectedIndentation,
         inlineDocuments: otherDocuments
       }) + '  '.repeat(expectedIndentation - 1));
     }
 
-    removeFakeNodes(selfClone.ast);
-    return parse5.serialize(selfClone.ast);
+    removeFakeNodes(astClone);
+    return parse5.serialize(astClone);
   }
 }
 

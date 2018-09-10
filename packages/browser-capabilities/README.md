@@ -4,7 +4,7 @@
 
 A JavaScript library that detects browser capabilities from a user agent string.
 
-The following keywords are supported. See [browser-capabilities.ts](https://github.com/Polymer/browser-capabilities/blob/master/src/browser-capabilities.ts) for the latest browser support matrix.
+The following keywords are supported. See [browser-capabilities.ts](https://github.com/Polymer/tools/blob/master/packages/browser-capabilities/src/browser-capabilities.ts) for the latest browser support matrix.
 
 | Keyword       | Description
 | :----         | :----
