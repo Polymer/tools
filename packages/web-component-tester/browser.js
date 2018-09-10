@@ -1692,7 +1692,7 @@ extendInterfaces('replace', function (_context, teardown) {
                 if (document.importNode.isSinonProxy) {
                     return;
                 }
-                if (!window.Polymer.Element) {
+                if (window.Polymer && !window.Polymer.Element) {
                     window.Polymer.Element = function () { };
                     window.Polymer.Element.prototype._stampTemplate = function () { };
                 }
@@ -1713,6 +1713,9 @@ extendInterfaces('replace', function (_context, teardown) {
                     // so if a node is replaced, it will be checked if it needs to be
                     // replaced again.
                     while (node = nodeIterator.nextNode()) {
+                        if (!node.tagName) {
+                            continue;
+                        }
                         var currentTagName = node.tagName.toLowerCase();
                         if (replacements.hasOwnProperty(currentTagName)) {
                             currentTagName = replacements[currentTagName];
