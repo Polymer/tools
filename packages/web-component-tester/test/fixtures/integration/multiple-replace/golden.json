@@ -1,10 +1,8 @@
 {
-  "stats": {
-    "passing": 10,
-    "pending": 0,
-    "failing": 0,
-    "status": "complete"
-  },
+  "passing": 10,
+  "pending": 0,
+  "failing": 0,
+  "status": "complete",
   "tests": {
     "test/tests.html": {
       "testing projected element replacement": {

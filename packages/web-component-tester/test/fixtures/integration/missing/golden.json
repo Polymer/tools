@@ -1,8 +1,6 @@
 {
-  "stats": {
-    "passing": 0,
-    "pending": 0,
-    "failing": 0,
-    "status": "error"
-  }
+  "passing": 0,
+  "pending": 0,
+  "failing": 0,
+  "status": "error"
 }

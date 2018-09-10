@@ -1,10 +1,8 @@
 {
-  "stats": {
-    "passing": 2,
-    "pending": 0,
-    "failing": 0,
-    "status": "complete"
-  },
+  "passing": 2,
+  "pending": 0,
+  "failing": 0,
+  "status": "complete",
   "tests": {
     "test/tests.html": {
       "suite": {
