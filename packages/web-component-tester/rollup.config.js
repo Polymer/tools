@@ -3,7 +3,6 @@ import resolve from 'rollup-plugin-node-resolve';
 
 export default {
   input: './browser/index.js',
-  output: {file: 'browser.js', format: 'iife'},
-  name: 'WctBrowser',
+  output: {name: 'WctBrowser', file: 'browser.js', format: 'iife'},
   plugins: [resolve(), commonjs()]
 };

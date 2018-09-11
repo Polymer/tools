@@ -123,7 +123,8 @@ export function htmlTransform(
     } else if (wctScript === undefined) {
       const src = dom5.getAttribute(script, 'src') || '';
       if (src.includes('web-component-tester/browser.js') ||
-          src.includes('wct-browser-legacy/browser.js')) {
+          src.includes('wct-browser-legacy/browser.js') ||
+          src.includes('wct-mocha/browser.js')) {
         wctScript = script;
       }
     }
