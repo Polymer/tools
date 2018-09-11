@@ -33,7 +33,7 @@ extendInterfaces('replace', function(_context, teardown) {
           return;
         }
 
-        if (!window.Polymer.Element) {
+        if (window.Polymer && !window.Polymer.Element) {
           window.Polymer.Element = function() {};
           window.Polymer.Element.prototype._stampTemplate = function() {};
         }
@@ -62,6 +62,9 @@ extendInterfaces('replace', function(_context, teardown) {
               // so if a node is replaced, it will be checked if it needs to be
               // replaced again.
               while (node = nodeIterator.nextNode() as Element) {
+                if (!node.tagName) {
+                  continue;
+                }
                 let currentTagName = node.tagName.toLowerCase();
 
                 if (replacements.hasOwnProperty(currentTagName)) {
@@ -84,7 +87,8 @@ extendInterfaces('replace', function(_context, teardown) {
                   }
 
                   // Replace the original node with the replacement node:
-                  node.parentNode.replaceChild(replacement, node);
+                  node.parentNode.replaceChild(
+                      replacement as Node, node as Node);
                 }
               }
 

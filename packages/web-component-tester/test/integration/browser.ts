@@ -77,16 +77,13 @@ interface VariantsGolden {
   variants: {[variantName: string]: VariantResultGolden};
 }
 
-interface VariantResultGoldenStats {
-  passing?: number;
-  pending?: number;
-  failing?: number;
-  total?: number;
-  status: string;
-}
 
 interface VariantResultGolden {
-  stats: VariantResultGoldenStats;
+  passing: number;
+  pending: number;
+  failing: number;
+  total: number;
+  status: string;
   tests: TestNode;
   errors: TestErrorExpectation;
 }
@@ -357,7 +354,14 @@ function assertFailed(context: VariantResults, expectedError: string) {
 }
 
 /** Asserts that all browsers match the given stats. */
-function assertStats(context: VariantResults, expected: Stats) {
+function assertStats(
+    context: VariantResults,
+    passing: number,
+    pending: number,
+    failing: number,
+    total: number,
+    status: 'complete') {
+  const expected: Stats = {passing, pending, failing, total, status};
   expect(context.stats).to.deep.equal(repeatBrowsers(context, expected));
 }
 
@@ -415,24 +419,27 @@ function assertVariantResultsConformToGolden(
   // const variantResults = testResults.getVariantResults('');
   it('records the correct result stats', function() {
     try {
-      assertStats(variantResults, golden.stats);
+      assertStats(
+          variantResults,
+          golden.passing,
+          golden.pending,
+          golden.failing,
+		  golden.total,
+          <any>golden.status);
     } catch (_) {
       // mocha reports twice the failures because reasons
       // https://github.com/mochajs/mocha/issues/2083
-      const modifiedStats = Object.assign({}, golden.stats);
-      if (typeof modifiedStats.failing === 'number') {
-        modifiedStats.failing *= 2;
-      }
-      assertStats(variantResults, modifiedStats);
+      assertStats(
+          variantResults,
+          golden.passing,
+          golden.pending,
+          golden.failing * 2,
+		  golden.total,
+          <any>golden.status);
     }
   });
 
-  const goldenStats = golden.stats;
-  const goldenStatsTestSum =
-      (goldenStats.passing !== undefined ? goldenStats.passing : 0) +
-      (goldenStats.pending !== undefined ? goldenStats.pending : 0) +
-      (goldenStats.failing !== undefined ? goldenStats.failing : 0);
-  if (goldenStatsTestSum === 0 && !golden.tests) {
+  if (golden.passing + golden.pending + golden.failing === 0 && !golden.tests) {
     return;
   }
 
@@ -440,7 +447,7 @@ function assertVariantResultsConformToGolden(
     assertTests(variantResults, golden.tests);
   });
 
-  if (golden.errors || (goldenStats.failing && goldenStats.failing > 0)) {
+  if (golden.errors || golden.failing > 0) {
     it('emits well formed errors', function() {
       assertTestErrors(variantResults, golden.errors);
     });

@@ -175,6 +175,12 @@ export interface StringifyOptions {
    * whose stringified contents should be used instead of what is in `ast`.
    */
   inlineDocuments?: ParsedDocument[];
+
+  /**
+   * Decide if the document should be formatted for readability, if supported.
+   * This option should default to `true` in subclasses.
+   */
+  prettyPrint?: boolean;
 }
 
 /**

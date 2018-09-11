@@ -13,7 +13,7 @@
  */
 
 import {SourceRange} from '../model/model';
-import {ParsedDocument} from '../parser/document';
+import {ParsedDocument, StringifyOptions} from '../parser/document';
 
 export type Json = JsonObject|JsonArray|number|string|boolean|null;
 export interface JsonObject {
@@ -51,7 +51,8 @@ export class ParsedJsonDocument extends ParsedDocument<Json, Visitor> {
     throw new Error('Not Implemented.');
   }
 
-  stringify() {
-    return JSON.stringify(this.ast, null, 2);
+  stringify(options: StringifyOptions = {}) {
+    const {prettyPrint = true, indent = 2} = options;
+    return JSON.stringify(this.ast, null, prettyPrint ? indent : 0);
   }
 }

@@ -34,17 +34,6 @@ export interface BrowserDef extends wd.Capabilities {
   variant?: string;
 }
 
-/**
- * Returns a promise that resolves after a given duration to an optional
- * result.
- *
- * @param duration The time, in milliseconds, after which the promise should
- *     resolve.
- * @param result The result to resolve the promise to.
- */
-const timeout = (duration: number, result?: any) =>
-    new Promise(resolve => setTimeout(() => resolve(result), duration));
-
 // Browser abstraction, responsible for spinning up a browser instance via wd.js
 // and executing runner.html test files passed in options.files
 export class BrowserRunner {
@@ -65,11 +54,6 @@ export class BrowserRunner {
 
   private _resolve: () => void;
   private _reject: (err: any) => void;
-
-  private _navigationAttemptCount: number;
-  private _navigationAttemptTimeout: number;
-  private _navigationSucceeded: Promise<void>;
-  private _resolveNavigationSucceeded: Function;
 
   /**
    * @param emitter The emitter to send updates about test progress to.
@@ -92,13 +76,6 @@ export class BrowserRunner {
     this.timeout = options.testTimeout;
     this.emitter = emitter;
     this.url = url;
-
-    this._navigationAttemptCount = 3;
-    this._navigationAttemptTimeout = Math.min(this.timeout / 2, 10000);
-    this._navigationSucceeded = new Promise((resolve) => {
-      this._resolveNavigationSucceeded = resolve;
-    });
-
 
     this.stats = {status: 'initializing'};
 
@@ -197,53 +174,23 @@ export class BrowserRunner {
     } else {
       this.sessionId = sessionId;
       this.startTest();
+      this.extendTimeout();
     }
   }
 
-  async startTest() {
+  startTest() {
     const paramDelim = (this.url.indexOf('?') === -1 ? '?' : '&');
     const extra = `${paramDelim}cli_browser_id=${this.def.id}`;
-    await this._attemptNavigation(
-        this.url + extra,
-        this._navigationAttemptCount,
-        this._navigationAttemptTimeout);
-    this.extendTimeout();
-  }
-
-  /**
-   * Asks the connected browser to navigate to the given URL, retrying until
-   * `this.onEvent` receives any event from the browser.
-   *
-   * @param url The URL to navigate to.
-   * @param attemptCount The number of attempts to make.
-   * @param timeoutDuration The time to wait before considering an attempt as
-   *     having failed, in milliseconds.
-   */
-  private async _attemptNavigation(
-      url: string, attemptCount: number, timeoutDuration: number) {
-    for (let remaining = attemptCount; remaining > 0; remaining--) {
-      this.browser.get(url, (error) => {
-        if (error) {
-          this.done(error.data || error);
-        } else {
-          this.extendTimeout();
-        }
-      });
-
-      const timeoutToken = Symbol('timeoutToken');
-      const raceResult = await Promise.race(
-          [this._navigationSucceeded, timeout(timeoutDuration, timeoutToken)]);
-      if (raceResult !== timeoutToken) {
-        return;
+    this.browser.get(this.url + extra, (error) => {
+      if (error) {
+        this.done(error.data || error);
+      } else {
+        this.extendTimeout();
       }
-    }
-
-    this.done(new Error(`The browser failed to navigate to "${url}".`));
+    });
   }
 
   onEvent(event: string, data: any) {
-    this._resolveNavigationSucceeded();
-
     this.extendTimeout();
     if (event === 'browser-start') {
       // Always assign, to handle re-runs (no browser-init).
