@@ -50,12 +50,13 @@ export class ParsedCssDocument extends ParsedDocument<shady.Node, Visitor> {
     return this.sourceRangeForShadyRange(node.range);
   }
 
-  stringify(options?: StringifyOptions) {
-    options = options || {};
-    shadyStringifier.visit;
-    const beautifulResults = cssbeautify(
-        shadyStringifier.stringify(this.ast),
-        {indent: '  ', autosemicolon: true, openbrace: 'end-of-line'});
+  stringify(options: StringifyOptions = {}) {
+    const {prettyPrint = true} = options;
+    const beautifulResults = cssbeautify(shadyStringifier.stringify(this.ast), {
+      indent: prettyPrint ? '  ' : '',
+      autosemicolon: true,
+      openbrace: 'end-of-line'
+    });
 
     const indent = '  '.repeat(options.indent || 0);
 
