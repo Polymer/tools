@@ -10,6 +10,7 @@
         "@polymer/polymer": "^3.0.5",
         "@polymer/sinonjs": "^1.17.1",
         "@polymer/test-fixture": "^4.0.0-pre.1",
+        "@webcomponents/webcomponentsjs": "^2.1.1",
         "chai": "^4.1.2",
         "mocha": "^5.2.0",
         "wct-mocha": "^1.0.0-pre.1",
