@@ -424,7 +424,7 @@ function assertVariantResultsConformToGolden(
           golden.passing,
           golden.pending,
           golden.failing,
-		  golden.total,
+          golden.total,
           <any>golden.status);
     } catch (_) {
       // mocha reports twice the failures because reasons
@@ -434,7 +434,7 @@ function assertVariantResultsConformToGolden(
           golden.passing,
           golden.pending,
           golden.failing * 2,
-		  golden.total,
+          golden.total,
           <any>golden.status);
     }
   });
