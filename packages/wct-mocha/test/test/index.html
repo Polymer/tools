@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <body>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../node_modules/mocha/mocha.js"></script>
     <script src="../node_modules/chai/chai.js"></script>
     <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
@@ -13,11 +14,12 @@
     </test-fixture>
 
     <script type="module">
-      import '../my-test-element.js';
+      import {MyTestElement} from '../my-test-element.js';
       suite('my-test-element', () => {
         test('has a title', () => {
           const mte1 = fixture('mte1');
           chai.assert.equal(mte1.title, 'untitled', '"untitled" by default');
+          chai.assert.instanceOf(mte1, MyTestElement);
         });
       });
     </script>

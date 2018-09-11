@@ -1,6 +1,6 @@
 import {html, PolymerElement} from '@polymer/polymer/polymer-element.js';
 
-class MyTestElement extends PolymerElement {
+export class MyTestElement extends PolymerElement {
   static get template() {
     return html`
       <h1>[[title]]</h1>

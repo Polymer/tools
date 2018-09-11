@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <body>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../node_modules/wct-browser-legacy/browser.js"></script>
 
     <test-fixture id="mte1">
@@ -12,7 +13,6 @@
     <script type="module">
       import '../my-test-element.js';
       import '../my-other-test-element.js';
-
       suite('my-test-element', () => {
         suite('stub', () => {
           setup(() => {
