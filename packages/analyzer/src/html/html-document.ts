@@ -158,35 +158,43 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
     return this.offsetsToSourceRange(location.startOffset, location.endOffset);
   }
 
-  stringify(options?: StringifyOptions) {
-    options = options || {};
+  private _findClonedContainingNode(
+      clonedAst: ASTNode, docContainingNode: ASTNode) {
+    const cloneIterator = dom5.depthFirst(clonedAst);
+    /**
+     * since the clonedAst is a perfect copy, the cloned docContainingNode
+     * should be in the same position w.r.t depthFirst iteration in the
+     * cloned ast
+     */
+    for (const node of dom5.depthFirst(this.ast)) {
+      const cloneNode = cloneIterator.next().value;
+      if (node === docContainingNode) {
+        return cloneNode;
+      }
+    }
+  }
+
+  stringify(options: StringifyOptions = {}) {
+    const {prettyPrint = true} = options;
+
     /**
      * We want to mutate this.ast with the results of stringifying our inline
      * documents. This will mutate this.ast even if no one else has mutated it
      * yet, because our inline documents' stringifiers may not perfectly
      * reproduce their input. However, we don't want to mutate any analyzer
      * object after they've been produced and cached, ParsedHtmlDocuments
-     * included. So we want to clone first.
-     *
-     * Because our inline documents contain references into this.ast, we need to
-     * make of copy of `this` and the inline documents such the
-     * inlineDoc.astNode references into this.ast are maintained. Fortunately,
-     * clone() does this! So we'll clone them all together in a single call by
-     * putting them all into an array.
+     * included. So we want to clone the ast before modifiying it, and update
+     * the cloned version of the node representing the inline document.
      */
-    const immutableDocuments = options.inlineDocuments || [];
-    immutableDocuments.unshift(this);
-
-    // We can modify these, as they don't escape this method.
-    const mutableDocuments = clone(immutableDocuments);
-    const selfClone: this = mutableDocuments.shift()! as this;
+    const astClone = clone(this.ast);
+    const inlineDocuments = options.inlineDocuments || [];
 
     // We must handle documents that are inline to us but mutated here.
     // If they're not inline us, we'll pass them along to our child documents
     // when stringifying them.
     const [ourInlineDocuments, otherDocuments] = partition(
-        mutableDocuments,
-        (d) => d.astNode != null && d.astNode.containingDocument === selfClone);
+        inlineDocuments,
+        (d) => d.astNode != null && d.astNode.containingDocument === this);
 
     for (const doc of ourInlineDocuments) {
       if (doc.astNode == null || doc.astNode.language !== 'html') {
@@ -195,30 +203,47 @@ export class ParsedHtmlDocument extends ParsedDocument<ASTNode, HtmlVisitor> {
             `we already checked for this condition in partition()`);
       }
       const docContainingNode = doc.astNode.node;
-      const docContainingLocation = docContainingNode.__location;
-      let expectedIndentation;
-      if (docContainingLocation &&
-          !isElementLocationInfo(docContainingLocation)) {
-        expectedIndentation = docContainingLocation.col;
 
-        const parentLocation = docContainingNode.parentNode &&
-            docContainingNode.parentNode.__location;
-        if (parentLocation && !isElementLocationInfo(parentLocation)) {
-          expectedIndentation -= parentLocation.col;
+      let expectedIndentation;
+
+      if (prettyPrint) {
+        const docContainingLocation = docContainingNode.__location;
+        if (docContainingLocation &&
+            !isElementLocationInfo(docContainingLocation)) {
+          expectedIndentation = docContainingLocation.col;
+
+          const parentLocation = docContainingNode.parentNode &&
+              docContainingNode.parentNode.__location;
+          if (parentLocation && !isElementLocationInfo(parentLocation)) {
+            expectedIndentation -= parentLocation.col;
+          }
+        }
+        if (expectedIndentation === undefined) {
+          expectedIndentation = 2;
         }
       }
-      if (expectedIndentation === undefined) {
-        expectedIndentation = 2;
-      }
 
-      dom5.setTextContent(docContainingNode, '\n' + doc.stringify({
+      // update the cloned copy of docContainingNode with the
+      // inlined document stringification.
+      const clonedDocContainingNode =
+          this._findClonedContainingNode(astClone, docContainingNode);
+
+      const inlineStringifyOptions = {
+        ...options,
         indent: expectedIndentation,
         inlineDocuments: otherDocuments
-      }) + '  '.repeat(expectedIndentation - 1));
+      };
+
+      const endingSpace =
+          expectedIndentation ? '  '.repeat(expectedIndentation - 1) : '';
+
+      dom5.setTextContent(
+          clonedDocContainingNode!,
+          '\n' + doc.stringify(inlineStringifyOptions) + endingSpace);
     }
 
-    removeFakeNodes(selfClone.ast);
-    return parse5.serialize(selfClone.ast);
+    removeFakeNodes(astClone);
+    return parse5.serialize(astClone);
   }
 }
 

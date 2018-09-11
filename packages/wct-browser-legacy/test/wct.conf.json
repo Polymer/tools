@@ -4,11 +4,6 @@
   "suites": [
     "test/index.html"
   ],
-  "clientOptions": {
-    "extraScripts": [
-      "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"
-    ]
-  },
   "plugins": {
     "local": {
       "disabled": true,
