@@ -1,5 +1,6 @@
 {
   "npm": true,
+  "wctPackageName": "wct-browser-legacy",
   "moduleResolution": "node",
   "suites": [
     "test/index.html"

@@ -35,7 +35,11 @@ declare global {
 }
 
 export function initialize(initConfig?: config.Config) {
-  const _config = Object.assign({}, initConfig);
+  const _config = {};
+
+  if (initConfig) {
+    config.deepMerge(_config, initConfig);
+  }
 
   // You can configure WCT before it has loaded by assigning your custom
   // configuration to the global `WCT`.
