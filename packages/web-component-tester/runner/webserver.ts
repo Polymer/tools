@@ -15,7 +15,7 @@
 import * as bowerConfig from 'bower-config';
 import * as cleankill from 'cleankill';
 import * as express from 'express';
-import * as fs from 'fs';
+import {readFileSync, statSync} from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import {MainlineServer, PolyserveServer, RequestHandler, ServerOptions, startServers, VariantServer} from 'polyserve';
@@ -28,7 +28,7 @@ import {getPackageName} from './config';
 import {Context} from './context';
 
 // Template for generated indexes.
-const INDEX_TEMPLATE = _.template(fs.readFileSync(
+const INDEX_TEMPLATE = _.template(readFileSync(
     path.resolve(__dirname, '../data/index.html'), {encoding: 'utf-8'}));
 
 const DEFAULT_HEADERS = {
@@ -78,6 +78,8 @@ export function webserver(wct: Context): void {
     const modules: string[] = [], extraModules: string[] = [];
 
     if (options.npm) {
+      // concat options.clientOptions.environmentScripts with resolved
+      // environment scripts.
       options.clientOptions = options.clientOptions || {};
       options.clientOptions.environmentScripts =
           options.clientOptions.environmentScripts || [];
@@ -290,7 +292,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
         registerServerTeardown(server);
       }
     } else {
-      const never: never = polyserveResult;
+      const never: any = polyserveResult;
       throw new Error(
           'Internal error: Got unknown response from polyserve.startServers: ' +
           `${never}`);
@@ -345,7 +347,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
 
 function exists(path: string): boolean {
   try {
-    fs.statSync(path);
+    statSync(path);
     return true;
   } catch (_err) {
     return false;

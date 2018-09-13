@@ -1,0 +1,31 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es5",
+    "strict": false,
+    "isolatedModules": false,
+    "noImplicitAny": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "noImplicitThis": false,
+    "strictNullChecks": false,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "lib",
+    "lib": [
+      "dom",
+      "es2017"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "custom_typings/*.d.ts",
+    "src/*.ts",
+    "src/**/*.ts"
+  ]
+}

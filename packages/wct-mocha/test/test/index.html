@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+    <script src="../node_modules/wct-mocha/browser.js"></script>
+
+    <test-fixture id="mte1">
+      <template>
+        <my-test-element></my-test-element>
+      </template>
+    </test-fixture>
+
+    <script type="module">
+      import {MyTestElement} from '../my-test-element.js';
+
+      suite('my-test-element', () => {
+        test('has a title', () => {
+          const mte1 = fixture('mte1');
+          chai.assert.equal(mte1.title, 'untitled', '"untitled" by default');
+          chai.assert.instanceOf(mte1, MyTestElement);
+        });
+      });
+    </script>
+  </body>
+</html>
+
