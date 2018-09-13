@@ -99,7 +99,6 @@
     "@types/multer": "0.0.32",
     "@types/nomnom": "0.0.28",
     "@types/resolve": "0.0.7",
-    "@types/resolve-from": "0.0.18",
     "@types/rimraf": "0.0.28",
     "@types/semver": "^5.3.30",
     "@types/sinon": "^1.16.31",
