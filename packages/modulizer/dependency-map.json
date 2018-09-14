@@ -3,10 +3,6 @@
     "npm": "@polymer/app-layout",
     "semver": "^3.0.0"
   },
-  "app-elements": {
-    "npm": "@polymer/app-elements",
-    "semver": "^3.0.0-pre.18"
-  },
   "app-localize-behavior": {
     "npm": "@polymer/app-localize-behavior",
     "semver": "^3.0.0"
@@ -14,10 +10,6 @@
   "app-media": {
     "npm": "@polymer/app-media",
     "semver": "^3.0.0"
-  },
-  "app-pouchdb": {
-    "npm": "@polymer/app-pouchdb",
-    "semver": "^3.0.0-pre.18"
   },
   "app-route": {
     "npm": "@polymer/app-route",
@@ -42,10 +34,6 @@
   "iron-scroll-target-behavior": {
     "npm": "@polymer/iron-scroll-target-behavior",
     "semver": "^3.0.0"
-  },
-  "app-layout-templates": {
-    "npm": "@polymer/app-layout-templates",
-    "semver": "^3.0.0-pre.18"
   },
   "iron-icon": {
     "npm": "@polymer/iron-icon",
@@ -79,10 +67,6 @@
     "npm": "@polymer/paper-material",
     "semver": "^3.0.0"
   },
-  "paper-menu": {
-    "npm": "@polymer/paper-menu",
-    "semver": "^3.0.0-pre.18"
-  },
   "paper-styles": {
     "npm": "@polymer/paper-styles",
     "semver": "^3.0.0"
@@ -103,17 +87,9 @@
     "npm": "@polymer/iron-location",
     "semver": "^3.0.0"
   },
-  "chartjs-element": {
-    "npm": "@polymer/chartjs-element",
-    "semver": "^3.0.0-pre.18"
-  },
   "iron-component-page": {
     "npm": "@polymer/iron-component-page",
     "semver": "^3.0.0"
-  },
-  "data-elements": {
-    "npm": "@polymer/data-elements",
-    "semver": "^3.0.0-pre.18"
   },
   "iron-jsonp-library": {
     "npm": "@polymer/iron-jsonp-library",
@@ -159,10 +135,6 @@
     "npm": "@polymer/gold-cc-input",
     "semver": "^3.0.0"
   },
-  "gold-elements": {
-    "npm": "@polymer/gold-elements",
-    "semver": "^3.0.0-pre.18"
-  },
   "gold-email-input": {
     "npm": "@polymer/gold-email-input",
     "semver": "^3.0.0"
@@ -194,10 +166,6 @@
   "iron-behaviors": {
     "npm": "@polymer/iron-behaviors",
     "semver": "^3.0.0"
-  },
-  "iron-behaviors-collection": {
-    "npm": "@polymer/iron-behaviors-collection",
-    "semver": "^3.0.0-pre.18"
   },
   "iron-range-behavior": {
     "npm": "@polymer/iron-range-behavior",
@@ -259,17 +227,9 @@
     "npm": "@polymer/neon-animation",
     "semver": "^3.0.0"
   },
-  "iron-elements": {
-    "npm": "@polymer/iron-elements",
-    "semver": "^3.0.0"
-  },
   "icon-behaviors-collection": {
     "npm": "@polymer/icon-behaviors-collection",
     "semver": "^3.0.0"
-  },
-  "icon-input-elements": {
-    "npm": "@polymer/icon-input-elements",
-    "semver": "^3.0.0-pre.18"
   },
   "iron-fit-behavior": {
     "npm": "@polymer/iron-fit-behavior",
@@ -311,10 +271,6 @@
     "npm": "@polymer/iron-meta",
     "semver": "^3.0.0"
   },
-  "iron-input-elements": {
-    "npm": "@polymer/iron-input-elements",
-    "semver": "^3.0.0-pre.18"
-  },
   "iron-label": {
     "npm": "@polymer/iron-label",
     "semver": "^3.0.0"
@@ -322,18 +278,6 @@
   "iron-localstorage": {
     "npm": "@polymer/iron-localstorage",
     "semver": "^3.0.0"
-  },
-  "iron-signals": {
-    "npm": "@polymer/iron-signals",
-    "semver": "^3.0.0-pre.18"
-  },
-  "layout-elements": {
-    "npm": "@polymer/layout-elements",
-    "semver": "^3.0.0-pre.18"
-  },
-  "neon-elements": {
-    "npm": "@polymer/neon-elements",
-    "semver": "^3.0.0-pre.18"
   },
   "paper-badge": {
     "npm": "@polymer/paper-badge",
@@ -374,22 +318,6 @@
   "paper-menu-button": {
     "npm": "@polymer/paper-menu-button",
     "semver": "^3.0.0"
-  },
-  "paper-elements": {
-    "npm": "@polymer/paper-elements",
-    "semver": "^3.0.0-pre.18"
-  },
-  "paper-input-elements": {
-    "npm": "@polymer/paper-input-elements",
-    "semver": "^3.0.0-pre.18"
-  },
-  "paper-overlay-elements": {
-    "npm": "@polymer/paper-overlay-elements",
-    "semver": "^3.0.0-pre.18"
-  },
-  "paper-ui-elements": {
-    "npm": "@polymer/paper-ui-elements",
-    "semver": "^3.0.0-pre.18"
   },
   "paper-fab": {
     "npm": "@polymer/paper-fab",
@@ -447,40 +375,8 @@
     "npm": "@polymer/paper-tooltip",
     "semver": "^3.0.0"
   },
-  "platinum-bluetooth": {
-    "npm": "@polymer/platinum-bluetooth",
-    "semver": "^3.0.0-pre.18"
-  },
-  "platinum-elements": {
-    "npm": "@polymer/platinum-elements",
-    "semver": "^3.0.0-pre.18"
-  },
-  "platinum-https-redirect": {
-    "npm": "@polymer/platinum-https-redirect",
-    "semver": "^3.0.0-pre.18"
-  },
-  "platinum-push-messaging": {
-    "npm": "@polymer/platinum-push-messaging",
-    "semver": "^3.0.0-pre.18"
-  },
-  "platinum-sw": {
-    "npm": "@polymer/platinum-sw",
-    "semver": "^3.0.0-pre.18"
-  },
-  "polymer-starter-kit": {
-    "npm": "@polymer/polymer-starter-kit",
-    "semver": "^3.0.0-pre.18"
-  },
   "promise-polyfill": {
     "npm": "@polymer/promise-polyfill",
-    "semver": "^3.0.0-pre.18"
-  },
-  "seed-element": {
-    "npm": "@polymer/seed-element",
-    "semver": "^3.0.0-pre.18"
-  },
-  "performance-benchmark": {
-    "npm": "@polymer/performance-benchmark",
     "semver": "^3.0.0-pre.18"
   },
   "test-fixture": {
