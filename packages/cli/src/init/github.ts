@@ -30,6 +30,7 @@ export interface GithubGeneratorOptions {
   repo: string;
   semverRange?: string;
   branch?: string;
+  tag?: string;
   installDependencies?: InstallOptions;
 }
 
@@ -40,6 +41,7 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
   const repo = githubOptions.repo;
   const semverRange = githubOptions.semverRange || '*';
   const branch = githubOptions.branch;
+  const tag = githubOptions.tag;
   const installDependencies = githubOptions.installDependencies;
 
   return class GithubGenerator extends Generator {
@@ -61,14 +63,16 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
     async _writing() {
       let codeSource;
 
-      if (branch === undefined) {
+      if (branch) {
+        codeSource = await this._github.getBranch(branch!);
+      } else if (tag) {
+        codeSource = await this._github.getTag(tag);
+      } else {
         logger.info(
             (semverRange === '*') ?
                 `Finding latest release of ${owner}/${repo}` :
                 `Finding latest ${semverRange} release of ${owner}/${repo}`);
         codeSource = await this._github.getSemverRelease(semverRange);
-      } else {
-        codeSource = await this._github.getBranch(branch);
       }
 
       await this._github.extractReleaseTarball(
