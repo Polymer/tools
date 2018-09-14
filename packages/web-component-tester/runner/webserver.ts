@@ -37,7 +37,6 @@ const DEFAULT_HEADERS = {
   'Expires': '0',
 };
 
-const ENVIRONMENT_SCRIPTS: string[] = [];
 
 /**
  * The webserver module is a quasi-plugin. This ensures that it is hooked in a
@@ -72,8 +71,6 @@ export function webserver(wct: Context): void {
     const modules: string[] = [], extraModules: string[] = [];
 
     if (options.npm) {
-      // concat options.clientOptions.environmentScripts with resolved
-      // ENVIRONMENT_SCRIPTS
       options.clientOptions = options.clientOptions || {};
       options.clientOptions.environmentScripts =
           options.clientOptions.environmentScripts || [];
@@ -81,17 +78,16 @@ export function webserver(wct: Context): void {
       browserScript = '';
 
       const fromPath = path.resolve(options.root || process.cwd());
-      const npmPackageName = options.wctPackageName ||
+      options.wctPackageName = options.wctPackageName ||
           ['wct-mocha', 'wct-browser-legacy', 'web-component-tester'].find(
               (p) => !!resolveFrom.silent(fromPath, p));
-      options.wctPackageName = npmPackageName;
 
-      const npmPackageRootPath =
-          path.dirname(resolveFrom(fromPath, npmPackageName + '/package.json'));
+      const npmPackageRootPath = path.dirname(
+          resolveFrom(fromPath, options.wctPackageName + '/package.json'));
 
       if (npmPackageRootPath) {
         browserScript = `${npmPackageRootPath}/browser.js`.slice(
-            npmPackageRootPath.length - npmPackageName.length);
+            npmPackageRootPath.length - options.wctPackageName.length);
       }
 
       const packageName = getPackageName(options);
@@ -123,11 +119,6 @@ export function webserver(wct: Context): void {
             options.clientOptions.environmentScripts.concat(
                 resolveWctNpmEntrypointNames(
                     options, legacyNpmSupportPackages));
-      } else {
-        scripts.push(
-            ...resolveWctNpmEntrypointNames(options, [
-              {name: 'mocha', jsEntrypoint: 'mocha.js'}
-            ]).map((s) => `${isPackageScoped ? '../../' : '../'}${s}`));
       }
 
       if (browserScript && isPackageScoped) {
