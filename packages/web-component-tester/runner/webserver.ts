@@ -15,20 +15,20 @@
 import * as bowerConfig from 'bower-config';
 import * as cleankill from 'cleankill';
 import * as express from 'express';
-import {readFileSync, statSync} from 'fs';
+import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import {MainlineServer, PolyserveServer, RequestHandler, ServerOptions, startServers, VariantServer} from 'polyserve';
-import * as resolveFrom from 'resolve-from';
+import * as resolve from 'resolve';
 import * as semver from 'semver';
 import * as send from 'send';
 import * as serverDestroy from 'server-destroy';
 
-import {getPackageName, NPMPackage, resolveWctNpmEntrypointNames} from './config';
+import {getPackageName} from './config';
 import {Context} from './context';
 
 // Template for generated indexes.
-const INDEX_TEMPLATE = _.template(readFileSync(
+const INDEX_TEMPLATE = _.template(fs.readFileSync(
     path.resolve(__dirname, '../data/index.html'), {encoding: 'utf-8'}));
 
 const DEFAULT_HEADERS = {
@@ -37,6 +37,13 @@ const DEFAULT_HEADERS = {
   'Expires': '0',
 };
 
+function resolveFrom(fromPath: string, moduleId: string): string {
+  try {
+    return resolve.sync(moduleId, {basedir: fromPath, preserveSymlinks: true});
+  } catch (e) {
+    return '';
+  }
+}
 
 /**
  * The webserver module is a quasi-plugin. This ensures that it is hooked in a
@@ -80,7 +87,7 @@ export function webserver(wct: Context): void {
       const fromPath = path.resolve(options.root || process.cwd());
       options.wctPackageName = options.wctPackageName ||
           ['wct-mocha', 'wct-browser-legacy', 'web-component-tester'].find(
-              (p) => !!resolveFrom.silent(fromPath, p));
+              (p) => !!resolveFrom(fromPath, p));
 
       const npmPackageRootPath = path.dirname(
           resolveFrom(fromPath, options.wctPackageName + '/package.json'));
@@ -100,25 +107,24 @@ export function webserver(wct: Context): void {
       // from the WCT package.
       if (['web-component-tester', 'wct-browser-legacy'].includes(
               options.wctPackageName)) {
-        const legacyNpmSupportPackages: NPMPackage[] = [
-          {name: 'stacky', jsEntrypoint: 'browser.js'},
-          {name: 'async', jsEntrypoint: 'lib/async.js'},
-          {name: 'lodash', jsEntrypoint: 'index.js'},
-          {name: 'mocha', jsEntrypoint: 'mocha.js'},
-          {name: 'chai', jsEntrypoint: 'chai.js'},
-          {name: '@polymer/sinonjs', jsEntrypoint: 'sinon.js'},
-          {name: 'sinon-chai', jsEntrypoint: 'lib/sinon-chai.js'},
-          {
-            name: 'accessibility-developer-tools',
-            jsEntrypoint: 'dist/js/axs_testing.js'
-          },
-          {name: '@polymer/test-fixture', jsEntrypoint: 'test-fixture.js'},
+        const legacyNpmSupportPackageScripts: string[] = [
+          'stacky/browser.js',
+          'async/lib/async.js',
+          'lodash/index.js',
+          'mocha/mocha.js',
+          'chai/chai.js',
+          '@polymer/sinonjs/sinon.js',
+          'sinon-chai/lib/sinon-chai.js',
+          'accessibility-developer-tools/dist/js/axs_testing.js',
+          '@polymer/test-fixture/test-fixture.js',
         ];
 
-        options.clientOptions.environmentScripts =
-            options.clientOptions.environmentScripts.concat(
-                resolveWctNpmEntrypointNames(
-                    options, legacyNpmSupportPackages));
+        options.clientOptions.environmentScripts.push(
+            ...legacyNpmSupportPackageScripts.map(
+                (script) => path.relative(
+                    path.resolve(path.join(options.root, 'node_modules')),
+                    resolveFrom(npmPackageRootPath, script)
+                        .replace(/\\/g, '/'))));
       }
 
       if (browserScript && isPackageScoped) {
@@ -333,7 +339,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
 
 function exists(path: string): boolean {
   try {
-    statSync(path);
+    fs.statSync(path);
     return true;
   } catch (_err) {
     return false;

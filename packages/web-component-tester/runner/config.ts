@@ -87,20 +87,6 @@ export interface Config {
   browsers?: Browser[]|Browser;
 }
 
-export interface NPMPackage {
-  /**
-   * Name of the node package. e.g. '@polymer/polymer'
-   */
-  name: string;
-
-  /**
-   * JS entrypoints relative to packageName e.g. lodash/index.js would simply
-   * be ['index.js'] and myPackage/dist/addon.js and myPackage/lib/core.js would
-   * be ['dist/addon.js', 'lib/core.js']
-   */
-  jsEntrypoint: string;
-}
-
 /**
  * config helper: A basic function to synchronously read JSON,
  * log any errors, and return null if no file or invalid JSON
@@ -153,53 +139,6 @@ function resolvePackageDir(
   // resolve that and then drop the filename.
   return path.dirname(
       resolve.sync(path.join(packageName, 'package.json'), opts));
-}
-
-/**
- * Resolves npm paths from current config root to ScriptNames.
- *
- * e.g. a/b.js is actually resolved in directory c's node modules, it would
- * return c/node_modules/a/b.js. These dependencies must be direct dependencies
- * to WCT.
- *
- * @param config Current config / options / scope
- * @param npmPackages List of NPMScript objects to be resolved
- * @param wctPackageName Name of wct package with browser.js (Defaults to
- * wct-browser-legacy)
- */
-export function resolveWctNpmEntrypointNames(
-    config: Config, npmPackages: NPMPackage[]): string[] {
-  let wctPackageName = config.wctPackageName;
-  if (wctPackageName === undefined) {
-    wctPackageName = 'wct-browser-legacy';
-  }
-
-  let wctPackageRoot;
-  try {
-    wctPackageRoot = resolvePackageDir(wctPackageName, {basedir: config.root});
-  } catch {
-    throw new Error(
-        `${wctPackageName} not installed. Please change --wct-package-name` +
-        ` flag or install the package.`);
-  }
-
-  // We want to find and inject WCT's version of these dependencies, not the
-  // version from the package being tested.
-  const resolvedEntrypoints: string[] = [];
-  const rootNodeModules = path.join(config.root, 'node_modules');
-
-  for (const npmPackage of npmPackages) {
-    const absoluteFilepath = resolve.sync(
-        path.join(npmPackage.name, npmPackage.jsEntrypoint),
-        {basedir: wctPackageRoot});
-    const relativeFilepath = path.relative(rootNodeModules, absoluteFilepath);
-    const relativeUrl = (process.platform === 'win32') ?
-        relativeFilepath.replace(/\\/g, '/') :
-        relativeFilepath;
-    resolvedEntrypoints.push(relativeUrl);
-  }
-
-  return resolvedEntrypoints;
 }
 
 // The full set of options, as a reference.
