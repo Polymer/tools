@@ -9,7 +9,9 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-var SELENIUM_OVERRIDES = require('../package.json')['selenium-overrides'];
+var seleniumConfig = process.env.SELENIUM_OVERRIDES_CONFIG || '../package.json';
+var SELENIUM_OVERRIDES = require(seleniumConfig)['selenium-overrides'];
+
 // Work around a potential npm race condition:
 // https://github.com/npm/npm/issues/6624
 function requireSelenium(done, attempt) {
