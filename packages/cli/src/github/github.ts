@@ -199,4 +199,18 @@ export class Github {
           this._repo}/legacy.tar.gz/${branch.commit.sha}`
     };
   }
+
+  async getTag(tag: string): Promise<CodeSource> {
+    // GitHubApi.Branch is not correct.
+    interface Reference {
+      object: {sha: string};
+    }
+    const ref: Reference = await this._github.gitdata.getReference(
+        {owner: this._owner, repo: this._repo, ref: `tags/${tag}`});
+    return {
+      name: tag,
+      tarball_url: `https://codeload.github.com/${this._owner}/${
+          this._repo}/legacy.tar.gz/${ref.object.sha}`
+    };
+  }
 }

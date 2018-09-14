@@ -524,7 +524,7 @@ suite('polymer shop', function() {
           owner: 'Polymer',
           repo: 'shop',
           githubToken,
-          branch: '3.0',
+          tag: 'v3.0.0',
           installDependencies: {
             bower: false,
             npm: true,
