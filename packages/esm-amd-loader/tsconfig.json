@@ -8,7 +8,6 @@
     "sourceMap": false,
     "lib": [
       "dom",
-      "es5",
       "es6"
     ]
   },
