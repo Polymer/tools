@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add unreleased changes here. -->
 
+## [v2.1.2] - 2018-09-17
+- Changed postinstall.js script to accept a SELENIUM_OVERRIDES_CONFIG environment variable to allow specifying an alternate location for a json file containing a 'selenium-overrides' key with configuration details for the `selenium.install()` step.  Thanks to @bernardoVale for contribution.
+
 ## [v2.1.1] - 2018-06-25
 - Converted code from promisify-node to native promisify. (This officially drops support for Node v6)
 
