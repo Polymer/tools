@@ -7,8 +7,9 @@
     "preserveConstEnums": false,
     "sourceMap": false,
     "lib": [
+      "dom",
       "es5",
-      "dom"
+      "es6"
     ]
   },
   "include": [
