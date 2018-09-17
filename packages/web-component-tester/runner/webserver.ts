@@ -119,12 +119,19 @@ export function webserver(wct: Context): void {
           '@polymer/test-fixture/test-fixture.js',
         ];
 
+        const rootNodeModules =
+            path.resolve(path.join(options.root, 'node_modules'));
+
+        const resolvedLegacyNpmSupportPackageScripts: string[] =
+            legacyNpmSupportPackageScripts
+                .map((script) => resolveFrom(npmPackageRootPath, script))
+                .filter((script) => !!script);
+
         options.clientOptions.environmentScripts.push(
-            ...legacyNpmSupportPackageScripts.map(
-                (script) => path.relative(
-                    path.resolve(path.join(options.root, 'node_modules')),
-                    resolveFrom(npmPackageRootPath, script)
-                        .replace(/\\/g, '/'))));
+            ...resolvedLegacyNpmSupportPackageScripts.map(
+                (script) => script &&
+                    path.relative(rootNodeModules, script)
+                        .replace(/\\/g, '/')));
       }
 
       if (browserScript && isPackageScoped) {
