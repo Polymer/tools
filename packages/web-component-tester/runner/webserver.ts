@@ -125,13 +125,12 @@ export function webserver(wct: Context): void {
         const resolvedLegacyNpmSupportPackageScripts: string[] =
             legacyNpmSupportPackageScripts
                 .map((script) => resolveFrom(npmPackageRootPath, script))
-                .filter((script) => !!script);
+                .filter((script) => script !== '');
 
         options.clientOptions.environmentScripts.push(
             ...resolvedLegacyNpmSupportPackageScripts.map(
-                (script) => script &&
-                    path.relative(rootNodeModules, script)
-                        .replace(/\\/g, '/')));
+                (script) => path.relative(rootNodeModules, script)
+                                .replace(/\\/g, '/')));
       }
 
       if (browserScript && isPackageScoped) {
