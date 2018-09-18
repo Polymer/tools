@@ -137,8 +137,10 @@ export default class MultiReporter implements Reporter {
   emitOutOfBandTest(
       title: string, error?: any, suiteTitle?: string, estimated?: boolean) {
     util.debug('MultiReporter#emitOutOfBandTest(', arguments, ')');
-    const root: Mocha.ISuite = new (Mocha as any).Suite(suiteTitle || '');
-    const test: ExtendedTest = new (Mocha as any).Test(title, function() {});
+    const root: Mocha.ISuite =
+        new Mocha.Suite(suiteTitle || '') as {} as Mocha.ISuite;
+    const test: ExtendedTest =
+        new Mocha.Test(title, (): void => undefined) as {} as ExtendedTest;
     test.parent = root;
     test.state = error ? 'failed' : 'passed';
     test.err = error;

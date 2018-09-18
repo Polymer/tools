@@ -45,7 +45,7 @@ export function initialize(initConfig?: config.Config) {
   // You can configure WCT before it has loaded by assigning your custom
   // configuration to the global `WCT`.
   if (window.WCT) {
-    config.deepMerge(_config, window.WCT as any as config.Config);
+    config.deepMerge(_config, window.WCT as {} as config.Config);
   }
 
   config.setup(_config);

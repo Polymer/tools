@@ -36,11 +36,11 @@ export function determineReporters(
   if (socket) {
     reporters.push(((runner: MultiReporter) => {
                      socket.observe(runner);
-                   }) as any);
+                   }) as {} as ReporterFactory);
   }
 
   if (suites.htmlSuites.length > 0 || suites.jsSuites.length > 0) {
-    reporters.push(HTMLReporter as any);
+    reporters.push(HTMLReporter as {} as ReporterFactory);
   }
 
   return reporters;

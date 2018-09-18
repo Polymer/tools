@@ -124,8 +124,8 @@ export default class Console {
     if (!this.stats.failures) {
       log('test suite passed', 'passing');
     }
-    log('Evaluated ' + this.stats.tests + ' tests in ' +
-        (this.stats as any).duration + 'ms.');
+    log('Evaluated ' + this.stats.tests + ' tests in ' + this.stats.duration +
+        'ms.');
     logGroupEnd();
   }
 }

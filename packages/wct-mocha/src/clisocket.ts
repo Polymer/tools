@@ -53,8 +53,8 @@ export default class CLISocket {
       this.emitEvent('test-end', {
         state: getState(test),
         test: getTitles(test),
-        duration: (test as any).duration,
-        error: (test as any).err,
+        duration: (test).duration,
+        error: (test as Mocha.IRunnable & {err: Error}).err,
       });
     });
 
@@ -117,15 +117,15 @@ export default class CLISocket {
       // WTF(usergenic): The typings are super wrong or something.  The object
       // returned by io() doesn't seem to map to the SocketIO.Server type at
       // all.
-      const sockets = server as any as SocketIO.Namespace;  // server.sockets;
-      const errorListener = (error?: any) => {
+      const sockets = server as {} as SocketIO.Namespace;  // server.sockets;
+      const errorListener = (error?: {}) => {
         sockets.off('error', errorListener);
         done(error);
       };
       sockets.on('error', errorListener);
       const connectListener = () => {
         sockets.off('connect', connectListener);
-        done(null, new CLISocket(browserId, sockets as any));
+        done(null, new CLISocket(browserId, sockets as {} as SocketIO.Socket));
       };
       sockets.on('connect', connectListener);
     });
@@ -142,7 +142,7 @@ function getTitles(runnable: Mocha.IRunnable) {
   const titles = [];
   while (runnable && !runnable.root && runnable.title) {
     titles.unshift(runnable.title);
-    runnable = runnable.parent as any;
+    runnable = runnable.parent as {} as Mocha.IRunnable;
   }
   return titles;
 }
