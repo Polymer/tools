@@ -89,7 +89,7 @@ export function get<K extends keyof Config>(key: K): Config[K] {
   return _config[key];
 }
 
-export function deepMerge(target: Partial<Config>, source: Config) {
+export function deepMerge(target: Config, source: Config) {
   Object.keys(source).forEach((key) => {
     if (target[key] !== null && typeof target[key] === 'object' &&
         !Array.isArray(target[key])) {
