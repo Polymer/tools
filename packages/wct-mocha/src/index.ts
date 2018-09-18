@@ -86,7 +86,7 @@ export function initialize(initConfig?: config.Config) {
     environment.ensureDependenciesPresent();
 
     // We need the socket built prior to building its reporter.
-    CLISocket.init(function(error, socket) {
+    CLISocket.init((error, socket) => {
       if (error)
         throw error;
 
@@ -103,7 +103,7 @@ export function initialize(initConfig?: config.Config) {
       WCT._reporter = reporter;  // For environment/compatibility.js
 
       // We need the reporter so that we can report errors during load.
-      suites.loadJsSuites(reporter, function(error) {
+      suites.loadJsSuites(reporter, (error) => {
         // Let our parent know that we're about to start the tests.
         if (current)
           current.ready(error);
@@ -115,7 +115,7 @@ export function initialize(initConfig?: config.Config) {
           reporter.emitOutOfBandTest('Test Suite Initialization', error);
         });
 
-        suites.runSuites(reporter, childSuites, function(error) {
+        suites.runSuites(reporter, childSuites, (error) => {
           // Make sure to let our parent know that we're done.
           if (current)
             current.done();

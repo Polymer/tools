@@ -35,11 +35,7 @@ const CAN_STYLE_GROUP = userAgent.match('webkit');
 let logIndent = '';
 
 function log(text: string, style?: keyof typeof STYLES) {
-  text = text.split('\n')
-             .map(function(l) {
-               return logIndent + l;
-             })
-             .join('\n');
+  text = text.split('\n').map((l) => logIndent + l).join('\n');
   if (CAN_STYLE_LOG) {
     console.log('%c' + text, STYLES[style] || STYLES.plain);
   } else {

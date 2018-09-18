@@ -1,6 +1,5 @@
 {
   "npm": true,
-  "wctPackageName": "wct-mocha",
   "moduleResolution": "node",
   "suites": [
     "test/index.html"

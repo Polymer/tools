@@ -52,8 +52,8 @@ const MOCHA_EXPORTS = {
  */
 export function stubInterfaces() {
   const keys = Object.keys(MOCHA_EXPORTS) as Array<keyof typeof MOCHA_EXPORTS>;
-  keys.forEach(function(ui) {
-    Object.keys(MOCHA_EXPORTS[ui]).forEach(function(key) {
+  keys.forEach((ui) => {
+    Object.keys(MOCHA_EXPORTS[ui]).forEach((key) => {
       window[key] = function wrappedMochaFunction() {
         _setupMocha(ui, key, MOCHA_EXPORTS[ui][key]);
         if (!window[key] || window[key] === wrappedMochaFunction) {

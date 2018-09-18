@@ -19,13 +19,13 @@ interface TestFixture extends HTMLElement {
   restore(): void;
 }
 
-extendInterfaces('fixture', function(context, teardown) {
+extendInterfaces('fixture', (context, teardown) => {
   // Return context.fixture if it is already a thing, for backwards
   // compatibility with `test-fixture-mocha.js`:
   return context.fixture || function fixture(fixtureId: string, model: object) {
     // Automatically register a teardown callback that will restore the
     // test-fixture:
-    teardown(function() {
+    teardown(() => {
       (document.getElementById(fixtureId) as TestFixture).restore();
     });
 

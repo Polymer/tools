@@ -25,11 +25,11 @@ export function extendInterfaces(
         context: any,
         teardown: (cb: () => void) => void,
         interfaceName: 'tdd'|'bdd') => void) {
-  interfaceExtensions.push(function() {
+  interfaceExtensions.push(() => {
     const Mocha = window.Mocha;
     // For all Mocha interfaces (probably just TDD and BDD):
     Object.keys((Mocha as any).interfaces)
-        .forEach(function(interfaceName: 'tdd'|'bdd') {
+        .forEach((interfaceName: 'tdd'|'bdd') => {
           // This is the original callback that defines the interface (TDD or
           // BDD):
           const originalInterface = (Mocha as any).interfaces[interfaceName];
@@ -68,7 +68,7 @@ export function extendInterfaces(
  * as many times as this function is called, so don't call it more than once.
  */
 export function applyExtensions() {
-  interfaceExtensions.forEach(function(applyExtension) {
+  interfaceExtensions.forEach((applyExtension) => {
     applyExtension();
   });
 }

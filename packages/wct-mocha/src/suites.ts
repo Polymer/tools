@@ -29,7 +29,7 @@ if (GREP) {
  * @param files The files to load.
  */
 export function loadSuites(files: string[]) {
-  files.forEach(function(file) {
+  files.forEach((file) => {
     if (/\.js(\?.*)?$/.test(file)) {
       jsSuites.push(file);
     } else if (/\.html(\?.*)?$/.test(file)) {
@@ -65,10 +65,8 @@ export function loadJsSuites(
     _reporter: MultiReporter, done: (error: Error) => void) {
   util.debug('loadJsSuites', jsSuites);
 
-  const loaders = jsSuites.map(function(file) {
-    // We only support `.js` dependencies for now.
-    return util.loadScript.bind(util, file);
-  });
+  // We only support `.js` dependencies for now.
+  const loaders = jsSuites.map((file) => util.loadScript.bind(util, file));
 
   util.parallel(loaders, done);
 }
@@ -85,11 +83,11 @@ export function runSuites(
   ];
 
   // As well as any sub suites. Again, don't stop on error.
-  childSuites.forEach(function(file) {
-    suiteRunners.push(function(next) {
+  childSuites.forEach((file) => {
+    suiteRunners.push((next) => {
       const childRunner = new ChildRunner(file, window);
       reporter.emit('childRunner start', childRunner);
-      childRunner.run(function(error) {
+      childRunner.run((error) => {
         reporter.emit('childRunner end', childRunner);
         if (error)
           reporter.emitOutOfBandTest(file, error);
@@ -98,11 +96,10 @@ export function runSuites(
     });
   });
 
-  util.parallel(
-      suiteRunners, config.get('numConcurrentSuites'), function(error) {
-        reporter.done();
-        done(error);
-      });
+  util.parallel(suiteRunners, config.get('numConcurrentSuites'), (error) => {
+    reporter.done();
+    done(error);
+  });
 }
 
 /**

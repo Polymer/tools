@@ -140,7 +140,7 @@ export function getParams(query?: string): Params {
     return {};
 
   const result: {[param: string]: string[]} = {};
-  query.split('&').forEach(function(part) {
+  query.split('&').forEach((part) => {
     const pair = part.split('=');
     if (pair.length !== 2) {
       console.warn('Invalid URL query part:', part);
@@ -165,7 +165,7 @@ export function getParams(query?: string): Params {
  * @param {!Object<string, !Array<string>>} source
  */
 export function mergeParams(target: Params, source: Params) {
-  Object.keys(source).forEach(function(key) {
+  Object.keys(source).forEach((key) => {
     if (!(key in target)) {
       target[key] = [];
     }
@@ -188,8 +188,8 @@ export function getParam(param: string): string|null {
  */
 export function paramsToQuery(params: Params): string {
   const pairs: string[] = [];
-  Object.keys(params).forEach(function(key) {
-    params[key].forEach(function(value) {
+  Object.keys(params).forEach((key) => {
+    params[key].forEach((value) => {
       pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(value));
     });
   });

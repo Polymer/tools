@@ -34,9 +34,9 @@ export function determineReporters(
   const reporters: Array<ReporterFactory> = [TitleReporter, ConsoleReporter];
 
   if (socket) {
-    reporters.push(function(runner: MultiReporter) {
-      socket.observe(runner);
-    } as any);
+    reporters.push(((runner: MultiReporter) => {
+                     socket.observe(runner);
+                   }) as any);
   }
 
   if (suites.htmlSuites.length > 0 || suites.jsSuites.length > 0) {
@@ -61,12 +61,8 @@ export function injectMocha(Mocha: MochaStatic) {
 function _injectPrototype(klass: any, prototype: any) {
   const newPrototype = Object.create(prototype);
   // Only support
-  Object.keys(klass.prototype).forEach(function(key) {
+  Object.keys(klass.prototype).forEach((key) => {
     newPrototype[key] = klass.prototype[key];
   });
-  // Since prototype is readonly on actual classes, we have to use
-  // defineProperty instead of `klass.prototype = newPrototype`;
-  // Object.defineProperty(
-  //    klass, 'prototype', {value: newPrototype, configurable: true});
   klass.prototype = newPrototype;
 }

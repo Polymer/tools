@@ -29,7 +29,7 @@ export function loadSync() {
     // wct is running as a bower dependency, load a11ySuite from data/
     scripts.push(a11ySuiteScriptPath);
   }
-  scripts.forEach(function(path) {
+  scripts.forEach((path) => {
     const url = util.expandUrl(path, config.get('root'));
     util.debug('Loading environment script:', url);
     // Synchronous load.
@@ -37,7 +37,7 @@ export function loadSync() {
   });
   util.debug('Environment scripts loaded');
   const imports = config.get('environmentImports');
-  imports.forEach(function(path) {
+  imports.forEach((path) => {
     const url = util.expandUrl(path, config.get('root'));
     util.debug('Loading environment import:', url);
     // Synchronous load.

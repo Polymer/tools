@@ -65,7 +65,7 @@ export function pretty(
   lines = clean(lines, options);
 
   const padSize = methodPadding(lines, options);
-  const parts = lines.map(function(line: ParsedLine) {
+  const parts = lines.map((line: ParsedLine) => {
     const method = line.method || options.methodPlaceholder;
     const pad = options.indent + padding(padSize - method.length);
     const locationBits = [
@@ -108,7 +108,7 @@ function passthrough(text: string): string {
 function mergeDefaults(
     options: FormattingOptions, defaults: FormattingOptions) {
   var result = Object.create(defaults);
-  Object.keys(options).forEach(function(key) {
+  Object.keys(options).forEach((key) => {
     var value = options[key];
     if (typeof value === 'object' && !Array.isArray(value)) {
       value = mergeDefaults(value, defaults[key]);

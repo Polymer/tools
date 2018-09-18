@@ -74,7 +74,7 @@ export function testImmediateAsync(name: string, testFn: Function) {
   let err: any;
 
   test(name, function(done) {
-    const intervalId = nativeSetInterval(function() {
+    const intervalId = nativeSetInterval(() => {
       if (!testComplete)
         return;
       clearInterval(intervalId);
@@ -83,7 +83,7 @@ export function testImmediateAsync(name: string, testFn: Function) {
   });
 
   try {
-    testFn(function(error: any) {
+    testFn((error: any) => {
       if (error)
         err = error;
       testComplete = true;
@@ -148,8 +148,8 @@ export function flush(callback: () => void) {
  * @param {function()} callback
  */
 export function animationFrameFlush(callback: () => void) {
-  flush(function() {
-    nativeRequestAnimationFrame(function() {
+  flush(() => {
+    nativeRequestAnimationFrame(() => {
       flush(callback);
     });
   });
@@ -187,11 +187,11 @@ export function waitFor(
       throw e;
     } else {
       if (typeof intervalOrMutationEl !== 'number') {
-        intervalOrMutationEl.onMutation(intervalOrMutationEl, function() {
+        intervalOrMutationEl.onMutation(intervalOrMutationEl, () => {
           waitFor(fn, next, intervalOrMutationEl, timeout, timeoutTime);
         });
       } else {
-        nativeSetTimeout(function() {
+        nativeSetTimeout(() => {
           waitFor(fn, next, intervalOrMutationEl, timeout, timeoutTime);
         }, intervalOrMutationEl);
       }
