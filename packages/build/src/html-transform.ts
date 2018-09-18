@@ -124,7 +124,7 @@ export function htmlTransform(
       const src = dom5.getAttribute(script, 'src') || '';
       if (src.includes('web-component-tester/browser.js') ||
           src.includes('wct-browser-legacy/browser.js') ||
-          src.includes('wct-mocha')) {
+          src.includes('wct-mocha/browser.js')) {
         wctScript = script;
       }
     }

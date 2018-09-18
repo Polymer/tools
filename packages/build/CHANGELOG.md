@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-* Add support for wct-mocha in the html-transform.
+* Added `wct-mocha` to the set of recognized WCT client-side packages in `htmlTransform` when using [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader). 
 <!-- Add new, unreleased changes here. -->
 
 ## [3.0.4] - 2018-06-28
