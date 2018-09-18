@@ -228,8 +228,9 @@ export function defaults(): Config {
       port: undefined,
       hostname: 'localhost',
     },
-    // The name of the NPM package that is vending wct's browser.js
-    wctPackageName: 'wct-browser-legacy',
+    // The name of the NPM package that is vending wct's browser.js will be
+    // determined automatically if no name is specified.
+    wctPackageName: undefined,
 
     moduleResolution: 'node'
   };
