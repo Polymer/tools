@@ -83,39 +83,4 @@ describe('config', function() {
       });
     });
   });
-
-  describe('npm pathing', function() {
-    describe('Resolves simple names to paths', function() {
-      const localPackagePath =
-          path.join(__dirname, '../fixtures/fake-packages/singleton-dep');
-      const options = <config.Config>{root: localPackagePath};
-      const npmPackages: config.NPMPackage[] = [
-        {name: 'dependency', jsEntrypoint: 'index.js'},
-        {name: 'dependency', jsEntrypoint: 'arbitraryJsFile.js'}
-      ];
-      const resolvedEntrypoints =
-          config.resolveWctNpmEntrypointNames(options, npmPackages);
-
-      expect(resolvedEntrypoints[0]).to.equal('dependency/index.js');
-      expect(resolvedEntrypoints[1]).to.equal('dependency/arbitraryJsFile.js');
-    });
-
-    it('Resolves duplicated names to paths', function() {
-      const localPackagePath =
-          path.join(__dirname, '../fixtures/fake-packages/duplicated-dep');
-      const options = <config.Config>{root: localPackagePath};
-      const npmPackages: config.NPMPackage[] = [
-        {name: 'dependency', jsEntrypoint: 'index.js'},
-        {name: 'dependency', jsEntrypoint: 'arbitraryJsFile.js'}
-      ];
-      const resolvedEntrypoints =
-          config.resolveWctNpmEntrypointNames(options, npmPackages);
-
-      expect(resolvedEntrypoints[0])
-          .to.equal('wct-browser-legacy/node_modules/dependency/index.js');
-      expect(resolvedEntrypoints[1])
-          .to.equal(
-              'wct-browser-legacy/node_modules/dependency/arbitraryJsFile.js');
-    });
-  });
 });

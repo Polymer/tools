@@ -19,11 +19,12 @@ import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as path from 'path';
 import {MainlineServer, PolyserveServer, RequestHandler, ServerOptions, startServers, VariantServer} from 'polyserve';
+import * as resolve from 'resolve';
 import * as semver from 'semver';
 import * as send from 'send';
 import * as serverDestroy from 'server-destroy';
 
-import {getPackageName, NPMPackage, resolveWctNpmEntrypointNames} from './config';
+import {getPackageName} from './config';
 import {Context} from './context';
 
 // Template for generated indexes.
@@ -36,21 +37,13 @@ const DEFAULT_HEADERS = {
   'Expires': '0',
 };
 
-// scripts to be injected into the running test
-const ENVIRONMENT_SCRIPTS: NPMPackage[] = [
-  {name: 'stacky', jsEntrypoint: 'browser.js'},
-  {name: 'async', jsEntrypoint: 'lib/async.js'},
-  {name: 'lodash', jsEntrypoint: 'index.js'},
-  {name: 'mocha', jsEntrypoint: 'mocha.js'},
-  {name: 'chai', jsEntrypoint: 'chai.js'},
-  {name: '@polymer/sinonjs', jsEntrypoint: 'sinon.js'},
-  {name: 'sinon-chai', jsEntrypoint: 'lib/sinon-chai.js'},
-  {
-    name: 'accessibility-developer-tools',
-    jsEntrypoint: 'dist/js/axs_testing.js'
-  },
-  {name: '@polymer/test-fixture', jsEntrypoint: 'test-fixture.js'},
-];
+function resolveFrom(fromPath: string, moduleId: string): string {
+  try {
+    return resolve.sync(moduleId, {basedir: fromPath, preserveSymlinks: true});
+  } catch (e) {
+    return '';
+  }
+}
 
 /**
  * The webserver module is a quasi-plugin. This ensures that it is hooked in a
@@ -80,37 +73,81 @@ export function webserver(wct: Context): void {
     // npm, the wct-browser-legacy package may be used, so we test for that
     // package and will use its "browser.js" if present.
     let browserScript = 'web-component-tester/browser.js';
-    if (options.npm) {
-      try {
-        const wctBrowserLegacyPath =
-            path.join(options.root, 'node_modules', 'wct-browser-legacy');
-        const version =
-            require(path.join(wctBrowserLegacyPath, 'package.json')).version;
-        if (version) {
-          browserScript = 'wct-browser-legacy/browser.js';
-        }
-      } catch (e) {
-        // Safely ignore.
-      }
-      const packageName = getPackageName(options);
-      const isPackageScoped = packageName && packageName[0] === '@';
 
-      // concat options.clientOptions.environmentScripts with resolved
-      // ENVIRONMENT_SCRIPTS
+    const scripts: string[] = [], extraScripts: string[] = [];
+    const modules: string[] = [], extraModules: string[] = [];
+
+    if (options.npm) {
       options.clientOptions = options.clientOptions || {};
       options.clientOptions.environmentScripts =
           options.clientOptions.environmentScripts || [];
-      options.clientOptions.environmentScripts =
-          options.clientOptions.environmentScripts.concat(
-              resolveWctNpmEntrypointNames(options, ENVIRONMENT_SCRIPTS));
 
-      if (isPackageScoped) {
+      browserScript = '';
+
+      const fromPath = path.resolve(options.root || process.cwd());
+      options.wctPackageName = options.wctPackageName ||
+          ['wct-mocha', 'wct-browser-legacy', 'web-component-tester'].find(
+              (p) => !!resolveFrom(fromPath, p));
+
+      const npmPackageRootPath = path.dirname(
+          resolveFrom(fromPath, options.wctPackageName + '/package.json'));
+
+      if (npmPackageRootPath) {
+        browserScript = `${npmPackageRootPath}/browser.js`.slice(
+            npmPackageRootPath.length - options.wctPackageName.length);
+      }
+
+      const packageName = getPackageName(options);
+      const isPackageScoped = packageName && packageName[0] === '@';
+
+      // WCT used to try to bundle a lot of packages for end-users, but
+      // because of `node_modules` layout, these need to actually be resolved
+      // from the package as installed, to ensure the desired version is
+      // loaded.  Here we list the legacy packages and attempt to resolve them
+      // from the WCT package.
+      if (['web-component-tester', 'wct-browser-legacy'].includes(
+              options.wctPackageName)) {
+        const legacyNpmSupportPackageScripts: string[] = [
+          'stacky/browser.js',
+          'async/lib/async.js',
+          'lodash/index.js',
+          'mocha/mocha.js',
+          'chai/chai.js',
+          '@polymer/sinonjs/sinon.js',
+          'sinon-chai/lib/sinon-chai.js',
+          'accessibility-developer-tools/dist/js/axs_testing.js',
+          '@polymer/test-fixture/test-fixture.js',
+        ];
+
+        const rootNodeModules =
+            path.resolve(path.join(options.root, 'node_modules'));
+
+        const resolvedLegacyNpmSupportPackageScripts: string[] =
+            legacyNpmSupportPackageScripts
+                .map((script) => resolveFrom(npmPackageRootPath, script))
+                .filter((script) => script !== '');
+
+        options.clientOptions.environmentScripts.push(
+            ...resolvedLegacyNpmSupportPackageScripts.map(
+                (script) => path.relative(rootNodeModules, script)
+                                .replace(/\\/g, '/')));
+      }
+
+      if (browserScript && isPackageScoped) {
         browserScript = `../${browserScript}`;
       }
     }
-    const a11ySuiteScript = 'web-component-tester/data/a11ySuite.js';
-    options.webserver._generatedIndexContent = INDEX_TEMPLATE(
-        Object.assign({browserScript, a11ySuiteScript}, options));
+
+    if (browserScript) {
+      scripts.push(`../${browserScript}`);
+    }
+
+    if (!options.npm) {
+      scripts.push('web-component-tester/data/a11ysuite.js');
+    }
+
+    options.webserver._generatedIndexContent =
+        INDEX_TEMPLATE({scripts, extraScripts: [], modules, ...options});
   });
 
   wct.hook('prepare', async function() {
@@ -255,7 +292,7 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
     } else {
       const never: never = polyserveResult;
       throw new Error(
-          `Internal error: Got unknown response from polyserve.startServers:` +
+          'Internal error: Got unknown response from polyserve.startServers: ' +
           `${never}`);
     }
 
@@ -275,8 +312,8 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
       return {url, variant: s.kind === 'mainline' ? '' : s.variantName};
     });
 
-    // TODO(rictic): re-enable this stuff. need to either move this code into
-    //     polyserve or let the polyserve API expose this stuff.
+    // TODO(rictic): re-enable this stuff. need to either move this code
+    // into polyserve or let the polyserve API expose this stuff.
     // app.use('/httpbin', httpbin.httpbin);
 
     // app.get('/favicon.ico', function(request, response) {

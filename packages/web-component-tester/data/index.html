@@ -4,18 +4,15 @@
 <head>
   <meta charset="utf-8">
   <script>
-    WCT = <%= JSON.stringify(clientOptions) %>;
-  </script>
-  <script>
+    window.WCT = <%= JSON.stringify(clientOptions) %>;
     window.__generatedByWct = true;
   </script>
-  <script src="../<%= browserScript %>"></script>
-  <% extraScripts.forEach(function(script) { %>
-    <script src="<%- script %>"></script>
+  <% scripts.concat(extraScripts).forEach(function(href) { %>
+    <script src="<%= href %>"></script>
   <% }); %>
-  <% if (typeof npm === 'undefined' || !npm) { %>
-    <script src="../<%= a11ySuiteScript %>"></script>
-  <% } %>
+  <% modules.forEach(function(href) { %>
+    <script type="module" src="<%= href %>"></script>
+  <% }); %>
 </head>
 
 <body>
