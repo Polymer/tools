@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 # Unreleased
 <!-- Add new, unreleased changes here. -->
-* Fix incorrect resolution of absolute path URLs.
+* Fix incorrect resolution of absolute path URLs (e.g. loading `/foo.js` from
+  `/bar/baz.js`).
 
 ## [1.0.2] - 2018-06-28
 * Update minimized version for latest minifier changes.
