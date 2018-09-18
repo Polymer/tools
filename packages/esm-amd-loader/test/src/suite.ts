@@ -119,6 +119,15 @@ suite('static dependencies', () => {
         done();
       });
     });
+
+    test('loads absolute path url', (done) => {
+      define(
+          ['/components/@polymer/esm-amd-loader-test/static/y/y.js'],
+          (y: any) => {
+            assert.equal(y.y, 'y');
+            done();
+          });
+    });
   });
 
   suite('failure', () => {

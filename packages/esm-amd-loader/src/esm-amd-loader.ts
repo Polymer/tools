@@ -512,6 +512,7 @@ const anchor = document.createElement('a');
  *
  * Examples:
  *
+ *  - /foo => http://example.com/foo
  *  - //example.com/ => http://example.com/
  *  - http://example.com => http://example.com/
  *  - http://example.com/foo/bar/../baz => http://example.com/foo/baz
