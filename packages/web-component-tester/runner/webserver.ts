@@ -37,6 +37,10 @@ const DEFAULT_HEADERS = {
   'Expires': '0',
 };
 
+function relativeFrom(fromPath: string, toPath: string): string {
+  return path.relative(fromPath, toPath).replace(/\\/g, '/');
+}
+
 function resolveFrom(fromPath: string, moduleId: string): string {
   try {
     return resolve.sync(moduleId, {basedir: fromPath, preserveSymlinks: true});
@@ -78,6 +82,8 @@ export function webserver(wct: Context): void {
     const modules: string[] = [], extraModules: string[] = [];
 
     if (options.npm) {
+      // concat options.clientOptions.environmentScripts with resolved
+      // environment scripts.
       options.clientOptions = options.clientOptions || {};
       options.clientOptions.environmentScripts =
           options.clientOptions.environmentScripts || [];
@@ -100,6 +106,9 @@ export function webserver(wct: Context): void {
       const packageName = getPackageName(options);
       const isPackageScoped = packageName && packageName[0] === '@';
 
+      const rootNodeModules =
+          path.resolve(path.join(options.root, 'node_modules'));
+
       // WCT used to try to bundle a lot of packages for end-users, but
       // because of `node_modules` layout, these need to actually be resolved
       // from the package as installed, to ensure the desired version is
@@ -119,9 +128,6 @@ export function webserver(wct: Context): void {
           '@polymer/test-fixture/test-fixture.js',
         ];
 
-        const rootNodeModules =
-            path.resolve(path.join(options.root, 'node_modules'));
-
         const resolvedLegacyNpmSupportPackageScripts: string[] =
             legacyNpmSupportPackageScripts
                 .map((script) => resolveFrom(npmPackageRootPath, script))
@@ -129,8 +135,16 @@ export function webserver(wct: Context): void {
 
         options.clientOptions.environmentScripts.push(
             ...resolvedLegacyNpmSupportPackageScripts.map(
-                (script) => path.relative(rootNodeModules, script)
-                                .replace(/\\/g, '/')));
+                (script) => relativeFrom(rootNodeModules, script)));
+
+      } else {
+        // We need to load Mocha in the generated index.
+        const resolvedMochaScript =
+            resolveFrom(npmPackageRootPath, 'mocha/mocha.js');
+        if (resolvedMochaScript) {
+          options.clientOptions.environmentScripts.push(
+              relativeFrom(rootNodeModules, resolvedMochaScript));
+        }
       }
 
       if (browserScript && isPackageScoped) {
