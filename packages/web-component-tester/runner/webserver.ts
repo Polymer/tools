@@ -82,8 +82,6 @@ export function webserver(wct: Context): void {
     const modules: string[] = [], extraModules: string[] = [];
 
     if (options.npm) {
-      // concat options.clientOptions.environmentScripts with resolved
-      // environment scripts.
       options.clientOptions = options.clientOptions || {};
       options.clientOptions.environmentScripts =
           options.clientOptions.environmentScripts || [];
