@@ -545,7 +545,7 @@ function resolveUrl(urlBase: NormalizedUrl, url: string): NormalizedUrl {
     // Already a fully qualified URL.
     return url as NormalizedUrl;
   }
-  return normalizeUrl(urlBase + url);
+  return normalizeUrl(url[0] === '/' ? url : urlBase + url);
 }
 
 function getBaseUrl(): NormalizedUrl {

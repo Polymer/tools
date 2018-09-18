@@ -91,6 +91,36 @@ suite('static dependencies', () => {
     });
   });
 
+  test('loads absolute path url', (done) => {
+    define(
+        ['/components/@polymer/esm-amd-loader-test/static/y/y.js'],
+        (y: any) => {
+          assert.equal(y.y, 'y');
+          done();
+        });
+  });
+
+  suite('with base tag', () => {
+    let base: HTMLBaseElement;
+
+    suiteSetup(() => {
+      base = document.createElement('base');
+      base.href = '/components/@polymer/esm-amd-loader-test/';
+      document.head.appendChild(base);
+    });
+
+    suiteTeardown(() => {
+      document.head.removeChild(base);
+    });
+
+    test('loads relative path url', (done) => {
+      define(['./static/y/y.js'], (y: any) => {
+        assert.equal(y.y, 'y');
+        done();
+      });
+    });
+  });
+
   suite('failure', () => {
     teardown(() => {
       window.uncaughtErrorFilter = undefined;
