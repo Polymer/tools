@@ -8,7 +8,7 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import * as util from '../util';
+import * as util from '../util.js';
 
 // We capture console events when running tests; so make sure we have a
 // reference to the original one.

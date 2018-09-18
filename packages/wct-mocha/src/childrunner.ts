@@ -8,7 +8,7 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import * as util from './util';
+import * as util from './util.js';
 
 // TODO(thedeeno): Consider renaming subsuite. IIRC, childRunner is entirely
 // distinct from mocha suite, which tripped me up badly when trying to add

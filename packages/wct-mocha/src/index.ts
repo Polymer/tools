@@ -12,20 +12,20 @@
  * This file is the entry point into `web-component-tester`'s browser client.
  */
 // Registers a bunch of globals:
-import './environment/helpers';
+import './environment/helpers.js';
 
-import ChildRunner from './childrunner';
-import CLISocket from './clisocket';
-import * as config from './config';
-import * as environment from './environment';
-import * as errors from './environment/errors';
-import * as mocha from './mocha';
-import * as reporters from './reporters';
-import MultiReporter from './reporters/multi';
-import * as suites from './suites';
-import * as util from './util';
+import ChildRunner from './childrunner.js';
+import CLISocket from './clisocket.js';
+import * as config from './config.js';
+import * as environment from './environment.js';
+import * as errors from './environment/errors.js';
+import * as mocha from './mocha.js';
+import * as reporters from './reporters.js';
+import MultiReporter from './reporters/multi.js';
+import * as suites from './suites.js';
+import * as util from './util.js';
 
-export {extendInterfaces} from './mocha/extend';
+export {extendInterfaces} from './mocha/extend.js';
 export {ChildRunner};
 
 declare global {

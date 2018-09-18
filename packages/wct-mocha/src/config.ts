@@ -8,8 +8,8 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import ChildRunner from './childrunner';
-import * as util from './util';
+import ChildRunner from './childrunner.js';
+import * as util from './util.js';
 
 export interface Config {
   /**

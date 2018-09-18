@@ -8,7 +8,7 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import ChildRunner from '../childrunner';
+import ChildRunner from '../childrunner.js';
 
 // polymer-test-tools (and Polymer/tools) support HTML tests where each file is
 // expected to call `done()`, which posts a message to the parent window.

@@ -9,8 +9,8 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-import ChildRunner from './childrunner';
-import * as util from './util';
+import ChildRunner from './childrunner.js';
+import * as util from './util.js';
 
 const SOCKETIO_ENDPOINT =
     window.location.protocol + '//' + window.location.host;

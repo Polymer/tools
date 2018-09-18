@@ -8,10 +8,10 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import './mocha/fixture';
+import './mocha/fixture.js';
 
-import * as config from './config';
-import {applyExtensions} from './mocha/extend';
+import * as config from './config.js';
+import {applyExtensions} from './mocha/extend.js';
 
 // Mocha global helpers, broken out by testing method.
 //

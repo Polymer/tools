@@ -8,8 +8,8 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import {normalize} from '../stacktrace/normalization';
-import * as util from '../util';
+import {normalize} from '../stacktrace/normalization.js';
+import * as util from '../util.js';
 
 const STACKY_CONFIG = {
   indent: '  ',

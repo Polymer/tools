@@ -2,10 +2,10 @@ import * as ChaiStatic from 'chai';
 import * as SinonStatic from 'sinon';
 import * as SocketIOStatic from 'socket.io';
 
-import {default as ChildRunner, SharedState} from './childrunner';
-import {Config} from './config';
-import MultiReporter from './reporters/multi';
-import * as suites from './suites';
+import {default as ChildRunner, SharedState} from './childrunner.js';
+import {Config} from './config.js';
+import MultiReporter from './reporters/multi.js';
+import * as suites from './suites.js';
 
 type loadSuitesType = (typeof suites.loadSuites);
 

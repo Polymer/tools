@@ -8,7 +8,7 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import * as util from '../util';
+import * as util from '../util.js';
 
 const ARC_OFFSET = 0;  // start at the right.
 const ARC_WIDTH = 6;

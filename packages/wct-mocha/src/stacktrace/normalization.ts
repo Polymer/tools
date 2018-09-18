@@ -9,8 +9,8 @@
  * the polymer project is also subject to an additional IP rights grant found at
  * polymer.github.io/PATENTS.txt
  */
-import {FormattingOptions, pretty} from './formatting';
-import {parse, ParsedLine} from './parsing';
+import {FormattingOptions, pretty} from './formatting.js';
+import {parse, ParsedLine} from './parsing.js';
 
 export type ErrorLikeThing = Error&{
   parsedStack?: string[];

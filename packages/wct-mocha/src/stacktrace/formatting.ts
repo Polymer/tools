@@ -9,7 +9,7 @@
  * the polymer project is also subject to an additional IP rights grant found at
  * polymer.github.io/PATENTS.txt
  */
-import {parse, ParsedLine} from './parsing';
+import {parse, ParsedLine} from './parsing.js';
 
 export type FormattingFunction = (text: string) => string;
 export interface FormattingOptions {

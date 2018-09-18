@@ -8,9 +8,9 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import * as config from './config';
-import * as reporters from './reporters';
-import * as util from './util';
+import * as config from './config.js';
+import * as reporters from './reporters.js';
+import * as util from './util.js';
 
 /**
  * Loads all environment scripts ...synchronously ...after us.

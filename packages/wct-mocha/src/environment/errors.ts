@@ -8,7 +8,7 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import * as config from '../config';
+import * as config from '../config.js';
 
 // We may encounter errors during initialization (for example, syntax errors in
 // a test file). Hang onto those (and more) until we are ready to report them.
