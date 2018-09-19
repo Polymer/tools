@@ -70,7 +70,6 @@
     "nomnom": "^1.8.1",
     "polyserve": "^0.27.11",
     "resolve": "^1.5.0",
-    "resolve-from": "^4.0.0",
     "semver": "^5.3.0",
     "send": "^0.11.1",
     "server-destroy": "^1.0.1",
