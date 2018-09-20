@@ -17,7 +17,7 @@
     "test:all:parallel": "npm run test:unit && npm run test:integration:parallel",
     "test:integration": "lerna run test:integration --stream --concurrency 1",
     "test:integration:parallel": "lerna run test:integration --stream --parallel",
-    "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester --ignore @polymer/esm-amd-loader --parallel",
+    "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester --ignore @polymer/esm-amd-loader --concurrency 1",
     "test:unit": "lerna run test:unit --stream --concurrency 1",
     "test:unit:parallel": "lerna run test:unit --stream --parallel",
     "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester --ignore @polymer/gen-typescript-declarations",
