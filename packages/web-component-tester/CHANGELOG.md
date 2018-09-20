@@ -5,7 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
 ## Unreleased
 * Added support for `wct-mocha` as an npm package.
 * The `wctPackageName` config option is now optional as `wct` will scan for appropriate installed client-side package (`wct-mocha`, `wct-browser-legacy` or `web-component-tester`).
