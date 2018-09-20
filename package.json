@@ -17,7 +17,7 @@
     "test:all:parallel": "npm run test:unit && npm run test:integration:parallel",
     "test:integration": "lerna run test:integration --stream --concurrency 1",
     "test:integration:parallel": "lerna run test:integration --stream --parallel",
-    "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester --ignore @polymer/esm-amd-loader --parallel",
+    "test:integration:windows": "lerna run test:integration --stream --ignore web-component-tester --ignore @polymer/esm-amd-loader --concurrency 1",
     "test:unit": "lerna run test:unit --stream --concurrency 1",
     "test:unit:parallel": "lerna run test:unit --stream --parallel",
     "test:unit:windows": "lerna run test:unit --stream --ignore polyserve --ignore web-component-tester --ignore @polymer/gen-typescript-declarations",
@@ -42,6 +42,9 @@
     "chai": "^4.1.2",
     "clang-format": "^1.2.4",
     "mocha": "^5.2.0",
+    "rollup": "^0.64.1",
+    "rollup-plugin-commonjs": "^9.1.5",
+    "rollup-plugin-node-resolve": "^3.3.0",
     "tslint": "^5.10.0",
     "typescript": "^3.0.1",
     "typescript-json-schema": "^0.25.1"
