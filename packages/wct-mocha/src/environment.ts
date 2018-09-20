@@ -18,7 +18,7 @@ import * as util from './util.js';
 export function loadSync() {
   util.debug('Loading environment scripts:');
   const a11ySuiteScriptPath = 'web-component-tester/data/a11ySuite.js';
-  const scripts = config.get('environmentScripts');
+  const scripts = config.get('environmentScripts') || [];
   const a11ySuiteWillBeLoaded =
       window.__generatedByWct || scripts.indexOf(a11ySuiteScriptPath) > -1;
 
@@ -36,7 +36,7 @@ export function loadSync() {
     document.write(`<script src="${encodeURI(url)}"></script>`);
   });
   util.debug('Environment scripts loaded');
-  const imports = config.get('environmentImports');
+  const imports = config.get('environmentImports') || [];
   imports.forEach((path) => {
     const url = util.expandUrl(path, config.get('root'));
     util.debug('Loading environment import:', url);

@@ -42,11 +42,9 @@ export interface Config {
  * The global configuration state for WCT's browser client.
  */
 export let _config: Config = {
-  environmentScripts: [],
-  environmentImports: [],
-  root: null as null | string,
+  root: null,
   waitForFrameworks: true,
-  waitFor: null as null | Function,
+  waitFor: null,
   numConcurrentSuites: 1,
   trackConsoleError: true,
   mochaOptions: {timeout: 10 * 1000},
