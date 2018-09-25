@@ -63,6 +63,7 @@ export class Es6Rewriter {
       }
     }
     external.push(...this.bundler.excludes);
+    console.log('external:', external);
     // For each document loaded from the analyzer, we build a map of the
     // original specifiers to the resolved URLs since we want to use analyzer
     // resolutions for such things as bare module specifiers.
@@ -72,7 +73,26 @@ export class Es6Rewriter {
     }
     const rollupBundle = await rollup({
       input,
-      external,
+      external: (moduleId, parentId) => {
+        if (moduleId ===
+            '/Users/brendanb/src/github.com/Polymer/tools~bundler-multiple-imports-of-same-fragment/packages/bundler/file:/memory/b.js') {
+          throw new Error('WHAT THE VUK');
+        }
+        if (moduleId === input) {
+          return false;
+        }
+        const baseUrl = parentId === input ? url : parentId as ResolvedUrl;
+        console.log(
+            'external check',
+            'parentId',
+            parentId,
+            'moduleId',
+            moduleId,
+            'baseUrl',
+            baseUrl);
+        return external.includes(this.bundler.analyzer.urlResolver.resolve(
+            baseUrl, moduleId as FileRelativeUrl)!);
+      },
       onwarn: (warning: string) => {},
       experimentalDynamicImport: true,
       treeshake: false,
@@ -87,6 +107,7 @@ export class Es6Rewriter {
         {
           name: 'analyzerPlugin',
           resolveId: (importee: string, importer?: string) => {
+            console.log('resolveId', importee, importer);
             if (importee === input) {
               return input;
             }
@@ -105,6 +126,7 @@ export class Es6Rewriter {
                        importee as PackageRelativeUrl)! as string;
           },
           load: (id: ResolvedUrl) => {
+            console.log('load', id);
             // When requesting the main document, just return it as-is.
             if (id === input) {
               return code;
@@ -135,7 +157,7 @@ export class Es6Rewriter {
               const relativeUrl =
                   ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
                       this.bundle.url, id));
-
+              console.log('relativeUrl rewriting', relativeUrl);
               const newAst = this._rewriteImportMetaToBundleMeta(
                   generateUniqueIdentifierName(
                       'bundledImportMeta', document.parsedDocument.contents),
@@ -191,15 +213,20 @@ export class Es6Rewriter {
   /**
    * Attempts to reduce the number of distinct import declarations by combining
    * those referencing the same source into the same declaration. Results in
-   * deduplication of imports of the same item as well.
+   * deduplication of imports of the same item as well.  It should NOT touch
+   * dynamic imports at all.
    *
    * Before:
    *     import {a} from './module-1.js';
    *     import {b} from './module-1.js';
    *     import {c} from './module-2.js';
+   *     import('./module-3.js');
+   *     import('./module-3.js');
    * After:
    *     import {a,b} from './module-1.js';
    *     import {c} from './module-2.js';
+   *     import('./module-3.js');
+   *     import('./module-3.js');
    */
   private _deduplicateImportStatements(node: babel.Node) {
     const importDeclarations = new Map<string, babel.ImportDeclaration>();
@@ -357,6 +384,7 @@ export class Es6Rewriter {
       return;
     }
     const sourceUrl = importCallArgument.value;
+    console.log('rewriteDynamicImport', baseUrl, sourceUrl);
     const resolvedSourceUrl = this.bundler.analyzer.urlResolver.resolve(
         baseUrl, sourceUrl as FileRelativeUrl);
     if (!resolvedSourceUrl) {

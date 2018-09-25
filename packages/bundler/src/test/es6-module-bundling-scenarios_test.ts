@@ -86,7 +86,7 @@ suite('Es6 Module Bundling', () => {
     const bUrl = analyzer.resolveUrl('b.js')!;
     const cUrl = analyzer.resolveUrl('c.js')!;
 
-    test('export specifier is in a bundle', async () => {
+    test.only('export specifier is in a bundle', async () => {
       const bundler =
           new Bundler({analyzer, strategy: generateSharedDepsMergeStrategy(2)});
       const {documents} =
@@ -295,8 +295,7 @@ suite('Es6 Module Bundling', () => {
       const manifest = await bundler.generateManifest([indexUrl]);
       assert.deepEqual(
           [...manifest.bundles.keys()], [indexUrl, sharedBundleUrl]);
-      const {documents} =
-          await bundler.bundle(await bundler.generateManifest([indexUrl]));
+      const {documents} = await bundler.bundle(manifest);
 
       assert.deepEqual(documents.get(indexUrl)!.content, heredoc`
         <script type="module" src="shared_bundle_1.js"></script>
@@ -312,6 +311,39 @@ suite('Es6 Module Bundling', () => {
           a: a
         };
         export { a$1 as $a, b$1 as $b, a, b };`);
+    });
+
+    test('deduplicate static imports, not dynamic', async () => {
+      const analyzer = inMemoryAnalyzer({
+        'app.js': `
+          import './component-1.js';
+          import './component-1.js';
+          import('./component-2.js');
+          import('./component-2.js');
+        `,
+        'component-1.js': `
+          export const Component1 = 'component-1';
+        `,
+        'component-2.js': `
+          export const Component2 = 'component-2';
+        `,
+      });
+      const appUrl = analyzer.resolveUrl('app.js')!;
+      const com1Url = analyzer.resolveUrl('component-1.js')!;
+      const com2Url = analyzer.resolveUrl('component-2.js')!;
+      const bundler =
+          new Bundler({analyzer, strategy: generateShellMergeStrategy(appUrl)});
+      const manifest = await bundler.generateManifest([appUrl]);
+      assert.deepEqual([...manifest.bundles.keys()], [com2Url, appUrl]);
+      const {documents} = await bundler.bundle(manifest);
+      assert.deepEqual(documents.get(appUrl)!.content, heredoc`
+        const Component1 = 'component-1';
+        var component1 = {
+          Component1: Component1
+        };
+        import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        export { component1 as $component$1, Component1 };`);
     });
   });
 });
