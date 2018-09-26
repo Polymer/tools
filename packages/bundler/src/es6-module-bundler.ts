@@ -78,7 +78,7 @@ async function prepareBundleModule(
         getOrSetBundleModuleExportName(assignedBundle, sourceUrl, '*');
     bundleSource.body.push(babel.importDeclaration(
         [babel.importNamespaceSpecifier(babel.identifier(starExportName))],
-        babel.stringLiteral(rebasedSourceUrl)));
+        babel.stringLiteral(sourceUrl)));
     if (moduleExports.size > 0) {
       bundleSource.body.push(babel.exportNamedDeclaration(
           undefined, [babel.exportSpecifier(
@@ -91,7 +91,7 @@ async function prepareBundleModule(
                   babel.identifier(e),
                   babel.identifier(getOrSetBundleModuleExportName(
                       assignedBundle, sourceUrl, e)))),
-          babel.stringLiteral(rebasedSourceUrl)));
+          babel.stringLiteral(sourceUrl)));
     }
   }
   const {code} = generate(bundleSource);
