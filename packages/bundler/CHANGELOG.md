@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Fix issue with multiple dynamic imports of the same fragment.
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.2 - 2018-06-28

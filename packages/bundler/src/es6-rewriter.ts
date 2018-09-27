@@ -142,8 +142,7 @@ export class Es6Rewriter {
               // we can return it as-is.
               if (this.bundle.url === id ||
                   !document.parsedDocument.contents.includes('import.meta')) {
-                return serialize(ast)!.code;
-                // return document.parsedDocument.contents;
+                return serialize(ast).code;
               }
 
               // We need to rewrite instances of `import.meta` in the document
