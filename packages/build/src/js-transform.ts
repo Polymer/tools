@@ -97,23 +97,29 @@ const babelSyntaxPlugins = [
   require('@babel/plugin-syntax-import-meta'),
 ];
 
-const babelPresetMinify = require('babel-preset-minify')({}, {
-  // Disable the minify-constant-folding plugin because it has a bug relating to
-  // invalid substitution of constant values into export specifiers:
-  // https://github.com/babel/minify/issues/820
-  evaluate: false,
+// Process as a method so that the options can be used to determine
+// whether to eliminate dead code or not. As per
+// https://github.com/Polymer/tools/issues/724 compiling to `es5` when
+// removing dead code can cause live code to be erroneously removed.
+function babelPresetMinify(options: JsTransformOptions) {
+  return require('babel-preset-minify')({}, {
+    // Disable the minify-constant-folding plugin because it has a bug relating to
+    // invalid substitution of constant values into export specifiers:
+    // https://github.com/babel/minify/issues/820
+    evaluate: false,
 
-  // TODO(aomarks) Find out why we disabled this plugin.
-  simplifyComparisons: false,
+    // TODO(aomarks) Find out why we disabled this plugin.
+    simplifyComparisons: false,
 
-  // Disable the simplify plugin because it can eat some statements preceeding
-  // loops. https://github.com/babel/minify/issues/824
-  simplify: false,
-  deadcode: false,
+    // Disable the simplify plugin because it can eat some statements preceeding
+    // loops. https://github.com/babel/minify/issues/824
+    simplify: false,
+    deadcode: !(options.compile === true || options.compile === 'es5'),
 
-  // This is breaking ES6 output. https://github.com/Polymer/tools/issues/261
-  mangle: false,
-});
+    // This is breaking ES6 output. https://github.com/Polymer/tools/issues/261
+    mangle: false,
+  });
+}
 
 /**
  * Options for jsTransform.
@@ -187,7 +193,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   if (options.minify) {
     doBabelTransform = true;
     // Minify last, so push first.
-    presets.push(babelPresetMinify);
+    presets.push(babelPresetMinify(options));
   }
   if (options.compile === true || options.compile === 'es5') {
     doBabelTransform = true;
