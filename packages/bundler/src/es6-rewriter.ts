@@ -72,6 +72,8 @@ export class Es6Rewriter {
     }
     const rollupBundle = await rollup({
       input,
+      // When external return true, it tells rollup *not* to bundle a particular
+      // import.
       external: (moduleId, parentId) => {
         if (moduleId === input) {
           return false;
@@ -204,11 +206,11 @@ export class Es6Rewriter {
 
   rewriteEs6SourceUrlsToResolved(
       node: babel.Node, jsImportResolvedUrls: Map<string, ResolvedUrl>) {
-    const bundler = this.bundler;
     const rewriteDeclarationSource = {
       enter(
           path:
-              NodePath<babel.ExportNamedDeclaration|babel.ImportDeclaration>) {
+              NodePath<babel.ExportAllDeclaration|
+                       babel.ExportNamedDeclaration|babel.ImportDeclaration>) {
         const declaration = path.node;
         const source = declaration.source &&
             babel.isStringLiteral(declaration.source) &&
@@ -224,6 +226,7 @@ export class Es6Rewriter {
     };
     traverse(node, {
       noScope: true,
+      ExportAllDeclaration: rewriteDeclarationSource,
       ExportNamedDeclaration: rewriteDeclarationSource,
       ImportDeclaration: rewriteDeclarationSource,
     });

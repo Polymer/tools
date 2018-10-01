@@ -69,9 +69,6 @@ async function prepareBundleModule(
   const sourceAnalysis =
       await bundler.analyzer.analyze([...assignedBundle.bundle.files]);
   for (const sourceUrl of [...assignedBundle.bundle.files].sort()) {
-    const rebasedSourceUrl =
-        ensureLeadingDot(bundler.analyzer.urlResolver.relative(
-            stripUrlFileSearchAndHash(assignedBundle.url), sourceUrl));
     const moduleDocument = getAnalysisDocument(sourceAnalysis, sourceUrl);
     const moduleExports = getModuleExportNames(moduleDocument);
     const starExportName =
