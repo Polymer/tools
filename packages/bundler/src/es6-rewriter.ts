@@ -11,9 +11,9 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import generate from '@babel/generator';
 import traverse, {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
+import {ExportDeclaration} from 'babel-types';
 import * as clone from 'clone';
 import {Document, FileRelativeUrl, PackageRelativeUrl, ParsedJavaScriptDocument, ResolvedUrl} from 'polymer-analyzer';
 import {rollup} from 'rollup';
@@ -69,27 +69,17 @@ export class Es6Rewriter {
     // resolutions for such things as bare module specifiers.
     const jsImportResolvedUrls = new Map<string, Map<string, ResolvedUrl>>();
     if (document) {
-      jsImportResolvedUrls.set(input, this._getJsImportResolutions(document));
+      jsImportResolvedUrls.set(input, this.getEs6ImportResolutions(document));
     }
     const rollupBundle = await rollup({
       input,
+      // When external return true, it tells rollup *not* to bundle a particular
+      // import.
       external: (moduleId, parentId) => {
-        if (moduleId ===
-            '/Users/brendanb/src/github.com/Polymer/tools~bundler-multiple-imports-of-same-fragment/packages/bundler/file:/memory/b.js') {
-          throw new Error('WHAT THE VUK');
-        }
         if (moduleId === input) {
           return false;
         }
         const baseUrl = parentId === input ? url : parentId as ResolvedUrl;
-        console.log(
-            'external check',
-            'parentId',
-            parentId,
-            'moduleId',
-            moduleId,
-            'baseUrl',
-            baseUrl);
         return external.includes(this.bundler.analyzer.urlResolver.resolve(
             baseUrl, moduleId as FileRelativeUrl)!);
       },
@@ -140,15 +130,24 @@ export class Es6Rewriter {
 
               if (!jsImportResolvedUrls.has(id)) {
                 jsImportResolvedUrls.set(
-                    id, this._getJsImportResolutions(document));
+                    id, this.getEs6ImportResolutions(document));
               }
+
+              // When Rollup encounters module IDs that are not 'absolute', it
+              // tries to be clever by creating a relative path it can use,
+              // but it uses `process.cwd()` which is nearly never what we
+              // want, and so we have to work around this by converting all
+              // module IDs in the returned document to fully resolved URLs.
+              const ast = clone(document.parsedDocument.ast);
+              this.rewriteEs6SourceUrlsToResolved(
+                  ast, jsImportResolvedUrls.get(id)!);
 
               // If the URL of the requested document is the same as the bundle
               // URL or the requested file doesn't use `import.meta` anywhere,
               // we can return it as-is.
               if (this.bundle.url === id ||
                   !document.parsedDocument.contents.includes('import.meta')) {
-                return document.parsedDocument.contents;
+                return serialize(ast).code;
               }
 
               // We need to rewrite instances of `import.meta` in the document
@@ -157,11 +156,10 @@ export class Es6Rewriter {
               const relativeUrl =
                   ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
                       this.bundle.url, id));
-              console.log('relativeUrl rewriting', relativeUrl);
               const newAst = this._rewriteImportMetaToBundleMeta(
                   generateUniqueIdentifierName(
                       'bundledImportMeta', document.parsedDocument.contents),
-                  document.parsedDocument.ast,
+                  ast,
                   relativeUrl);
               const newCode = serialize(newAst).code;
               return newCode;
@@ -190,8 +188,7 @@ export class Es6Rewriter {
     return {code: rewrittenCode, map: undefined};
   }
 
-  private _getJsImportResolutions(document: Document):
-      Map<string, ResolvedUrl> {
+  getEs6ImportResolutions(document: Document): Map<string, ResolvedUrl> {
     const jsImports = document.getFeatures({
       kind: 'js-import',
       imported: false,
@@ -208,6 +205,34 @@ export class Es6Rewriter {
       }
     }
     return resolutions;
+  }
+
+  rewriteEs6SourceUrlsToResolved(
+      node: babel.Node, jsImportResolvedUrls: Map<string, ResolvedUrl>) {
+    const rewriteDeclarationSource = {
+      enter(
+          path:
+              NodePath<babel.ExportAllDeclaration|
+                       babel.ExportNamedDeclaration|babel.ImportDeclaration>) {
+        const declaration = path.node;
+        const source = declaration.source &&
+            babel.isStringLiteral(declaration.source) &&
+            declaration.source.value;
+        if (!source) {
+          return;
+        }
+        const resolution = jsImportResolvedUrls.get(source);
+        if (resolution) {
+          declaration.source!.value = resolution;
+        }
+      }
+    };
+    traverse(node, {
+      noScope: true,
+      ExportAllDeclaration: rewriteDeclarationSource,
+      ExportNamedDeclaration: rewriteDeclarationSource,
+      ImportDeclaration: rewriteDeclarationSource,
+    });
   }
 
   /**
@@ -320,8 +345,8 @@ export class Es6Rewriter {
         enter(path: NodePath<babel.ImportDeclaration>) {
           const importDeclaration = path.node;
           if (!babel.isStringLiteral(importDeclaration.source)) {
-            // We can't actually handle values which are not string literals, so
-            // we'll skip them.
+            // We can't actually handle values which are not string literals,
+            // so we'll skip them.
             return;
           }
           const source = importDeclaration.source.value as ResolvedUrl;
@@ -401,8 +426,8 @@ export class Es6Rewriter {
     }
     // If there's no source bundle or the namespace export name of the bundle
     // is just '*', then we don't need to append a .then() to transform the
-    // return value of the import().  Lets just rewrite the URL to be a relative
-    // path and exit.
+    // return value of the import().  Lets just rewrite the URL to be a
+    // relative path and exit.
     if (!sourceBundle || exportName === '*') {
       const relativeSourceUrl =
           ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
@@ -495,8 +520,8 @@ export class Es6Rewriter {
       sourceBundle: AssignedBundle) {
     const exportName =
         getOrSetBundleModuleExportName(sourceBundle, source, '*');
-    // No rewrite necessary if * is the name, since this indicates there was no
-    // bundling of the namespace.
+    // No rewrite necessary if * is the name, since this indicates there was
+    // no bundling of the namespace.
     if (exportName === '*') {
       return;
     }
@@ -517,8 +542,8 @@ export class Es6Rewriter {
     //    url: new URL(${ relativeUrl }, import.meta.url).href
     // };
     // ```
-    // TODO(usergenic): Consider migrating this AST production mishmash into the
-    // `ast` tagged template literal available like this:
+    // TODO(usergenic): Consider migrating this AST production mishmash into
+    // the `ast` tagged template literal available like this:
     // https://github.com/Polymer/tools/blob/master/packages/build/src/babel-plugin-dynamic-import-amd.ts#L64
     const bundledImportMetaDeclaration = babel.variableDeclaration(
         //

@@ -69,16 +69,13 @@ async function prepareBundleModule(
   const sourceAnalysis =
       await bundler.analyzer.analyze([...assignedBundle.bundle.files]);
   for (const sourceUrl of [...assignedBundle.bundle.files].sort()) {
-    const rebasedSourceUrl =
-        ensureLeadingDot(bundler.analyzer.urlResolver.relative(
-            stripUrlFileSearchAndHash(assignedBundle.url), sourceUrl));
     const moduleDocument = getAnalysisDocument(sourceAnalysis, sourceUrl);
     const moduleExports = getModuleExportNames(moduleDocument);
     const starExportName =
         getOrSetBundleModuleExportName(assignedBundle, sourceUrl, '*');
     bundleSource.body.push(babel.importDeclaration(
         [babel.importNamespaceSpecifier(babel.identifier(starExportName))],
-        babel.stringLiteral(rebasedSourceUrl)));
+        babel.stringLiteral(sourceUrl)));
     if (moduleExports.size > 0) {
       bundleSource.body.push(babel.exportNamedDeclaration(
           undefined, [babel.exportSpecifier(
@@ -91,7 +88,7 @@ async function prepareBundleModule(
                   babel.identifier(e),
                   babel.identifier(getOrSetBundleModuleExportName(
                       assignedBundle, sourceUrl, e)))),
-          babel.stringLiteral(rebasedSourceUrl)));
+          babel.stringLiteral(sourceUrl)));
     }
   }
   const {code} = generate(bundleSource);
