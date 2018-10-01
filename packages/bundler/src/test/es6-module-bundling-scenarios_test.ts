@@ -90,12 +90,13 @@ suite('Es6 Module Bundling', () => {
     const cUrl = analyzer.resolveUrl('c.js')!;
     const dUrl = analyzer.resolveUrl('d.js')!;
 
-    test.only('export specifier is in a bundle', async () => {
+    test('export specifier is in a bundle', async () => {
       const bundler =
           new Bundler({analyzer, strategy: generateSharedDepsMergeStrategy(2)});
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, cUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        import { b } from './shared_bundle_1.js';
         export { b } from './shared_bundle_1.js';
         var a = {
           b: b
@@ -114,7 +115,7 @@ suite('Es6 Module Bundling', () => {
         };
         export { a as $a };`);
       assert.deepEqual(documents.get(dUrl)!.content, heredoc`
-        export * from './b.js';
+        export {* as b} from './b.js';
         `);
     });
   });
@@ -325,8 +326,12 @@ suite('Es6 Module Bundling', () => {
         'app.js': `
           import './component-1.js';
           import './component-1.js';
-          import('./component-2.js');
-          import('./component-2.js');
+          if (something()) {
+            import('./component-2.js');
+          }
+          if (somethingElse()) {
+            import('./component-2.js');
+          }
         `,
         'component-1.js': `
           export const Component1 = 'component-1';
@@ -348,8 +353,12 @@ suite('Es6 Module Bundling', () => {
         var component1 = {
           Component1: Component1
         };
-        import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
-        import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        if (something()) {
+          import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        }
+        if (somethingElse()) {
+          import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        }
         export { component1 as $component$1, Component1 };`);
     });
   });

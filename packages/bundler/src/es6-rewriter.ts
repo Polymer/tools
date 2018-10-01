@@ -63,7 +63,6 @@ export class Es6Rewriter {
       }
     }
     external.push(...this.bundler.excludes);
-    console.log('external:', external);
     // For each document loaded from the analyzer, we build a map of the
     // original specifiers to the resolved URLs since we want to use analyzer
     // resolutions for such things as bare module specifiers.
@@ -75,96 +74,78 @@ export class Es6Rewriter {
       input,
       // When external return true, it tells rollup *not* to bundle a particular
       // import.
-      external: (moduleId, parentId) => {
-        if (moduleId === input) {
-          return false;
-        }
-        const baseUrl = parentId === input ? url : parentId as ResolvedUrl;
-        return external.includes(this.bundler.analyzer.urlResolver.resolve(
-            baseUrl, moduleId as FileRelativeUrl)!);
-      },
-      onwarn: (warning: string) => {},
-      experimentalDynamicImport: true,
-      treeshake: false,
+      external,
+      // onwarn: (warning: string) => {},
       acorn: {
         plugins: {
           dynamicImport: true,
           importMeta: true,
         },
       },
-      acornInjectPlugins: [acornImportMetaInject],
+      // acornInjectPlugins: [acornImportMetaInject],
+      experimentalCodeSplitting: false,
+      experimentalPreserveModules: false,
+      treeshake: false,
+      optimizeChunks: false,
+      inlineDynamicImports: false,
+      perf: false,
       plugins: [
         {
           name: 'analyzerPlugin',
-          resolveId: (importee: string, importer?: string) => {
-            console.log('resolveId', importee, importer);
-            if (importee === input) {
-              return input;
-            }
-            if (importer) {
-              if (jsImportResolvedUrls.has(importer)) {
-                const resolutions = jsImportResolvedUrls.get(importer)!;
-                if (resolutions.has(importee)) {
-                  return resolutions.get(importee);
-                }
-              }
-              return this.bundler.analyzer.urlResolver.resolve(
-                         importer === input ? url : importer as ResolvedUrl,
-                         importee as FileRelativeUrl)! as string;
-            }
-            return this.bundler.analyzer.urlResolver.resolve(
-                       importee as PackageRelativeUrl)! as string;
-          },
+          resolveId: (importee: string, importer?: string) => importee,
           load: (id: ResolvedUrl) => {
-            console.log('load', id);
-            // When requesting the main document, just return it as-is.
-            if (id === input) {
-              return code;
-            }
-
-            // When the requested document is part of the bundle, get it from
-            // the analysis.
-            if (this.bundle.bundle.files.has(id)) {
-              const document =
-                  assertIsJsDocument(getAnalysisDocument(analysis, id));
-
-              if (!jsImportResolvedUrls.has(id)) {
-                jsImportResolvedUrls.set(
-                    id, this.getEs6ImportResolutions(document));
+            const result = ((id: ResolvedUrl) => {
+              // When requesting the main document, just return it as-is.
+              if (id === input) {
+                return code;
               }
 
-              // When Rollup encounters module IDs that are not 'absolute', it
-              // tries to be clever by creating a relative path it can use,
-              // but it uses `process.cwd()` which is nearly never what we
-              // want, and so we have to work around this by converting all
-              // module IDs in the returned document to fully resolved URLs.
-              const ast = clone(document.parsedDocument.ast);
-              this.rewriteEs6SourceUrlsToResolved(
-                  ast, jsImportResolvedUrls.get(id)!);
+              // When the requested document is part of the bundle, get it
+              // from the analysis.
+              if (this.bundle.bundle.files.has(id)) {
+                const document =
+                    assertIsJsDocument(getAnalysisDocument(analysis, id));
 
-              // If the URL of the requested document is the same as the bundle
-              // URL or the requested file doesn't use `import.meta` anywhere,
-              // we can return it as-is.
-              if (this.bundle.url === id ||
-                  !document.parsedDocument.contents.includes('import.meta')) {
-                return serialize(ast).code;
+                if (!jsImportResolvedUrls.has(id)) {
+                  jsImportResolvedUrls.set(
+                      id, this.getEs6ImportResolutions(document));
+                }
+
+                // When Rollup encounters module IDs that are not
+                // 'absolute', it tries to be clever by creating a relative
+                // path it can use, but it uses `process.cwd()` which is
+                // nearly never what we want, and so we have to work around
+                // this by converting all module IDs in the returned
+                // document to fully resolved URLs.
+                const ast = clone(document.parsedDocument.ast);
+                this.rewriteEs6SourceUrlsToResolved(
+                    ast, jsImportResolvedUrls.get(id)!);
+
+                // If the URL of the requested document is the same as the
+                // bundle URL or the requested file doesn't use
+                // `import.meta` anywhere, we can return it as-is.
+                if (this.bundle.url === id ||
+                    !document.parsedDocument.contents.includes('import.meta')) {
+                  return serialize(ast).code;
+                }
+
+                // We need to rewrite instances of `import.meta` in the
+                // document to preserve its location because `import.meta`
+                // is used and the URL has changed as a result of bundling.
+                const relativeUrl =
+                    ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
+                        this.bundle.url, id));
+                const newAst = this._rewriteImportMetaToBundleMeta(
+                    generateUniqueIdentifierName(
+                        'bundledImportMeta', document.parsedDocument.contents),
+                    ast,
+                    relativeUrl);
+                const newCode = serialize(newAst).code;
+                return newCode;
               }
-
-              // We need to rewrite instances of `import.meta` in the document
-              // to preserve its location because `import.meta` is used and the
-              // URL has changed as a result of bundling.
-              const relativeUrl =
-                  ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
-                      this.bundle.url, id));
-              const newAst = this._rewriteImportMetaToBundleMeta(
-                  generateUniqueIdentifierName(
-                      'bundledImportMeta', document.parsedDocument.contents),
-                  ast,
-                  relativeUrl);
-              const newCode = serialize(newAst).code;
-              return newCode;
-            }
-          },
+            })(id);
+            return result;
+          }
         },
       ],
     });
@@ -202,6 +183,15 @@ export class Es6Rewriter {
         if (node.source && jsImport.document !== undefined) {
           resolutions.set(node.source.value, jsImport.document.url);
         }
+      } else if (
+          node.callee && node.callee.type + '' === 'Import' &&
+          jsImport.document !== undefined) {
+        const source = node.arguments[0];
+        if (source) {
+          if (babel.isStringLiteral(source)) {
+            resolutions.set(source.value, jsImport.document.url);
+          }
+        }
       }
     }
     return resolutions;
@@ -232,6 +222,21 @@ export class Es6Rewriter {
       ExportAllDeclaration: rewriteDeclarationSource,
       ExportNamedDeclaration: rewriteDeclarationSource,
       ImportDeclaration: rewriteDeclarationSource,
+      CallExpression: {
+        enter(path: NodePath<babel.Node>) {
+          const callExpression = path.node;
+          const callee = callExpression['callee']!;
+          const callArguments = callExpression['arguments']!;
+          if (!callee || !callArguments || callArguments.length < 1 ||
+              !babel.isStringLiteral(callArguments[0]!)) {
+            return;
+          }
+          if (callee.type === 'Import') {
+            callArguments[0].value =
+                jsImportResolvedUrls.get(callArguments[0].value);
+          }
+        }
+      }
     });
   }
 
@@ -409,7 +414,6 @@ export class Es6Rewriter {
       return;
     }
     const sourceUrl = importCallArgument.value;
-    console.log('rewriteDynamicImport', baseUrl, sourceUrl);
     const resolvedSourceUrl = this.bundler.analyzer.urlResolver.resolve(
         baseUrl, sourceUrl as FileRelativeUrl);
     if (!resolvedSourceUrl) {
