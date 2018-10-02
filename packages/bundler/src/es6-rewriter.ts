@@ -80,58 +80,55 @@ export class Es6Rewriter {
           name: 'analyzerPlugin',
           resolveId: (importee: string, importer?: string) => importee,
           load: (id: ResolvedUrl) => {
-            const result = ((id: ResolvedUrl) => {
-              // When requesting the main document, just return it as-is.
-              if (id === input) {
-                return code;
+            // When requesting the main document, just return it as-is.
+            if (id === input) {
+              return code;
+            }
+
+            // When the requested document is part of the bundle, get it
+            // from the analysis.
+            if (this.bundle.bundle.files.has(id)) {
+              const document =
+                  assertIsJsDocument(getAnalysisDocument(analysis, id));
+
+              if (!jsImportResolvedUrls.has(id)) {
+                jsImportResolvedUrls.set(
+                    id, this.getEs6ImportResolutions(document));
               }
 
-              // When the requested document is part of the bundle, get it
-              // from the analysis.
-              if (this.bundle.bundle.files.has(id)) {
-                const document =
-                    assertIsJsDocument(getAnalysisDocument(analysis, id));
+              // When Rollup encounters module IDs that are not
+              // 'absolute', it tries to be clever by creating a relative
+              // path it can use, but it uses `process.cwd()` which is
+              // nearly never what we want, and so we have to work around
+              // this by converting all module IDs in the returned
+              // document to fully resolved URLs.
+              const ast = clone(document.parsedDocument.ast);
+              this.rewriteEs6SourceUrlsToResolved(
+                  ast, jsImportResolvedUrls.get(id)!);
+              const serialized = serialize(ast);
 
-                if (!jsImportResolvedUrls.has(id)) {
-                  jsImportResolvedUrls.set(
-                      id, this.getEs6ImportResolutions(document));
-                }
-
-                // When Rollup encounters module IDs that are not
-                // 'absolute', it tries to be clever by creating a relative
-                // path it can use, but it uses `process.cwd()` which is
-                // nearly never what we want, and so we have to work around
-                // this by converting all module IDs in the returned
-                // document to fully resolved URLs.
-                const ast = clone(document.parsedDocument.ast);
-                this.rewriteEs6SourceUrlsToResolved(
-                    ast, jsImportResolvedUrls.get(id)!);
-                const serialized = serialize(ast);
-
-                // If the URL of the requested document is the same as the
-                // bundle URL or the requested file doesn't use
-                // `import.meta` anywhere, we can return it as-is.
-                if (this.bundle.url === id ||
-                    !document.parsedDocument.contents.includes('import.meta')) {
-                  return serialized.code;
-                }
-
-                // We need to rewrite instances of `import.meta` in the
-                // document to preserve its location because `import.meta`
-                // is used and the URL has changed as a result of bundling.
-                const relativeUrl =
-                    ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
-                        this.bundle.url, id));
-                const newAst = this._rewriteImportMetaToBundleMeta(
-                    generateUniqueIdentifierName(
-                        'bundledImportMeta', serialized.code),
-                    ast,
-                    relativeUrl);
-                const newCode = serialize(newAst).code;
-                return newCode;
+              // If the URL of the requested document is the same as the
+              // bundle URL or the requested file doesn't use
+              // `import.meta` anywhere, we can return it as-is.
+              if (this.bundle.url === id ||
+                  !document.parsedDocument.contents.includes('import.meta')) {
+                return serialized.code;
               }
-            })(id);
-            return result;
+
+              // We need to rewrite instances of `import.meta` in the
+              // document to preserve its location because `import.meta`
+              // is used and the URL has changed as a result of bundling.
+              const relativeUrl =
+                  ensureLeadingDot(this.bundler.analyzer.urlResolver.relative(
+                      this.bundle.url, id));
+              const newAst = this._rewriteImportMetaToBundleMeta(
+                  generateUniqueIdentifierName(
+                      'bundledImportMeta', serialized.code),
+                  ast,
+                  relativeUrl);
+              const newCode = serialize(newAst).code;
+              return newCode;
+            }
           }
         },
       ],
