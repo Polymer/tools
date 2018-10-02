@@ -26,8 +26,6 @@ import {getOrSetBundleModuleExportName} from './es6-module-utils';
 import {appendUrlPath, ensureLeadingDot, getFileExtension} from './url-utils';
 import {generateUniqueIdentifierName, rewriteObject} from './utils';
 
-// const acornImportMetaInject = require('acorn-import-meta/inject');
-
 /**
  * Utility class to rollup/merge ES6 modules code using rollup and rewrite
  * import statements to point to appropriate bundles.

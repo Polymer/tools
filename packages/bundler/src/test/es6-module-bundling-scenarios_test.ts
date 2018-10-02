@@ -104,7 +104,7 @@ suite('Es6 Module Bundling', () => {
         export { a as $a };`);
     });
 
-    test.only('export specifier is not in a bundle', async () => {
+    test('export specifier is not in a bundle', async () => {
       const bundler = new Bundler({analyzer, excludes: [bUrl]});
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, dUrl]));
