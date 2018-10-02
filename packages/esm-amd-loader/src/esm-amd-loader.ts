@@ -512,6 +512,7 @@ const anchor = document.createElement('a');
  *
  * Examples:
  *
+ *  - /foo => http://example.com/foo
  *  - //example.com/ => http://example.com/
  *  - http://example.com => http://example.com/
  *  - http://example.com/foo/bar/../baz => http://example.com/foo/baz
@@ -545,7 +546,7 @@ function resolveUrl(urlBase: NormalizedUrl, url: string): NormalizedUrl {
     // Already a fully qualified URL.
     return url as NormalizedUrl;
   }
-  return normalizeUrl(urlBase + url);
+  return normalizeUrl(url[0] === '/' ? url : urlBase + url);
 }
 
 function getBaseUrl(): NormalizedUrl {
