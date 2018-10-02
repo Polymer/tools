@@ -26,7 +26,7 @@ import {getOrSetBundleModuleExportName} from './es6-module-utils';
 import {appendUrlPath, ensureLeadingDot, getFileExtension} from './url-utils';
 import {generateUniqueIdentifierName, rewriteObject} from './utils';
 
-const acornImportMetaInject = require('acorn-import-meta/inject');
+// const acornImportMetaInject = require('acorn-import-meta/inject');
 
 /**
  * Utility class to rollup/merge ES6 modules code using rollup and rewrite
@@ -72,23 +72,9 @@ export class Es6Rewriter {
     }
     const rollupBundle = await rollup({
       input,
-      // When external return true, it tells rollup *not* to bundle a particular
-      // import.
       external,
-      // onwarn: (warning: string) => {},
-      acorn: {
-        plugins: {
-          dynamicImport: true,
-          importMeta: true,
-        },
-      },
-      // acornInjectPlugins: [acornImportMetaInject],
-      experimentalCodeSplitting: false,
-      experimentalPreserveModules: false,
+      onwarn: (warning: string) => {},
       treeshake: false,
-      optimizeChunks: false,
-      inlineDynamicImports: false,
-      perf: false,
       plugins: [
         {
           name: 'analyzerPlugin',
@@ -120,13 +106,14 @@ export class Es6Rewriter {
                 const ast = clone(document.parsedDocument.ast);
                 this.rewriteEs6SourceUrlsToResolved(
                     ast, jsImportResolvedUrls.get(id)!);
+                const serialized = serialize(ast);
 
                 // If the URL of the requested document is the same as the
                 // bundle URL or the requested file doesn't use
                 // `import.meta` anywhere, we can return it as-is.
                 if (this.bundle.url === id ||
                     !document.parsedDocument.contents.includes('import.meta')) {
-                  return serialize(ast).code;
+                  return serialized.code;
                 }
 
                 // We need to rewrite instances of `import.meta` in the
@@ -137,7 +124,7 @@ export class Es6Rewriter {
                         this.bundle.url, id));
                 const newAst = this._rewriteImportMetaToBundleMeta(
                     generateUniqueIdentifierName(
-                        'bundledImportMeta', document.parsedDocument.contents),
+                        'bundledImportMeta', serialized.code),
                     ast,
                     relativeUrl);
                 const newCode = serialize(newAst).code;

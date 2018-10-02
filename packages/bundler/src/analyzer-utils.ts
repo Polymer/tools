@@ -19,7 +19,6 @@ export function getAnalysisDocument(analysis: Analysis, url: string): Document {
     return result.value;
   }
   if (result.error) {
-    console.log(result);
     const message = `Unable to get document ${url}: ${result.error.message}`;
     throw new Error(message);
   }

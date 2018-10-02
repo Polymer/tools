@@ -104,7 +104,7 @@ suite('Es6 Module Bundling', () => {
         export { a as $a };`);
     });
 
-    test('export specifier is not in a bundle', async () => {
+    test.only('export specifier is not in a bundle', async () => {
       const bundler = new Bundler({analyzer, excludes: [bUrl]});
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, dUrl]));
@@ -115,7 +115,7 @@ suite('Es6 Module Bundling', () => {
         };
         export { a as $a };`);
       assert.deepEqual(documents.get(dUrl)!.content, heredoc`
-        export {* as b} from './b.js';
+        export * from './b.js';
         `);
     });
   });
@@ -353,12 +353,15 @@ suite('Es6 Module Bundling', () => {
         var component1 = {
           Component1: Component1
         };
+
         if (something()) {
           import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
         }
+
         if (somethingElse()) {
           import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
         }
+
         export { component1 as $component$1, Component1 };`);
     });
   });
