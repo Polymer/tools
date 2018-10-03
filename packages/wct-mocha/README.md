@@ -119,10 +119,19 @@ index like this for you based on the suites you ask it to load._
 
 ## Polymer
 
-By default, WCT will defer tests until `WebComponentsReady` has fired. This
-saves you from having to wait for elements to upgrade and all that yourself.
+By default, WCT will defer tests until the `WebComponentsReady` event has been
+emitted by `@webcomponents/webcomponents-loader.js` or one of its polyfill
+bundles.  This saves you from having to wait for elements to upgrade and all
+that yourself.
 
-If you need to test something that occurs before that event, the [`testImmediate` helper](https://github.com/Polymer/web-component-tester/blob/master/browser/environment/helpers.js#L29-41) can be used. Or, if you just want tests to run as soon as possible, you can disable the delay by setting `WCT.waitForFrameworks = false` (though, they are still async due to Mocha).
+If you need to test something that occurs before that event, the 
+[`testImmediate` helper](https://github.com/Polymer/web-component-tester/blob/master/browser/environment/helpers.js#L29-41) 
+can be used.
+
+Alternately, if you are not using the `@webcomponents/webcomponentjs` polyfills
+or loader or otherwise simply want tests to run as soon as possible, you can
+disable this delay by setting `WCT.waitForFrameworks = false` (though, they are
+still async due to Mocha).
 
 
 ## Mocha
