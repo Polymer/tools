@@ -4,7 +4,7 @@
   "description": "Client-side library for testing web-components with Mocha.",
   "main": "lib/index.js",
   "files": [
-    "browser.js",
+    "wct-mocha.js",
     "lib/",
     "LICENSE",
     "README.md"

@@ -292,7 +292,7 @@ export function parallel(
  */
 export function scriptPrefix(filename: string): string|null {
   const scripts =
-      document.querySelectorAll('script[src*="' + filename + '"]') as
+      document.querySelectorAll('script[src*="/' + filename + '"]') as
       NodeListOf<HTMLScriptElement>;
   if (scripts.length !== 1) {
     return null;

@@ -71,11 +71,15 @@ export function setup(options: Config) {
 
   if (!_config.root) {
     // Sibling dependencies.
-    const root = util.scriptPrefix('browser.js');
+    const wctMochaJsRoot = util.scriptPrefix('wct-mocha.js');
+    const browserJsRoot = util.scriptPrefix('browser.js');
+    const scriptName = wctMochaJsRoot ? 'wct-mocha.js' : 'browser.js';
+    const root = wctMochaJsRoot || browserJsRoot;
     _config.root = util.basePath(root.substr(0, root.length - 1));
     if (!_config.root) {
       throw new Error(
-          'Unable to detect root URL for WCT sources. Please set WCT.root before including browser.js');
+          `Unable to detect root URL for WCT sources. ` +
+          `Please set WCT.root before loading ${scriptName} first.`);
     }
   }
 }

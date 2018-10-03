@@ -20,12 +20,14 @@ $ npm install --save-dev wct-mocha
 
 ```bash
 $ npm install --global web-component-tester
+$ npm install --global polymer-cli
 ```
 
-## Run `wct`
+## Run `wct` or `polymer test`
 
 ```bash
-$ wct --wct-package-name wct-mocha
+$ wct --npm
+$ polymer test --npm
 ```
 
 ## `.html` Suites
@@ -38,9 +40,11 @@ Your test suites can be `.html` documents. For example,
 <html>
 <head>
   <meta charset="utf-8">
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
   <script src="../node_modules/mocha/mocha.js"></script>
   <script src="../node_modules/chai/chai.js"></script>
-  <script src="../node_modules/wct-mocha/browser.js"></script>
+  <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+  <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
 </head>
 <body>
   <awesome-element id="fixture"></awesome-element>
@@ -78,8 +82,8 @@ suite('AwesomeLib', function() {
 If you prefer not to use WCT's command line tool, you can also run WCT tests
 directly in a browser via a web server of your choosing.
 
-Make sure that WCT's `browser.js` is accessible by your web server, and have
-your tests load `browser.js`.
+Make sure that the `wct-mocha/wct-mocha.js` script is accessible by your web
+server, and have your tests load it after loading `mocha/mocha.js`.
 
 #### Nested Suites
 
@@ -91,8 +95,9 @@ any desired tests:
 <html>
   <head>
     <meta charset="utf-8">
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../node_modules/mocha/mocha.js"></script>
-    <script src="../node_modules/wct-mocha/browser.js"></script>
+    <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
   </head>
   <body>
     <script>
@@ -105,8 +110,8 @@ any desired tests:
 </html>
 ```
 
-_When you use `wct` on the command line, it is generating an index like this for
-you based on the suites you ask it to load._
+_When you use `wct` or `polymer test` on the command line, it is generating an
+index like this for you based on the suites you ask it to load._
 
 
 
@@ -132,11 +137,12 @@ you. Just write your tests, and you're set.
 If you would like to have WCT load libraries on your behalf, you can define a
 list of scripts loaded. There are two ways of doing this:
 
-Inside your test code (before `wct-mocha/browser.js` is loaded):
+Inside your test code (before `wct-mocha/wct-mocha.js` is loaded):
 ```html
 <script>
   WCT = {
     environmentScripts: [
+      '../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js',
       '../node_modules/mocha/mocha.js',
       '../node_modules/chai/chai.js',
       '../node_modules/@polymer/test-fixture/test-fixture.js'
