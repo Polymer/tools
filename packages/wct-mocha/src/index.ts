@@ -87,8 +87,9 @@ export function initialize(initConfig?: config.Config) {
 
     // We need the socket built prior to building its reporter.
     CLISocket.init((error, socket) => {
-      if (error)
+      if (error) {
         throw error;
+      }
 
       // Are we a child of another run?
       const current = ChildRunner.current();
@@ -105,22 +106,26 @@ export function initialize(initConfig?: config.Config) {
       // We need the reporter so that we can report errors during load.
       suites.loadJsSuites(reporter, (error) => {
         // Let our parent know that we're about to start the tests.
-        if (current)
+        if (current) {
           current.ready(error);
-        if (error)
+        }
+        if (error) {
           throw error;
+        }
 
         // Emit any errors we've encountered up til now
-        errors.globalErrors.forEach(function onError(error) {
+        errors.globalErrors.forEach((error) => {
           reporter.emitOutOfBandTest('Test Suite Initialization', error);
         });
 
         suites.runSuites(reporter, childSuites, (error) => {
           // Make sure to let our parent know that we're done.
-          if (current)
+          if (current) {
             current.done();
-          if (error)
+          }
+          if (error) {
             throw error;
+          }
         });
       });
     });
