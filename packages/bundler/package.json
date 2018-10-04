@@ -50,8 +50,9 @@
     "tsc-then": "^1.1.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run lint",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint -p .",
     "test": "npm run build && tslint -c tslint.json \"src/**/*.ts\" && mocha \"lib/test/**/*_test.js\"",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\""

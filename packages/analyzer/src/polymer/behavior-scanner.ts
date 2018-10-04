@@ -227,8 +227,9 @@ class BehaviorVisitor implements Visitor {
       // merge desc, longest desc wins
       if (newBehavior.description) {
         if (behavior.description) {
-          if (newBehavior.description.length > behavior.description.length)
+          if (newBehavior.description.length > behavior.description.length) {
             behavior.description = newBehavior.description;
+          }
         } else {
           behavior.description = newBehavior.description;
         }
