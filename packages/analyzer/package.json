@@ -17,7 +17,8 @@
   ],
   "scripts": {
     "clean": "touch lib && rm -rf lib && mkdir lib",
-    "build": "tsc && npm run generate-json-schema && npm run lint",
+    "build": "tsc && npm run generate-json-schema && npm run tslint",
+    "depcheck": "node ./scripts/depcheck.js",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "generate-json-schema": "typescript-json-schema --required --ignoreErrors src/analysis-format/analysis-format.ts -o lib/analysis.schema.json Analysis",
     "lint": "tslint -p . && node ./scripts/depcheck.js",

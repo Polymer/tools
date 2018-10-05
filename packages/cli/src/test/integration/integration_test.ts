@@ -596,8 +596,8 @@ suite('polymer shop', function() {
       if (debugDir != null) {
         dir = debugDir;
       } else {
-        // Cloning and installing takes a minute
-        this.timeout(2 * 60 * 1000);
+        // Cloning and installing takes up to 3 minutes
+        this.timeout(3 * 60 * 1000);
         const ShopGenerator = createGithubGenerator({
           owner: 'Polymer',
           repo: 'shop',
