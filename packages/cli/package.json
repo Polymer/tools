@@ -18,7 +18,7 @@
     "clean": "rm -rf lib/",
     "build": "npm run clean && tsc && npm run lint",
     "format": "find src -name \"*.ts\" -not -path \"*/fixtures/*\" | xargs clang-format --style=file -i",
-    "lint": "tslint -p ./ && node scripts/depcheck.js",
+    "lint": "tslint -p . && node scripts/depcheck.js",
     "prepublishOnly": "ls npm-shrinkwrap.json",
     "test": "npm run build && npm run test:unit && npm run lint",
     "test:smoke": "gulp test",

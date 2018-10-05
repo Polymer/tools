@@ -23,12 +23,12 @@
     "build:fixtures": "npm run build && node lib/tools/update-fixtures",
     "clean": "rm -rf ./lib/",
     "format": "find bin src -name \"*.[jt]s\" | xargs clang-format --style=file -i",
-    "lint": "tslint -p ./",
+    "lint": "tslint -p .",
     "prepublishOnly": "npm test",
+    "test": "npm run test:fast && npm run lint"
     "test:full": "npm run build && bash test/run-mocha.sh && npm run lint",
     "test:fast": "npm run build && bash test/run-mocha.sh unit",
     "test:watch": "tsc-then -- bash test/run-mocha.sh unit",
-    "test": "npm run test:fast && npm run lint"
   },
   "engines": {
     "node": ">=8.0.0"

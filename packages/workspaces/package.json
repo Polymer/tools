@@ -11,7 +11,6 @@
     "build": "tsc && npm run lint",
     "build:watch": "tsc --watch",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
-    "lint": "tslint -p ./",
     "test": "npm run build && mocha"
   },
   "devDependencies": {
