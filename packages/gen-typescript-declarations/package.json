@@ -45,7 +45,7 @@
   "scripts": {
     "clean": "rimraf lib",
     "format": "find src -name \"*.ts\" -not -path \"src/test/fixtures/*\" -not -path \"src/test/goldens/*\" | xargs clang-format --style=file -i",
-    "lint": "tslint --project . --format stylish",
+    "lint": "tslint -p . --format stylish",
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
     "prepack": "npm run build",

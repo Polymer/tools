@@ -9,7 +9,7 @@
   "license": "BSD-3-Clause",
   "scripts": {
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
-    "lint": "tslint -p ./",
+    "lint": "tslint -p .",
     "build": "tsc",
     "build:watch": "tsc --watch",
     "test": "npm run build && mocha"

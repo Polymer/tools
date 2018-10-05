@@ -41,7 +41,7 @@
     "build": "npm run clean && tsc",
     "clean": "touch lib && rm -rf lib && mkdir lib",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
-    "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
+    "lint": "tslint -p .",
     "test": "npm run build && mocha \"lib/test/**/*_test.js\" && npm run lint",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",

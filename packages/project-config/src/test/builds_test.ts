@@ -27,10 +27,12 @@ suite('builds', () => {
       assert.equal(isValidPreset('es6'), false);
       assert.equal(isValidPreset('js-compile'), false);
       assert.equal(isValidPreset(''), false);
+      // tslint:disable:no-any
       assert.equal(isValidPreset(null as any), false);
       assert.equal(isValidPreset(undefined as any), false);
       assert.equal(isValidPreset(0 as any), false);
       assert.equal(isValidPreset(1 as any), false);
+      // tslint:enable:no-any
     });
   });
 

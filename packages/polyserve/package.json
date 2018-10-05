@@ -12,6 +12,7 @@
     "polyserve": "bin/polyserve"
   },
   "scripts": {
+    "lint": "tslint -p .",
     "start": "./bin/polyserve",
     "clean": "rimraf lib",
     "build": "npm run clean && tsc",

@@ -10,6 +10,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
+    "lint": "tslint -p .",
     "build": "tsc && typescript-json-schema src/index.ts ProjectOptions --ignoreErrors -o lib/schema.json",
     "test": "npm run build && mocha \"test/**/*_test.js\"",
     "test:unit": "mocha \"test/**/*_test.js\"",

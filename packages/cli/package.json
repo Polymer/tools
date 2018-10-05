@@ -15,7 +15,7 @@
     "polymer": "bin/polymer.js"
   },
   "scripts": {
-    "lint": "tslint -p ./ && node scripts/depcheck.js",
+    "lint": "tslint -p . && node scripts/depcheck.js",
     "clean": "rm -rf lib/",
     "build": "npm run clean && tsc",
     "format": "find src -name \"*.ts\" -not -path \"*/fixtures/*\" | xargs clang-format --style=file -i",

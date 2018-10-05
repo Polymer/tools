@@ -7,6 +7,7 @@
   "license": "BSD-3-Clause",
   "repository": "github:Polymer/tools",
   "scripts": {
+    "lint": "tslint -p .",
     "build": "npm run clean && tsc",
     "clean": "rm -f *.js *.d.ts",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i"

@@ -25,7 +25,7 @@
     "test:fast": "npm run build && bash test/run-mocha.sh unit",
     "test:watch": "tsc-then -- bash test/run-mocha.sh unit",
     "test": "npm run test:fast && npm run lint",
-    "lint": "tslint -p ./",
+    "lint": "tslint -p .",
     "format": "find bin src -name \"*.[jt]s\" | xargs clang-format --style=file -i",
     "clean": "rm -rf ./lib/",
     "prepublishOnly": "npm test"

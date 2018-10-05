@@ -14,7 +14,7 @@
   "main": "lib/plugin.js",
   "typings": "lib/plugin.d.ts",
   "scripts": {
-    "lint": "gulp lint",
+    "lint": "tslint -p .",
     "build": "tsc",
     "format": "find src scripts -name \"*.[jt]s\" | xargs clang-format --style=file -i",
     "prepublishOnly": "tsc",
