@@ -104,7 +104,6 @@
     "@types/socket.io": "^1.4.27",
     "@types/spdy": "^3.4.4",
     "bower": "^1.7.9",
-    "child-process-promise": "^2.2.1",
     "depcheck": "^0.6.3",
     "grunt": "^0.4.5",
     "gulp": "^3.8.8",
