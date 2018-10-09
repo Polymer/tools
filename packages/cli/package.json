@@ -23,7 +23,7 @@
     "prepublishOnly": "ls npm-shrinkwrap.json",
     "test:smoke": "gulp test",
     "test:smoke-lint": "gulp test lint",
-    "test:integration": "TEST_RETRY_TARGET_MAX=7 mocha \"lib/test/integration/**/*_test.js\" --reporter ../web-component-tester/test/retry-failures-reporter.js",
+    "test:integration": "bash -c \"TEST_RETRY_TARGET_MAX=7 mocha \\\"lib/test/integration/**/*_test.js\\\" --reporter ../web-component-tester/test/retry-failures-reporter.js\"",
     "test:unit": "mocha \"lib/test/unit/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
     "test:watch:unit": "tsc-then -- mocha \"lib/test/unit/**/*_test.js\"",
