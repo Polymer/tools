@@ -27,7 +27,7 @@
     "test:unit": "mocha \"lib/test/unit/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
     "test:watch:unit": "tsc-then -- mocha \"lib/test/unit/**/*_test.js\"",
-    "test:watch:integration": "tsc-then -- mocha \"lib/test/integration/**/*_test.js\"",
+    "test:watch:integration": "tsc-then -- mocha \"lib/test/integration/**/*_test.js\" --reporter ../web-component-tester/test/retry-failures-reporter.js",
     "update-goldens": "tsc && UPDATE_POLYMER_CLI_GOLDENS=true mocha lib/test/integration/build_test.js || echo ''"
   },
   "dependencies": {
