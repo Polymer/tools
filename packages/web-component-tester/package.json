@@ -48,7 +48,7 @@
     "test": "tsc && gulp test",
     "prepublishOnly": "gulp prepublish",
     "test:unit": "mocha \"test/unit/**/*.js\"",
-    "test:integration": "gulp bower && mocha \"test/integration/**/*.js\" --timeout 90000 --reporter \"test/flaky-integration-tests-reporter.js\" || bash ./rerun-flaky-integration-tests.bash",
+    "test:integration": "gulp bower && mocha \"test/integration/**/*.js\" --timeout 90000 --reporter \"test/flaky-integration-tests-reporter.js\"",
     "test:watch": "watch \"mocha \\\"test/unit/**/*.js\\\"\" runner/ browser/ bin/ test/ tasks/",
     "format": "find browser runner test -name \"*.ts\" -not -path \"*/fixtures/*\"  | xargs clang-format --style=file -i"
   },
@@ -104,6 +104,7 @@
     "@types/socket.io": "^1.4.27",
     "@types/spdy": "^3.4.4",
     "bower": "^1.7.9",
+    "child-process-promise": "^2.2.1",
     "depcheck": "^0.6.3",
     "grunt": "^0.4.5",
     "gulp": "^3.8.8",
