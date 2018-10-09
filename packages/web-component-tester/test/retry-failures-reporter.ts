@@ -84,24 +84,30 @@ module.exports = class RetryFailuresReporter extends Mocha.reporters.Spec {
   }
 }
 
-// Standard output block to help call out these interstitial messages amidst
-// large test suite outputs.
+/**
+ * Standard output block to help call out these interstitial messages amidst
+ * large test suite outputs.
+ */
 function banner(text: string): string {
   return chalk.white.bgRed(
       `*************************\n\n${text}\n\n*************************`);
 }
 
-// When failures happen inside of hooks like "before each" etc, they include the
-// mention of the hook, but since the hook is not a target, we have to strip out
-// those mentions before we can make use of them for `mocha --grep` purposes.
+/**
+ * When failures happen inside of hooks like "before each" etc, they include the
+ * mention of the hook, but since the hook is not a target, we have to strip out
+ * those mentions before we can make use of them for `mocha --grep` purposes.
+ */
 function getFullTitle(test: Mocha.Test): string {
   return test.fullTitle()
       .replace(/^".+" hook for "(.+)"/, '$1')
       .replace(/^(.+) "[^"]+" hook$/, '$1');
 }
 
-// Returns an array of all the expected test targets to retry which do not
-// match any of the actual test targets that were run.
+/**
+ * Returns an array of all the expected test targets to retry which do not
+ * match any of the actual test targets that were run.
+ */
 function getMissedTargets(actual: string[], expected: string[]): string[] {
   const missedTargets: string[] = [];
   const matchedTargets = new Set<string>();
@@ -119,12 +125,18 @@ function getMissedTargets(actual: string[], expected: string[]): string[] {
   return missedTargets;
 }
 
+/**
+ * Why is this not a standard function in JavaScript?  Sigh.  Escapes a string
+ * to be a literal string for use in a RegExp.
+ */
 function grepEscape(s: string): string {
   return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-// Given an array of args from argv, return an array without any grep/fgrep
-// arguments and their values.
+/**
+ * Given an array of args from argv, return an array without any grep/fgrep
+ * arguments and their values.
+ */
 function stripGrepArgs(args: string[]): string[] {
   const filteredArgs = [];
   for (let a = 0; a < args.length; ++a) {
