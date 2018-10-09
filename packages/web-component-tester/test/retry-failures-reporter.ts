@@ -15,6 +15,8 @@ import * as Mocha from 'mocha';
 
 const retryTargets: string[] =
     JSON.parse(process.env['TEST_RETRY_TARGETS'] || '[]');
+const retryTargetMax =
+    parseInt(process.env['TEST_RETRY_TARGET_MAX'] + '', 10) || 0;
 const retryCount = parseInt(process.env['TEST_RETRY_COUNT'] + '', 10) || 0;
 const retryMax = parseInt(process.env['TEST_RETRY_MAX'] + '', 10) || 3;
 
@@ -53,11 +55,16 @@ module.exports = class RetryFailuresReporter extends Mocha.reporters.Spec {
       }
 
       if (retryCount >= retryMax) {
-        runner.abort();
         console.error(banner(
             `${retryMax} retries attempted, but still ` +
             `have ${fails.length} failure(s).`));
-        process.exit(Math.min(fails.length, 255));
+        return;
+      }
+
+      if (retryTargetMax > 0 && fails.length > retryTargetMax) {
+        console.error(banner(
+            `Number of failures (${fails.length}) exceeds the specified ` +
+            `maximum number of test targets to retry(${retryTargetMax}).`));
         return;
       }
 

@@ -48,7 +48,7 @@
     "test": "tsc && gulp test",
     "prepublishOnly": "gulp prepublish",
     "test:unit": "mocha \"test/unit/**/*.js\"",
-    "test:integration": "gulp bower && mocha \"test/integration/**/*.js\" --timeout 90000 --reporter test/retry-failures-reporter.js",
+    "test:integration": "gulp bower && TEST_RETRY_TARGET_MAX=7 mocha \"test/integration/**/*.js\" --timeout 90000 --reporter test/retry-failures-reporter.js",
     "test:watch": "watch \"mocha \\\"test/unit/**/*.js\\\"\" runner/ browser/ bin/ test/ tasks/",
     "format": "find browser runner test -name \"*.ts\" -not -path \"*/fixtures/*\"  | xargs clang-format --style=file -i"
   },
