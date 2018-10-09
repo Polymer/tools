@@ -9,7 +9,7 @@ runner/*.js
 runner/*.d.ts
 runner/*.js.map
 test/*.js
-test/*.d.td
+test/*.d.ts
 test/*.js.map
 test/unit/*.js
 test/unit/*.d.ts
