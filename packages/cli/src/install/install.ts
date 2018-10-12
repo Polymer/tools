@@ -177,10 +177,12 @@ export function _mergeJson(from: JsonValue, to: JsonValue): JsonValue {
 }
 
 function isPrimitiveOrArray(value: {}|null|undefined) {
-  if (value == null)
+  if (value == null) {
     return true;
-  if (Array.isArray(value))
+  }
+  if (Array.isArray(value)) {
     return true;
+  }
   const type = typeof value;
   return type === 'string' || type === 'number' || type === 'boolean';
 }

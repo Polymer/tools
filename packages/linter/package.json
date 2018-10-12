@@ -37,11 +37,11 @@
     "tsc-then": "^1.0.1"
   },
   "scripts": {
-    "prepublishOnly": "npm run build",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsc && npm run lint",
     "clean": "touch lib && rm -rf lib && mkdir lib",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
-    "lint": "tslint -c tslint.json src/*.ts src/**/*.ts",
+    "lint": "tslint -p .",
+    "prepublishOnly": "npm run build",
     "test": "npm run build && mocha \"lib/test/**/*_test.js\" && npm run lint",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",

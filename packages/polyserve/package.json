@@ -12,13 +12,14 @@
     "polyserve": "bin/polyserve"
   },
   "scripts": {
-    "start": "./bin/polyserve",
+    "build": "npm run clean && tsc && npm run lint",
     "clean": "rimraf lib",
-    "build": "npm run clean && tsc",
+    "format": "find src test -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint -p .",
+    "start": "./bin/polyserve",
     "test": "npm run build && mocha \"lib/test/**/*_test.js\" && tslint \"src/**/*.ts\"",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
-    "format": "find src test -name \"*.ts\" | xargs clang-format --style=file -i",
     "update-goldens": "tsc && UPDATE_POLYSERVE_GOLDENS=true mocha lib/test/compile-middleware_test.js || echo ''"
   },
   "keywords": [

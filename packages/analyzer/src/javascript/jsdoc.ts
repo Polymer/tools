@@ -100,16 +100,19 @@ export function getTag(jsdoc: Annotation|undefined, title: string): Tag|
 }
 
 export function unindent(text: string): string {
-  if (!text)
+  if (!text) {
     return text;
+  }
   const lines = text.replace(/\t/g, '  ').split('\n');
   const indent = lines.reduce<number>(function(prev, line) {
-    if (/^\s*$/.test(line))
+    if (/^\s*$/.test(line)) {
       return prev;  // Completely ignore blank lines.
+    }
 
     const lineIndent = line.match(/^(\s*)/)![0].length;
-    if (prev === null)
+    if (prev === null) {
       return lineIndent;
+    }
     return lineIndent < prev ? lineIndent : prev;
   }, 0);
 
