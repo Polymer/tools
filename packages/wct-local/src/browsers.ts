@@ -89,8 +89,9 @@ export let detect =
 
   const results: {[browser: string]: wd.Capabilities} = {};
   for (const browser of browsers) {
-    if (!LAUNCHPAD_TO_SELENIUM[browser.name])
+    if (!LAUNCHPAD_TO_SELENIUM[browser.name]) {
       continue;
+    }
     const converter = LAUNCHPAD_TO_SELENIUM[browser.name];
     const convertedBrowser =
         converter(browser, browserOptions && browserOptions[browser.name]);

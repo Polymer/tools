@@ -76,8 +76,9 @@ export class DependencyGraph {
   private _documents = new Map<ResolvedUrl, DocumentRecord>();
 
   constructor(from?: DependencyGraph) {
-    if (!from)
+    if (!from) {
       return;
+    }
 
     // Deep copy of `from`
     for (const entry of from._documents.entries()) {

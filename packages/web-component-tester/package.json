@@ -43,7 +43,7 @@
     "runner.js"
   ],
   "scripts": {
-    "lint": "gulp lint",
+    "lint": "tslint -p .",
     "build": "tsc && gulp build",
     "test": "tsc && gulp test",
     "prepublishOnly": "gulp prepublish",

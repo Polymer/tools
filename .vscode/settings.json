@@ -1,6 +1,0 @@
-{
-  "vim.useSystemClipboard": true,
-  "terminal.integrated.copyOnSelection": true,
-  "search.globalFindClipboard": true,
-  "editor.find.globalFindClipboard": true,
-}

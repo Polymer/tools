@@ -15,12 +15,12 @@
     "polymer": "bin/polymer.js"
   },
   "scripts": {
-    "lint": "tslint -p . && node scripts/depcheck.js",
     "clean": "rm -rf lib/",
-    "build": "npm run clean && tsc",
+    "build": "npm run clean && tsc && npm run lint",
     "format": "find src -name \"*.ts\" -not -path \"*/fixtures/*\" | xargs clang-format --style=file -i",
-    "test": "npm run build && npm run test:unit && npm run lint",
+    "lint": "tslint -p . && node scripts/depcheck.js",
     "prepublishOnly": "ls npm-shrinkwrap.json",
+    "test": "npm run build && npm run test:unit && npm run lint",
     "test:smoke": "gulp test",
     "test:smoke-lint": "gulp test lint",
     "test:integration": "bash -c \"TEST_RETRY_TARGET_MAX=7 mocha \\\"lib/test/integration/**/*_test.js\\\" --reporter node_modules/web-component-tester/test/retry-failures-reporter.js\"",

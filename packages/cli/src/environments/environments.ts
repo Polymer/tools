@@ -27,6 +27,7 @@ const environments = new EnvironmentMap();
  */
 export function buildEnvironment(name: string): Environment|undefined {
   const E = environments.get(name.toLowerCase());
-  if (E)
+  if (E) {
     return new E();
+  }
 }
