@@ -14,7 +14,7 @@ import {spawnSync} from 'child_process';
 import * as Mocha from 'mocha';
 
 const retryTargets: string[] =
-    JSON.parse(process.env['TEST_RETRY_TARGETS'] || '[]');
+    parseJSONArray(process.env['TEST_RETRY_TARGETS']);
 const retryTargetMax = parseInt(process.env['TEST_RETRY_TARGET_MAX'], 10) || 0;
 const retryCount = parseInt(process.env['TEST_RETRY_COUNT'], 10) || 0;
 const retryMax = parseInt(process.env['TEST_RETRY_MAX'], 10) || 3;
@@ -137,6 +137,20 @@ function getMissedTargets(actual: string[], expected: string[]): string[] {
  */
 function grepEscape(s: string): string {
   return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+
+/**
+ * Returns an Array parsed from json string, or an empty array if parse fails.
+ */
+function parseJSONArray(json?: string): string[] {
+  try {
+    const array = JSON.parse(json);
+    if (Array.isArray(array)) {
+      return array;
+    }
+  } catch (e) {
+  }
+  return [];
 }
 
 /**
