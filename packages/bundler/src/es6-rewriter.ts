@@ -16,6 +16,7 @@ import * as babel from 'babel-types';
 import {ExportDeclaration} from 'babel-types';
 import * as clone from 'clone';
 import {Document, FileRelativeUrl, PackageRelativeUrl, ParsedJavaScriptDocument, ResolvedUrl} from 'polymer-analyzer';
+import {Analysis} from 'polymer-analyzer';
 import {rollup} from 'rollup';
 
 import {assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
@@ -88,6 +89,7 @@ export class Es6Rewriter {
             if (this.bundle.bundle.files.has(id)) {
               const document =
                   assertIsJsDocument(getAnalysisDocument(analysis, id));
+              const ast = clone(document.parsedDocument.ast);
 
               if (!jsImportResolvedUrls.has(id)) {
                 jsImportResolvedUrls.set(
@@ -100,9 +102,19 @@ export class Es6Rewriter {
               // nearly never what we want, and so we have to work around
               // this by converting all module IDs in the returned
               // document to fully resolved URLs.
-              const ast = clone(document.parsedDocument.ast);
               this.rewriteEs6SourceUrlsToResolved(
                   ast, jsImportResolvedUrls.get(id)!);
+
+              // Rollup has difficulties dealing with `export * from` cases
+              // expecially where the source is an external module.  As a
+              // means to work around this, we will rewrite `export * from`
+              // as explicit named exports of all the identified exports of
+              // the external module, since we should be able to get them
+              // from `polymer-analyzer`.
+              // See  https://github.com/rollup/rollup/issues/2165 for
+              // status of Rollup's handling of this case.
+              this.rewriteExportAllToNamedExports(ast, analysis);
+
               const serialized = serialize(ast);
 
               // If the URL of the requested document is the same as the
@@ -222,11 +234,46 @@ export class Es6Rewriter {
     });
   }
 
+  rewriteExportAllToNamedExports(node: babel.Node, analysis: Analysis) {
+    traverse(node, {
+      noScope: true,
+      ExportAllDeclaration: {
+        enter(path: NodePath<babel.ExportAllDeclaration>) {
+          const exportAllDeclaration = path.node;
+          const sourceUrl =
+              babel.isStringLiteral(exportAllDeclaration.source) &&
+              exportAllDeclaration.source.value;
+          if (!sourceUrl) {
+            return;
+          }
+          const sourceDocument = getAnalysisDocument(analysis, sourceUrl);
+          const documentExports = sourceDocument.getFeatures({kind: 'export'});
+          const specifiers: babel.ExportSpecifier[] = [];
+          for (const documentExport of documentExports) {
+            for (const exportIdentifier of documentExport.identifiers) {
+              const identifierValue = exportIdentifier.valueOf();
+              // It does not appear that `export * from` should re-export
+              // the default module export of a module.
+              if (identifierValue !== 'default') {
+                specifiers.push(babel.exportSpecifier(
+                    babel.identifier(identifierValue),
+                    babel.identifier(identifierValue)));
+              }
+            }
+          }
+          const namedExportDeclaration = babel.exportNamedDeclaration(
+              undefined, specifiers, babel.stringLiteral(sourceUrl));
+          rewriteObject(exportAllDeclaration, namedExportDeclaration);
+        }
+      }
+    })
+  }
+
   /**
-   * Attempts to reduce the number of distinct import declarations by combining
-   * those referencing the same source into the same declaration. Results in
-   * deduplication of imports of the same item as well.  It should NOT touch
-   * dynamic imports at all.
+   * Attempts to reduce the number of distinct import declarations by
+   * combining those referencing the same source into the same declaration.
+   * Results in deduplication of imports of the same item as well.  It
+   * should NOT touch dynamic imports at all.
    *
    * Before:
    *     import {a} from './module-1.js';

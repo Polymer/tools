@@ -32,7 +32,7 @@
     "mkdirp": "^0.5.1",
     "parse5": "^4.0.0",
     "polymer-analyzer": "^3.0.1",
-    "rollup": "=0.64.0",
+    "rollup": "^0.64.1",
     "source-map": "^0.5.6",
     "vscode-uri": "^1.0.1"
   },

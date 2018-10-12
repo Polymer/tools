@@ -55,8 +55,8 @@ suite('Es6 Module Bundling', () => {
       const A = 'a';
       var a = {
         A: A,
-        B: B,
-        C: C
+        C: C,
+        B: B
       };
       export { a as $a, b as $b, c as $c, C, B, A, C as C$1, B as B$1, C as C$2, C as $cDefault };`);
   });
@@ -109,14 +109,19 @@ suite('Es6 Module Bundling', () => {
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, dUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        import { b } from './b.js';
         export { b } from './b.js';
         var a = {
           b: b
         };
         export { a as $a };`);
       assert.deepEqual(documents.get(dUrl)!.content, heredoc`
-        export * from './b.js';
-        `);
+        import { b } from './b.js';
+        export { b } from './b.js';
+        var d = {
+          b: b
+        };
+        export { d as $d };`);
     });
   });
 
