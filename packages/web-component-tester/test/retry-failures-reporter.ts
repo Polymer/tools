@@ -15,10 +15,9 @@ import * as Mocha from 'mocha';
 
 const retryTargets: string[] =
     JSON.parse(process.env['TEST_RETRY_TARGETS'] || '[]');
-const retryTargetMax =
-    parseInt(process.env['TEST_RETRY_TARGET_MAX'] + '', 10) || 0;
-const retryCount = parseInt(process.env['TEST_RETRY_COUNT'] + '', 10) || 0;
-const retryMax = parseInt(process.env['TEST_RETRY_MAX'] + '', 10) || 3;
+const retryTargetMax = parseInt(process.env['TEST_RETRY_TARGET_MAX'], 10) || 0;
+const retryCount = parseInt(process.env['TEST_RETRY_COUNT'], 10) || 0;
+const retryMax = parseInt(process.env['TEST_RETRY_MAX'], 10) || 3;
 
 /**
  * The `mocha` command-line *requires* the reporter module to export via:
