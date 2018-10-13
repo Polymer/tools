@@ -266,7 +266,7 @@ export class Es6Rewriter {
           rewriteObject(exportAllDeclaration, namedExportDeclaration);
         }
       }
-    })
+    });
   }
 
   /**
