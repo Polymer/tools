@@ -68,14 +68,15 @@ async function prepareBundleModule(
   const bundleSource = babel.program([]);
   const sourceAnalysis =
       await bundler.analyzer.analyze([...assignedBundle.bundle.files]);
-  for (const sourceUrl of [...assignedBundle.bundle.files].sort()) {
-    const moduleDocument = getAnalysisDocument(sourceAnalysis, sourceUrl);
+  for (const resolvedSourceUrl of [...assignedBundle.bundle.files].sort()) {
+    const moduleDocument =
+        getAnalysisDocument(sourceAnalysis, resolvedSourceUrl);
     const moduleExports = getModuleExportNames(moduleDocument);
     const starExportName =
-        getOrSetBundleModuleExportName(assignedBundle, sourceUrl, '*');
+        getOrSetBundleModuleExportName(assignedBundle, resolvedSourceUrl, '*');
     bundleSource.body.push(babel.importDeclaration(
         [babel.importNamespaceSpecifier(babel.identifier(starExportName))],
-        babel.stringLiteral(sourceUrl)));
+        babel.stringLiteral(resolvedSourceUrl)));
     if (moduleExports.size > 0) {
       bundleSource.body.push(babel.exportNamedDeclaration(
           undefined, [babel.exportSpecifier(
@@ -87,8 +88,8 @@ async function prepareBundleModule(
               (e) => babel.exportSpecifier(
                   babel.identifier(e),
                   babel.identifier(getOrSetBundleModuleExportName(
-                      assignedBundle, sourceUrl, e)))),
-          babel.stringLiteral(sourceUrl)));
+                      assignedBundle, resolvedSourceUrl, e)))),
+          babel.stringLiteral(resolvedSourceUrl)));
     }
   }
   const {code} = generate(bundleSource);
