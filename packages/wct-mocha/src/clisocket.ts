@@ -84,7 +84,7 @@ export default class CLISocket {
    * @param {string} event The name of the event to fire.
    * @param {*} data Additional data to pass with the event.
    */
-  emitEvent(event: string, data?: any) {
+  emitEvent(event: string, data?: {}) {
     this.socket.emit('client-event', {
       browserId: this.browserId,
       event: event,
@@ -98,7 +98,7 @@ export default class CLISocket {
    *
    * @param {function(*, CLISocket)} done Node-style callback.
    */
-  static init(done: (error?: any, socket?: CLISocket) => void) {
+  static init(done: (error?: {}, socket?: CLISocket) => void) {
     const browserId = util.getParam('cli_browser_id');
     if (!browserId) {
       return done();
@@ -108,7 +108,7 @@ export default class CLISocket {
       return done();
     }
 
-    util.loadScript(SOCKETIO_LIBRARY, (error: any) => {
+    util.loadScript(SOCKETIO_LIBRARY, (error: {}) => {
       if (error) {
         return done(error);
       }

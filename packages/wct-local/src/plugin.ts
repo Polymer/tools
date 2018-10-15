@@ -73,7 +73,7 @@ const plugin: wct.PluginInterface =
         // useful error if no browsers were configured.
         activeBrowsers.push.apply(activeBrowsers, expanded);
       };
-      wct.hookLate('configure', function(done: (err?: any) => void) {
+      wct.hookLate('configure', function(done: (err?: unknown) => void) {
         onConfigure().then(() => done(), (err) => done(err));
       });
 
@@ -93,7 +93,7 @@ const plugin: wct.PluginInterface =
         const port = await start(wct, pluginOptions.seleniumArgs);
         updatePort(eachCapabilities, port);
       };
-      wct.hook('prepare', function(done: (err?: any) => void) {
+      wct.hook('prepare', function(done: (err?: unknown) => void) {
         onPrepare().then(() => done(), (err) => done(err));
       });
 
@@ -105,11 +105,13 @@ const plugin: wct.PluginInterface =
           (def: wct.BrowserDef,
            data: {url: string},
            stats: wct.Stats,
-           browser: any /* TODO(rictic): what is browser here? */) => {
+           browser?: {
+             maximize: Function
+           } /* TODO(rictic): what is browser here? */) => {
             if (!browser) {
               return;
             }
-            browser.maximize(function(err: any) {
+            browser.maximize(function(err: unknown) {
               if (err) {
                 wct.emit('log:error', def.browserName + ' failed to maximize');
               } else {

@@ -19,19 +19,22 @@ export interface ParsedLine {
 }
 
 export function parse(stack: string) {
-  var rawLines = stack.split('\n');
+  const rawLines = stack.split('\n');
 
-  var stackyLines = compact(rawLines.map(parseStackyLine));
-  if (stackyLines.length === rawLines.length)
+  const stackyLines = compact(rawLines.map(parseStackyLine));
+  if (stackyLines.length === rawLines.length) {
     return stackyLines;
+  }
 
-  var v8Lines = compact(rawLines.map(parseV8Line));
-  if (v8Lines.length > 0)
+  const v8Lines = compact(rawLines.map(parseV8Line));
+  if (v8Lines.length > 0) {
     return v8Lines;
+  }
 
-  var geckoLines = compact(rawLines.map(parseGeckoLine));
-  if (geckoLines.length > 0)
+  const geckoLines = compact(rawLines.map(parseGeckoLine));
+  if (geckoLines.length > 0) {
     return geckoLines;
+  }
 
   throw new Error('Unknown stack format: ' + stack);
 }
@@ -40,9 +43,10 @@ export function parse(stack: string) {
 const GECKO_LINE = /^(?:([^@]*)@)?(.*?):(\d+)(?::(\d+))?$/;
 
 export function parseGeckoLine(line: string): ParsedLine {
-  var match = line.match(GECKO_LINE);
-  if (!match)
+  const match = line.match(GECKO_LINE);
+  if (!match) {
     return null;
+  }
   return {
     method: match[1] || '',
     location: match[2] || '',
@@ -57,15 +61,15 @@ const V8_OUTER2 = /^\s*at()() (\S+)$/;
 const V8_INNER = /^\(?([^\(]+):(\d+):(\d+)\)?$/;
 
 export function parseV8Line(line: string): ParsedLine {
-  var outer = line.match(V8_OUTER1) || line.match(V8_OUTER2);
+  const outer = line.match(V8_OUTER1) || line.match(V8_OUTER2);
   if (!outer) {
     return null;
   }
-  var inner = outer[3].match(V8_INNER);
+  const inner = outer[3].match(V8_INNER);
   if (!inner) {
     return null;
   }
-  var method = outer[2] || '';
+  let method = outer[2] || '';
   if (outer[1]) {
     method = 'eval at ' + method;
   }
@@ -80,9 +84,10 @@ export function parseV8Line(line: string): ParsedLine {
 const STACKY_LINE = /^\s*(.+) at (.+):(\d+):(\d+)$/;
 
 export function parseStackyLine(line: string): ParsedLine {
-  var match = line.match(STACKY_LINE);
-  if (!match)
+  const match = line.match(STACKY_LINE);
+  if (!match) {
     return null;
+  }
   return {
     method: match[1] || '',
     location: match[2] || '',
@@ -94,7 +99,7 @@ export function parseStackyLine(line: string): ParsedLine {
 // Helpers
 
 function compact<T>(array: Array<T>) {
-  var result: Array<T> = [];
+  const result: Array<T> = [];
   array.forEach((value) => value && result.push(value));
   return result;
 }

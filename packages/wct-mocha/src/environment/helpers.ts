@@ -25,7 +25,7 @@ const nativeRequestAnimationFrame = window.requestAnimationFrame;
  * @param {function()} callback
  * @param {function()} stepFn
  */
-export function safeStep(callback: (error?: any) => void, stepFn: () => void) {
+export function safeStep(callback: (error?: {}) => void, stepFn: () => void) {
   let err;
   try {
     stepFn();
@@ -52,7 +52,7 @@ export function testImmediate(name: string, testFn: Function) {
     return testImmediateAsync(name, testFn);
   }
 
-  let err: any;
+  let err: {};
   try {
     testFn();
   } catch (error) {
@@ -71,22 +71,24 @@ export function testImmediate(name: string, testFn: Function) {
  */
 export function testImmediateAsync(name: string, testFn: Function) {
   let testComplete = false;
-  let err: any;
+  let err: {};
 
   test(name, function(done) {
     const intervalId = nativeSetInterval(() => {
-      if (!testComplete)
+      if (!testComplete) {
         return;
+      }
       clearInterval(intervalId);
       done(err);
     }, 10);
   });
 
   try {
-    testFn((error: any) => {
-      if (error)
+    testFn((error: {}) => {
+      if (error) {
         err = error;
-      testComplete = true;
+        testComplete = true;
+      }
     });
   } catch (error) {
     err = error;
@@ -95,8 +97,8 @@ export function testImmediateAsync(name: string, testFn: Function) {
 }
 
 /**
- * Triggers a flush of any pending events, observations, etc and calls you back
- * after they have been processed.
+ * Triggers a flush of any pending events, observations, etc and calls you
+ * back after they have been processed.
  *
  * @param {function()} callback
  */
@@ -136,15 +138,16 @@ export function flush(callback: () => void) {
     scope.flush();
   }
 
-  // Ensure that we are creating a new _task_ to allow all active microtasks to
-  // finish (the code you're testing may be using endOfMicrotask, too).
+  // Ensure that we are creating a new _task_ to allow all active microtasks
+  // to finish (the code you're testing may be using endOfMicrotask, too).
   nativeSetTimeout(done, 0);
 }
 
 /**
  * Advances a single animation frame.
  *
- * Calls `flush`, `requestAnimationFrame`, `flush`, and `callback` sequentially
+ * Calls `flush`, `requestAnimationFrame`, `flush`, and `callback`
+ * sequentially
  * @param {function()} callback
  */
 export function animationFrameFlush(callback: () => void) {

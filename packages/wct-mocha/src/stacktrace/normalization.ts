@@ -44,17 +44,17 @@ export function normalize(
   }
 
   if (!prettyOptions || !prettyOptions.showColumns) {
-    for (var i = 0, line; line = parsedStack[i]; i++) {
+    for (let i = 0, line; line = parsedStack[i]; i++) {
       delete line.column;
     }
   }
 
-  var prettyStack = message;
+  let prettyStack = message;
   if (parsedStack.length > 0) {
     prettyStack = prettyStack + '\n' + pretty(parsedStack, prettyOptions);
   }
 
-  var cleanErr = Object.create(Error.prototype);
+  const cleanErr = Object.create(Error.prototype);
   cleanErr.message = message;
   cleanErr.stack = prettyStack;
   cleanErr.parsedStack = parsedStack;

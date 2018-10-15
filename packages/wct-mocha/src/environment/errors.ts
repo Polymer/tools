@@ -12,7 +12,7 @@ import * as config from '../config.js';
 
 // We may encounter errors during initialization (for example, syntax errors in
 // a test file). Hang onto those (and more) until we are ready to report them.
-export let globalErrors: any[] = [];
+export let globalErrors: {}[] = [];
 
 /**
  * Hook the environment to pick up on global errors.
