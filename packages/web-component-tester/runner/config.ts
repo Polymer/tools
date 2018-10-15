@@ -330,8 +330,10 @@ const ARG_CONFIG = {
   },
   wctPackageName: {
     full: 'wct-package-name',
-    help: 'NPM package name that contains web-component-tester\'s browser.js.' +
-        ' Defaults to wct-browser-legacy. This is only used in NPM projects.'
+    help: 'NPM package name that contains web-component-tester\'s browser ' +
+        'code.  By default, WCT will detect the installed package, but ' +
+        'this flag allows explicitly naming the package. ' +
+        'This is only to be used with --npm option.'
   },
 
   // Deprecated

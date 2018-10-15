@@ -97,7 +97,12 @@ export function webserver(wct: Context): void {
           resolveFrom(fromPath, options.wctPackageName + '/package.json'));
 
       if (npmPackageRootPath) {
-        browserScript = `${npmPackageRootPath}/browser.js`.slice(
+        const wctPackageScriptName =
+            ['web-component-tester', 'wct-browser-legacy'].includes(
+                options.wctPackageName) ?
+            'browser.js' :
+            `${options.wctPackageName}.js`;
+        browserScript = `${npmPackageRootPath}/${wctPackageScriptName}`.slice(
             npmPackageRootPath.length - options.wctPackageName.length);
       }
 
