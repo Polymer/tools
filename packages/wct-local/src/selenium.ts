@@ -17,11 +17,9 @@ import {promisify} from 'util';
 import * as wct from 'wct';
 import * as which from 'which';
 
-const SELENIUM_OVERRIDES: any =
+type SeleniumOpts = selenium.StartOpts&selenium.InstallOpts;
+const SELENIUM_OVERRIDES: SeleniumOpts =
     require('../package.json')['selenium-overrides'];
-
-
-type Args = string[];
 
 export async function checkSeleniumEnvironment(): Promise<void> {
   try {
@@ -71,7 +69,7 @@ async function seleniumStart(
 
   // See below.
   const log: string[] = [];
-  function onOutput(data: any) {
+  function onOutput(data: {toString: () => string}) {
     const message = data.toString();
     log.push(message);
     wct.emit('log:debug', message);
@@ -92,7 +90,7 @@ async function seleniumStart(
 
   if (opts.install) {
     try {
-      const options = SELENIUM_OVERRIDES || {};
+      const options: SeleniumOpts = SELENIUM_OVERRIDES || {} as SeleniumOpts;
       options.logger = onOutput;
       await promisify<selenium.InstallOpts>(selenium.install)(options);
     } catch (error) {
