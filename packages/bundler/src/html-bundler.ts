@@ -18,6 +18,7 @@ import {ASTNode, parseFragment, serialize, treeAdapters} from 'parse5';
 import {Document, FileRelativeUrl, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
 
 import {assertIsHtmlDocument, assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
+import {serialize as serializeEs6} from './babel-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
 import constants from './constants';
@@ -470,9 +471,14 @@ export class HtmlBundler {
                      parsedDocument: {parsedAsSourceType}
                    }) => isInline && parsedAsSourceType === 'module');
     for (const inlineModuleScript of inlineModuleScripts) {
+      const ast = clone(inlineModuleScript.parsedDocument.ast);
+      const importResolutions =
+          es6Rewriter.getEs6ImportResolutions(inlineModuleScript);
+      es6Rewriter.rewriteEs6SourceUrlsToResolved(ast, importResolutions);
+      const serializedCode = serializeEs6(ast).code;
       const {code} = await es6Rewriter.rollup(
           this.document.parsedDocument.baseUrl,
-          inlineModuleScript.parsedDocument.contents,
+          serializedCode,
           inlineModuleScript);
       if (inlineModuleScript.astNode &&
           inlineModuleScript.astNode.language === 'html') {

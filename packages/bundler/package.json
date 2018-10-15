@@ -18,10 +18,8 @@
     "polymer-bundler": "lib/bin/polymer-bundler.js"
   },
   "dependencies": {
-    "@types/acorn": "^4.0.3",
     "@types/babel-generator": "^6.25.1",
     "@types/babel-traverse": "^6.25.3",
-    "acorn-import-meta": "^0.2.1",
     "babel-generator": "^6.26.1",
     "babel-traverse": "^6.26.0",
     "babel-types": "^6.26.0",
@@ -34,7 +32,7 @@
     "mkdirp": "^0.5.1",
     "parse5": "^4.0.0",
     "polymer-analyzer": "^3.0.1",
-    "rollup": "^0.58.2",
+    "rollup": "^0.64.1",
     "source-map": "^0.5.6",
     "vscode-uri": "^1.0.1"
   },
