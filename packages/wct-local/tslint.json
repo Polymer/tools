@@ -1,6 +1,7 @@
 {
   "rules": {
     "class-name": true,
+    "curly": true,
     "indent": [
       true,
       "spaces"

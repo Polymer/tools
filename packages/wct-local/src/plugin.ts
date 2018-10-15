@@ -106,8 +106,9 @@ const plugin: wct.PluginInterface =
            data: {url: string},
            stats: wct.Stats,
            browser: any /* TODO(rictic): what is browser here? */) => {
-            if (!browser)
+            if (!browser) {
               return;
+            }
             browser.maximize(function(err: any) {
               if (err) {
                 wct.emit('log:error', def.browserName + ' failed to maximize');

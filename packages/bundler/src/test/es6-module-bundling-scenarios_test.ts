@@ -55,8 +55,8 @@ suite('Es6 Module Bundling', () => {
       const A = 'a';
       var a = {
         A: A,
-        B: B,
-        C: C
+        C: C,
+        B: B
       };
       export { a as $a, b as $b, c as $c, C, B, A, C as C$1, B as B$1, C as C$2, C as $cDefault };`);
   });
@@ -81,10 +81,14 @@ suite('Es6 Module Bundling', () => {
         import {b} from './b.js';
         export {b as bee};
       `,
+      'd.js': `
+        export * from './b.js';
+      `
     });
     const aUrl = analyzer.resolveUrl('a.js')!;
     const bUrl = analyzer.resolveUrl('b.js')!;
     const cUrl = analyzer.resolveUrl('c.js')!;
+    const dUrl = analyzer.resolveUrl('d.js')!;
 
     test('export specifier is in a bundle', async () => {
       const bundler =
@@ -92,6 +96,7 @@ suite('Es6 Module Bundling', () => {
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, cUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        import { b } from './shared_bundle_1.js';
         export { b } from './shared_bundle_1.js';
         var a = {
           b: b
@@ -102,13 +107,21 @@ suite('Es6 Module Bundling', () => {
     test('export specifier is not in a bundle', async () => {
       const bundler = new Bundler({analyzer, excludes: [bUrl]});
       const {documents} =
-          await bundler.bundle(await bundler.generateManifest([aUrl]));
+          await bundler.bundle(await bundler.generateManifest([aUrl, dUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        import { b } from './b.js';
         export { b } from './b.js';
         var a = {
           b: b
         };
         export { a as $a };`);
+      assert.deepEqual(documents.get(dUrl)!.content, heredoc`
+        import { b } from './b.js';
+        export { b } from './b.js';
+        var d = {
+          b: b
+        };
+        export { d as $d };`);
     });
   });
 
@@ -295,8 +308,7 @@ suite('Es6 Module Bundling', () => {
       const manifest = await bundler.generateManifest([indexUrl]);
       assert.deepEqual(
           [...manifest.bundles.keys()], [indexUrl, sharedBundleUrl]);
-      const {documents} =
-          await bundler.bundle(await bundler.generateManifest([indexUrl]));
+      const {documents} = await bundler.bundle(manifest);
 
       assert.deepEqual(documents.get(indexUrl)!.content, heredoc`
         <script type="module" src="shared_bundle_1.js"></script>
@@ -312,6 +324,50 @@ suite('Es6 Module Bundling', () => {
           a: a
         };
         export { a$1 as $a, b$1 as $b, a, b };`);
+    });
+
+    test('deduplicate static imports, not dynamic', async () => {
+      const analyzer = inMemoryAnalyzer({
+        'app.js': `
+          import './component-1.js';
+          import './component-1.js';
+          if (something()) {
+            import('./component-2.js');
+          }
+          if (somethingElse()) {
+            import('./component-2.js');
+          }
+        `,
+        'component-1.js': `
+          export const Component1 = 'component-1';
+        `,
+        'component-2.js': `
+          export const Component2 = 'component-2';
+        `,
+      });
+      const appUrl = analyzer.resolveUrl('app.js')!;
+      const com1Url = analyzer.resolveUrl('component-1.js')!;
+      const com2Url = analyzer.resolveUrl('component-2.js')!;
+      const bundler =
+          new Bundler({analyzer, strategy: generateShellMergeStrategy(appUrl)});
+      const manifest = await bundler.generateManifest([appUrl]);
+      assert.deepEqual([...manifest.bundles.keys()], [com2Url, appUrl]);
+      const {documents} = await bundler.bundle(manifest);
+      assert.deepEqual(documents.get(appUrl)!.content, heredoc`
+        const Component1 = 'component-1';
+        var component1 = {
+          Component1: Component1
+        };
+
+        if (something()) {
+          import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        }
+
+        if (somethingElse()) {
+          import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        }
+
+        export { component1 as $component$1, Component1 };`);
     });
   });
 });

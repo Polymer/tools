@@ -13,6 +13,7 @@
  */
 
 import * as GitHubApi from '@octokit/rest';
+import {AnyResponse} from '@octokit/rest';
 import {batchProcess, githubConcurrencyPreset} from './util/batch-process';
 
 /**
@@ -50,7 +51,7 @@ export interface GitHubRepo extends GitHubRepoData {
 /**
  * Returns true if the response is a redirect to another repo
  */
-function isSuccessResponse(response: any): boolean {
+function isSuccessResponse(response: AnyResponse): boolean {
   return !!(
       response.meta && response.meta.status &&
       response.meta.status.match(/^200\b/));
@@ -59,7 +60,7 @@ function isSuccessResponse(response: any): boolean {
 /**
  * Returns true if the response is a redirect to another repo
  */
-function isRedirectResponse(response: any): boolean {
+function isRedirectResponse(response: AnyResponse): boolean {
   return !!(
       response.meta && response.meta.status &&
       response.meta.status.match(/^301\b/));

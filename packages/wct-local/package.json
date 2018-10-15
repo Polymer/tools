@@ -14,9 +14,9 @@
   "main": "lib/plugin.js",
   "typings": "lib/plugin.d.ts",
   "scripts": {
-    "lint": "gulp lint",
-    "build": "tsc",
+    "build": "tsc && npm run lint",
     "format": "find src scripts -name \"*.[jt]s\" | xargs clang-format --style=file -i",
+    "lint": "tslint -p .",
     "prepublishOnly": "tsc",
     "postinstall": "node scripts/postinstall.js"
   },

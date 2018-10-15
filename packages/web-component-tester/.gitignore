@@ -8,6 +8,9 @@ typings/
 runner/*.js
 runner/*.d.ts
 runner/*.js.map
+test/*.js
+test/*.d.ts
+test/*.js.map
 test/unit/*.js
 test/unit/*.d.ts
 test/unit/*.js.map
