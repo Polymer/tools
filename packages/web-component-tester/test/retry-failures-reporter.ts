@@ -78,6 +78,7 @@ module.exports = class RetryFailuresReporter extends Mocha.reporters.Spec {
           fails.map((t) => ' - ' + t).join('\n')));
 
       const retryResults = spawnSync(process.argv0, args, {
+        cwd: process.cwd(),
         env: Object.assign({}, process.env, {
           'TEST_RETRY_TARGETS': JSON.stringify(fails),
           'TEST_RETRY_COUNT': `${retryCount + 1}`,
