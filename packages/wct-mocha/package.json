@@ -29,7 +29,7 @@
   "bugs": {
     "url": "https://github.com/Polymer/tools/issues"
   },
-  "homepage": "https://github.com/Polymer/tools#readme",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/web-component-tester",
   "repository": "github:Polymer/tools",
   "dependencies": {},
   "devDependencies": {
