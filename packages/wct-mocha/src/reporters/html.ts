@@ -19,7 +19,7 @@ export default function HTML(runner: Mocha.IRunner) {
   output.id = 'mocha';
   document.body.appendChild(output);
 
-  runner.on('suite', function(_test: any) {
+  runner.on('suite', function(_test: {}) {
     this.total = runner.total;
   }.bind(this));
 

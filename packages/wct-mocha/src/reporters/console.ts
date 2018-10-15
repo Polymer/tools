@@ -98,7 +98,7 @@ export default class Console {
       logGroup(test.title, 'pending');
     }.bind(this));
 
-    runner.on('fail', function(_test: Mocha.ITest, error: any) {
+    runner.on('fail', function(_test: Mocha.ITest, error: Error) {
       logException(error);
     }.bind(this));
 

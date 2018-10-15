@@ -74,7 +74,7 @@ export function loadJsSuites(
 export function runSuites(
     reporter: MultiReporter,
     childSuites: string[],
-    done: (error?: any) => void) {
+    done: (error?: {}) => void) {
   util.debug('runSuites');
 
   const suiteRunners: Array<(next: () => void) => void> = [
@@ -89,8 +89,9 @@ export function runSuites(
       reporter.emit('childRunner start', childRunner);
       childRunner.run((error) => {
         reporter.emit('childRunner end', childRunner);
-        if (error)
+        if (error) {
           reporter.emitOutOfBandTest(file, error);
+        }
         next();
       });
     });
@@ -126,7 +127,7 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
 
   // We can't use `mocha.run` because it bashes over grep, invert, and friends.
   // See https://github.com/visionmedia/mocha/blob/master/support/tail.js#L137
-  const runner = Mocha.prototype.run.call(mocha, function(_error: any) {
+  const runner = Mocha.prototype.run.call(mocha, function(_error: {}) {
     if (document.getElementById('mocha')) {
       Mocha.utils.highlightTags('code');
     }
@@ -140,10 +141,12 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
   if (navigator.userAgent.match(/chrome/i)) {
     window.onerror = null;
     window.addEventListener('error', function(event) {
-      if (!event.error)
+      if (!event.error) {
         return;
-      if (event.error.ignore)
+      }
+      if (event.error.ignore) {
         return;
+      }
       if (window.uncaughtErrorFilter && window.uncaughtErrorFilter(event)) {
         event.preventDefault();
         return;

@@ -8,7 +8,7 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-import {normalize} from '../stacktrace/normalization.js';
+import {ErrorLikeThing, normalize} from '../stacktrace/normalization.js';
 import * as util from '../util.js';
 
 const STACKY_CONFIG = {
@@ -48,7 +48,7 @@ export interface ReporterFactory {
 }
 
 interface ExtendedTest extends Mocha.ITest {
-  err: any;
+  err: {};
 }
 
 /**
@@ -61,7 +61,7 @@ export default class MultiReporter implements Reporter {
   total: number;
   private currentRunner: null|Mocha.IRunner;
   /** Arguments that would be called on emit(). */
-  private pendingEvents: Array<any[]>;
+  private pendingEvents: Array<{}[]>;
   private complete: boolean|undefined;
 
   /**
@@ -135,7 +135,7 @@ export default class MultiReporter implements Reporter {
    *     estimate of `numSuites`.
    */
   emitOutOfBandTest(
-      title: string, error?: any, suiteTitle?: string, estimated?: boolean) {
+      title: string, error?: {}, suiteTitle?: string, estimated?: boolean) {
     util.debug('MultiReporter#emitOutOfBandTest(', arguments, ')');
     const root: Mocha.ISuite =
         new Mocha.Suite(suiteTitle || '') as {} as Mocha.ISuite;
@@ -190,7 +190,7 @@ export default class MultiReporter implements Reporter {
    * @param {...*} var_args Any additional data passed as part of the event.
    */
   private proxyEvent(
-      eventName: string, runner: Mocha.IRunner, ..._args: any[]) {
+      eventName: string, runner: Mocha.IRunner, ..._extra: unknown[]) {
     const extraArgs = Array.prototype.slice.call(arguments, 2);
     if (this.complete) {
       console.warn(
@@ -232,18 +232,20 @@ export default class MultiReporter implements Reporter {
    * @param extraArgs
    */
   private cleanEvent(
-      eventName: string, _runner: Mocha.IRunner, extraArgs: any[]) {
+      eventName: string, _runner: Mocha.IRunner, extraArgs: unknown[]) {
     // Suite hierarchy
     if (extraArgs[0]) {
-      extraArgs[0] = this.showRootSuite(extraArgs[0]);
+      extraArgs[0] = this.showRootSuite(extraArgs[0] as Mocha.IRunnable);
     }
 
     // Normalize errors
     if (eventName === 'fail') {
-      extraArgs[1] = normalize(extraArgs[1], STACKY_CONFIG);
+      extraArgs[1] = normalize(extraArgs[1] as ErrorLikeThing, STACKY_CONFIG);
     }
-    if (extraArgs[0] && extraArgs[0].err) {
-      extraArgs[0].err = normalize(extraArgs[0].err, STACKY_CONFIG);
+
+    const extra0 = extraArgs[0] as {err: ErrorLikeThing};
+    if (extra0 && extra0.err) {
+      extra0.err = normalize(extra0.err, STACKY_CONFIG);
     }
   }
 

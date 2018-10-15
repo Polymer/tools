@@ -58,7 +58,7 @@ export function injectMocha(Mocha: MochaStatic) {
       MultiReporter, Object.getPrototypeOf(Mocha.Runner.prototype));
 }
 
-function _injectPrototype(klass: any, prototype: any) {
+function _injectPrototype(klass: Function, prototype: {}) {
   const newPrototype = Object.create(prototype);
   // Only support
   Object.keys(klass.prototype).forEach((key) => {

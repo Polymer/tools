@@ -87,10 +87,11 @@ export function pretty(
 }
 
 function clean(lines: ParsedLine[], options: FormattingOptions): ParsedLine[] {
-  var result = [];
-  for (var i = 0, line; line = lines[i]; i++) {
-    if (options.filter(line))
+  const result = [];
+  for (let i = 0, line; line = lines[i]; i++) {
+    if (options.filter(line)) {
       continue;
+    }
     line.location = cleanLocation(line.location, options);
     line.important = isImportant(line, options);
     result.push(line);
@@ -107,9 +108,9 @@ function passthrough(text: string): string {
 
 function mergeDefaults(
     options: FormattingOptions, defaults: FormattingOptions) {
-  var result = Object.create(defaults);
+  const result = Object.create(defaults);
   Object.keys(options).forEach((key) => {
-    var value = options[key];
+    let value = options[key];
     if (typeof value === 'object' && !Array.isArray(value)) {
       value = mergeDefaults(value, defaults[key]);
     }
@@ -119,8 +120,8 @@ function mergeDefaults(
 }
 
 function methodPadding(lines: ParsedLine[], options: FormattingOptions) {
-  var size = options.methodPlaceholder.length;
-  for (var i = 0, line; line = lines[i]; i++) {
+  let size = options.methodPlaceholder.length;
+  for (let i = 0, line; line = lines[i]; i++) {
     size =
         Math.min(options.maxMethodPadding, Math.max(size, line.method.length));
   }
@@ -128,8 +129,8 @@ function methodPadding(lines: ParsedLine[], options: FormattingOptions) {
 }
 
 function padding(length: number) {
-  var result = '';
-  for (var i = 0; i < length; i++) {
+  let result = '';
+  for (let i = 0; i < length; i++) {
     result = result + ' ';
   }
   return result;
@@ -137,7 +138,7 @@ function padding(length: number) {
 
 function cleanLocation(location: string, options: FormattingOptions) {
   if (options.locationStrip) {
-    for (var i = 0, matcher; matcher = options.locationStrip[i]; i++) {
+    for (let i = 0, matcher; matcher = options.locationStrip[i]; i++) {
       location = location.replace(matcher, '');
     }
   }
@@ -147,9 +148,10 @@ function cleanLocation(location: string, options: FormattingOptions) {
 
 function isImportant(line: ParsedLine, options: FormattingOptions) {
   if (options.unimportantLocation) {
-    for (var i = 0, matcher; matcher = options.unimportantLocation[i]; i++) {
-      if (line.location.match(matcher))
+    for (let i = 0, matcher; matcher = options.unimportantLocation[i]; i++) {
+      if (line.location.match(matcher)) {
         return false;
+      }
     }
   }
 

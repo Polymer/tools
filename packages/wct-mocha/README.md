@@ -20,12 +20,14 @@ $ npm install --save-dev wct-mocha
 
 ```bash
 $ npm install --global web-component-tester
+$ npm install --global polymer-cli
 ```
 
-## Run `wct`
+## Run `wct` or `polymer test`
 
 ```bash
-$ wct --wct-package-name wct-mocha
+$ wct --npm
+$ polymer test --npm
 ```
 
 ## `.html` Suites
@@ -38,16 +40,18 @@ Your test suites can be `.html` documents. For example,
 <html>
 <head>
   <meta charset="utf-8">
+  <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
   <script src="../node_modules/mocha/mocha.js"></script>
   <script src="../node_modules/chai/chai.js"></script>
-  <script src="../node_modules/wct-mocha/browser.js"></script>
+  <script src="../node_modules/@polymer/test-fixture/test-fixture.js"></script>
+  <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
 </head>
 <body>
   <awesome-element id="fixture"></awesome-element>
   <script type="module">
     import {AwesomeElement} from '../src/awesome-element.js';
-    suite('<awesome-element>', function() {
-      test('is awesomest', function() {
+    suite('<awesome-element>', () => {
+      test('is awesomest', () => {
         const element = document.getElementById('fixture');
         chai.assert.instanceOf(AwesomeElement);
         chai.assert.isTrue(element.awesomest);
@@ -64,8 +68,8 @@ Alternatively, you can write tests in separate `.js` sources. For example,
 `test/awesome-tests.js`:
 
 ```js
-suite('AwesomeLib', function() {
-  test('is awesome', function() {
+suite('AwesomeLib', () => {
+  test('is awesome', () => {
     assert.isTrue(AwesomeLib.awesome);
   });
 });
@@ -78,8 +82,8 @@ suite('AwesomeLib', function() {
 If you prefer not to use WCT's command line tool, you can also run WCT tests
 directly in a browser via a web server of your choosing.
 
-Make sure that WCT's `browser.js` is accessible by your web server, and have
-your tests load `browser.js`.
+Make sure that the `wct-mocha/wct-mocha.js` script is accessible by your web
+server, and have your tests load it after loading `mocha/mocha.js`.
 
 #### Nested Suites
 
@@ -91,8 +95,9 @@ any desired tests:
 <html>
   <head>
     <meta charset="utf-8">
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../node_modules/mocha/mocha.js"></script>
-    <script src="../node_modules/wct-mocha/browser.js"></script>
+    <script src="../node_modules/wct-mocha/wct-mocha.js"></script>
   </head>
   <body>
     <script>
@@ -105,8 +110,8 @@ any desired tests:
 </html>
 ```
 
-_When you use `wct` on the command line, it is generating an index like this for
-you based on the suites you ask it to load._
+_When you use `wct` or `polymer test` on the command line, it is generating an
+index like this for you based on the suites you ask it to load._
 
 
 
@@ -114,10 +119,19 @@ you based on the suites you ask it to load._
 
 ## Polymer
 
-By default, WCT will defer tests until `WebComponentsReady` has fired. This
-saves you from having to wait for elements to upgrade and all that yourself.
+By default, WCT will defer tests until the `WebComponentsReady` event has been
+emitted by `@webcomponents/webcomponents-loader.js` or one of its polyfill
+bundles.  This saves you from having to wait for elements to upgrade and all
+that yourself.
 
-If you need to test something that occurs before that event, the [`testImmediate` helper](https://github.com/Polymer/web-component-tester/blob/master/browser/environment/helpers.js#L29-41) can be used. Or, if you just want tests to run as soon as possible, you can disable the delay by setting `WCT.waitForFrameworks = false` (though, they are still async due to Mocha).
+If you need to test something that occurs before that event, the 
+[`testImmediate` helper](https://github.com/Polymer/web-component-tester/blob/master/browser/environment/helpers.js#L29-41) 
+can be used.
+
+Alternately, if you are not using the `@webcomponents/webcomponentjs` polyfills
+or loader or otherwise simply want tests to run as soon as possible, you can
+disable this delay by setting `WCT.waitForFrameworks = false` (though, they are
+still async due to Mocha).
 
 
 ## Mocha
@@ -132,11 +146,12 @@ you. Just write your tests, and you're set.
 If you would like to have WCT load libraries on your behalf, you can define a
 list of scripts loaded. There are two ways of doing this:
 
-Inside your test code (before `wct-mocha/browser.js` is loaded):
+Inside your test code (before `wct-mocha/wct-mocha.js` is loaded):
 ```html
 <script>
   WCT = {
     environmentScripts: [
+      '../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js',
       '../node_modules/mocha/mocha.js',
       '../node_modules/chai/chai.js',
       '../node_modules/@polymer/test-fixture/test-fixture.js'

@@ -32,7 +32,7 @@ export default class ChildRunner {
   private container?: HTMLDivElement;
   private eventListenersToRemoveOnClean: EventListenerDescriptor[] = [];
   private iframe?: HTMLIFrameElement;
-  private onRunComplete: (error?: any) => void;
+  private onRunComplete: (error?: {}) => void;
   private share: SharedState;
   private state: 'initializing'|'loading'|'complete';
   private timeoutId?: number;
@@ -120,7 +120,7 @@ export default class ChildRunner {
    *
    * @param {function} done Node-style callback.
    */
-  run(done: (error?: any) => void) {
+  run(done: (error?: {}) => void) {
     util.debug('ChildRunner#run', this.url);
 
     this.state = 'loading';
@@ -162,7 +162,7 @@ export default class ChildRunner {
    *
    * @param {*} error The error that occured, if any.
    */
-  loaded(error?: any) {
+  loaded(error?: {}) {
     util.debug('ChildRunner#loaded', this.url, error);
 
     if (this.iframe.contentWindow == null && error) {
@@ -188,7 +188,7 @@ export default class ChildRunner {
    *
    * @param {*} error The error that occured, if any.
    */
-  ready(error?: any) {
+  ready(error?: {}) {
     util.debug('ChildRunner#ready', this.url, error);
     if (this.timeoutId) {
       clearTimeout(this.timeoutId);
@@ -222,7 +222,7 @@ export default class ChildRunner {
     }
   }
 
-  signalRunComplete(error?: any) {
+  signalRunComplete(error?: {}) {
     if (this.onRunComplete) {
       this.state = 'complete';
       this.onRunComplete(error);

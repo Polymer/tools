@@ -50,7 +50,7 @@ export function pluralizedStat(count: number, kind: string): string {
  * @param {string} path The URI of the script to load.
  * @param {function} done
  */
-export function loadScript(path: string, done: (error?: any) => void) {
+export function loadScript(path: string, done: (error?: {}) => void) {
   const script = document.createElement('script');
   script.src = path;
   if (done) {
@@ -79,7 +79,7 @@ export function loadStyle(path: string, done?: () => void) {
  * @param {...*} var_args Logs values to the console when the `debug`
  *     configuration option is true.
  */
-export function debug(...var_args: any[]) {
+export function debug(...var_args: unknown[]) {
   if (!config.get('verbose')) {
     return;
   }
@@ -109,10 +109,12 @@ export function parseUrl(url: string) {
  * @return {string}
  */
 export function expandUrl(url: string, base: string) {
-  if (!base)
+  if (!base) {
     return url;
-  if (url.match(/^(\/|https?:\/\/)/))
+  }
+  if (url.match(/^(\/|https?:\/\/)/)) {
     return url;
+  }
   if (base.substr(base.length - 1) !== '/') {
     base = base + '/';
   }
@@ -136,8 +138,9 @@ export function getParams(query?: string): Params {
   if (query.slice(-1) === '/') {
     query = query.substring(0, query.length - 1);
   }
-  if (query === '')
+  if (query === '') {
     return {};
+  }
 
   const result: {[param: string]: string[]} = {};
   query.split('&').forEach((part) => {
@@ -233,13 +236,13 @@ export type Runner = (f: Function) => void;
  * @param {?function(*)} done Callback that should be triggered once all runners
  *     have completed, or encountered an error.
  */
-export function parallel(runners: Runner[], done: (error?: any) => void): void;
+export function parallel(runners: Runner[], done: (error?: {}) => void): void;
 export function parallel(
-    runners: Runner[], limit: number, done: (error?: any) => void): void;
+    runners: Runner[], limit: number, done: (error?: {}) => void): void;
 export function parallel(
     runners: Runner[],
-    maybeLimit: number|((error?: any) => void),
-    done?: (error?: any) => void) {
+    maybeLimit: number|((error?: {}) => void),
+    done?: (error?: {}) => void) {
   let limit: number;
   if (typeof maybeLimit !== 'number') {
     done = maybeLimit;
@@ -256,7 +259,7 @@ export function parallel(
   let numActive = 0;
   let numDone = 0;
 
-  function runnerDone(error: any) {
+  function runnerDone(error?: {}) {
     if (called) {
       return;
     }
@@ -292,7 +295,7 @@ export function parallel(
  */
 export function scriptPrefix(filename: string): string|null {
   const scripts =
-      document.querySelectorAll('script[src*="' + filename + '"]') as
+      document.querySelectorAll('script[src*="/' + filename + '"]') as
       NodeListOf<HTMLScriptElement>;
   if (scripts.length !== 1) {
     return null;
