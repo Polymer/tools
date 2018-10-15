@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "target": "es5",
+    "strict": false,
+    "isolatedModules": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "noImplicitThis": false,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "lib",
+    "lib": [
+      "dom",
+      "es2017"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "custom_typings/*.d.ts",
+    "src/*.ts",
+    "src/**/*.ts"
+  ]
+}
