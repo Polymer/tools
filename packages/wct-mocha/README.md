@@ -50,8 +50,8 @@ Your test suites can be `.html` documents. For example,
   <awesome-element id="fixture"></awesome-element>
   <script type="module">
     import {AwesomeElement} from '../src/awesome-element.js';
-    suite('<awesome-element>', function() {
-      test('is awesomest', function() {
+    suite('<awesome-element>', () => {
+      test('is awesomest', () => {
         const element = document.getElementById('fixture');
         chai.assert.instanceOf(AwesomeElement);
         chai.assert.isTrue(element.awesomest);
@@ -68,8 +68,8 @@ Alternatively, you can write tests in separate `.js` sources. For example,
 `test/awesome-tests.js`:
 
 ```js
-suite('AwesomeLib', function() {
-  test('is awesome', function() {
+suite('AwesomeLib', () => {
+  test('is awesome', () => {
     assert.isTrue(AwesomeLib.awesome);
   });
 });

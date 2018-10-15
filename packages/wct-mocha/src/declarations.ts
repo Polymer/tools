@@ -63,7 +63,7 @@ declare global {
   }
 
   interface Element {
-    isConnected?: boolean;
+    isConnected: boolean;
   }
 
   interface Mocha {

@@ -45,10 +45,3 @@ interface Window {
    */
   uncaughtErrorFilter?(errorEvent: ErrorEvent): boolean;
 }
-
-interface HTMLElement {
-  isConnected: boolean;
-}
-interface SVGElement {
-  isConnected: boolean;
-}
