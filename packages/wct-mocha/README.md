@@ -144,7 +144,7 @@ you. Just write your tests, and you're set.
 ## Custom Environments
 
 If you would like to have WCT load libraries on your behalf, you can define a
-list of scripts loaded. There are two ways of doing this:
+list of scripts to load. There are two ways of doing this:
 
 Inside your test code (before `wct-mocha/wct-mocha.js` is loaded):
 ```html
