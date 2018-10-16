@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
  * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
@@ -127,7 +127,7 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
 
   // We can't use `mocha.run` because it bashes over grep, invert, and friends.
   // See https://github.com/visionmedia/mocha/blob/master/support/tail.js#L137
-  const runner = Mocha.prototype.run.call(mocha, function(_error: {}) {
+  const runner = Mocha.prototype.run.call(mocha, (_error: {}) => {
     if (document.getElementById('mocha')) {
       Mocha.utils.highlightTags('code');
     }
@@ -140,7 +140,7 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
   // TODO(nevir): Can we expand support to other browsers?
   if (navigator.userAgent.match(/chrome/i)) {
     window.onerror = null;
-    window.addEventListener('error', function(event) {
+    window.addEventListener('error', (event) => {
       if (!event.error) {
         return;
       }
@@ -155,7 +155,7 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
     });
   } else {
     window.onerror = null;
-    window.addEventListener('error', function(event) {
+    window.addEventListener('error', (event) => {
       if (window.uncaughtErrorFilter && window.uncaughtErrorFilter(event)) {
         event.preventDefault();
         return;

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
  * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
@@ -76,36 +76,17 @@ export default class Console {
   constructor(runner: Mocha.IRunner) {
     Mocha.reporters.Base.call(this, runner);
 
-    runner.on('suite', function(suite: Mocha.ISuite) {
-      if (suite.root) {
-        return;
-      }
-      logGroup(suite.title, 'suite');
-    }.bind(this));
-
-    runner.on('suite end', function(suite: Mocha.ISuite) {
-      if (suite.root) {
-        return;
-      }
-      logGroupEnd();
-    }.bind(this));
-
-    runner.on('test', function(test: Mocha.ITest) {
-      logGroup(test.title, 'test');
-    }.bind(this));
-
-    runner.on('pending', function(test: Mocha.ITest) {
-      logGroup(test.title, 'pending');
-    }.bind(this));
-
-    runner.on('fail', function(_test: Mocha.ITest, error: Error) {
-      logException(error);
-    }.bind(this));
-
-    runner.on('test end', function(_test: Mocha.ITest) {
-      logGroupEnd();
-    }.bind(this));
-
+    runner.on(
+        'suite',
+        (suite: Mocha.ISuite) => suite.root && logGroup(suite.title, 'suite'));
+    runner.on(
+        'suite end', (suite: Mocha.ISuite) => suite.root && logGroupEnd());
+    runner.on('test', (test: Mocha.ITest) => logGroup(test.title, 'test'));
+    runner.on(
+        'pending', (test: Mocha.ITest) => logGroup(test.title, 'pending'));
+    runner.on(
+        'fail', (_test: Mocha.ITest, error: Error) => logException(error));
+    runner.on('test end', (_test: Mocha.ITest) => logGroupEnd());
     runner.on('end', this.logSummary.bind(this));
   }
 

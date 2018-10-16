@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
  * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
@@ -12,7 +12,7 @@ import ChildRunner from '../childrunner.js';
 
 // polymer-test-tools (and Polymer/tools) support HTML tests where each file is
 // expected to call `done()`, which posts a message to the parent window.
-window.addEventListener('message', function(event) {
+window.addEventListener('message', (event) => {
   if (!event.data || (event.data !== 'ok' && !event.data.error)) {
     return;
   }
@@ -34,10 +34,10 @@ window.addEventListener('message', function(event) {
 
 // Attempt to ensure that we complete a test suite if it is interrupted by a
 // document unload.
-window.addEventListener('unload', function(_event: BeforeUnloadEvent) {
+window.addEventListener('unload', (_event: BeforeUnloadEvent) => {
   // Mocha's hook queue is asynchronous; but we want synchronous behavior if
   // we've gotten to the point of unloading the document.
-  Mocha.Runner['immediately'] = function(callback: () => void) {
+  Mocha.Runner['immediately'] = (callback: () => void) => {
     callback();
   };
 });

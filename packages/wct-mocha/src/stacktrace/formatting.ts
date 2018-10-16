@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  *
  * This code may only be used under the BSD style license found at
  * polymer.github.io/LICENSE.txt The complete set of authors may be found at
@@ -45,9 +45,7 @@ export const defaults: FormattingOptions = {
   methodPlaceholder: '<unknown>',
   locationStrip: [],
   unimportantLocation: [],
-  filter: function() {
-    return false;
-  },
+  filter: () => false,
   styles: {
     method: passthrough,
     location: passthrough,

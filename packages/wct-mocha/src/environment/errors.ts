@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
  * This code may only be used under the BSD style license found at
  * http://polymer.github.io/LICENSE.txt The complete set of authors may be found
  * at http://polymer.github.io/AUTHORS.txt The complete set of contributors may
@@ -18,9 +18,7 @@ export let globalErrors: {}[] = [];
  * Hook the environment to pick up on global errors.
  */
 export function listenForErrors() {
-  window.addEventListener('error', function(event) {
-    globalErrors.push(event.error);
-  });
+  window.addEventListener('error', (event) => globalErrors.push(event.error));
 
   // Also, we treat `console.error` as a test failure. Unless you prefer not.
   const origConsole = console;
