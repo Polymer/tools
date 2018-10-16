@@ -106,11 +106,11 @@ suite('static dependencies', () => {
     suiteSetup(() => {
       base = document.createElement('base');
       base.href = '/components/@polymer/esm-amd-loader-test/';
-      document.head.appendChild(base);
+      document.head!.appendChild(base);
     });
 
     suiteTeardown(() => {
-      document.head.removeChild(base);
+      document.head!.removeChild(base);
     });
 
     test('loads relative path url', (done) => {
@@ -357,11 +357,11 @@ suite('meta.url', () => {
       base = document.createElement('base');
       // Note that fragments are included in import.meta.url.
       base.href = 'http://example.com/?foo#bar';
-      document.head.appendChild(base);
+      document.head!.appendChild(base);
     });
 
     suiteTeardown(() => {
-      document.head.removeChild(base);
+      document.head!.removeChild(base);
     });
 
     test('top-level HTML document', (done) => {
@@ -452,7 +452,7 @@ suite('html imports', () => {
     const link = document.createElement('link');
     link.rel = 'import';
     link.href = href;
-    document.head.appendChild(link);
+    document.head!.appendChild(link);
   }
 
   function testImport(href: string, expectedOrder: string[], done: () => void) {
