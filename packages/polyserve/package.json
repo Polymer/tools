@@ -1,6 +1,6 @@
 {
   "name": "polyserve",
-  "version": "0.27.12",
+  "version": "0.27.13",
   "description": "A simple dev server for bower components",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/polyserve",
   "repository": "github:Polymer/tools",
@@ -54,7 +54,7 @@
     "mz": "^2.4.0",
     "opn": "^3.0.2",
     "pem": "^1.8.3",
-    "polymer-build": "^3.0.3",
+    "polymer-build": "^3.1.0",
     "polymer-project-config": "^4.0.0",
     "requirejs": "^2.3.4",
     "resolve": "^1.5.0",

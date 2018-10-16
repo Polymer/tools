@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Fix issue with multiple dynamic imports of the same fragment.  https://github.com/Polymer/tools/issues/568
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## 4.0.3 - 2018-10-15
+* Fix issue with multiple dynamic imports of the same fragment.  https://github.com/Polymer/tools/issues/568
 
 ## 4.0.2 - 2018-06-28
 * Fix NPM audit warnings.
