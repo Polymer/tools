@@ -8,9 +8,7 @@
  * Google as part of the polymer project is also subject to an additional IP
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
-/**
- * This file is the entry point into `web-component-tester`'s browser client.
- */
+
 // Registers a bunch of globals:
 import './environment/helpers.js';
 
