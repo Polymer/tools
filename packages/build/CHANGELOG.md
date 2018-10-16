@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Added `wct-mocha` to the set of recognized WCT client-side packages in `htmlTransform` when using [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader). 
+<!-- Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.1.0] - 2018-10-15
+* Added `wct-mocha` to the set of recognized WCT client-side packages in `htmlTransform` when using [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader).
 
 ## [3.0.4] - 2018-06-28
 * Fix NPM audit warnings.

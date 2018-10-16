@@ -197,7 +197,7 @@ function load(module: ModuleG<StateEnum.Initialized>):
    */
   function removeScript() {
     try {
-      document.head.removeChild(script);
+      document.head!.removeChild(script);
     } catch { /* Something else removed the script. We don't care. */
     }
   }
@@ -222,7 +222,7 @@ function load(module: ModuleG<StateEnum.Initialized>):
     removeScript();
   };
 
-  document.head.appendChild(script);
+  document.head!.appendChild(script);
 
   return mutatedModule;
 }
@@ -587,7 +587,7 @@ function getDocumentUrl() {
     // On chrome's native implementation it's not possible to get a direct
     // reference to the link element, create an anchor and let the browser
     // resolve the url.
-    const a = currentScript.ownerDocument.createElement('a');
+    const a = currentScript.ownerDocument!.createElement('a');
     a.href = '';
     return a.href;
   }

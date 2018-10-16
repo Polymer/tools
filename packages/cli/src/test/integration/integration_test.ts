@@ -76,8 +76,8 @@ async function requestAnimationFrame(page: puppeteer.Page) {
  * ready.
  */
 async function gotoOrDie(page: puppeteer.Page, url: string) {
-  let error: string|undefined;
-  const handler = (e: string) => error = error || e;
+  let error: Error|undefined;
+  const handler = (e: Error) => error = error || e;
   // Grab the first page error, if any.
   page.on('pageerror', handler);
   await page.goto(url);
@@ -497,7 +497,7 @@ suite('polymer shop', function() {
         `this.customElements.get('shop-cart') !== undefined`);
   }
 
-  let error: string|undefined;
+  let error: Error|undefined;
   setup(async () => {
     error = undefined;
   });

@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## v1.9.0-pre.1 [10-15-2018]
 * Fix an issue where we were passing lint rule help text through chalk
   with unescaped chalk-specific syntax, causing chalk parsing errors.
 

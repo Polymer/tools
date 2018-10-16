@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+<!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
+
+## v2.2.0 [10-15-2018]
 - Use Github API Pagination to traverse pages
 
 ## v2.1.0 [01-10-2018]

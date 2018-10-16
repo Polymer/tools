@@ -89,7 +89,7 @@ module.exports = class RetryFailuresReporter extends Mocha.reporters.Spec {
       process.exit(retryResults.status);
     });
   }
-}
+};
 
 /**
  * Standard output block to help call out these interstitial messages amidst
