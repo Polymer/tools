@@ -6,8 +6,7 @@
 
 You get a streamlined browser-based testing environment, designed to work with [web-component-tester](https://github.com/Polymer/tools/tree/master/packages/web-component-tester) or on its own.
 
-
-# Getting Started
+ # Getting Started
 
 ## Install mocha and wct-mocha as devDependencies
 
@@ -77,15 +76,16 @@ suite('AwesomeLib', () => {
 
 ## Special Features
 
-### Web Server
+### Use any web server
 
 If you prefer not to use WCT's command line tool, you can also run WCT tests
-directly in a browser via a web server of your choosing.
+directly in a browser via a web server of your choosing and still make use of
+all of its features.
 
 Make sure that the `wct-mocha/wct-mocha.js` script is accessible by your web
 server, and have your tests load it after loading `mocha/mocha.js`.
 
-#### Nested Suites
+### Nested Suites
 
 To help support this case, you can also directly define an index that will load
 any desired tests:
@@ -113,11 +113,7 @@ any desired tests:
 _When you use `wct` or `polymer test` on the command line, it is generating an
 index like this for you based on the suites you ask it to load._
 
-
-
-# Nitty Gritty
-
-## Polymer
+### Web Components Support
 
 By default, WCT will defer tests until the `WebComponentsReady` event has been
 emitted by `@webcomponents/webcomponents-loader.js` or one of its polyfill
@@ -133,8 +129,7 @@ or loader or otherwise simply want tests to run as soon as possible, you can
 disable this delay by setting `WCT.waitForFrameworks = false` (though, they are
 still async due to Mocha).
 
-
-## Mocha
+### Mocha
 
 WCT supports Mocha's [TDD][mocha-tdd] (`suite`/`test`/etc) and [BDD][mocha-bdd]
 (`describe`/`it`/etc) interfaces, and will call `mocha.setup`/`mocha.run` for
