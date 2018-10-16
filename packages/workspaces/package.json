@@ -1,7 +1,7 @@
 {
   "name": "polymer-workspaces",
   "description": "Perform work across multiple GitHub repos",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "repository": "https://github.com/Polymer/polymer-workspaces.git",

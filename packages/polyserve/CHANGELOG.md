@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
+
+## [0.27.13] (2018-10-15)
 * Allow file requests to specify `?nocompile` to prevent any compilation
 
 ## [0.27.12] (2018-06-28)
