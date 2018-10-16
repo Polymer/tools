@@ -76,15 +76,6 @@ suite('AwesomeLib', () => {
 
 ## Special Features
 
-### Use any web server
-
-If you prefer not to use WCT's command line tool, you can also run WCT tests
-directly in a browser via a web server of your choosing and still make use of
-all of its features.
-
-Make sure that the `wct-mocha/wct-mocha.js` script is accessible by your web
-server, and have your tests load it after loading `mocha/mocha.js`.
-
 ### Nested Suites
 
 To help support this case, you can also directly define an index that will load
@@ -161,6 +152,14 @@ object here straight from the `clientOptions` key in `wct.conf.json`.
 A reference of the default configuration can be found at
 [browser/config.ts](browser/config.ts).
 
+### Use any web server
+
+If you prefer not to use WCT's command line tool, you can also run WCT tests
+directly in a browser via a web server of your choosing and still make use of
+all of its features.
+
+Make sure that the `wct-mocha/wct-mocha.js` script is accessible by your web
+server, and have your tests load it after loading `mocha/mocha.js`.
 
 <!-- References -->
 [mocha]:      http://mochajs.org/                   "Mocha Test Framework"
