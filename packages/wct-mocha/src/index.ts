@@ -79,7 +79,7 @@ export function initialize(initConfig?: config.Config) {
 
   // Give any scripts on the page a chance to declare tests and muck with
   // things.
-  document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', () => {
     util.debug('DOMContentLoaded');
     environment.ensureDependenciesPresent();
 
