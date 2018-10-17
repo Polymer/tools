@@ -17,31 +17,33 @@ export interface Config {
    *
    * Paths are relative to `scriptPrefix`.
    */
-  environmentScripts?: string[];
-  environmentImports?: string[];
+  environmentScripts: string[];
+  environmentImports: string[];
   /** Absolute root for client scripts. Detected in `setup()` if not set. */
-  root?: null|string;
+  root: null|string;
   /** By default, we wait for any web component frameworks to load. */
-  waitForFrameworks?: boolean;
+  waitForFrameworks: boolean;
   /**
    * Alternate callback for waiting for tests.
    * `this` for the callback will be the window currently running tests.
    */
-  waitFor?: null|Function;
+  waitFor: null|Function;
   /** How many `.html` suites that can be concurrently loaded & run. */
-  numConcurrentSuites?: number;
+  numConcurrentSuites: number;
   /** Whether `console.error` should be treated as a test failure. */
-  trackConsoleError?: boolean;
+  trackConsoleError: boolean;
   /** Configuration passed to mocha.setup. */
-  mochaOptions?: MochaSetupOptions;
+  mochaOptions: MochaSetupOptions;
   /** Whether WCT should emit (extremely verbose) debugging log messages. */
-  verbose?: boolean;
+  verbose: boolean;
 }
 
 /**
  * The global configuration state for WCT's browser client.
  */
 export let _config: Config = {
+  environmentScripts: [],
+  environmentImports: [],
   root: null,
   waitForFrameworks: true,
   waitFor: null,
@@ -57,7 +59,7 @@ export let _config: Config = {
  * @param {Object} options The options to merge. See `browser/config.ts` for a
  *     reference.
  */
-export function setup(options: Config) {
+export function setup(options: Partial<Config>) {
   const childRunner = ChildRunner.current();
   if (childRunner) {
     deepMerge(_config, childRunner.parentScope.WCT._config);
@@ -91,7 +93,7 @@ export function get<K extends keyof Config>(key: K): Config[K] {
   return _config[key];
 }
 
-export function deepMerge(target: Config, source: Config) {
+export function deepMerge(target: Partial<Config>, source: Partial<Config>) {
   Object.keys(source).forEach((key) => {
     if (target[key] !== null && typeof target[key] === 'object' &&
         !Array.isArray(target[key])) {
