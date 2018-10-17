@@ -65,4 +65,4 @@ matrix:
     # We don't need to test the local browsers on this WCT integration test
     # run.  Sauce only.
     - SKIP_LOCAL_BROWSERS=true
-    - TEST_COMMAND="xvfb-run npx lerna run test:integration --stream --scope wct-browser-legacy --scope web-component-tester --scope @polymer/esm-amd-loader --concurrency 1"
+    - TEST_COMMAND="xvfb-run npx lerna run test:integration --stream --scope wct-browser-legacy --scope wct-mocha --scope web-component-tester --scope @polymer/esm-amd-loader --concurrency 1"
