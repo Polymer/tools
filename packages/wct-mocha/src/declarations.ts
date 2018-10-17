@@ -31,7 +31,7 @@ declare global {
     WCT: {
       readonly _ChildRunner: typeof ChildRunner; //
       readonly share: SharedState; //
-      readonly _config: Config; //
+      readonly _config: Partial<Config>; //
       readonly loadSuites: loadSuitesType;
       _reporter: MultiReporter;
     };
