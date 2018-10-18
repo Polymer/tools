@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Fixed issue with newer version of chalk that broke `polymer-bundler -h` output. https://github.com/Polymer/tools/issues/741
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.3 - 2018-10-15

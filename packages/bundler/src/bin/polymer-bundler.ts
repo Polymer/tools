@@ -23,8 +23,8 @@ import {DocumentCollection} from '../document-collection';
 import {generateShellMergeStrategy, BundleManifest} from '../bundle-manifest';
 import {ensureTrailingSlash, getFileUrl, resolvePath} from '../url-utils';
 
-const prefixArgument = '[underline]{prefix}';
-const pathArgument = '[underline]{path}';
+const prefixArgument = '{underline prefix}';
+const pathArgument = '{underline path}';
 
 const optionDefinitions = [
   {name: 'help', type: Boolean, alias: 'h', description: 'Print this message'},
