@@ -23,7 +23,7 @@ import {assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
 import {serialize} from './babel-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
-import {getOrSetBundleModuleExportName} from './es6-module-utils';
+import {getModuleExportNames, getOrSetBundleModuleExportName} from './es6-module-utils';
 import {appendUrlPath, ensureLeadingDot, getFileExtension} from './url-utils';
 import {generateUniqueIdentifierName, rewriteObject} from './utils';
 
@@ -235,6 +235,8 @@ export class Es6Rewriter {
   }
 
   rewriteExportAllToNamedExports(node: babel.Node, analysis: Analysis) {
+    const bundle = this.bundle;
+    const manifest = this.manifest;
     traverse(node, {
       noScope: true,
       ExportAllDeclaration: {
@@ -242,23 +244,26 @@ export class Es6Rewriter {
           const exportAllDeclaration = path.node;
           const sourceUrl =
               babel.isStringLiteral(exportAllDeclaration.source) &&
-              exportAllDeclaration.source.value;
+              exportAllDeclaration.source.value as ResolvedUrl;
           if (!sourceUrl) {
             return;
           }
           const sourceDocument = getAnalysisDocument(analysis, sourceUrl);
-          const documentExports = sourceDocument.getFeatures({kind: 'export'});
+          const sourceBundle = manifest.getBundleForFile(sourceUrl);
           const specifiers: babel.ExportSpecifier[] = [];
-          for (const documentExport of documentExports) {
-            for (const exportIdentifier of documentExport.identifiers) {
-              const identifierValue = exportIdentifier.valueOf();
-              // It does not appear that `export * from` should re-export
-              // the default module export of a module.
-              if (identifierValue !== 'default') {
-                specifiers.push(babel.exportSpecifier(
-                    babel.identifier(identifierValue),
-                    babel.identifier(identifierValue)));
-              }
+          for (const moduleExportName of getModuleExportNames(sourceDocument)) {
+            // It does not appear that `export * from` should re-export
+            // the default module export of a module.
+            if (moduleExportName !== 'default') {
+              // const reExportedName =
+              //     sourceBundle && sourceBundle.url !== bundle.url ?
+              //     getOrSetBundleModuleExportName(
+              //         sourceBundle, sourceUrl, moduleExportName) :
+              //     moduleExportName;
+              specifiers.push(babel.exportSpecifier(
+                  babel.identifier(moduleExportName),
+                  // babel.identifier(reExportedName)));
+                  babel.identifier(moduleExportName)));
             }
           }
           const namedExportDeclaration = babel.exportNamedDeclaration(

@@ -62,14 +62,6 @@ suite('Es6 Module Bundling', () => {
   });
 
   suite('rewriting export specifiers', () => {
-    // TODO(usergenic): If we want to support `export x from './something.js'`
-    // then Rollup returns the following message: "This experimental syntax
-    // requires enabling the parser plugin: 'exportDefaultFrom' (1:7)"
-
-    // TODO(usergenic): If we want to support `export * from './something.js'`
-    // there's a parse error in the analyzer:
-    // "Unexpected token, expected "(" (7:6)"
-
     const analyzer = inMemoryAnalyzer({
       'a.js': `
         export {b} from './b.js';
@@ -131,9 +123,11 @@ suite('Es6 Module Bundling', () => {
         import bee from './b.js';
         import * as b from './b.js';
         import {honey} from './b.js';
+        import {thing as bThing} from './b.js';
         import sea from './c.js';
         import * as c from './c.js';
         import {boat} from './c.js';
+        import {thing as cThing} from './c.js';
         console.log(bee, b, honey);
         console.log(sea, c, boat);
       `,
@@ -142,10 +136,12 @@ suite('Es6 Module Bundling', () => {
         export default bee = '🐝';
         export const honey = '🍯';
         export const beeSea = bee + sea;
+        export const thing = '🥔';
       `,
       'c.js': `
         export default sea = '🌊';
         export const boat = '⛵️';
+        export const thing = '🥦';
       `,
       'd.js': `
         import {boat} from './c.js';
@@ -173,20 +169,24 @@ suite('Es6 Module Bundling', () => {
         var b = bee = '🐝';
         const honey = '🍯';
         const beeSea = bee + sea;
+        const thing = '🥔';
         var b$1 = {
           default: b,
           honey: honey,
-          beeSea: beeSea
+          beeSea: beeSea,
+          thing: thing
         };
-        export { b$1 as $b, b as $bDefault, honey, beeSea };`);
+        export { b$1 as $b, b as $bDefault, honey, beeSea, thing };`);
       assert.deepEqual(documents.get(cUrl)!.content, heredoc`
         var c = sea = '🌊';
         const boat = '⛵️';
+        const thing = '🥦';
         var c$1 = {
           default: c,
-          boat: boat
+          boat: boat,
+          thing: thing
         };
-        export { c$1 as $c, c as $cDefault, boat };`);
+        export { c$1 as $c, c as $cDefault, boat, thing };`);
     });
 
     test('shared bundle', async () => {
@@ -198,12 +198,14 @@ suite('Es6 Module Bundling', () => {
         var b = bee = '🐝';
         const honey = '🍯';
         const beeSea = bee + sea;
+        const thing = '🥔';
         var b$1 = {
           default: b,
           honey: honey,
-          beeSea: beeSea
+          beeSea: beeSea,
+          thing: thing
         };
-        export { b$1 as $b, b as $bDefault, honey, beeSea };`);
+        export { b$1 as $b, b as $bDefault, honey, beeSea, thing };`);
       assert.deepEqual(documents.get(dUrl)!.content, heredoc`
         import { boat } from './shared_bundle_1.js';
         var d = deer = '🦌';
@@ -227,19 +229,23 @@ suite('Es6 Module Bundling', () => {
       assert.deepEqual(documents.get(bUrl)!.content, heredoc`
         var sea$1 = sea = '🌊';
         const boat = '⛵️';
+        const thing = '🥦';
         var c = {
           default: sea$1,
-          boat: boat
+          boat: boat,
+          thing: thing
         };
         var b = bee = '🐝';
         const honey = '🍯';
         const beeSea = bee + sea$1;
+        const thing$1 = '🥔';
         var b$1 = {
           default: b,
           honey: honey,
-          beeSea: beeSea
+          beeSea: beeSea,
+          thing: thing$1
         };
-        export { b$1 as $b, c as $c, b as $bDefault, honey, beeSea, sea$1 as $cDefault, boat };`);
+        export { b$1 as $b, c as $c, b as $bDefault, honey, beeSea, thing$1 as thing, sea$1 as $cDefault, boat, thing as thing$1 };`);
     });
   });
 
