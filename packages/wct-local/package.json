@@ -44,14 +44,14 @@
   },
   "selenium-overrides": {
     "baseURL": "https://selenium-release.storage.googleapis.com",
-    "version": "3.14.0",
+    "version": "3.12.0",
     "drivers": {
       "chrome": {
         "version": "2.43",
         "baseURL": "https://chromedriver.storage.googleapis.com"
       },
       "ie": {
-        "version": "3.14.0",
+        "version": "3.12.0",
         "baseURL": "https://selenium-release.storage.googleapis.com"
       },
       "firefox": {
