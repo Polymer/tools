@@ -18,8 +18,9 @@ import * as wct from 'wct';
 import * as which from 'which';
 
 type SeleniumOpts = selenium.StartOpts&selenium.InstallOpts;
-const SELENIUM_OVERRIDES: SeleniumOpts =
-    require('../package.json')['selenium-overrides'];
+const seleniumConfig =
+    process.env.SELENIUM_OVERRIDES_CONFIG || '../selenium-overrides.js';
+const SELENIUM_OVERRIDES = require(seleniumConfig)['selenium-overrides'];
 
 export async function checkSeleniumEnvironment(): Promise<void> {
   try {
