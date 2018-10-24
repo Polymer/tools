@@ -118,7 +118,7 @@ const browserPredicates: {
     es2017: since(52),
     es2018: since(58),  // Except RegEx additions
     // Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1409570
-    push: () => false,
+    push: since(63),
     serviceworker: since(44),
     modules: () => false,
   },
