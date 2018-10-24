@@ -30,7 +30,7 @@ export function loadSync() {
     scripts.push(a11ySuiteScriptPath);
   }
   scripts.forEach((path) => {
-    const url = util.expandUrl(path, config.get('root'));
+    const url = util.expandUrl(path, config.get('root')!);
     util.debug('Loading environment script:', url);
     // Synchronous load.
     document.write(`<script src="${encodeURI(url)}"></script>`);
@@ -38,7 +38,7 @@ export function loadSync() {
   util.debug('Environment scripts loaded');
   const imports = config.get('environmentImports');
   imports.forEach((path) => {
-    const url = util.expandUrl(path, config.get('root'));
+    const url = util.expandUrl(path, config.get('root')!);
     util.debug('Loading environment import:', url);
     // Synchronous load.
     document.write(`<link rel="import" href="${encodeURI(url)}">`);

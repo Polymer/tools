@@ -47,7 +47,7 @@ export function loadSuites(files: string[]) {
 export function activeChildSuites(): string[] {
   let subsuites = htmlSuites;
   if (GREP) {
-    const cleanSubsuites = [];
+    const cleanSubsuites: string[] = [];
     for (let i = 0, subsuite; subsuite = subsuites[i]; i++) {
       if (GREP.indexOf(util.cleanLocation(subsuite)) !== -1) {
         cleanSubsuites.push(subsuite);
@@ -62,7 +62,7 @@ export function activeChildSuites(): string[] {
  * Loads all `.js` sources requested by the current suite.
  */
 export function loadJsSuites(
-    _reporter: MultiReporter, done: (error: Error) => void) {
+    _reporter: MultiReporter, done: (error: {}|undefined) => void) {
   util.debug('loadJsSuites', jsSuites);
 
   // We only support `.js` dependencies for now.
@@ -77,7 +77,7 @@ export function runSuites(
     done: (error?: {}) => void) {
   util.debug('runSuites');
 
-  const suiteRunners: Array<(next: () => void) => void> = [
+  const suiteRunners: Array<util.Runner> = [
     // Run the local tests (if any) first, not stopping on error;
     _runMocha.bind(null, reporter),
   ];
@@ -120,10 +120,9 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
   const mocha = window.mocha;
   const Mocha = window.Mocha;
 
-  mocha.reporter(
-      reporter.childReporter(window.location) as {} as Mocha.Reporter);
+  mocha.reporter(reporter.childReporter() as {} as Mocha.Reporter);
   mocha.suite.title = reporter.suiteTitle(window.location);
-  mocha.grep(GREP);
+  mocha.grep(GREP!);
 
   // We can't use `mocha.run` because it bashes over grep, invert, and friends.
   // See https://github.com/visionmedia/mocha/blob/master/support/tail.js#L137
@@ -139,7 +138,7 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
   //
   // TODO(nevir): Can we expand support to other browsers?
   if (navigator.userAgent.match(/chrome/i)) {
-    window.onerror = null;
+    window.onerror = null!;
     window.addEventListener('error', (event) => {
       if (!event.error) {
         return;
@@ -154,7 +153,7 @@ function _runMocha(reporter: MultiReporter, done: () => void, waited: boolean) {
       runner.uncaught(event.error);
     });
   } else {
-    window.onerror = null;
+    window.onerror = null!;
     window.addEventListener('error', (event) => {
       if (window.uncaughtErrorFilter && window.uncaughtErrorFilter(event)) {
         event.preventDefault();

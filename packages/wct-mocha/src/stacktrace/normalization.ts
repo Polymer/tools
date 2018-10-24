@@ -21,13 +21,14 @@ export type ErrorLikeThing = Error&{
 };
 
 export function normalize(
-    error: ErrorLikeThing, prettyOptions: FormattingOptions): ErrorLikeThing {
+    error: ErrorLikeThing,
+    prettyOptions: Partial<FormattingOptions>): ErrorLikeThing {
   if (error.parsedStack) {
     return error;
   }
   const message =
       error.message || error.description || error || '<unknown error>';
-  let parsedStack: ParsedLine[] = [];
+  let parsedStack: Array<ParsedLine|null> = [];
   try {
     parsedStack = parse(error.stack || error.toString());
   } catch (error) {
@@ -38,8 +39,8 @@ export function normalize(
     parsedStack.push({
       method: '',
       location: error.fileName,
-      line: error.lineNumber,
-      column: error.columnNumber,
+      line: error.lineNumber || -1,
+      column: error.columnNumber || -1,
     });
   }
 

@@ -98,7 +98,7 @@ export default class CLISocket {
    *
    * @param {function(*, CLISocket)} done Node-style callback.
    */
-  static init(done: (error?: {}, socket?: CLISocket) => void) {
+  static init(done: (error?: {}|null|undefined, socket?: CLISocket) => void) {
     const browserId = util.getParam('cli_browser_id');
     if (!browserId) {
       return done();
@@ -108,7 +108,7 @@ export default class CLISocket {
       return done();
     }
 
-    util.loadScript(SOCKETIO_LIBRARY, (error: {}) => {
+    util.loadScript(SOCKETIO_LIBRARY, (error: {}|undefined|null) => {
       if (error) {
         return done(error);
       }
@@ -139,7 +139,7 @@ export default class CLISocket {
  * @return {!Array.<string>} The titles of the runnable and its parents.
  */
 function getTitles(runnable: Mocha.IRunnable) {
-  const titles = [];
+  const titles: string[] = [];
   while (runnable && !runnable.root && runnable.title) {
     titles.unshift(runnable.title);
     runnable = runnable.parent as {} as Mocha.IRunnable;

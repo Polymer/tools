@@ -20,7 +20,6 @@ const ARC_WIDTH = 6;
  * @param {!Mocha.Runner} runner The runner that is being reported on.
  */
 export default class Title {
-  runner: Mocha.Runner;
   constructor(runner: Mocha.IRunner) {
     Mocha.reporters.Base.call(this, runner);
 
@@ -46,7 +45,7 @@ export default class Title {
   updateFavicon() {
     const canvas = document.createElement('canvas');
     canvas.height = canvas.width = 32;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d')!;
 
     const passing = this.stats.passes;
     const pending = this.stats.pending;
@@ -61,9 +60,9 @@ export default class Title {
 
   /** Sets the current favicon by URL. */
   setFavicon(url: string) {
-    const current = document.head.querySelector('link[rel="icon"]');
+    const current = document.head!.querySelector('link[rel="icon"]');
     if (current) {
-      document.head.removeChild(current as Node);
+      document.head!.removeChild(current as Node);
     }
 
     const link = document.createElement('link');
@@ -71,7 +70,7 @@ export default class Title {
     link.type = 'image/x-icon';
     link.href = url;
     link.setAttribute('sizes', '32x32');
-    document.head.appendChild(link);
+    document.head!.appendChild(link);
   }
 }
 

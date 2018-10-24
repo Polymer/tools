@@ -42,7 +42,7 @@ export function parse(stack: string) {
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/Stack
 const GECKO_LINE = /^(?:([^@]*)@)?(.*?):(\d+)(?::(\d+))?$/;
 
-export function parseGeckoLine(line: string): ParsedLine {
+export function parseGeckoLine(line: string): ParsedLine|null {
   const match = line.match(GECKO_LINE);
   if (!match) {
     return null;
@@ -60,7 +60,7 @@ const V8_OUTER1 = /^\s*(eval )?at (.*) \((.*)\)$/;
 const V8_OUTER2 = /^\s*at()() (\S+)$/;
 const V8_INNER = /^\(?([^\(]+):(\d+):(\d+)\)?$/;
 
-export function parseV8Line(line: string): ParsedLine {
+export function parseV8Line(line: string): ParsedLine|null {
   const outer = line.match(V8_OUTER1) || line.match(V8_OUTER2);
   if (!outer) {
     return null;
@@ -83,7 +83,7 @@ export function parseV8Line(line: string): ParsedLine {
 
 const STACKY_LINE = /^\s*(.+) at (.+):(\d+):(\d+)$/;
 
-export function parseStackyLine(line: string): ParsedLine {
+export function parseStackyLine(line: string): ParsedLine|null {
   const match = line.match(STACKY_LINE);
   if (!match) {
     return null;

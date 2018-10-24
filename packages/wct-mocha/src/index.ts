@@ -58,7 +58,7 @@ export function initialize(initConfig?: config.Config) {
     // Until then, we get to rely on it to expose parent runners to their
     // children.
     _ChildRunner: ChildRunner,
-    _reporter: undefined as MultiReporter,  // assigned below
+    _reporter: undefined! as MultiReporter,  // assigned below
     _config: config._config,
 
     // Public API
@@ -87,6 +87,9 @@ export function initialize(initConfig?: config.Config) {
     CLISocket.init((error, socket) => {
       if (error) {
         throw error;
+      }
+      if (!socket) {
+        throw new Error(`CLISocket.init failed to give a socket`);
       }
 
       // Are we a child of another run?

@@ -57,7 +57,7 @@ export function loadScript(path: string, done: (error?: {}) => void) {
     script.onload = done.bind(null, null);
     script.onerror = done.bind(null, 'Failed to load script ' + script.src);
   }
-  document.head.appendChild(script);
+  document.head!.appendChild(script);
 }
 
 /**
@@ -72,7 +72,7 @@ export function loadStyle(path: string, done?: () => void) {
     link.onload = done.bind(null, null);
     link.onerror = done.bind(null, 'Failed to load stylesheet ' + link.href);
   }
-  document.head.appendChild(link);
+  document.head!.appendChild(link);
 }
 
 /**
@@ -94,7 +94,7 @@ export function debug(...var_args: unknown[]) {
  * @return {{base: string, params: string}}
  */
 export function parseUrl(url: string) {
-  const parts = url.match(/^(.*?)(?:\?(.*))?$/);
+  const parts = url.match(/^(.*?)(?:\?(.*))?$/)!;
   return {
     base: parts[1],
     params: getParams(parts[2] || ''),
@@ -204,7 +204,7 @@ function getPathName(location: Location|string): string {
 }
 
 export function basePath(location: Location|string) {
-  return getPathName(location).match(/^.*\//)[0];
+  return getPathName(location).match(/^.*\//)![0];
 }
 
 export function relativeLocation(location: Location|string, basePath: string) {
@@ -236,9 +236,11 @@ export type Runner = (f: Function) => void;
  * @param {?function(*)} done Callback that should be triggered once all runners
  *     have completed, or encountered an error.
  */
-export function parallel(runners: Runner[], done: (error?: {}) => void): void;
 export function parallel(
-    runners: Runner[], limit: number, done: (error?: {}) => void): void;
+    runners: Runner[], done: (error?: {}|undefined) => void): void;
+export function parallel(
+    runners: Runner[], limit: number, done: (error?: {}|undefined) => void):
+    void;
 export function parallel(
     runners: Runner[],
     maybeLimit: number|((error?: {}) => void),
@@ -251,7 +253,7 @@ export function parallel(
     limit = maybeLimit;
   }
   if (!runners.length) {
-    return done();
+    return done && done();
   }
 
   let called = false;
@@ -268,7 +270,7 @@ export function parallel(
 
     if (error || numDone >= total) {
       called = true;
-      done(error);
+      done && done(error);
     } else {
       runOne();
     }
@@ -282,7 +284,7 @@ export function parallel(
       return;
     }
     numActive = numActive + 1;
-    runners.shift()(runnerDone);
+    runners.shift()!(runnerDone);
   }
   runners.forEach(runOne);
 }
