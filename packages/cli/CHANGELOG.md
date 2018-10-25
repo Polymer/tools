@@ -3,8 +3,10 @@
 <!-- ## Unreleased -->
 
 ## v1.9.0-pre.2 [10-25-2018]
-* Updated to include latest official `web-component-tester` update and
-  `wct-local`.
+* Include latest official `web-component-tester` update adding
+  support for `wct-mocha` alternative to `wct-browser-legacy` package.
+* Update `wct-local` to fix Firefox 63 testing issue with outdated
+  geckodriver.
 
 ## v1.9.0-pre.1 [10-15-2018]
 * Fix an issue where we were passing lint rule help text through chalk
