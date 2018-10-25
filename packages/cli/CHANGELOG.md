@@ -3,8 +3,11 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## v1.8.1 [10-25-2018]
+* Update package-lock to pickup wct-local 2.1.3 to fix Firefox 63 testing.
+
 ## v1.8.0 [08-15-2018]
-* Fix a case where the CustomElementsEs5Adapter script was not added to the 
+* Fix a case where the CustomElementsEs5Adapter script was not added to the
   builds when the `js.compile` is an object with a target property of es5.
 * Updated web-component-tester to v6.8.0, which changes the set of browsers
   when testing on Travis CI.
