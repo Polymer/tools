@@ -88,9 +88,6 @@ export function initialize(initConfig?: config.Config) {
       if (error) {
         throw error;
       }
-      if (!socket) {
-        throw new Error(`CLISocket.init failed to give a socket`);
-      }
 
       // Are we a child of another run?
       const current = ChildRunner.current();
