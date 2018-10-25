@@ -1,6 +1,6 @@
 {
   "name": "wct-mocha",
-  "version": "1.0.0-pre.2",
+  "version": "1.0.0-pre.3",
   "description": "Client-side library for testing web-components with Mocha.",
   "main": "lib/index.js",
   "files": [
