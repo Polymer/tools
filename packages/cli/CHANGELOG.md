@@ -2,9 +2,16 @@
 
 <!-- ## Unreleased -->
 
+## v1.9.0-pre.2 [10-25-2018]
+* Updated to include latest official `web-component-tester` update and
+  `wct-local`.
+
 ## v1.9.0-pre.1 [10-15-2018]
 * Fix an issue where we were passing lint rule help text through chalk
   with unescaped chalk-specific syntax, causing chalk parsing errors.
+
+## v1.8.1 [10-25-2018]
+* Update package-lock to pickup wct-local 2.1.3 to fix Firefox 63 testing.
 
 ## v1.8.0 [08-15-2018]
 * Fix a case where the CustomElementsEs5Adapter script was not added to the 
