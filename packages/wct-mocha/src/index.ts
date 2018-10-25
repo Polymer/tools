@@ -58,7 +58,7 @@ export function initialize(initConfig?: config.Config) {
     // Until then, we get to rely on it to expose parent runners to their
     // children.
     _ChildRunner: ChildRunner,
-    _reporter: undefined as MultiReporter,  // assigned below
+    _reporter: undefined! as MultiReporter,  // assigned below
     _config: config._config,
 
     // Public API

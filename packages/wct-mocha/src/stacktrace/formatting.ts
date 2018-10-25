@@ -15,27 +15,26 @@ export type FormattingFunction = (text: string) => string;
 export interface FormattingOptions {
   showColumns?: boolean;
   // Methods are aligned up to this much padding.
-  maxMethodPadding?: number;
+  maxMethodPadding: number;
   // A string to prefix each line with.
-  indent?: string;
+  indent: string;
   // A string to show for stack lines that are missing a method.
-  methodPlaceholder?: string;
+  methodPlaceholder: string;
   // A list of Strings/RegExps that will be stripped from `location` values
   // on each line (via `String#replace`).
-  locationStrip?: (string|RegExp)[];
+  locationStrip: (string|RegExp)[];
   // A list of Strings/RegExps that indicate that a line is *not* important,
   // and should be styled as such.
-  unimportantLocation?: Array<string>;
+  unimportantLocation: Array<string>;
   // A filter function to completely remove lines
-  filter?: (line: ParsedLine) => boolean;
+  filter: (line: ParsedLine) => boolean;
   // styles are functions that take a string and return
   // that string when styled.
-  styles?: {
-    method?: FormattingFunction;
-    location?: FormattingFunction;
-    line?: FormattingFunction;
-    column?: FormattingFunction;
-    unimportant?: FormattingFunction;
+  styles: {
+    method: FormattingFunction; location: FormattingFunction;
+    line: FormattingFunction;
+    column: FormattingFunction;
+    unimportant: FormattingFunction;
   };
 }
 
@@ -56,14 +55,15 @@ export const defaults: FormattingOptions = {
 };
 
 export function pretty(
-    stackOrParsed: string|ParsedLine[], options?: FormattingOptions): string {
-  options = mergeDefaults(options || {}, defaults);
-  let lines =
+    stackOrParsed: string|Array<ParsedLine|null>,
+    maybeOptions?: Partial<FormattingOptions>): string {
+  const options = mergeDefaults(maybeOptions || {}, defaults);
+  const linesAndNulls =
       Array.isArray(stackOrParsed) ? stackOrParsed : parse(stackOrParsed);
-  lines = clean(lines, options);
+  const lines = clean(linesAndNulls, options);
 
   const padSize = methodPadding(lines, options);
-  const parts = lines.map((line: ParsedLine) => {
+  const parts = lines.map((line) => {
     const method = line.method || options.methodPlaceholder;
     const pad = options.indent + padding(padSize - method.length);
     const locationBits = [
@@ -84,10 +84,11 @@ export function pretty(
   return parts.join('\n');
 }
 
-function clean(lines: ParsedLine[], options: FormattingOptions): ParsedLine[] {
-  const result = [];
+function clean(
+    lines: Array<ParsedLine|null>, options: FormattingOptions): ParsedLine[] {
+  const result: ParsedLine[] = [];
   for (let i = 0, line; line = lines[i]; i++) {
-    if (options.filter(line)) {
+    if (options.filter && options.filter(line)) {
       continue;
     }
     line.location = cleanLocation(line.location, options);
@@ -104,24 +105,27 @@ function passthrough(text: string): string {
   return text;
 }
 
-function mergeDefaults(
-    options: FormattingOptions, defaults: FormattingOptions) {
+function mergeDefaults<V extends {}>(options: Partial<V>, defaults: V): V {
   const result = Object.create(defaults);
-  Object.keys(options).forEach((key) => {
+  Object.keys(options).forEach((untypedKey) => {
+    const key = untypedKey as keyof typeof options;
     let value = options[key];
     if (typeof value === 'object' && !Array.isArray(value)) {
-      value = mergeDefaults(value, defaults[key]);
+      value =
+          mergeDefaults(value as typeof defaults[typeof key], defaults[key]);
     }
     result[key] = value;
   });
   return result;
 }
 
-function methodPadding(lines: ParsedLine[], options: FormattingOptions) {
-  let size = options.methodPlaceholder.length;
+function methodPadding(
+    lines: Array<ParsedLine|null>, options: FormattingOptions) {
+  let size = (options.methodPlaceholder || '').length;
   for (let i = 0, line; line = lines[i]; i++) {
-    size =
-        Math.min(options.maxMethodPadding, Math.max(size, line.method.length));
+    size = Math.min(
+        options.maxMethodPadding || Infinity,
+        Math.max(size, line.method.length));
   }
   return size;
 }

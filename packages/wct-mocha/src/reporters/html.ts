@@ -14,12 +14,12 @@
  *
  * @param {!Mocha.Runner} runner The runner that is being reported on.
  */
-export default function HTML(runner: Mocha.IRunner) {
+export default function HTML(this: Mocha.IRunner, runner: Mocha.IRunner) {
   const output = document.createElement('div');
   output.id = 'mocha';
   document.body.appendChild(output);
 
-  runner.on('suite', function(_test: {}) {
+  runner.on('suite', function(this: Mocha.IRunner, _test: {}) {
     this.total = runner.total;
   }.bind(this));
 
@@ -67,4 +67,4 @@ style.textContent = `
       color: #555 !important;
     }
 `;
-document.head.appendChild(style);
+document.head!.appendChild(style);

@@ -43,6 +43,9 @@
 			"path": "packages/wct-local"
 		},
 		{
+			"path": "packages/wct-mocha"
+		},
+		{
 			"path": "packages/web-component-tester"
 		},
 		{

@@ -76,7 +76,7 @@ export function setup(options: Partial<Config>) {
     const wctMochaJsRoot = util.scriptPrefix('wct-mocha.js');
     const browserJsRoot = util.scriptPrefix('browser.js');
     const scriptName = wctMochaJsRoot ? 'wct-mocha.js' : 'browser.js';
-    const root = wctMochaJsRoot || browserJsRoot;
+    const root = (wctMochaJsRoot || browserJsRoot)!;
     _config.root = util.basePath(root.substr(0, root.length - 1));
     if (!_config.root) {
       throw new Error(
@@ -93,11 +93,13 @@ export function get<K extends keyof Config>(key: K): Config[K] {
   return _config[key];
 }
 
-export function deepMerge(target: Partial<Config>, source: Partial<Config>) {
-  Object.keys(source).forEach((key) => {
-    if (target[key] !== null && typeof target[key] === 'object' &&
-        !Array.isArray(target[key])) {
-      deepMerge(target[key], source[key]);
+export function deepMerge<V extends {}>(target: V, source: V) {
+  Object.keys(source).forEach((untypedKey) => {
+    const key = untypedKey as keyof typeof source;
+    const targetValue = target[key];
+    if (targetValue != null && typeof targetValue === 'object' &&
+        !Array.isArray(targetValue)) {
+      deepMerge(targetValue, source[key]);
     } else {
       target[key] = source[key];
     }

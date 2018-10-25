@@ -32,9 +32,9 @@ export default class ChildRunner {
   private container?: HTMLDivElement;
   private eventListenersToRemoveOnClean: EventListenerDescriptor[] = [];
   private iframe?: HTMLIFrameElement;
-  private onRunComplete: (error?: {}) => void;
-  private share: SharedState;
-  private state: 'initializing'|'loading'|'complete';
+  private onRunComplete: ((error?: {}) => void)|null = null;
+  share: SharedState|null = null;
+  state: 'initializing'|'loading'|'complete';
   private timeoutId?: number;
   private url: string;
 
@@ -88,7 +88,7 @@ export default class ChildRunner {
    * @return {ChildRunner} The `ChildRunner` that was registered for this
    * window.
    */
-  static current(): ChildRunner {
+  static current(): ChildRunner|null {
     return ChildRunner.get(window);
   }
 
@@ -97,7 +97,7 @@ export default class ChildRunner {
    * @param {boolean} traversal Whether this is a traversal from a child window.
    * @return {ChildRunner} The `ChildRunner` that was registered for `target`.
    */
-  static get(target: Window, traversal?: boolean): ChildRunner {
+  static get(target: Window, traversal?: boolean): ChildRunner|null {
     const childRunner = ChildRunner.byUrl[target.location.href];
     if (childRunner) {
       return childRunner;
@@ -154,7 +154,7 @@ export default class ChildRunner {
         () => this.loaded(new Error('Failed to load document ' + this.url)),
         iframe);
     this.addEventListener(
-        'DOMContentLoaded', () => this.loaded(), iframe.contentWindow);
+        'DOMContentLoaded', () => this.loaded(), iframe.contentWindow!);
   }
 
   /**
@@ -165,15 +165,15 @@ export default class ChildRunner {
   loaded(error?: {}) {
     util.debug('ChildRunner#loaded', this.url, error);
 
-    if (this.iframe.contentWindow == null && error) {
+    if (!this.iframe || this.iframe.contentWindow == null && error) {
       this.signalRunComplete(error);
       this.done();
       return;
     }
 
     // Not all targets have WCT loaded (compatiblity mode)
-    if (this.iframe.contentWindow.WCT) {
-      this.share = this.iframe.contentWindow.WCT.share;
+    if (this.iframe.contentWindow!.WCT) {
+      this.share = this.iframe.contentWindow!.WCT.share;
     }
 
     if (error) {
@@ -215,7 +215,7 @@ export default class ChildRunner {
       setTimeout(() => {
         this.removeAllEventListeners();
 
-        this.container.removeChild(this.iframe as Node);
+        this.container!.removeChild(this.iframe as Node);
         this.iframe = undefined;
         this.share = null;
       }, 0);
