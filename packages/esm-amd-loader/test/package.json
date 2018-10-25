@@ -14,7 +14,7 @@
     "@polymer/esm-amd-loader": "^1.0.0",
     "@webcomponents/webcomponentsjs": "^1.2.4",
     "wct-browser-legacy": "^1.0.0",
-    "web-component-tester": "^6.9.0-pre.1"
+    "web-component-tester": "^6.9.0"
   },
   "dependencies": {}
 }

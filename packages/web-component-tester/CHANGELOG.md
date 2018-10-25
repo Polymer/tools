@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## 6.9.0 - 2018-10-25
+* Official release with `wct-mocha` support after verifying it in active projects.
+
 ## 6.9.0-pre.1 - 2018-10-15
 * Added support for `wct-mocha` as an npm package.
 * The `wctPackageName` config option is now optional as `wct` will scan for appropriate installed client-side package (`wct-mocha`, `wct-browser-legacy` or `web-component-tester`).
