@@ -33,6 +33,7 @@ import {getPushManifest, pushResources} from './util/push';
 import {getTLSCertificate} from './util/tls';
 
 import compression = require('compression');
+import cors = require('cors');
 
 const httpProxy = require('http-proxy-middleware');
 
@@ -100,6 +101,9 @@ export interface ServerOptions {
 
   /** Proxy to redirect for all matching `path` to `target` */
   proxy?: {path: string, target: string};
+
+  /** Sets the value of the Access-Control-Allow-Origin header */
+  allowOrigin?: string;
 
   /**
    * An optional list of routes & route handlers to attach to the polyserve
@@ -407,6 +411,9 @@ export function getApp(options: ServerOptions): express.Express {
           options.componentUrl,
           options.componentDir));
 
+  if (options.allowOrigin) {
+    app.use(cors({origin: options.allowOrigin}));
+  }
 
   app.use(`/${componentUrl}/`, polyserve);
 

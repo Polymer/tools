@@ -45,6 +45,7 @@
     "command-line-usage": "^5.0.5",
     "compression": "^1.6.2",
     "content-type": "^1.0.2",
+    "cors": "^2.8.4",
     "escape-html": "^1.0.3",
     "express": "^4.8.5",
     "find-port": "^1.0.1",
@@ -62,6 +63,7 @@
     "spdy": "^3.3.3"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.4",
     "@types/lru-cache": "^2.5.32",
     "@types/sinon": "^5.0.0",
     "@types/supertest": "^2.0.1",
