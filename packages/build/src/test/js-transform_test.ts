@@ -82,6 +82,12 @@ suite('jsTransform', () => {
           jsTransform('const foo = 3;', {compile: true, minify: true}),
           'var foo=3;');
     });
+
+    test('minifies but does not try to remove dead code', () => {
+      assert.equal(
+          jsTransform('if (false) { never(); } always();', {minify: true}),
+          'if(!1){never()}always();');
+    });
   });
 
   suite('babel helpers', () => {
