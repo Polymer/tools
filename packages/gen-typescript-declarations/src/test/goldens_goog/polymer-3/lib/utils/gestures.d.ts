@@ -11,11 +11,11 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.utils.Gestures' {
+declare module 'goog:polymer.polymer.lib.utils.gestures' {
 
-  import {timeOut, microTask} from 'goog:npm.polymer.polymer.lib.utils.Async'; // from //third_party/javascript/polymer/v2/polymer
+  import {timeOut, microTask} from 'goog:polymer.polymer.lib.utils.async'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
+  import {Debouncer} from 'goog:polymer.polymer.lib.utils.debounce'; // from //third_party/javascript/polymer/v2/polymer
 
   export {deepTargetFind};
 
@@ -91,5 +91,5 @@ declare module 'goog:npm.polymer.polymer.lib.utils.Gestures' {
    */
   function resetMouseCanceller(): void;
 
-  import {GestureRecognizer} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {GestureRecognizer} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 }

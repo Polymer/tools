@@ -11,11 +11,11 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.PolymerLegacy' {
+declare module 'goog:polymer.polymer.polymerLegacy' {
 
-  import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {LegacyElementMixin} from 'goog:polymer.polymer.lib.legacy.legacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  export {Polymer} from 'goog:npm.polymer.polymer.lib.legacy.PolymerFn'; // from //third_party/javascript/polymer/v2/polymer
+  export {Polymer} from 'goog:polymer.polymer.lib.legacy.polymerFn'; // from //third_party/javascript/polymer/v2/polymer
 
-  export {html} from 'goog:npm.polymer.polymer.lib.utils.HtmlTag'; // from //third_party/javascript/polymer/v2/polymer
+  export {html} from 'goog:polymer.polymer.lib.utils.htmlTag'; // from //third_party/javascript/polymer/v2/polymer
 }

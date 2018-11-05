@@ -11,11 +11,11 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.utils.FlattenedNodesObserver' {
+declare module 'goog:polymer.polymer.lib.utils.flattenedNodesObserver' {
 
-  import {calculateSplices} from 'goog:npm.polymer.polymer.lib.utils.ArraySplice'; // from //third_party/javascript/polymer/v2/polymer
+  import {calculateSplices} from 'goog:polymer.polymer.lib.utils.arraySplice'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {microTask} from 'goog:npm.polymer.polymer.lib.utils.Async'; // from //third_party/javascript/polymer/v2/polymer
+  import {microTask} from 'goog:polymer.polymer.lib.utils.async'; // from //third_party/javascript/polymer/v2/polymer
 
   export {FlattenedNodesObserver};
 

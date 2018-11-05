@@ -11,11 +11,11 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.utils.StyleGather' {
+declare module 'goog:polymer.polymer.lib.utils.styleGather' {
 
-  import {DomModule} from 'goog:npm.polymer.polymer.lib.elements.DomModule'; // from //third_party/javascript/polymer/v2/polymer
+  import {DomModule} from 'goog:polymer.polymer.lib.elements.domModule'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {resolveCss} from 'goog:npm.polymer.polymer.lib.utils.ResolveUrl'; // from //third_party/javascript/polymer/v2/polymer
+  import {resolveCss} from 'goog:polymer.polymer.lib.utils.resolveUrl'; // from //third_party/javascript/polymer/v2/polymer
 
   export {stylesFromModules};
 

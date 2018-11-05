@@ -12,15 +12,15 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.elements.ArraySelector' {
+declare module 'goog:polymer.polymer.lib.elements.arraySelector' {
 
-  import {PolymerElement} from 'goog:npm.polymer.polymer.PolymerElement'; // from //third_party/javascript/polymer/v2/polymer
+  import {PolymerElement} from 'goog:polymer.polymer.polymerElement'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {calculateSplices} from 'goog:npm.polymer.polymer.lib.utils.ArraySplice'; // from //third_party/javascript/polymer/v2/polymer
+  import {calculateSplices} from 'goog:polymer.polymer.lib.utils.arraySplice'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {ElementMixin} from 'goog:npm.polymer.polymer.lib.mixins.ElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {ElementMixin} from 'goog:polymer.polymer.lib.mixins.elementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
 
   /**
@@ -39,17 +39,17 @@ declare module 'goog:npm.polymer.polymer.lib.elements.ArraySelector' {
    */
   function ArraySelectorMixin<T extends new (...args: any[]) => {}>(base: T): T & ArraySelectorMixinConstructor & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor;
 
-  import {ElementMixinConstructor} from 'goog:npm.polymer.polymer.lib.mixins.ElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {ElementMixinConstructor} from 'goog:polymer.polymer.lib.mixins.elementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyEffectsConstructor, PropertyEffects} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyEffectsConstructor, PropertyEffects} from 'goog:polymer.polymer.lib.mixins.propertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {TemplateStampConstructor, TemplateStamp} from 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateStampConstructor, TemplateStamp} from 'goog:polymer.polymer.lib.mixins.templateStamp'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:polymer.polymer.lib.mixins.propertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesMixinConstructor, PropertiesMixin} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesMixinConstructor, PropertiesMixin} from 'goog:polymer.polymer.lib.mixins.propertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
 
   interface ArraySelectorMixinConstructor {
     new(...args: any[]): ArraySelectorMixin;

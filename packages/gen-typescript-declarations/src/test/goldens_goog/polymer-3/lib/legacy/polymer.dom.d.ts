@@ -12,13 +12,13 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.legacy.PolymerDom' {
+declare module 'goog:polymer.polymer.lib.legacy.polymerDom' {
 
-  import {FlattenedNodesObserver} from 'goog:npm.polymer.polymer.lib.utils.FlattenedNodesObserver'; // from //third_party/javascript/polymer/v2/polymer
+  import {FlattenedNodesObserver} from 'goog:polymer.polymer.lib.utils.flattenedNodesObserver'; // from //third_party/javascript/polymer/v2/polymer
 
-  export {flush, enqueueDebouncer as addDebouncer} from 'goog:npm.polymer.polymer.lib.utils.Flush'; // from //third_party/javascript/polymer/v2/polymer
+  export {flush, enqueueDebouncer as addDebouncer} from 'goog:polymer.polymer.lib.utils.flush'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
+  import {Debouncer} from 'goog:polymer.polymer.lib.utils.debounce'; // from //third_party/javascript/polymer/v2/polymer
 
   export {matchesSelector};
 

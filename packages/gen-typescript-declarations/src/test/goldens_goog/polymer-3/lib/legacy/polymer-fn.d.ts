@@ -11,9 +11,9 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.legacy.PolymerFn' {
+declare module 'goog:polymer.polymer.lib.legacy.polymerFn' {
 
-  import {Class} from 'goog:npm.polymer.polymer.lib.legacy.Class'; // from //third_party/javascript/polymer/v2/polymer
+  import {Class} from 'goog:polymer.polymer.lib.legacy.class'; // from //third_party/javascript/polymer/v2/polymer
 
 
   /**
@@ -33,5 +33,5 @@ declare module 'goog:npm.polymer.polymer.lib.legacy.PolymerFn' {
 
   export {Polymer};
 
-  import {PolymerInit} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {PolymerInit} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 }

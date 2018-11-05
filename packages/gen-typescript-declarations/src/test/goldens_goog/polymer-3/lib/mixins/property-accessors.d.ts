@@ -12,13 +12,13 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors' {
+declare module 'goog:polymer.polymer.lib.mixins.propertyAccessors' {
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import * as caseMap$0 from 'goog:npm.polymer.polymer.lib.utils.CaseMap'; // from //third_party/javascript/polymer/v2/polymer
+  import * as caseMap$0 from 'goog:polymer.polymer.lib.utils.caseMap'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChanged} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
   export {PropertyAccessors};
 
@@ -47,7 +47,7 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors' {
    */
   function PropertyAccessors<T extends new (...args: any[]) => {}>(base: T): T & PropertyAccessorsConstructor & PropertiesChangedConstructor;
 
-  import {PropertiesChangedConstructor} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChangedConstructor} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
   interface PropertyAccessorsConstructor {
     new(...args: any[]): PropertyAccessors;

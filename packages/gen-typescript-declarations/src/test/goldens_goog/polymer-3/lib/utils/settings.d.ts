@@ -12,9 +12,9 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.utils.Settings' {
+declare module 'goog:polymer.polymer.lib.utils.settings' {
 
-  import {pathFromUrl} from 'goog:npm.polymer.polymer.lib.utils.ResolveUrl'; // from //third_party/javascript/polymer/v2/polymer
+  import {pathFromUrl} from 'goog:polymer.polymer.lib.utils.resolveUrl'; // from //third_party/javascript/polymer/v2/polymer
 
   export {setRootPath};
 

@@ -11,15 +11,15 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.paperButton.PaperButton' {
+declare module 'goog:polymer.paperButton.paperButton' {
 
-  import {PaperButtonBehavior} from 'goog:npm.polymer.paperBehaviors.PaperButtonBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
+  import {PaperButtonBehavior} from 'goog:polymer.paperBehaviors.paperButtonBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
 
-  import {Polymer} from 'goog:npm.polymer.polymer.lib.legacy.PolymerFn'; // from //third_party/javascript/polymer/v2/polymer
+  import {Polymer} from 'goog:polymer.polymer.lib.legacy.polymerFn'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {html} from 'goog:npm.polymer.polymer.PolymerLegacy'; // from //third_party/javascript/polymer/v2/polymer
+  import {html} from 'goog:polymer.polymer.polymerLegacy'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {LegacyElementMixin} from 'goog:polymer.polymer.lib.legacy.legacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
   interface PaperButtonElement extends PaperButtonBehavior, LegacyElementMixin, HTMLElement {
 

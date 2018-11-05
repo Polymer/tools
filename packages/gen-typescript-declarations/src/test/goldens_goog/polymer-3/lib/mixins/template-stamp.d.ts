@@ -12,9 +12,9 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp' {
+declare module 'goog:polymer.polymer.lib.mixins.templateStamp' {
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
   export {TemplateStamp};
 
@@ -263,9 +263,9 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp' {
     _removeEventListenerFromNode(node: EventTarget, eventName: string, handler: (p0: Event) => void): void;
   }
 
-  import {TemplateInfo} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateInfo} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {NodeInfo} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {NodeInfo} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {StampedTemplate} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {StampedTemplate} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 }

@@ -12,21 +12,21 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.elements.DomRepeat' {
+declare module 'goog:polymer.polymer.lib.elements.domRepeat' {
 
-  import {PolymerElement} from 'goog:npm.polymer.polymer.PolymerElement'; // from //third_party/javascript/polymer/v2/polymer
+  import {PolymerElement} from 'goog:polymer.polymer.polymerElement'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {TemplateInstanceBase, templatize, modelForElement as modelForElement$0} from 'goog:npm.polymer.polymer.lib.utils.Templatize'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateInstanceBase, templatize, modelForElement as modelForElement$0} from 'goog:polymer.polymer.lib.utils.templatize'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
+  import {Debouncer} from 'goog:polymer.polymer.lib.utils.debounce'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {enqueueDebouncer, flush} from 'goog:npm.polymer.polymer.lib.utils.Flush'; // from //third_party/javascript/polymer/v2/polymer
+  import {enqueueDebouncer, flush} from 'goog:polymer.polymer.lib.utils.flush'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {OptionalMutableData} from 'goog:npm.polymer.polymer.lib.mixins.MutableData'; // from //third_party/javascript/polymer/v2/polymer
+  import {OptionalMutableData} from 'goog:polymer.polymer.lib.mixins.mutableData'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {matches, translate} from 'goog:npm.polymer.polymer.lib.utils.Path'; // from //third_party/javascript/polymer/v2/polymer
+  import {matches, translate} from 'goog:polymer.polymer.lib.utils.path'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {timeOut, microTask} from 'goog:npm.polymer.polymer.lib.utils.Async'; // from //third_party/javascript/polymer/v2/polymer
+  import {timeOut, microTask} from 'goog:polymer.polymer.lib.utils.async'; // from //third_party/javascript/polymer/v2/polymer
 
   export {DomRepeat};
 

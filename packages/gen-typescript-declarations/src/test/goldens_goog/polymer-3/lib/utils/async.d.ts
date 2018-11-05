@@ -11,7 +11,7 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.utils.Async' {
+declare module 'goog:polymer.polymer.lib.utils.async' {
 
   /**
    * Async interface wrapper around `setTimeout`.
@@ -117,7 +117,7 @@ declare module 'goog:npm.polymer.polymer.lib.utils.Async' {
 
   export {microTask};
 
-  import {AsyncInterface} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {AsyncInterface} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {IdleDeadline} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {IdleDeadline} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 }

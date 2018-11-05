@@ -12,11 +12,11 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.mixins.GestureEventListeners' {
+declare module 'goog:polymer.polymer.lib.mixins.gestureEventListeners' {
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import * as gestures$0 from 'goog:npm.polymer.polymer.lib.utils.Gestures'; // from //third_party/javascript/polymer/v2/polymer
+  import * as gestures$0 from 'goog:polymer.polymer.lib.utils.gestures'; // from //third_party/javascript/polymer/v2/polymer
 
   export {GestureEventListeners};
 

@@ -11,11 +11,11 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.paperBehaviors.PaperCheckedElementBehavior' {
+declare module 'goog:polymer.paperBehaviors.paperCheckedElementBehavior' {
 
-  import {PaperInkyFocusBehavior} from 'goog:npm.polymer.paperBehaviors.PaperInkyFocusBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
+  import {PaperInkyFocusBehavior} from 'goog:polymer.paperBehaviors.paperInkyFocusBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
 
-  import {PaperRippleBehavior} from 'goog:npm.polymer.paperBehaviors.PaperRippleBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
+  import {PaperRippleBehavior} from 'goog:polymer.paperBehaviors.paperRippleBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
 
   /**
    * Use `PaperCheckedElementBehavior` to implement a custom element that has a

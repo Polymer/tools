@@ -11,19 +11,19 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.elements.DomIf' {
+declare module 'goog:polymer.polymer.lib.elements.domIf' {
 
-  import {PolymerElement} from 'goog:npm.polymer.polymer.PolymerElement'; // from //third_party/javascript/polymer/v2/polymer
+  import {PolymerElement} from 'goog:polymer.polymer.polymerElement'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {templatize} from 'goog:npm.polymer.polymer.lib.utils.Templatize'; // from //third_party/javascript/polymer/v2/polymer
+  import {templatize} from 'goog:polymer.polymer.lib.utils.templatize'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
+  import {Debouncer} from 'goog:polymer.polymer.lib.utils.debounce'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {enqueueDebouncer, flush} from 'goog:npm.polymer.polymer.lib.utils.Flush'; // from //third_party/javascript/polymer/v2/polymer
+  import {enqueueDebouncer, flush} from 'goog:polymer.polymer.lib.utils.flush'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {microTask} from 'goog:npm.polymer.polymer.lib.utils.Async'; // from //third_party/javascript/polymer/v2/polymer
+  import {microTask} from 'goog:polymer.polymer.lib.utils.async'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {root as root$0} from 'goog:npm.polymer.polymer.lib.utils.Path'; // from //third_party/javascript/polymer/v2/polymer
+  import {root as root$0} from 'goog:polymer.polymer.lib.utils.path'; // from //third_party/javascript/polymer/v2/polymer
 
   export {DomIf};
 

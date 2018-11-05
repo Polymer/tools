@@ -12,7 +12,7 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.utils.ArraySplice' {
+declare module 'goog:polymer.polymer.lib.utils.arraySplice' {
 
   export {calculateSplices};
 

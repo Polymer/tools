@@ -12,17 +12,17 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects' {
+declare module 'goog:polymer.polymer.lib.mixins.propertyEffects' {
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {root as root$0, isAncestor, isDescendant, get as get$0, translate, isPath as isPath$0, set as set$0, normalize} from 'goog:npm.polymer.polymer.lib.utils.Path'; // from //third_party/javascript/polymer/v2/polymer
+  import {root as root$0, isAncestor, isDescendant, get as get$0, translate, isPath as isPath$0, set as set$0, normalize} from 'goog:polymer.polymer.lib.utils.path'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {camelToDashCase, dashToCamelCase} from 'goog:npm.polymer.polymer.lib.utils.CaseMap'; // from //third_party/javascript/polymer/v2/polymer
+  import {camelToDashCase, dashToCamelCase} from 'goog:polymer.polymer.lib.utils.caseMap'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyAccessors} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyAccessors} from 'goog:polymer.polymer.lib.mixins.propertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {TemplateStamp} from 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateStamp} from 'goog:polymer.polymer.lib.mixins.templateStamp'; // from //third_party/javascript/polymer/v2/polymer
 
   export {PropertyEffects};
 
@@ -57,11 +57,11 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects' {
    */
   function PropertyEffects<T extends new (...args: any[]) => {}>(base: T): T & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor;
 
-  import {TemplateStampConstructor} from 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateStampConstructor} from 'goog:polymer.polymer.lib.mixins.templateStamp'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyAccessorsConstructor} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyAccessorsConstructor} from 'goog:polymer.polymer.lib.mixins.propertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
   interface PropertyEffectsConstructor {
     new(...args: any[]): PropertyEffects;
@@ -867,11 +867,11 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects' {
     _removeBoundDom(dom: StampedTemplate): void;
   }
 
-  import {TemplateInfo} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateInfo} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {NodeInfo} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {NodeInfo} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {BindingPart} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {BindingPart} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {StampedTemplate} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {StampedTemplate} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 }

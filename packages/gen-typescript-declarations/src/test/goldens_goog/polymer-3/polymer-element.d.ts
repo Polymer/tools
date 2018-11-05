@@ -11,11 +11,11 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.PolymerElement' {
+declare module 'goog:polymer.polymer.polymerElement' {
 
-  import {ElementMixin} from 'goog:npm.polymer.polymer.lib.mixins.ElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {ElementMixin} from 'goog:polymer.polymer.lib.mixins.elementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  export {html} from 'goog:npm.polymer.polymer.lib.utils.HtmlTag'; // from //third_party/javascript/polymer/v2/polymer
+  export {html} from 'goog:polymer.polymer.lib.utils.htmlTag'; // from //third_party/javascript/polymer/v2/polymer
 
   export {PolymerElement};
 

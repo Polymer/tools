@@ -12,9 +12,9 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.legacy.Class' {
+declare module 'goog:polymer.polymer.lib.legacy.class' {
 
-  import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {LegacyElementMixin} from 'goog:polymer.polymer.lib.legacy.legacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
   export {mixinBehaviors};
 
@@ -101,5 +101,5 @@ declare module 'goog:npm.polymer.polymer.lib.legacy.Class' {
    */
   function Class(info: PolymerInit): {new(): HTMLElement};
 
-  import {PolymerInit} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {PolymerInit} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 }

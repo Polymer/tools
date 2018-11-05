@@ -11,5 +11,5 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.utils.Unresolved' {
+declare module 'goog:polymer.polymer.lib.utils.unresolved' {
 }

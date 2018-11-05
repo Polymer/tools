@@ -11,9 +11,9 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.legacy.TemplatizerBehavior' {
+declare module 'goog:polymer.polymer.lib.legacy.templatizerBehavior' {
 
-  import {TemplateInstanceBase, templatize as templatize$0, modelForElement as modelForElement$0} from 'goog:npm.polymer.polymer.lib.utils.Templatize'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateInstanceBase, templatize as templatize$0, modelForElement as modelForElement$0} from 'goog:polymer.polymer.lib.utils.templatize'; // from //third_party/javascript/polymer/v2/polymer
 
   export {Templatizer};
 

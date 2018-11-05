@@ -12,11 +12,11 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.mixins.PropertiesMixin' {
+declare module 'goog:polymer.polymer.lib.mixins.propertiesMixin' {
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChanged} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
   export {PropertiesMixin};
 
@@ -34,7 +34,7 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.PropertiesMixin' {
    */
   function PropertiesMixin<T extends new (...args: any[]) => {}>(base: T): T & PropertiesMixinConstructor & PropertiesChangedConstructor;
 
-  import {PropertiesChangedConstructor} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChangedConstructor} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
   interface PropertiesMixinConstructor {
     new(...args: any[]): PropertiesMixin;

@@ -308,7 +308,7 @@ function getPackageName(rootDir: string) {
   return packageInfo.name;
 }
 function googModuleForNameBasedImportSpecifier(spec: string) {
-  let name =
+  const name =
       // remove trailing .d.ts and .js
       spec.replace(/(\.d\.ts|\.js)$/, '')
           // foo-bar.dom becomes fooBarDom
@@ -318,15 +318,8 @@ function googModuleForNameBasedImportSpecifier(spec: string) {
           // slash separated paths becomes dot separated namespace
           .replace(/\//g, '.');
 
-  // the last segment is capitalized
-  const lastDotIdx = name.lastIndexOf('.');
-  if (lastDotIdx === -1) {
-    return undefined;
-  }
-  name = name.slice(0, lastDotIdx + 1) +
-      name.charAt(lastDotIdx + 1).toUpperCase() + name.slice(lastDotIdx + 2);
-  // add goog:npm. at the beginning
-  return `goog:npm.${name}`;
+  // add goog: at the beginning
+  return `goog:${name}`;
 }
 
 /* Note: this function modifies tsDoc. */

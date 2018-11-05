@@ -11,7 +11,7 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.utils.CaseMap' {
+declare module 'goog:polymer.polymer.lib.utils.caseMap' {
 
   export {dashToCamelCase};
 

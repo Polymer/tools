@@ -12,19 +12,19 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.mixins.ElementMixin' {
+declare module 'goog:polymer.polymer.lib.mixins.elementMixin' {
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {stylesFromTemplate, stylesFromModuleImports} from 'goog:npm.polymer.polymer.lib.utils.StyleGather'; // from //third_party/javascript/polymer/v2/polymer
+  import {stylesFromTemplate, stylesFromModuleImports} from 'goog:polymer.polymer.lib.utils.styleGather'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {pathFromUrl, resolveCss, resolveUrl as resolveUrl$0} from 'goog:npm.polymer.polymer.lib.utils.ResolveUrl'; // from //third_party/javascript/polymer/v2/polymer
+  import {pathFromUrl, resolveCss, resolveUrl as resolveUrl$0} from 'goog:polymer.polymer.lib.utils.resolveUrl'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {DomModule} from 'goog:npm.polymer.polymer.lib.elements.DomModule'; // from //third_party/javascript/polymer/v2/polymer
+  import {DomModule} from 'goog:polymer.polymer.lib.elements.domModule'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyEffects} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyEffects} from 'goog:polymer.polymer.lib.mixins.propertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesMixin} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesMixin} from 'goog:polymer.polymer.lib.mixins.propertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
 
   export {ElementMixin};
 
@@ -86,15 +86,15 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.ElementMixin' {
    */
   function ElementMixin<T extends new (...args: any[]) => {}>(base: T): T & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor;
 
-  import {PropertyEffectsConstructor} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyEffectsConstructor} from 'goog:polymer.polymer.lib.mixins.propertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {TemplateStampConstructor, TemplateStamp} from 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateStampConstructor, TemplateStamp} from 'goog:polymer.polymer.lib.mixins.templateStamp'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:polymer.polymer.lib.mixins.propertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesMixinConstructor} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesMixinConstructor} from 'goog:polymer.polymer.lib.mixins.propertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
 
   interface ElementMixinConstructor {
     new(...args: any[]): ElementMixin;
@@ -278,5 +278,5 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.ElementMixin' {
    */
   function updateStyles(props?: object|null): void;
 
-  import {StampedTemplate} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {StampedTemplate} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 }

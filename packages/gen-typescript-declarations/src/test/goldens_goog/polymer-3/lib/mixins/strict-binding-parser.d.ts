@@ -12,13 +12,13 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.mixins.StrictBindingParser' {
+declare module 'goog:polymer.polymer.lib.mixins.strictBindingParser' {
 
-  import {isPath} from 'goog:npm.polymer.polymer.lib.utils.Path'; // from //third_party/javascript/polymer/v2/polymer
+  import {isPath} from 'goog:polymer.polymer.lib.utils.path'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyEffects} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyEffects} from 'goog:polymer.polymer.lib.mixins.propertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
 
   /**
@@ -29,13 +29,13 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.StrictBindingParser' {
    */
   function StrictBindingParser<T extends new (...args: any[]) => {}>(base: T): T & StrictBindingParserConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor;
 
-  import {PropertyEffectsConstructor} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyEffectsConstructor} from 'goog:polymer.polymer.lib.mixins.propertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {TemplateStampConstructor, TemplateStamp} from 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateStampConstructor, TemplateStamp} from 'goog:polymer.polymer.lib.mixins.templateStamp'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:polymer.polymer.lib.mixins.propertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
   interface StrictBindingParserConstructor {
     new(...args: any[]): StrictBindingParser;
@@ -82,5 +82,5 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.StrictBindingParser' {
 
   export {StrictBindingParser};
 
-  import {BindingPart} from 'goog:npm.polymer.polymer.Interfaces'; // from //third_party/javascript/polymer/v2/polymer
+  import {BindingPart} from 'goog:polymer.polymer.interfaces'; // from //third_party/javascript/polymer/v2/polymer
 }

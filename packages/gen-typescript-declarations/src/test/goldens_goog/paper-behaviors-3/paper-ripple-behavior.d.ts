@@ -12,9 +12,9 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.paperBehaviors.PaperRippleBehavior' {
+declare module 'goog:polymer.paperBehaviors.paperRippleBehavior' {
 
-  import {dom} from 'goog:npm.polymer.polymer.lib.legacy.PolymerDom'; // from //third_party/javascript/polymer/v2/polymer
+  import {dom} from 'goog:polymer.polymer.lib.legacy.polymerDom'; // from //third_party/javascript/polymer/v2/polymer
 
   export {PaperRippleBehavior};
 

@@ -12,21 +12,21 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.paperMenuButton.PaperMenuButton' {
+declare module 'goog:polymer.paperMenuButton.paperMenuButton' {
 
-  import {IronA11yKeysBehavior} from 'goog:npm.polymer.ironA11yKeysBehavior.IronA11yKeysBehavior'; // from //third_party/javascript/polymer/v2/iron-a11y-keys-behavior
+  import {IronA11yKeysBehavior} from 'goog:polymer.ironA11yKeysBehavior.ironA11yKeysBehavior'; // from //third_party/javascript/polymer/v2/iron-a11y-keys-behavior
 
-  import {IronControlState} from 'goog:npm.polymer.ironBehaviors.IronControlState'; // from //third_party/javascript/polymer/v2/iron-behaviors
+  import {IronControlState} from 'goog:polymer.ironBehaviors.ironControlState'; // from //third_party/javascript/polymer/v2/iron-behaviors
 
-  import {Polymer} from 'goog:npm.polymer.polymer.lib.legacy.PolymerFn'; // from //third_party/javascript/polymer/v2/polymer
+  import {Polymer} from 'goog:polymer.polymer.lib.legacy.polymerFn'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {dom} from 'goog:npm.polymer.polymer.lib.legacy.PolymerDom'; // from //third_party/javascript/polymer/v2/polymer
+  import {dom} from 'goog:polymer.polymer.lib.legacy.polymerDom'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {html} from 'goog:npm.polymer.polymer.lib.utils.HtmlTag'; // from //third_party/javascript/polymer/v2/polymer
+  import {html} from 'goog:polymer.polymer.lib.utils.htmlTag'; // from //third_party/javascript/polymer/v2/polymer
 
   export {PaperMenuButton};
 
-  import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {LegacyElementMixin} from 'goog:polymer.polymer.lib.legacy.legacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
   class PaperMenuButton {
 

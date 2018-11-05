@@ -12,13 +12,13 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.paperBehaviors.PaperButtonBehavior' {
+declare module 'goog:polymer.paperBehaviors.paperButtonBehavior' {
 
-  import {IronButtonState} from 'goog:npm.polymer.ironBehaviors.IronButtonState'; // from //third_party/javascript/polymer/v2/iron-behaviors
+  import {IronButtonState} from 'goog:polymer.ironBehaviors.ironButtonState'; // from //third_party/javascript/polymer/v2/iron-behaviors
 
-  import {IronControlState} from 'goog:npm.polymer.ironBehaviors.IronControlState'; // from //third_party/javascript/polymer/v2/iron-behaviors
+  import {IronControlState} from 'goog:polymer.ironBehaviors.ironControlState'; // from //third_party/javascript/polymer/v2/iron-behaviors
 
-  import {PaperRippleBehavior} from 'goog:npm.polymer.paperBehaviors.PaperRippleBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
+  import {PaperRippleBehavior} from 'goog:polymer.paperBehaviors.paperRippleBehavior'; // from //third_party/javascript/polymer/v2/paper-behaviors
 
   interface PaperButtonBehavior extends IronButtonState, IronControlState, PaperRippleBehavior {
 

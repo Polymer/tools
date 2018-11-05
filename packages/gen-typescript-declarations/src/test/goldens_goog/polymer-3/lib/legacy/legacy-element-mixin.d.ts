@@ -12,25 +12,25 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin' {
+declare module 'goog:polymer.polymer.lib.legacy.legacyElementMixin' {
 
-  import {ElementMixin} from 'goog:npm.polymer.polymer.lib.mixins.ElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {ElementMixin} from 'goog:polymer.polymer.lib.mixins.elementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {GestureEventListeners} from 'goog:npm.polymer.polymer.lib.mixins.GestureEventListeners'; // from //third_party/javascript/polymer/v2/polymer
+  import {GestureEventListeners} from 'goog:polymer.polymer.lib.mixins.gestureEventListeners'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {DirMixin} from 'goog:npm.polymer.polymer.lib.mixins.DirMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {DirMixin} from 'goog:polymer.polymer.lib.mixins.dirMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {dedupingMixin} from 'goog:npm.polymer.polymer.lib.utils.Mixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {dedupingMixin} from 'goog:polymer.polymer.lib.utils.mixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {dom as dom$0, matchesSelector} from 'goog:npm.polymer.polymer.lib.legacy.PolymerDom'; // from //third_party/javascript/polymer/v2/polymer
+  import {dom as dom$0, matchesSelector} from 'goog:polymer.polymer.lib.legacy.polymerDom'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {setTouchAction} from 'goog:npm.polymer.polymer.lib.utils.Gestures'; // from //third_party/javascript/polymer/v2/polymer
+  import {setTouchAction} from 'goog:polymer.polymer.lib.utils.gestures'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
+  import {Debouncer} from 'goog:polymer.polymer.lib.utils.debounce'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {timeOut, microTask} from 'goog:npm.polymer.polymer.lib.utils.Async'; // from //third_party/javascript/polymer/v2/polymer
+  import {timeOut, microTask} from 'goog:polymer.polymer.lib.utils.async'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {get as get$0} from 'goog:npm.polymer.polymer.lib.utils.Path'; // from //third_party/javascript/polymer/v2/polymer
+  import {get as get$0} from 'goog:polymer.polymer.lib.utils.path'; // from //third_party/javascript/polymer/v2/polymer
 
   export {LegacyElementMixin};
 
@@ -43,19 +43,19 @@ declare module 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin' {
    */
   function LegacyElementMixin<T extends new (...args: any[]) => {}>(base: T): T & LegacyElementMixinConstructor & ElementMixinConstructor & PropertyEffectsConstructor & TemplateStampConstructor & PropertyAccessorsConstructor & PropertiesChangedConstructor & PropertiesMixinConstructor & GestureEventListenersConstructor;
 
-  import {ElementMixinConstructor} from 'goog:npm.polymer.polymer.lib.mixins.ElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {ElementMixinConstructor} from 'goog:polymer.polymer.lib.mixins.elementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyEffectsConstructor, PropertyEffects} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyEffectsConstructor, PropertyEffects} from 'goog:polymer.polymer.lib.mixins.propertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {TemplateStampConstructor, TemplateStamp} from 'goog:npm.polymer.polymer.lib.mixins.TemplateStamp'; // from //third_party/javascript/polymer/v2/polymer
+  import {TemplateStampConstructor, TemplateStamp} from 'goog:polymer.polymer.lib.mixins.templateStamp'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyAccessorsConstructor, PropertyAccessors} from 'goog:polymer.polymer.lib.mixins.propertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesChangedConstructor, PropertiesChanged} from 'goog:polymer.polymer.lib.mixins.propertiesChanged'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {PropertiesMixinConstructor, PropertiesMixin} from 'goog:npm.polymer.polymer.lib.mixins.PropertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertiesMixinConstructor, PropertiesMixin} from 'goog:polymer.polymer.lib.mixins.propertiesMixin'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {GestureEventListenersConstructor} from 'goog:npm.polymer.polymer.lib.mixins.GestureEventListeners'; // from //third_party/javascript/polymer/v2/polymer
+  import {GestureEventListenersConstructor} from 'goog:polymer.polymer.lib.mixins.gestureEventListeners'; // from //third_party/javascript/polymer/v2/polymer
 
   interface LegacyElementMixinConstructor {
     new(...args: any[]): LegacyElementMixin;

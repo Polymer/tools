@@ -11,13 +11,13 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.elements.DomBind' {
+declare module 'goog:polymer.polymer.lib.elements.domBind' {
 
-  import {PropertyEffects} from 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects'; // from //third_party/javascript/polymer/v2/polymer
+  import {PropertyEffects} from 'goog:polymer.polymer.lib.mixins.propertyEffects'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {OptionalMutableData} from 'goog:npm.polymer.polymer.lib.mixins.MutableData'; // from //third_party/javascript/polymer/v2/polymer
+  import {OptionalMutableData} from 'goog:polymer.polymer.lib.mixins.mutableData'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {GestureEventListeners} from 'goog:npm.polymer.polymer.lib.mixins.GestureEventListeners'; // from //third_party/javascript/polymer/v2/polymer
+  import {GestureEventListeners} from 'goog:polymer.polymer.lib.mixins.gestureEventListeners'; // from //third_party/javascript/polymer/v2/polymer
 
   export {DomBind};
 

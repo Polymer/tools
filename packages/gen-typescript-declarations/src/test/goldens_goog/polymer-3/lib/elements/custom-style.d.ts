@@ -11,9 +11,9 @@
 
 // tslint:disable:variable-name API description
 
-declare module 'goog:npm.polymer.polymer.lib.elements.CustomStyle' {
+declare module 'goog:polymer.polymer.lib.elements.customStyle' {
 
-  import {cssFromModules} from 'goog:npm.polymer.polymer.lib.utils.StyleGather'; // from //third_party/javascript/polymer/v2/polymer
+  import {cssFromModules} from 'goog:polymer.polymer.lib.utils.styleGather'; // from //third_party/javascript/polymer/v2/polymer
 
   export {CustomStyle};
 

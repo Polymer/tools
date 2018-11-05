@@ -12,13 +12,13 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
-declare module 'goog:npm.polymer.paperMenuButton.PaperMenuButtonAnimations' {
+declare module 'goog:polymer.paperMenuButton.paperMenuButtonAnimations' {
 
-  import {NeonAnimationBehavior} from 'goog:npm.polymer.neonAnimation.NeonAnimationBehavior'; // from //third_party/javascript/polymer/v2/neon-animation
+  import {NeonAnimationBehavior} from 'goog:polymer.neonAnimation.neonAnimationBehavior'; // from //third_party/javascript/polymer/v2/neon-animation
 
-  import {Polymer} from 'goog:npm.polymer.polymer.lib.legacy.PolymerFn'; // from //third_party/javascript/polymer/v2/polymer
+  import {Polymer} from 'goog:polymer.polymer.lib.legacy.polymerFn'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
+  import {LegacyElementMixin} from 'goog:polymer.polymer.lib.legacy.legacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
 
   interface PaperMenuGrowHeightAnimationElement extends NeonAnimationBehavior, LegacyElementMixin, HTMLElement {
     configure(config: any): any;
