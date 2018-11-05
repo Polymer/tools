@@ -28,6 +28,7 @@ suite('generateDeclarations (goog)', () => {
         config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       }
       config.googModules = true;
+      config.hideWarnings = true;
 
       const actual =
           await generateDeclarations(path.join(fixtures, fixture), config);
