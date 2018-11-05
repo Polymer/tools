@@ -11,6 +11,8 @@
 
 // tslint:disable:variable-name API description
 
+import {DomModule} from '../elements/dom-module.js';
+
 import {resolveCss} from './resolve-url.js';
 
 export {stylesFromModules};

@@ -16,7 +16,9 @@ declare module 'goog:npm.polymer.polymer.lib.legacy.PolymerDom' {
 
   import {FlattenedNodesObserver} from 'goog:npm.polymer.polymer.lib.utils.FlattenedNodesObserver'; // from //third_party/javascript/polymer/v2/polymer
 
-  import {flush as flush$0, enqueueDebouncer} from 'goog:npm.polymer.polymer.lib.utils.Flush'; // from //third_party/javascript/polymer/v2/polymer
+  export {flush, enqueueDebouncer as addDebouncer} from 'goog:npm.polymer.polymer.lib.utils.Flush'; // from //third_party/javascript/polymer/v2/polymer
+
+  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
 
   export {matchesSelector};
 
@@ -62,14 +64,14 @@ declare module 'goog:npm.polymer.polymer.lib.legacy.PolymerDom' {
     constructor(node: Node|null);
 
     /**
-     * Returns an instance of `Polymer.FlattenedNodesObserver` that
+     * Returns an instance of `FlattenedNodesObserver` that
      * listens for node changes on this element.
      *
      * @param callback Called when direct or distributed children
      *   of this element changes
      * @returns Observer instance
      */
-    observeNodes(callback: (p0: Element, p1: {target: Element, addedNodes: Element[], removedNodes: Element[]}) => void): FlattenedNodesObserver;
+    observeNodes(callback: (p0: {target: Element, addedNodes: Element[], removedNodes: Element[]}) => void): FlattenedNodesObserver;
 
     /**
      * Disconnects an observer previously created via `observeNodes`
@@ -155,8 +157,10 @@ declare module 'goog:npm.polymer.polymer.lib.legacy.PolymerDom' {
     querySelectorAll(selector: string): NodeListOf<Element>;
   }
 
+  export {EventApi};
+
   /**
-   * Event API wrapper class returned from `Polymer.dom.(target)` when
+   * Event API wrapper class returned from `dom.(target)` when
    * `target` is an `Event`.
    */
   class EventApi {
@@ -193,8 +197,4 @@ declare module 'goog:npm.polymer.polymer.lib.legacy.PolymerDom' {
    * @returns Wrapper providing either node API or event API
    */
   function dom(obj?: Node|Event|null): DomApi|EventApi;
-
-  export {flush$0 as flush};
-
-  export {enqueueDebouncer as addDebouncer};
 }

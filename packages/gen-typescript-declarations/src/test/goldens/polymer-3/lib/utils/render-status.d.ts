@@ -12,6 +12,15 @@
 // tslint:disable:variable-name API description
 // tslint:disable:no-any describes the API as best we are able today
 
+export {flush};
+
+
+/**
+ * Flushes all `beforeNextRender` tasks, followed by all `afterNextRender`
+ * tasks.
+ */
+declare function flush(): void;
+
 export {beforeNextRender};
 
 

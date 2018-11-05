@@ -10,12 +10,11 @@
 
 
 // tslint:disable:variable-name API description
+// tslint:disable:no-any describes the API as best we are able today
 
 declare module 'goog:npm.polymer.polymer.lib.legacy.Class' {
 
   import {LegacyElementMixin} from 'goog:npm.polymer.polymer.lib.legacy.LegacyElementMixin'; // from //third_party/javascript/polymer/v2/polymer
-
-  import {DomModule} from 'goog:npm.polymer.polymer.lib.elements.DomModule'; // from //third_party/javascript/polymer/v2/polymer
 
   export {mixinBehaviors};
 
@@ -30,7 +29,7 @@ declare module 'goog:npm.polymer.polymer.lib.legacy.Class' {
    * @returns Returns a new Element class extended by the
    * passed in `behaviors` and also by `LegacyElementMixin`.
    */
-  function mixinBehaviors<T>(behaviors: object|object[], klass: {new(): T}): {new(): T};
+  function mixinBehaviors<T>(behaviors: object|object[], klass: {new(): T}): any;
 
   export {Class};
 

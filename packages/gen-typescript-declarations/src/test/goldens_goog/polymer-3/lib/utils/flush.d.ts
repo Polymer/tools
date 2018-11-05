@@ -13,6 +13,8 @@
 
 declare module 'goog:npm.polymer.polymer.lib.utils.Flush' {
 
+  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
+
   export {enqueueDebouncer};
 
 
@@ -30,6 +32,4 @@ declare module 'goog:npm.polymer.polymer.lib.utils.Flush' {
    * - ShadyDOM distribution
    */
   function flush(): void;
-
-  import {Debouncer} from 'goog:npm.polymer.polymer.lib.utils.Debounce'; // from //third_party/javascript/polymer/v2/polymer
 }

@@ -13,6 +13,8 @@
 
 declare module 'goog:npm.polymer.polymer.lib.utils.StyleGather' {
 
+  import {DomModule} from 'goog:npm.polymer.polymer.lib.elements.DomModule'; // from //third_party/javascript/polymer/v2/polymer
+
   import {resolveCss} from 'goog:npm.polymer.polymer.lib.utils.ResolveUrl'; // from //third_party/javascript/polymer/v2/polymer
 
   export {stylesFromModules};

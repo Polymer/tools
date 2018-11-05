@@ -18,9 +18,7 @@ declare module 'goog:npm.polymer.polymer.lib.mixins.PropertyEffects' {
 
   import {root as root$0, isAncestor, isDescendant, get as get$0, translate, isPath as isPath$0, set as set$0, normalize} from 'goog:npm.polymer.polymer.lib.utils.Path'; // from //third_party/javascript/polymer/v2/polymer
 
-  import * as caseMap from 'goog:npm.polymer.polymer.lib.utils.CaseMap'; // from //third_party/javascript/polymer/v2/polymer
-
-  import {camelToDashCase as camelToDashCase$0, dashToCamelCase} from 'goog:npm.polymer.polymer.lib.utils.CaseMap'; // from //third_party/javascript/polymer/v2/polymer
+  import {camelToDashCase, dashToCamelCase} from 'goog:npm.polymer.polymer.lib.utils.CaseMap'; // from //third_party/javascript/polymer/v2/polymer
 
   import {PropertyAccessors} from 'goog:npm.polymer.polymer.lib.mixins.PropertyAccessors'; // from //third_party/javascript/polymer/v2/polymer
 

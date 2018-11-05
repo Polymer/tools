@@ -14,6 +14,15 @@
 
 declare module 'goog:npm.polymer.polymer.lib.utils.RenderStatus' {
 
+  export {flush};
+
+
+  /**
+   * Flushes all `beforeNextRender` tasks, followed by all `afterNextRender`
+   * tasks.
+   */
+  function flush(): void;
+
   export {beforeNextRender};
 
 

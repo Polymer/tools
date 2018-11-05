@@ -41,4 +41,20 @@ declare module 'goog:npm.polymer.polymer.lib.utils.Settings' {
    * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
    */
   function setPassiveTouchGestures(usePassive: boolean): void;
+
+  export {setStrictTemplatePolicy};
+
+
+  /**
+   * Sets `strictTemplatePolicy` globally for all elements
+   */
+  function setStrictTemplatePolicy(useStrictPolicy: boolean): void;
+
+  export {setAllowTemplateFromDomModule};
+
+
+  /**
+   * Sets `lookupTemplateFromDomModule` globally for all elements
+   */
+  function setAllowTemplateFromDomModule(allowDomModule: boolean): void;
 }
