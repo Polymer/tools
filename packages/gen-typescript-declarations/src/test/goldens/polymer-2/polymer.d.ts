@@ -9,7 +9,7 @@
  */
 
 
-// tslint:disable:variable-name API description
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
 
 /// <reference path="lib/legacy/legacy-element-mixin.d.ts" />
 /// <reference path="lib/legacy/polymer-fn.d.ts" />

@@ -9,7 +9,7 @@
  */
 
 
-// tslint:disable:variable-name API description
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
 
 /// <reference path="../polymer/types/polymer.d.ts" />
 /// <reference path="../iron-checked-element-behavior/iron-checked-element-behavior.d.ts" />

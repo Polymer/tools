@@ -9,7 +9,7 @@
  */
 
 
-// tslint:disable:variable-name API description
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
 
 /**
  * Async interface wrapper around `setTimeout`.

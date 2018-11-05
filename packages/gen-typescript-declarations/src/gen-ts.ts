@@ -192,7 +192,7 @@ async function analyzerToAst(
               .filter((url): url is string => url !== undefined)),
       tsLintDisables: [{
         ruleName: 'variable-name',
-        why: `API description`,
+        why: `Describing an API that's defined elsewhere.`,
       }],
     });
     for (const analyzerDoc of analyzerDocs) {
