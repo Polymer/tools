@@ -149,7 +149,7 @@ declare class MyClass extends MyBase {
       tsLintDisables: [{ruleName: 'dumb-jokes', why: 'just ignore him'}]
     });
     assert.equal(d.serialize(), `
-// tslint-disable:dumb-jokes: just ignore him
+// tslint:disable:dumb-jokes just ignore him
 
 /// <reference path="./other-types.d.ts" />
 /// <reference path="../more/types.d.ts" />
