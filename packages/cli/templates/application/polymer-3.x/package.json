@@ -11,6 +11,6 @@
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
-    "wct-mocha": "^1.0.0-pre.3"
+    "wct-mocha": "^1.0.0"
   }
 }
