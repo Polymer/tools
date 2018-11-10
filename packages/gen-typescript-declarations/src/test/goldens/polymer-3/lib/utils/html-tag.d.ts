@@ -8,6 +8,10 @@
  *   lib/utils/html-tag.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 /**
  * Class representing a static string value which can be used to filter
  * strings by asseting that they have been created via this class. The

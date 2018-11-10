@@ -8,6 +8,9 @@
  *   polymer-element.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 import {ElementMixin} from './lib/mixins/element-mixin.js';
 
 export {html} from './lib/utils/html-tag.js';

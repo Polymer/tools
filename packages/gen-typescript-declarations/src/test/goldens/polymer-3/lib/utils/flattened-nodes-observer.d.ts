@@ -8,6 +8,9 @@
  *   lib/utils/flattened-nodes-observer.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 import {calculateSplices} from './array-splice.js';
 
 import {microTask} from './async.js';

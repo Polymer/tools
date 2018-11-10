@@ -14,8 +14,8 @@ import {Node} from './index';
 import {anyType, ParamType, Type} from './types';
 
 /** An AST node that can appear directly in a document or namespace. */
-export type Declaration =
-    GlobalNamespace|Namespace|Class|Interface|Function|ConstValue|Import|Export;
+export type Declaration = GlobalNamespace|Namespace|Class|Interface|Function|
+    ConstValue|Import|Export|TypeAssignment;
 
 export class GlobalNamespace {
   readonly kind = 'globalNamespace';
@@ -32,12 +32,17 @@ export class GlobalNamespace {
     yield this;
   }
 
-  serialize(_depth: number = 0): string {
-    let out = `declare global {\n`;
-    for (const member of this.members) {
-      out += '\n' + member.serialize(1);
+  serialize(depth: number = 0): string {
+    const i = indent(depth);
+    let out = `${i}`;
+    if (depth === 0) {
+      out += 'declare ';
     }
-    out += `}\n`;
+    out += `global {\n`;
+    for (const member of this.members) {
+      out += '\n' + member.serialize(depth + 1);
+    }
+    out += `${i}}\n`;
     return out;
   }
 }
@@ -46,16 +51,19 @@ export class Namespace {
   readonly kind = 'namespace';
   name: string;
   description: string;
+  style: 'namespace'|'module';
   members: Declaration[];
 
   constructor(data: {
     name: string,
     description?: string,
     members?: Declaration[],
+    style?: 'namespace'|'module'
   }) {
     this.name = data.name;
     this.description = data.description || '';
     this.members = data.members || [];
+    this.style = data.style || 'namespace';
   }
 
   * traverse(): Iterable<Node> {
@@ -75,7 +83,13 @@ export class Namespace {
     if (depth === 0) {
       out += 'declare ';
     }
-    out += `namespace ${this.name} {\n`;
+    let name = this.name;
+    if (this.style === 'module') {
+      // module names can have syntax that's invalid for namespaces,
+      // like 'goog:foo' or './bar.js'
+      name = `'${name}'`;
+    }
+    out += `${this.style} ${name} {\n`;
     for (const member of this.members) {
       out += '\n' + member.serialize(depth + 1);
     }
@@ -422,9 +436,10 @@ export class Import {
   readonly kind = 'import';
   identifiers: ImportSpecifier[];
   fromModuleSpecifier: string;
+  trailingComment?: string;
 
   constructor(data: {
-    identifiers: ImportSpecifier[]; fromModuleSpecifier: string
+    identifiers: ImportSpecifier[]; fromModuleSpecifier: string,
   }) {
     this.identifiers = data.identifiers;
     this.fromModuleSpecifier = data.fromModuleSpecifier;
@@ -434,7 +449,8 @@ export class Import {
     yield this;
   }
 
-  serialize(_depth: number = 0): string {
+  serialize(depth: number = 0): string {
+    const i = indent(depth);
     if (this.identifiers.some((i) => i.identifier === AllIdentifiers)) {
       // Namespace imports have a different form. You can also have a default
       // import, but no named imports.
@@ -446,8 +462,9 @@ export class Import {
           parts.push(`* as ${identifier.alias}`);
         }
       }
-      return `import ${parts.join(', ')} ` +
-          `from '${this.fromModuleSpecifier}';\n`;
+      return `${i}import ${parts.join(', ')} ` +
+          `from '${this.fromModuleSpecifier}';` +
+          `${this.trailingComment || ''}\n`;
     }
 
     else {
@@ -462,8 +479,8 @@ export class Import {
             (alias !== undefined && alias !== identifier ? ` as ${alias}` :
                                                            ''));
       }
-      return `import {${parts.join(', ')}} ` +
-          `from '${this.fromModuleSpecifier}';\n`;
+      return `${i}import {${parts.join(', ')}} ` +
+          `from '${this.fromModuleSpecifier}';${this.trailingComment || ''}\n`;
     }
   }
 }
@@ -483,6 +500,7 @@ export class Export {
   readonly kind = 'export';
   identifiers: ExportSpecifier[]|AllIdentifiers;
   fromModuleSpecifier: string;
+  trailingComment?: string;
 
   constructor(data: {
     identifiers: ExportSpecifier[]|AllIdentifiers,
@@ -496,8 +514,9 @@ export class Export {
     yield this;
   }
 
-  serialize(_depth: number = 0): string {
-    let out = 'export ';
+  serialize(depth: number = 0): string {
+    const i = indent(depth);
+    let out = `${i}export `;
     if (this.identifiers === AllIdentifiers) {
       out += '*';
     } else {
@@ -510,7 +529,27 @@ export class Export {
     if (this.fromModuleSpecifier !== '') {
       out += ` from '${this.fromModuleSpecifier}'`;
     }
-    out += ';\n';
+    out += `;${this.trailingComment || ''}\n`;
     return out;
+  }
+}
+
+export class TypeAssignment {
+  readonly kind = 'typeAssignment';
+  name: string;
+  value: Type;
+  constructor(data: {name: string, value: Type}) {
+    this.name = data.name;
+    this.value = data.value;
+  }
+
+  * traverse(): Iterable<Node> {
+    yield* this.value.traverse();
+    yield this;
+  }
+
+  serialize(depth: number = 0): string {
+    const i = indent(depth);
+    return `${i}type ${this.name} = ${this.value.serialize()};\n`;
   }
 }
