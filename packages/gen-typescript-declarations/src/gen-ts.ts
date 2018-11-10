@@ -307,6 +307,7 @@ function getPackageName(rootDir: string) {
   }
   return packageInfo.name;
 }
+
 function googModuleForNameBasedImportSpecifier(spec: string) {
   const name =
       // remove trailing .d.ts and .js

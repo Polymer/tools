@@ -81,8 +81,8 @@ export class Document {
       }
     }
     out += '\n';
-    for (const disble of disables) {
-      out += `// tslint:disable:${disble.ruleName} ${disble.why}\n`;
+    for (const disable of disables) {
+      out += `// tslint:disable:${disable.ruleName} ${disable.why}\n`;
     }
     out += '\n';
     if (this.referencePaths.size > 0) {
