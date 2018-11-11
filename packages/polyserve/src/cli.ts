@@ -79,7 +79,7 @@ export async function run(): Promise<StartServerResult> {
 
   if (typeof cliOptions['compile-cache'] === 'number') {
     console.log(`compile cache set to ${cliOptions['compile-cache']}`);
-    babelCompileCache['max'] = cliOptions['compiler-cache'];
+    babelCompileCache['max'] = cliOptions['compile-cache'];
   }
 
   const serverInfos = await startServers(options);
