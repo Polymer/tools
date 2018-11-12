@@ -19,6 +19,8 @@ const retryTargetMax = parseInt(process.env['TEST_RETRY_TARGET_MAX'], 10) || 0;
 const retryCount = parseInt(process.env['TEST_RETRY_COUNT'], 10) || 0;
 const retryMax = parseInt(process.env['TEST_RETRY_MAX'], 10) || 3;
 
+const initialCurrentWorkingDirectory = process.cwd();
+
 /**
  * The `mocha` command-line *requires* the reporter module to export via:
  * `module.exports =`.
@@ -78,7 +80,7 @@ module.exports = class RetryFailuresReporter extends Mocha.reporters.Spec {
           fails.map((t) => ' - ' + t).join('\n')));
 
       const retryResults = spawnSync(process.argv0, args, {
-        cwd: process.cwd(),
+        cwd: initialCurrentWorkingDirectory,
         env: Object.assign({}, process.env, {
           'TEST_RETRY_TARGETS': JSON.stringify(fails),
           'TEST_RETRY_COUNT': `${retryCount + 1}`,
