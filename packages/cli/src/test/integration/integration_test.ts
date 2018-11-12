@@ -423,6 +423,10 @@ suite('polymer shop', function() {
     if (debugging) {
       browser = await puppeteer.launch({headless: false, slowMo: 250});
     } else {
+      // TODO(usergenic): For some unknown reason, tests failed in headless
+      // Chrome involving the `/cart` route for the Polymer/shop lit-element
+      // branch only.  Remove the `{headless: false}` when this problem is
+      // fixed.
       browser = await puppeteer.launch({headless: false});
     }
     disposables.push(() => browser.close());
