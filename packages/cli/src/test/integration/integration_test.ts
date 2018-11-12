@@ -443,9 +443,10 @@ suite('polymer shop', function() {
           await evaluate(expression),
           `Expected \`${expression}\` to evaluate to true in the browser`);
     };
-    const waitFor = async (name: string, expression: string) => {
+    const waitFor =
+        async (name: string, expression: string, timeout?: number) => {
       try {
-        await page.waitForFunction(expression);
+        await page.waitForFunction(expression, {timeout});
       } catch (e) {
         throw new Error(`Error waiting for ${name} in the browser`);
       }
@@ -494,7 +495,8 @@ suite('polymer shop', function() {
     // successfully!
     await waitFor(
         'shop-cart to be defined',
-        `this.customElements.get('shop-cart') !== undefined`);
+        `this.customElements.get('shop-cart') !== undefined`,
+        3 * 60 * 1000);
   }
 
   let error: Error|undefined;
