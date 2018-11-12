@@ -423,7 +423,7 @@ suite('polymer shop', function() {
     if (debugging) {
       browser = await puppeteer.launch({headless: false, slowMo: 250});
     } else {
-      browser = await puppeteer.launch();
+      browser = await puppeteer.launch({headless: false});
     }
     disposables.push(() => browser.close());
     const page = await browser.newPage();
