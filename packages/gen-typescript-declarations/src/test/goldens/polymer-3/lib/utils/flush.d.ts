@@ -8,6 +8,9 @@
  *   lib/utils/flush.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 import {Debouncer} from '../utils/debounce.js';
 
 export {enqueueDebouncer};

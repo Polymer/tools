@@ -14,7 +14,7 @@ import * as fs from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
 
-import {generateDeclarations} from '../gen-ts';
+import {generateDeclarations, Config} from '../gen-ts';
 
 const fixtures = path.join(__dirname, '..', '..', 'src', 'test', 'fixtures');
 const goldens = path.join(__dirname, '..', '..', 'src', 'test', 'goldens');
@@ -22,11 +22,12 @@ const goldens = path.join(__dirname, '..', '..', 'src', 'test', 'goldens');
 suite('generateDeclarations', () => {
   for (const fixture of fs.readdirSync(goldens)) {
     test(fixture, async () => {
-      let config = {};
+      let config: Config = {};
       const configPath = path.join(fixtures, fixture, 'gen-tsd.json');
       if (fs.existsSync(configPath)) {
         config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       }
+      config.hideWarnings = true;
 
       const actual =
           await generateDeclarations(path.join(fixtures, fixture), config);

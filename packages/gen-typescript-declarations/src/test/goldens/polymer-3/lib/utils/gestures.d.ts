@@ -8,6 +8,9 @@
  *   lib/utils/gestures.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 import {timeOut, microTask} from './async.js';
 
 import {Debouncer} from './debounce.js';

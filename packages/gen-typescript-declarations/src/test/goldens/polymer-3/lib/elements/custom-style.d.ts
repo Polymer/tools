@@ -8,6 +8,9 @@
  *   lib/elements/custom-style.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 import {cssFromModules} from '../utils/style-gather.js';
 
 export {CustomStyle};

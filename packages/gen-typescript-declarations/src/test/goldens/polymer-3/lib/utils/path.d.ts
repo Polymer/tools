@@ -8,6 +8,10 @@
  *   lib/utils/path.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 export {isPath};
 
 

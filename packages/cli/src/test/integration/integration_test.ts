@@ -423,7 +423,11 @@ suite('polymer shop', function() {
     if (debugging) {
       browser = await puppeteer.launch({headless: false, slowMo: 250});
     } else {
-      browser = await puppeteer.launch();
+      // TODO(usergenic): For some unknown reason, tests failed in headless
+      // Chrome involving the `/cart` route for the Polymer/shop lit-element
+      // branch only.  Remove the `{headless: false}` when this problem is
+      // fixed.
+      browser = await puppeteer.launch({headless: false});
     }
     disposables.push(() => browser.close());
     const page = await browser.newPage();
@@ -443,9 +447,10 @@ suite('polymer shop', function() {
           await evaluate(expression),
           `Expected \`${expression}\` to evaluate to true in the browser`);
     };
-    const waitFor = async (name: string, expression: string) => {
+    const waitFor =
+        async (name: string, expression: string, timeout?: number) => {
       try {
-        await page.waitForFunction(expression);
+        await page.waitForFunction(expression, {timeout});
       } catch (e) {
         throw new Error(`Error waiting for ${name} in the browser`);
       }
@@ -494,7 +499,8 @@ suite('polymer shop', function() {
     // successfully!
     await waitFor(
         'shop-cart to be defined',
-        `this.customElements.get('shop-cart') !== undefined`);
+        `this.customElements.get('shop-cart') !== undefined`,
+        3 * 60 * 1000);
   }
 
   let error: Error|undefined;

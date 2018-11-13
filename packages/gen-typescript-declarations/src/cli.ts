@@ -9,6 +9,8 @@
  * additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import 'source-map-support/register';
+
 import * as fsExtra from 'fs-extra';
 import * as glob from 'glob';
 import * as path from 'path';
@@ -61,6 +63,14 @@ const argDefs = [
     description: 'Compile the generated types with TypeScript 3.0 and fail ' +
         'if they are invalid.',
   },
+  {
+    name: 'googModules',
+    type: Boolean,
+    description: 'If true, outputs declarations in \'goog:\' modules instead' +
+        ' of using simple ES modules. This is a temporary hack to account for' +
+        ' how modules are resolved for TypeScript inside google3. This' +
+        ' is probably not at all useful for anyone but the Polymer team.'
+  }
 ];
 
 interface Args {
@@ -71,6 +81,7 @@ interface Args {
   outDir?: string;
   deleteExisting?: boolean;
   verify?: boolean;
+  googModules?: boolean;
 }
 
 async function run(argv: string[]) {
@@ -111,6 +122,9 @@ async function run(argv: string[]) {
   if (args.config) {
     console.info(`Loading config from "${args.config}".`);
     config = JSON.parse(await fsExtra.readFile(args.config, 'utf8')) as Config;
+  }
+  if (args.googModules) {
+    config.googModules = true;
   }
 
   const fileMap = await generateDeclarations(args.root, config);
