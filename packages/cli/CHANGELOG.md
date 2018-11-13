@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## v1.9.0 [11-08-2018]
+## v1.9.0 [11-12-2018]
 * Polymer 3.x templates now use lighter-weight dependency-free `wct-mocha`
   for testing.
 
