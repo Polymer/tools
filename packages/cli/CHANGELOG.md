@@ -1,6 +1,16 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/)
+and this project adheres to [Semantic Versioning](http://semver.org/).
+
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## v1.9.0 [11-12-2018]
+* Polymer 3.x templates now use lighter-weight dependency-free `wct-mocha`
+  for testing.
 
 ## v1.9.0-pre.2 [10-25-2018]
 * Include latest official `web-component-tester` update adding
