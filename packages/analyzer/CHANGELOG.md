@@ -5,10 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
+<!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [3.2.0] - 2018-12-03
 * Support annotating mixin class properties and methods using
   `MixinClass.prototype.foo` syntax.
-<!-- Add new, unreleased changes here. -->
 
 ## [3.1.3] - 2018-10-15
 * Make `HtmlDocument#stringify()` faster by only cloning the ast and stringifing
