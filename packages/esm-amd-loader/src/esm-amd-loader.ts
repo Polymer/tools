@@ -130,8 +130,14 @@ interface ModuleG<State extends keyof StateDataMap> {
   readonly url: NormalizedUrl;
   readonly urlBase: NormalizedUrl;
   readonly exports: {[id: string]: {}};
-  /** True if this is a top-level module. */
+  /**
+   * True if this is a top-level module.
+   */
   isTopLevel: boolean;
+  /**
+   * Value of the crossorigin attribute of the script that loads this module.
+   */
+  crossorigin: string|null;
   /**
    * Callbacks that are called exactly once, for the next time the module
    * progresses to a new state.
@@ -187,6 +193,11 @@ function load(module: ModuleG<StateEnum.Initialized>):
 
   const script = document.createElement('script');
   script.src = module.url;
+
+  // Crossorigin attribute could be the empty string - preserve this.
+  if (module.crossorigin !== null) {
+    script.setAttribute('crossorigin', module.crossorigin);
+  }
 
   /**
    * Remove our script tags from the document after they have loaded/errored, to
@@ -278,6 +289,7 @@ function loadDeps(
 
     // We have a dependency on a real module.
     const dependency = getModule(resolveUrl(module.urlBase, depSpec));
+    dependency.crossorigin = module.crossorigin;
     args.push(dependency.exports);
     depModules.push(dependency);
 
@@ -434,6 +446,13 @@ window.define = function(deps: string[], moduleBody?: OnExecutedCallback) {
   // by waiting a tick, and if we haven't already been defined by the "onload"
   // handler from case #1, then this must be case #2.
   const documentUrl = getDocumentUrl();
+
+  // Save the value of the crossorigin attribute before setTimeout while we
+  // can still get document.currentScript. Note: IE11 doesn't support
+  // crossorigin attribute nor currentScript, so it will always be null.
+  const crossorigin = document.currentScript ?
+      document.currentScript.getAttribute('crossorigin') : null;
+
   setTimeout(() => {
     if (defined === false) {
       pendingDefine = undefined;
@@ -442,6 +461,7 @@ window.define = function(deps: string[], moduleBody?: OnExecutedCallback) {
       // state, because this is a top level document and it's already loaded.
       const mod = getModule(url) as ModuleG<StateEnum.Loading>;
       mod.isTopLevel = true;
+      mod.crossorigin = crossorigin;
       const waitingModule = beginWaitingForTurn(mod, deps, moduleBody);
       if (previousTopLevelUrl !== undefined) {
         // type=module scripts execute in order (with the same timing as defer
@@ -499,6 +519,7 @@ function getModule(url: NormalizedUrl): Module {
       state: StateEnum.Initialized,
       stateData: undefined,
       isTopLevel: false,
+      crossorigin: null,
       onNextStateChange: []
     };
   }

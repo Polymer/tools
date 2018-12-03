@@ -49,7 +49,7 @@ interface Window {
 }
 
 interface Window {
-  executed: {[url: string]: true};
+  executed: {[url: string]: HTMLScriptElement|true};
   checkExecuted: (key: string) => void;
   executionOrder: string[];
   addExecutedForImport?: (key: string) => void;
@@ -57,10 +57,11 @@ interface Window {
 }
 
 window.checkExecuted = (key) => {
-  if (window.executed[key] === true) {
+  if (window.executed[key]) {
     throw new Error('already executed: ' + key);
   }
-  window.executed[key] = true;
+  // Note: IE11 doesn't support document.currentScript so just set mark as excuted.
+  window.executed[key] = document.currentScript as HTMLScriptElement || true;
 };
 
 setup(() => {
@@ -494,5 +495,54 @@ suite('html imports', () => {
       done();
     };
     importHref('../html-import/meta/import-meta.html');
+  });
+});
+
+suite('crossorigin attribute', () => {
+  function assertCrossoriginAttribute(crossorigin: string|null) {
+    const moduleCurrentScript = window.executed['y'];
+    if (moduleCurrentScript instanceof HTMLScriptElement) {
+      assert.equal(moduleCurrentScript.getAttribute('crossorigin'), crossorigin);
+    }
+  }
+
+  test('modules without crossorigin attribute', (done) => {
+    define(['./y.js'], () => {
+      assertCrossoriginAttribute(null);
+      done();
+    });
+  });
+
+  test('modules with empty crossorigin attribute', (done) => {
+    const script = document.createElement('script');
+    script.setAttribute('crossorigin', '');
+    script.textContent = 'define(["./y.js"])';
+    document.head!.appendChild(script);
+    define(['./y.js'], () => {
+      assertCrossoriginAttribute('');
+      done();
+    });
+  });
+
+  test('modules with crossorigin=use-credentials attribute', (done) => {
+    const script = document.createElement('script');
+    script.setAttribute('crossorigin', 'use-credentials');
+    script.textContent = 'define(["./y.js"])';
+    document.head!.appendChild(script);
+    define(['./y.js'], () => {
+      assertCrossoriginAttribute('use-credentials');
+      done();
+    });
+  });
+
+  test('modules with crossorigin=anonymous attribute', (done) => {
+    const script = document.createElement('script');
+    script.setAttribute('crossorigin', 'anonymous');
+    script.textContent = 'define(["./y.js"])';
+    document.head!.appendChild(script);
+    define(['./y.js'], () => {
+      assertCrossoriginAttribute('anonymous');
+      done();
+    });
   });
 });
