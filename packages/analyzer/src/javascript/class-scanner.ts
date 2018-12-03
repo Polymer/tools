@@ -76,16 +76,16 @@ export class ClassScanner implements JavaScriptScanner {
       document: JavaScriptDocument,
       visit: (visitor: Visitor) => Promise<void>) {
     const classFinder = new ClassFinder(document);
-    const mixinFinder = new MixinVisitor(document);
     const elementDefinitionFinder =
         new CustomElementsDefineCallFinder(document);
     const prototypeMemberFinder = new PrototypeMemberFinder(document);
+    await visit(prototypeMemberFinder);
+    const mixinFinder = new MixinVisitor(document, prototypeMemberFinder);
     // Find all classes and all calls to customElements.define()
     await Promise.all([
       visit(classFinder),
       visit(elementDefinitionFinder),
       visit(mixinFinder),
-      visit(prototypeMemberFinder),
     ]);
     const mixins = mixinFinder.mixins;
 
@@ -424,7 +424,7 @@ interface CustomElementDefinition {
   definition?: ElementDefineCall;
 }
 
-class PrototypeMemberFinder implements Visitor {
+export class PrototypeMemberFinder implements Visitor {
   readonly members = new MapWithDefault<string, {
     methods: Map<string, ScannedMethod>,
     properties: Map<string, ScannedProperty>
@@ -505,16 +505,16 @@ class PrototypeMemberFinder implements Visitor {
     }
 
     if (jsdoc.hasTag(jsdocAnn, 'function')) {
-      const prop =
+      const method =
           this._createMethodFromExpression(node.property.name, node, jsdocAnn);
-      if (prop) {
-        this._addMethodToClass(cls, prop);
+      if (method) {
+        this._addMethodToClass(cls, method);
       }
     } else {
-      const method = this._createPropertyFromExpression(
+      const prop = this._createPropertyFromExpression(
           node.property.name, node, jsdocAnn);
-      if (method) {
-        this._addPropertyToClass(cls, method);
+      if (prop) {
+        this._addPropertyToClass(cls, prop);
       }
     }
   }

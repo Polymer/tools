@@ -16,7 +16,7 @@ import {NodePath} from '@babel/traverse';
 import * as babel from '@babel/types';
 
 import {getIdentifierName, getNamespacedIdentifier} from '../javascript/ast-value';
-import {extractPropertiesFromClass} from '../javascript/class-scanner';
+import {extractPropertiesFromClass, PrototypeMemberFinder} from '../javascript/class-scanner';
 import {Visitor} from '../javascript/estree-visitor';
 import * as esutil from '../javascript/esutil';
 import {getMethods, getOrInferPrivacy, getStaticMethods} from '../javascript/esutil';
@@ -34,10 +34,14 @@ export class MixinVisitor implements Visitor {
   private _currentMixin: ScannedPolymerElementMixin|null = null;
   private _currentMixinNode: babel.Node|null = null;
   private _currentMixinFunction: babel.Function|null = null;
+  private _prototypeMemberFinder: PrototypeMemberFinder;
   readonly warnings: Warning[] = [];
 
-  constructor(document: JavaScriptDocument) {
+  constructor(
+      document: JavaScriptDocument,
+      prototypeMemberFinder: PrototypeMemberFinder) {
     this._document = document;
+    this._prototypeMemberFinder = prototypeMemberFinder;
   }
 
   enterAssignmentExpression(
@@ -159,7 +163,21 @@ export class MixinVisitor implements Visitor {
     mixin.events = esutil.getEventComments(node);
     // mixin.sourceRange = this._document.sourceRangeForNode(node);
 
-    return mixin;
+    // Also add members that were described like:
+    //   /** @type {string} */
+    //   MixinClass.prototype.foo;
+    const name = getIdentifierName(node.id);
+    if (name !== undefined) {
+      const prototypeMembers = this._prototypeMemberFinder.members.get(name);
+      if (prototypeMembers !== undefined) {
+        for (const [, property] of prototypeMembers.properties) {
+          mixin.addProperty(property);
+        }
+        for (const [, method] of prototypeMembers.methods) {
+          mixin.addMethod(method);
+        }
+      }
+    }
   }
 }
 

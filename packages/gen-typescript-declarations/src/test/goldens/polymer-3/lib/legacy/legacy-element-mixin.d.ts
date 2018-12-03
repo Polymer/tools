@@ -71,6 +71,7 @@ interface LegacyElementMixin extends ElementMixin, PropertyEffects, TemplateStam
    * `this.getRootNode().host`.
    */
   readonly domHost: any;
+  is: string;
 
   /**
    * Overrides the default `Polymer.PropertyEffects` implementation to

@@ -104,6 +104,7 @@ declare namespace Polymer {
      * find the template.
      */
     _finalizeClass(): void;
+    _prepareTemplate(): void;
 
     /**
      * Creates observers for the given `observers` array.
@@ -226,12 +227,5 @@ declare namespace Polymer {
      * @returns Rewritten URL relative to base
      */
     resolveUrl(url: string, base?: string): string;
-  }
-
-  /**
-   * Provides basic tracking of element definitions (registrations) and
-   * instance counts.
-   */
-  namespace telemetry {
   }
 }

@@ -73,6 +73,7 @@ declare module 'goog:polymer.polymer.lib.legacy.legacyElementMixin' {
      * `this.getRootNode().host`.
      */
     readonly domHost: any;
+    is: string;
 
     /**
      * Overrides the default `Polymer.PropertyEffects` implementation to

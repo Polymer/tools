@@ -37,8 +37,6 @@ declare namespace Polymer {
   }
 
   interface LegacyElementMixin extends Polymer.ElementMixin, Polymer.PropertyEffects, Polymer.TemplateStamp, Polymer.PropertyAccessors, Polymer.PropertiesChanged, Polymer.PropertiesMixin, Polymer.GestureEventListeners {
-    isAttached: boolean;
-    _debouncers: {[key: string]: Function|null};
 
     /**
      * Return the element whose local dom within which this element
@@ -46,6 +44,9 @@ declare namespace Polymer {
      * `this.getRootNode().host`.
      */
     readonly domHost: any;
+    isAttached: boolean;
+    _debouncers: {[key: string]: Function|null};
+    is: string;
 
     /**
      * Overrides the default `Polymer.PropertyEffects` implementation to
