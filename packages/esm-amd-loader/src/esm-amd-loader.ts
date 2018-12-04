@@ -135,9 +135,10 @@ interface ModuleG<State extends keyof StateDataMap> {
    */
   isTopLevel: boolean;
   /**
-   * Value of the crossorigin attribute of the script that loads this module.
+   * Value of the `crossorigin` attribute of the first script that loads this
+   * module. `null` means the `crossorigin` attribute was not set.
    */
-  crossorigin: string|null;
+  readonly crossorigin: string|null;
   /**
    * Callbacks that are called exactly once, for the next time the module
    * progresses to a new state.
@@ -288,8 +289,8 @@ function loadDeps(
     }
 
     // We have a dependency on a real module.
-    const dependency = getModule(resolveUrl(module.urlBase, depSpec));
-    dependency.crossorigin = module.crossorigin;
+    const dependency =
+      getModule(resolveUrl(module.urlBase, depSpec), module.crossorigin);
     args.push(dependency.exports);
     depModules.push(dependency);
 
@@ -459,9 +460,8 @@ window.define = function(deps: string[], moduleBody?: OnExecutedCallback) {
       const url = documentUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
       // It's actually Initialized, but we're skipping over the Loading
       // state, because this is a top level document and it's already loaded.
-      const mod = getModule(url) as ModuleG<StateEnum.Loading>;
+      const mod = getModule(url, crossorigin) as ModuleG<StateEnum.Loading>;
       mod.isTopLevel = true;
-      mod.crossorigin = crossorigin;
       const waitingModule = beginWaitingForTurn(mod, deps, moduleBody);
       if (previousTopLevelUrl !== undefined) {
         // type=module scripts execute in order (with the same timing as defer
@@ -509,7 +509,7 @@ window.define._reset = () => {
  * Return a module object from the registry for the given URL, creating one if
  * it doesn't exist yet.
  */
-function getModule(url: NormalizedUrl): Module {
+function getModule(url: NormalizedUrl, crossorigin: string|null = null) {
   let mod = registry[url];
   if (mod === undefined) {
     mod = registry[url] = {
@@ -519,7 +519,7 @@ function getModule(url: NormalizedUrl): Module {
       state: StateEnum.Initialized,
       stateData: undefined,
       isTopLevel: false,
-      crossorigin: null,
+      crossorigin,
       onNextStateChange: []
     };
   }
