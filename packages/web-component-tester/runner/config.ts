@@ -496,7 +496,7 @@ export function merge(): Config {
   let configs: Config[] = Array.prototype.slice.call(arguments);
   const result = <Config>{};
   configs = configs.map(normalize);
-  _.merge.apply(_, [result].concat(configs));
+  _.merge.apply(_, [result, ...configs]);
 
   // false plugin configs are preserved.
   configs.forEach(function(config) {
@@ -609,7 +609,7 @@ function expandDeprecated(context: Context) {
 
   if (fragments.length > 0) {
     // We are careful to modify context.options in place.
-    _.merge(context.options, merge.apply(null, fragments));
+    _.merge(context.options, merge.apply(null, fragments as any));
   }
 }
 

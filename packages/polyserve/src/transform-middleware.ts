@@ -33,34 +33,45 @@ export function transformResponse(transformer: ResponseTransformer):
       return _shouldTransform;
     }
 
-    const _write = res.write;
+    // Cast is required because this method is overloaded, but assigning a
+    // method to a variable seems to pick only one of the overload signatures.
+    const _write = res.write as (
+                       chunk: string|Buffer,
+                       cbOrEncoding?: Function|string,
+                       cb?: Function) => boolean;
+
     res.write = function(
-        chunk: Buffer|string,
-        cbOrEncoding?: Function|string,
-        cbOrFd?: Function|string): boolean {
-      if (ended) {
-        _write.call(this, chunk, cbOrEncoding, cbOrFd);
-        return false;
-      }
+        chunk: Buffer|string, cbOrEncoding?: Function|string, cb?: Function):
+        boolean {
+          if (ended) {
+            _write.call(this, chunk, cbOrEncoding, cb);
+            return false;
+          }
 
-      if (shouldTransform()) {
-        const buffer = (typeof chunk === 'string') ?
-            Buffer.from(chunk, cbOrEncoding as string) :
-            chunk;
-        chunks.push(buffer);
-        return true;
-      } else {
-        return _write.call(this, chunk, cbOrEncoding, cbOrFd);
-      }
-    };
+          if (shouldTransform()) {
+            const buffer = (typeof chunk === 'string') ?
+                Buffer.from(chunk, cbOrEncoding as string) :
+                chunk;
+            chunks.push(buffer);
+            return true;
+          } else {
+            return _write.call(this, chunk, cbOrEncoding, cb);
+          }
+        };
 
-    const _end = res.end;
+    // Cast is required because this method is overloaded, but assigning a
+    // method to a variable seems to pick only one of the overload signatures.
+    const _end = res.end as (
+                     cbOrChunk: (() => void)|string|Buffer,
+                     cbOrEncoding?: (() => void)|string,
+                     cb?: () => void) => void;
+
     res.end = function(
-        cbOrChunk?: Function|Buffer|string,
-        cbOrEncoding?: Function|string,
-        cbOrFd?: Function|string): boolean {
+        cbOrChunk?: (() => void)|Buffer|string,
+        cbOrEncoding?: (() => void)|string,
+        cb?: () => void): void {
       if (ended) {
-        return false;
+        return;
       }
       ended = true;
 
@@ -85,7 +96,7 @@ export function transformResponse(transformer: ResponseTransformer):
         // TODO(aomarks) Shouldn't we call the callbacks?
         return _end.call(this, newBody);
       } else {
-        return _end.call(this, cbOrChunk, cbOrEncoding, cbOrFd);
+        return _end.call(this, cbOrChunk, cbOrEncoding, cb);
       }
     };
 

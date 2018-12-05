@@ -142,8 +142,10 @@ export class Context extends events.EventEmitter {
       argsEnd = argsEnd--;
     }
     const hookArgs = args.slice(0, argsEnd + 1);
-    boundHooks =
-        hooks.map((hook) => hook.bind.apply(hook, [null].concat(hookArgs)));
+    // Not really sure what's going on with typings here.
+    boundHooks = hooks.map(
+                     (hook) => hook.bind.apply(
+                         hook as any, [null].concat(hookArgs) as any)) as any;
     if (!boundHooks) {
       boundHooks = <any>hooks;
     }
