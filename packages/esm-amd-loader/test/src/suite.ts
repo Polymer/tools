@@ -506,20 +506,20 @@ suite('crossorigin attribute', () => {
     }
   }
 
-  test('modules without crossorigin attribute', (done) => {
+  test('modules without crossorigin attribute default to anonymous', (done) => {
     define(['./y.js'], () => {
-      assertCrossoriginAttribute(null);
+      assertCrossoriginAttribute('anonymous');
       done();
     });
   });
 
-  test('modules with empty crossorigin attribute', (done) => {
+  test('modules with empty crossorigin attribute default to anonymous', (done) => {
     const script = document.createElement('script');
     script.setAttribute('crossorigin', '');
     script.textContent = 'define(["./y.js"])';
     document.head!.appendChild(script);
     define(['./y.js'], () => {
-      assertCrossoriginAttribute('');
+      assertCrossoriginAttribute('anonymous');
       done();
     });
   });

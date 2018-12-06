@@ -135,10 +135,10 @@ interface ModuleG<State extends keyof StateDataMap> {
    */
   isTopLevel: boolean;
   /**
-   * Value of the `crossorigin` attribute of the first script that loads this
-   * module. `null` means the `crossorigin` attribute was not set.
+   * Value of the `crossorigin` attribute that will be used to load this
+   * module.
    */
-  readonly crossorigin: string|null;
+  readonly crossorigin: string;
   /**
    * Callbacks that are called exactly once, for the next time the module
    * progresses to a new state.
@@ -449,10 +449,12 @@ window.define = function(deps: string[], moduleBody?: OnExecutedCallback) {
   const documentUrl = getDocumentUrl();
 
   // Save the value of the crossorigin attribute before setTimeout while we
-  // can still get document.currentScript. Note: IE11 doesn't support
-  // crossorigin attribute nor currentScript, so it will always be null.
-  const crossorigin = document.currentScript ?
-      document.currentScript.getAttribute('crossorigin') : null;
+  // can still get document.currentScript. If not set, default to 'anonymous'
+  // to match native <script type="module"> behavior. Note: IE11 doesn't
+  // support the crossorigin attribute nor currentScript, so it will use the
+  // default.
+  const crossorigin = document.currentScript &&
+      document.currentScript.getAttribute('crossorigin') || 'anonymous';
 
   setTimeout(() => {
     if (defined === false) {
@@ -509,7 +511,7 @@ window.define._reset = () => {
  * Return a module object from the registry for the given URL, creating one if
  * it doesn't exist yet.
  */
-function getModule(url: NormalizedUrl, crossorigin: string|null = null) {
+function getModule(url: NormalizedUrl, crossorigin: string = 'anonymous') {
   let mod = registry[url];
   if (mod === undefined) {
     mod = registry[url] = {
