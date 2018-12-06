@@ -8,8 +8,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## v1.9.2 [12-06-2018]
+* Updated dependencies.
+  * @polymer/esm-amd-loader@1.0.4 - loads AMD modules with
+    `crossorigin=anonymous` by default to match native module script
+    behavior.
+
 ## v1.9.1 [11-15-2018]
-* Updated dependecies.
+* Updated dependencies.
 
 ## v1.9.0 [11-12-2018]
 * Polymer 3.x templates now use lighter-weight dependency-free `wct-mocha`
