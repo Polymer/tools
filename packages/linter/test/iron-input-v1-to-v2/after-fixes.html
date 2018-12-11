@@ -1,0 +1,72 @@
+<html>
+
+<body>
+
+  <iron-input>
+    <input is="iron-input">
+  </iron-input>
+
+  <paper-input-container><iron-input slot="input" id="myIdCustom"><input is="iron-input" id="myId"></iron-input></paper-input-container>
+
+  <iron-input
+      slot="input"
+      id$="[[_inputId]]Custom"
+      bind-value="{{value}}"
+      invalid="{{invalid}}"
+      allowed-pattern="[[allowedPattern]]"
+      validator="[[validator]]">
+    <input
+        is="iron-input"
+        class="input-element"
+        id$="[[_inputId]]"
+        aria-labelledby$="[[_ariaLabelledBy]]"
+        aria-describedby$="[[_ariaDescribedBy]]"
+        disabled$="[[disabled]]"
+        title$="[[title]]"
+        bind-value="{{value}}"
+        invalid="{{invalid}}"
+        prevent-invalid-input="[[preventInvalidInput]]"
+        allowed-pattern="[[allowedPattern]]"
+        validator="[[validator]]"
+        type$="[[type]]"
+        pattern$="[[pattern]]"
+        required$="[[required]]"
+        autocomplete$="[[autocomplete]]"
+        autofocus$="[[autofocus]]"
+        inputmode$="[[inputmode]]"
+        minlength$="[[minlength]]"
+        maxlength$="[[maxlength]]"
+        min$="[[min]]"
+        max$="[[max]]"
+        step$="[[step]]"
+        name$="[[name]]"
+        placeholder$="[[placeholder]]"
+        readonly$="[[readonly]]"
+        list$="[[list]]"
+        size$="[[size]]"
+        autocapitalize$="[[autocapitalize]]"
+        autocorrect$="[[autocorrect]]"
+        on-change="_onChange"
+        tabindex$="[[tabIndex]]"
+        autosave$="[[autosave]]"
+        results$="[[results]]"
+        accept$="[[accept]]"
+        multiple$="[[multiple]]">
+  </iron-input>
+
+  <dom-module id="my-element">
+    <template>
+      <iron-input id="inputCustom" slot="input">
+        <input id="input" is="iron-input">
+      </iron-input>
+    </template>
+    <script>
+      Polymer({
+        is: "my-element"
+      });
+    </script>
+  </dom-module>
+
+</body>
+
+</html>
