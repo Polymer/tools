@@ -13,7 +13,7 @@
  */
 
 import * as chalk from 'chalk';
-import {Gulp} from 'gulp';
+import {Gulp, series} from 'gulp';
 
 import {Config} from './config';
 import {test} from './test';
@@ -25,19 +25,23 @@ export function init(gulp: Gulp, dependencies?: string[]): void {
   }
 
   // TODO(nevir): Migrate fully to wct:local/etc.
-  gulp.task('test', ['wct:local']);
-  gulp.task('test:local', ['wct:local']);
-  gulp.task('test:remote', ['wct:sauce']);
+  gulp.task('test', series(['wct:local']));
+  gulp.task('test:local', series(['wct:local']));
+  gulp.task('test:remote', series(['wct:sauce']));
 
-  gulp.task('wct', ['wct:local']);
+  gulp.task('wct', series(['wct:local']));
 
-  gulp.task('wct:local', dependencies, () => {
-    return test(<any>{plugins: {local: {}, sauce: false}}).catch(cleanError);
-  });
+  gulp.task(
+      'wct:local', series([
+        ...dependencies,
+        () => test(<any>{plugins: {local: {}, sauce: false}}).catch(cleanError)
+      ]));
 
-  gulp.task('wct:sauce', dependencies, () => {
-    return test(<any>{plugins: {local: false, sauce: {}}}).catch(cleanError);
-  });
+  gulp.task(
+      'wct:sauce', series([
+        ...dependencies,
+        () => test(<any>{plugins: {local: false, sauce: {}}}).catch(cleanError)
+      ]));
 }
 
 // Utility
