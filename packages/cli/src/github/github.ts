@@ -164,11 +164,11 @@ export class Github {
     // Note that we only see the 100 most recent releases. If we ever release
     // enough versions that this becomes a concern, we'll need to improve this
     // call to request multiple pages of results.
-    const releases: GitHubApi.Release[] = await this._github.repos.getReleases({
+    const releases = await this._github.repos.getReleases({
       owner: this._owner,
       repo: this._repo,
       per_page: 100,
-    });
+    }) as unknown as GitHubApi.Release[];
     const validReleaseVersions =
         releases.filter((r) => semver.valid(r.tag_name)).map((r) => r.tag_name);
     const maxSatisfyingReleaseVersion =
@@ -191,8 +191,11 @@ export class Github {
       name: string;
       commit: {sha: string};
     }
-    const branch: ActualBranch = await this._github.repos.getBranch(
-        {owner: this._owner, repo: this._repo, branch: branchName});
+    const branch = await this._github.repos.getBranch({
+      owner: this._owner,
+      repo: this._repo,
+      branch: branchName,
+    }) as unknown as ActualBranch;
     return {
       name: branch.name,
       tarball_url: `https://codeload.github.com/${this._owner}/${
@@ -205,8 +208,11 @@ export class Github {
     interface Reference {
       object: {sha: string};
     }
-    const ref: Reference = await this._github.gitdata.getReference(
-        {owner: this._owner, repo: this._repo, ref: `tags/${tag}`});
+    const ref = await this._github.gitdata.getReference({
+      owner: this._owner,
+      repo: this._repo,
+      ref: `tags/${tag}`,
+    }) as unknown as Reference;
     return {
       name: tag,
       tarball_url: `https://codeload.github.com/${this._owner}/${

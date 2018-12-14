@@ -57,7 +57,7 @@ export let _config: Config = {
       [
         'stacky/browser.js',
         'async/lib/async.js',
-        'lodash/lodash.js',
+        'lodash/index.js',
         'mocha/mocha.js',
         'chai/chai.js',
         'sinonjs/sinon.js',
