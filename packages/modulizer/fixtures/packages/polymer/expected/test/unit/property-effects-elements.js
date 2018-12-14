@@ -9,9 +9,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 import '../../polymer-legacy.js';
 
+import { StrictBindingParser } from '../../lib/mixins/strict-binding-parser.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
-import { PolymerElement } from '../../polymer-element.js';
+import { Element } from '../../polymer-element.js';
 import { MutableDataBehavior } from '../../lib/legacy/mutable-data-behavior.js';
 import { MutableData } from '../../lib/mixins/mutable-data.js';
 let ComputingBehavior = {
@@ -27,7 +28,7 @@ Polymer({
     <div id="boundChild" value="{{ value }}" negvalue="{{!bool}}" attrvalue\$="{{attrvalue}}" sanitize-value="{{sanitizeValue}}" computedvalue="{{computedvalue}}" computedvaluetwo="{{computedvaluetwo}}" camel-case="{{value}}" computed-inline="{{computeInline(value,add, divide)}}" computed-inline2="{{computeInline(value, add,divide)}}" computed-inline3="{{computeInline(value, add,
                                         divide )}}" computedattribute\$="{{computeInline(value, add,divide)}}" computedattribute2\$="{{computeInline(
                                value, add, divide)}}" neg-computed-inline="{{!computeInline(value,add,divide)}}" computed-negative-number="{{computeNegativeNumber(-1)}}" computed-negative-literal="{{computeNegativeNumber(-A)}}" computed-wildcard="{{computeWildcard(a, b.*)}}" style\$="{{boundStyle}}" data-id\$="{{dataSetId}}" custom-event-value="{{customEventValue::custom}}" custom-event-object-value="{{customEventObject.value::change}}" computed-from-mixed-literals="{{computeFromLiterals(3, &quot;foo&quot;, bool)}}" computed-from-pure-literals="{{computeFromLiterals( 3, &quot;foo&quot;)}}" computed-from-tricky-function="{{\$computeTrickyFunctionFromLiterals( 3, &quot;foo&quot;)}}" computed-from-tricky-literals="{{computeFromTrickyLiterals(3, 'tricky\\,\\'zot\\'')}}" computed-from-tricky-literals2="{{computeFromTrickyLiterals(3,&quot;tricky\\,'zot'&quot; )}}" computed-from-tricky-literals3="{{computeFromTrickyLiterals(3,
-                                          &quot;tricky\\,'zot'&quot; )}}" computed-from-no-args="{{computeFromNoArgs( )}}" no-computed="{{foobared(noInlineComputed)}}" compoundattr1\$="{{cpnd1}}{{ cpnd2 }}{{cpnd3.prop}}{{ computeCompound(cpnd4, cpnd5, 'literalComputed')}}" compoundattr2\$="literal1 {{cpnd1}} literal2 {{cpnd2}}{{cpnd3.prop}} literal3 {{computeCompound(cpnd4, cpnd5, 'literalComputed')}} literal4" compoundattr3\$="[yes/no]: {{cpnd1}}, {{computeCompound('world', 'username ', 'Hello {0} ')}}" computed-from-behavior="{{computeFromBehavior(value)}}">
+                                          &quot;tricky\\,'zot'&quot; )}}" computed-from-no-args="{{computeFromNoArgs( )}}" no-computed="{{foobared(noInlineComputed)}}" compoundattr1\$="{{cpnd1}}{{ cpnd2 }}{{cpnd3.prop}}{{ computeCompound(cpnd4, cpnd5, 'literalComputed')}}" compoundattr2\$="literal1 {{cpnd1}} literal2 {{cpnd2}}{{cpnd3.prop}} literal3 {{computeCompound(cpnd4, cpnd5, 'literalComputed')}} literal4" compoundattr3\$="[yes/no]: {{cpnd1}}, {{computeCompound('world', 'username ', 'Hello {0} ')}}" computed-from-behavior="{{computeFromBehavior(value)}}" computed-dynamic-fn="{{dynamicFn('hello', 'username')}}">
       Test
       <!-- Malformed bindings to be ignored -->
       {{really.long.identifier.in.malformed.binding.should.be.ignored]}
@@ -60,6 +61,11 @@ Polymer({
           content: '[[binding]]'
         }
       </style>
+      <span id="boundWithSlash">[[objectWithSlash.binding/with/slash]]</span>
+      <span id="jsonContent">[["Jan", 31],["Feb", 28],["Mar", 31]]</span>
+      <span id="nonEnglishUnicode">{{objectWithNonEnglishUnicode.商品名}}</span>
+      <span id="booleanTrue">foo(field, true): {{computeWithBoolean(otherValue, true)}}</span>
+      <span id="booleanFalse">foo(field, false): {{computeWithBoolean(otherValue, false)}}</span>
 `,
 
   is: 'x-basic',
@@ -146,6 +152,9 @@ Polymer({
     },
     title: {
       observer: 'titleChanged'
+    },
+    dynamicFn: {
+      type: Function
     }
   },
 
@@ -169,6 +178,7 @@ Polymer({
       notifierWithoutComputingChanged: 0
     };
     this.titleChanged = sinon.spy();
+    this._dynamicFnCalled = false;
   },
 
   ready: function() {
@@ -312,12 +322,23 @@ Polymer({
     return a + (bInfo && bInfo.base ? bInfo.base.value  : 0);
   },
 
+  computeWithBoolean: function(value, bool) {
+    return bool ? value : value * 2;
+  },
+
   fireCustomNotifyingEvent: function() {
     this.customNotifyingValue = 'changed!';
     this.dispatchEvent(new CustomEvent('custom-notifying-value-changed'),
       {value: this.customNotifyingValue});
-  }
+  },
+
+  dynamicFn: function() {}
 });
+
+class XBasicWithStrictBindingParser extends StrictBindingParser(customElements.get('x-basic')) {
+  static get is() { return 'x-basic-strict-binding-parser'; }
+}
+customElements.define(XBasicWithStrictBindingParser.is, XBasicWithStrictBindingParser);
 Polymer({
   _template: html`
     <x-basic id="basic1" value="{{boundvalue}}" notifyingvalue="{{boundnotifyingvalue}}" notifyingvalue-with-default="{{boundnotifyingvalueWithDefault}}" camel-notifying-value="{{boundnotifyingvalue}}" computedvalue="{{boundcomputedvalue}}" computednotifyingvalue="{{boundcomputednotifyingvalue}}" readonlyvalue="{{boundreadonlyvalue}}" custom-notifying-value="{{boundCustomNotifyingValue}}">
@@ -902,7 +923,7 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
-class XImmutableB extends PolymerElement {
+class XImmutableB extends Element {
   static get template() {
     return html`
     <x-immutable-c c="[[b.c]]" x="[[b.x]]" id="c">
@@ -941,7 +962,7 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
-class XMutableB extends MutableData(PolymerElement) {
+class XMutableB extends MutableData(Element) {
   static get template() {
     return html`
     <x-mutable-c c="[[b.c]]" x="[[b.x]]" id="c">
@@ -967,7 +988,7 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
-class SVGElement extends PolymerElement {
+class SVGElement extends Element {
   static get template() {
     return html`
     <svg id="svg" viewBox="[[value]]"></svg>

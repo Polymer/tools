@@ -1,6 +1,6 @@
 {
   "name": "paper-toast",
-  "version": "2.0.0",
+  "version": "2.1.2",
   "description": "A material design notification toast",
   "private": true,
   "license": "http://polymer.github.io/LICENSE.txt",

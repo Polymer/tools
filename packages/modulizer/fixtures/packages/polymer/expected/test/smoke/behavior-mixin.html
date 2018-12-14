@@ -26,6 +26,7 @@ import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { DomModule } from '../../lib/elements/dom-module.js';
 import { mixinBehaviors } from '../../lib/legacy/class.js';
+/** @polymerBehavior */
 var MyBehavior = {
   properties: {
     behaviorProp: {
@@ -41,6 +42,7 @@ var MyBehavior = {
   }
 }
 
+/** @polymerBehavior */
 var MyBehavior2 = {
   ready: function() {
     console.log(this.localName, 'MyBehavior2.ready');

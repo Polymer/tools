@@ -25,8 +25,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script type="module">
 import '../../polymer-legacy.js';
 import { GestureEventListeners } from '../../lib/mixins/gesture-event-listeners.js';
-import { PolymerElement } from '../../polymer-element.js';
-class XDisabled extends GestureEventListeners(PolymerElement) {
+import { Element } from '../../polymer-element.js';
+class XDisabled extends GestureEventListeners(Element) {
   static get is() {return 'x-disabled';}
   tap(e) {
     console.log(`${e.composedPath()[0].id} tapped`);

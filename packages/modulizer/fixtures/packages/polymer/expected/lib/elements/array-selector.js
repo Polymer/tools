@@ -7,7 +7,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-import { PolymerElement } from '../../polymer-element.js';
+import { Element } from '../../polymer-element.js';
 
 import { dedupingMixin } from '../utils/mixin.js';
 import { calculateSplices } from '../utils/array-splice.js';
@@ -40,6 +40,7 @@ let ArraySelectorMixin = dedupingMixin(superClass => {
    * @constructor
    * @extends {superClass}
    * @implements {Polymer_ElementMixin}
+   * @private
    */
   let elementBase = ElementMixin(superClass);
 
@@ -344,8 +345,9 @@ export { ArraySelectorMixin };
  * @constructor
  * @extends {Polymer.Element}
  * @implements {Polymer_ArraySelectorMixin}
+ * @private
  */
-let baseArraySelector = ArraySelectorMixin(PolymerElement);
+let baseArraySelector = ArraySelectorMixin(Element);
 
 /**
  * Element implementing the `Polymer.ArraySelector` mixin, which records
@@ -430,4 +432,6 @@ class ArraySelector extends baseArraySelector {
   static get is() { return 'array-selector'; }
 }
 customElements.define(ArraySelector.is, ArraySelector);
+
+/** @const */
 export { ArraySelector };

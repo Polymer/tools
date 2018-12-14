@@ -19,8 +19,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <script type="module">
 import '../../polymer-legacy.js';
-import { PolymerElement } from '../../polymer-element.js';
-class XA extends PolymerElement {
+import { Element } from '../../polymer-element.js';
+class XA extends Element {
   static get template() {
     return `<x-b prop="[[prop]]"></x-b>`;
   }
@@ -60,7 +60,7 @@ class XA extends PolymerElement {
 }
 customElements.define('x-a', XA);
 
-class XB extends PolymerElement {
+class XB extends Element {
   static get template() {
     return `<x-c prop="[[prop]]"></x-c>`;
   }
@@ -100,7 +100,7 @@ class XB extends PolymerElement {
 }
 customElements.define('x-b', XB);
 
-class XC extends PolymerElement {
+class XC extends Element {
   static get template() {
     return `<div></div>`;
   }

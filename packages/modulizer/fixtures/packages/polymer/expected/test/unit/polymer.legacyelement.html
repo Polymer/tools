@@ -108,7 +108,7 @@ window.SubElement = SubElement;
 
   <script type="module">
 import '../../polymer-legacy.js';
-import { PolymerElement } from '../../polymer-element.js';
+import { Element } from '../../polymer-element.js';
 import { ElementMixin } from '../../lib/mixins/element-mixin.js';
 import { LegacyElementMixin } from '../../lib/legacy/legacy-element-mixin.js';
 suite('class extends Polymer.LegacyElementMixin(HTMLElement)', function() {
@@ -126,7 +126,7 @@ suite('class extends Polymer.LegacyElementMixin(HTMLElement)', function() {
 
   test('instanceof', function() {
     assert.instanceOf(el, HTMLElement);
-    assert.instanceOf(el, PolymerElement);
+    assert.instanceOf(el, Element);
     assert.instanceOf(el, window.MyElement);
   });
 
@@ -160,7 +160,7 @@ suite('subclass', function() {
 
   test('instanceof', function() {
     assert.instanceOf(el, HTMLElement);
-    assert.instanceOf(el, PolymerElement);
+    assert.instanceOf(el, Element);
     assert.instanceOf(el, window.MyElement);
     assert.instanceOf(el, window.SubElement);
   });
@@ -177,7 +177,7 @@ suite('subclass', function() {
 suite('misc', function() {
 
   test('Polymer.ElementMixin caches', function() {
-    assert.equal(PolymerElement, ElementMixin(HTMLElement));
+    assert.equal(Element, ElementMixin(HTMLElement));
      assert.equal(ElementMixin(HTMLElement),
        ElementMixin(HTMLElement));
   });

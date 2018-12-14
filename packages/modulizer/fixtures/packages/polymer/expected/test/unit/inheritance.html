@@ -39,8 +39,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script type="module">
 import '../../polymer-legacy.js';
-import { PolymerElement } from '../../polymer-element.js';
-class BaseEl extends PolymerElement {
+import { Element } from '../../polymer-element.js';
+class BaseEl extends Element {
   static get is() { return 'base-el'; }
   static get properties() {
     return { foo: { type: String, value: 5 } };
@@ -114,8 +114,8 @@ window.ChildElWithTemplate = ChildElWithTemplate;
     <script type="module">
 import '../../polymer-legacy.js';
 import { html } from '../../lib/utils/html-tag.js';
-import { PolymerElement } from '../../polymer-element.js';
-class ParentElementWithTemplate extends PolymerElement {
+import { Element } from '../../polymer-element.js';
+class ParentElementWithTemplate extends Element {
   static get template() {
     return html`This template should not exist`;
   }

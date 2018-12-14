@@ -1,0 +1,7 @@
+{
+  "name": "perf-tester",
+  "private": true,
+  "devDependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs"
+  }
+}

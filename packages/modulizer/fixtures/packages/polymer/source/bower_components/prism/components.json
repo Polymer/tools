@@ -59,7 +59,8 @@
 		},
 		"css": {
 			"title": "CSS",
-			"option": "default"
+			"option": "default",
+			"peerDependencies": "markup"
 		},
 		"clike": {
 			"title": "C-like",
@@ -69,6 +70,7 @@
 		"javascript": {
 			"title": "JavaScript",
 			"require": "clike",
+			"peerDependencies": "markup",
 			"alias": "js",
 			"option": "default"
 		},
@@ -79,6 +81,7 @@
 		"actionscript": {
 			"title": "ActionScript",
 			"require": "javascript",
+			"peerDependencies": "markup",
 			"owner": "Golmote"
 		},
 		"ada": {
@@ -116,7 +119,7 @@
 		},
 		"aspnet": {
 			"title": "ASP.NET (C#)",
-			"require": "markup",
+			"require": ["markup", "csharp"],
 			"owner": "nauzilus"
 		},
 		"autohotkey": {
@@ -209,6 +212,10 @@
 		"django": {
 			"title": "Django/Jinja2",
 			"require": "markup",
+			"peerDependencies": [
+				"css",
+				"javascript"
+			],
 			"alias": "jinja2",
 			"owner": "romanvm"
 		},
@@ -230,7 +237,7 @@
 		},
 		"erb": {
 			"title": "ERB",
-			"require": ["markup", "ruby"],
+			"require": ["ruby", "markup-templating"],
 			"owner": "Golmote"
 		},
 		"erlang": {
@@ -249,6 +256,10 @@
 		},
 		"fortran": {
 			"title": "Fortran",
+			"owner": "Golmote"
+		},
+		"gedcom": {
+			"title": "GEDCOM",
 			"owner": "Golmote"
 		},
 		"gherkin": {
@@ -281,11 +292,22 @@
 		"haml": {
 			"title": "Haml",
 			"require": "ruby",
+			"peerDependencies": [
+				"css",
+				"coffeescript",
+				"erb",
+				"javascript",
+				"less",
+				"markdown",
+				"ruby",
+				"scss",
+				"textile"
+			],
 			"owner": "Golmote"
 		},
 		"handlebars": {
 			"title": "Handlebars",
-			"require": "markup",
+			"require": "markup-templating",
 			"owner": "Golmote"
 		},
 		"haskell": {
@@ -299,6 +321,10 @@
 		},
 		"http": {
 			"title": "HTTP",
+			"peerDependencies": [
+				"javascript",
+				"markup"
+			],
 			"owner": "danielgtaylor"
 		},
 		"hpkp": {
@@ -373,6 +399,11 @@
 			"title": "Liquid",
 			"owner": "cinhtau"
 		},
+		"lisp": {
+			"title": "Lisp",
+			"owner": "JuanCaicedo",
+			"alias": ["emacs", "elisp", "emacs-lisp"]
+		},
 		"livescript": {
 			"title": "LiveScript",
 			"owner": "Golmote"
@@ -391,6 +422,11 @@
 		},
 		"markdown": {
 			"title": "Markdown",
+			"require": "markup",
+			"owner": "Golmote"
+		},
+		"markup-templating": {
+			"title": "Markup templating",
 			"require": "markup",
 			"owner": "Golmote"
 		},
@@ -448,6 +484,10 @@
 		"opencl": {
 			"title": "OpenCL",
 			"require": "cpp",
+			"peerDependencies": [
+				"c",
+				"cpp"
+			],
 			"overrideExampleHeader": true,
 			"owner": "Milania1"
 		},
@@ -466,6 +506,10 @@
 		},
 		"pascal": {
 			"title": "Pascal",
+			"alias": "objectpascal",
+			"aliasTitles": {
+				"objectpascal": "Object Pascal"
+			},
 			"owner": "Golmote"
 		},
 		"perl": {
@@ -474,7 +518,7 @@
 		},
 		"php": {
 			"title": "PHP",
-			"require": "clike",
+			"require": ["clike", "markup-templating"],
 			"owner": "milesj"
 		},
 		"php-extras": {
@@ -512,6 +556,20 @@
 		"pug": {
 			"title": "Pug",
 			"require": "javascript",
+			"peerDependencies": [
+				"coffeescript",
+				"ejs",
+				"handlebars",
+				"hogan",
+				"less",
+				"livescript",
+				"markdown",
+				"mustache",
+				"plates",
+				"scss",
+				"stylus",
+				"swig"
+			],
 			"owner": "Golmote"
 		},
 		"puppet": {
@@ -520,6 +578,13 @@
 		},
 		"pure": {
 			"title": "Pure",
+			"peerDependencies": [
+				"c",
+				"cpp",
+				"fortran",
+				"ats",
+				"dsp"
+			],
 			"owner": "Golmote"
 		},
 		"python": {
@@ -607,12 +672,17 @@
 		},
 		"smarty": {
 			"title": "Smarty",
-			"require": "markup",
+			"require": "markup-templating",
 			"owner": "Golmote"
 		},
 		"sql": {
 			"title": "SQL",
 			"owner": "multipetros"
+		},
+		"soy": {
+			"title": "Soy (Closure Template)",
+			"require": "markup-templating",
+			"owner": "Golmote"
 		},
 		"stylus": {
 			"title": "Stylus",
@@ -623,6 +693,11 @@
 			"require": "clike",
 			"owner": "chrischares"
 		},
+		"tap": {
+			"title": "TAP",
+			"owner": "isaacs",
+			"require": "yaml"
+		},
 		"tcl": {
 			"title": "Tcl",
 			"owner": "PeterChaplin"
@@ -630,7 +705,13 @@
 		"textile": {
 			"title": "Textile",
 			"require": "markup",
+			"peerDependencies": "css",
 			"owner": "Golmote"
+		},
+		"tt2": {
+			"title": "Template Toolkit 2",
+			"require": ["clike", "markup-templating"],
+			"owner": "gflohr"
 		},
 		"twig": {
 			"title": "Twig",
@@ -648,6 +729,11 @@
 			"require": "basic",
 			"owner": "Bigsby"
 		},
+		"velocity": {
+			"title": "Velocity",
+			"require": "markup",
+			"owner": "Golmote"
+		},
 		"verilog": {
 			"title": "Verilog",
 			"owner": "a-rey"
@@ -659,6 +745,15 @@
 		"vim": {
 			"title": "vim",
 			"owner": "westonganger"
+		},
+		"visual-basic": {
+			"title": "Visual Basic",
+			"owner": "Golmote",
+			"alias": "vb"
+		},
+		"wasm": {
+			"title": "WebAssembly",
+			"owner": "Golmote"
 		},
 		"wiki": {
 			"title": "Wiki markup",
@@ -672,6 +767,11 @@
 		},
 		"xojo": {
 			"title": "Xojo (REALbasic)",
+			"owner": "Golmote"
+		},
+		"xquery": {
+			"title": "XQuery",
+			"require": "markup",
 			"owner": "Golmote"
 		},
 		"yaml": {

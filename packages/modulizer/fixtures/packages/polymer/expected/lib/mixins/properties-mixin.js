@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 import '../utils/boot.js';
 
+import { register, instanceCount } from '../utils/telemetry.js';
 import { dedupingMixin } from '../utils/mixin.js';
 import { PropertiesChanged } from './properties-changed.js';
 
@@ -53,6 +54,7 @@ export const PropertiesMixin = dedupingMixin(superClass => {
   * @constructor
   * @extends {superClass}
   * @implements {Polymer_PropertiesChanged}
+  * @private
   */
  const base = PropertiesChanged(superClass);
 
@@ -86,8 +88,12 @@ export const PropertiesMixin = dedupingMixin(superClass => {
    if (!constructor.hasOwnProperty(JSCompiler_renameProperty('__ownProperties', constructor))) {
      let props = null;
 
-     if (constructor.hasOwnProperty(JSCompiler_renameProperty('properties', constructor)) && constructor.properties) {
-       props = normalizeProperties(constructor.properties);
+     if (constructor.hasOwnProperty(JSCompiler_renameProperty('properties', constructor))) {
+       const properties = constructor.properties;
+       
+       if (properties) {
+         props = normalizeProperties(properties);
+       }
      }
 
      constructor.__ownProperties = props;
@@ -110,8 +116,12 @@ export const PropertiesMixin = dedupingMixin(superClass => {
     * @suppress {missingProperties} Interfaces in closure do not inherit statics, but classes do
     */
    static get observedAttributes() {
-     const props = this._properties;
-     return props ? Object.keys(props).map(p => this.attributeNameForProperty(p)) : [];
+     if (!this.hasOwnProperty('__observedAttributes')) {
+       register(this.prototype);
+       const props = this._properties;
+       this.__observedAttributes = props ? Object.keys(props).map(p => this.attributeNameForProperty(p)) : [];
+     }
+     return this.__observedAttributes;
    }
 
    /**
@@ -185,6 +195,7 @@ export const PropertiesMixin = dedupingMixin(superClass => {
     * @return {void}
     */
    _initializeProperties() {
+     instanceCount++;
      this.constructor.finalize();
      super._initializeProperties();
    }

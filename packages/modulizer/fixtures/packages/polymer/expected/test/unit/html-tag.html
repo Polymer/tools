@@ -19,7 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script type="module">
 import '../../polymer-legacy.js';
 import { html, htmlLiteral } from '../../lib/utils/html-tag.js';
-import { PolymerElement } from '../../polymer-element.js';
+import { Element } from '../../polymer-element.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 suite('html function', function() {
   test('html makes an HTML template', function() {
@@ -60,7 +60,7 @@ suite('html function', function() {
 suite('Polymer + html fn', function() {
   suiteSetup(function() {
 
-    class HtmlFn extends PolymerElement {
+    class HtmlFn extends Element {
       static get is() {return 'html-fn';}
       static get template() {
         return html`

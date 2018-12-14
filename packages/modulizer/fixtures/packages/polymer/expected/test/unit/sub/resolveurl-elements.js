@@ -9,11 +9,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 import { html } from '../../../lib/utils/html-tag.js';
 
-import { PolymerElement } from '../../../polymer-element.js';
+import { Element } from '../../../polymer-element.js';
+import { DomModule } from '../../../lib/elements/dom-module.js';
+import { Polymer } from '../../../lib/legacy/polymer-fn.js';
 const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `<dom-module id="p-r-ap" assetpath="../../assets/"></dom-module>`;
 document.head.appendChild($_documentContainer.content);
-class PR extends PolymerElement {
+class PR extends Element {
   static get template() {
     return html`
     <style>
@@ -43,7 +45,28 @@ class PR extends PolymerElement {
   static get is() { return 'p-r'; }
 }
 customElements.define(PR.is, PR);
-class PRAp extends PolymerElement {
+
+class PRImportMeta extends Element {
+  static get template() {
+    return DomModule.import('p-r', 'template').cloneNode(true);
+  }
+  static get importMeta() {
+    // Idiomatically, this would be `return import.meta`, but for purposes
+    // of stubbing the test without actual modules, it's shimmed
+    return { url: 'http://class.com/mymodule/index.js' };
+  }
+}
+customElements.define('p-r-im', PRImportMeta);
+
+const PRHybrid = Polymer({
+  is: 'p-r-hybrid',
+  _template: DomModule.import('p-r', 'template').cloneNode(true),
+  // Idiomatically, this would be `return import.meta`, but for purposes
+  // of stubbing the test without actual modules, it's shimmed
+  importMeta: { url: 'http://hybrid.com/mymodule/index.js' }
+});
+
+class PRAp extends Element {
   static get is() { return 'p-r-ap'; }
 }
 customElements.define(PRAp.is, PRAp);

@@ -19,6 +19,7 @@ import { GestureEventListeners } from '../mixins/gesture-event-listeners.js';
  * @implements {Polymer_PropertyEffects}
  * @implements {Polymer_OptionalMutableData}
  * @implements {Polymer_GestureEventListeners}
+ * @private
  */
 const domBindBase =
   GestureEventListeners(
@@ -51,6 +52,9 @@ class DomBind extends domBindBase {
 
   constructor() {
     super();
+    if (Polymer.strictTemplatePolicy) {
+      throw new Error(`strictTemplatePolicy: dom-bind not allowed`);
+    }
     this.root = null;
     this.$ = null;
     this.__children = null;
@@ -127,4 +131,5 @@ class DomBind extends domBindBase {
 
 customElements.define('dom-bind', DomBind);
 
+/** @const */
 export { DomBind };

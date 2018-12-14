@@ -13,7 +13,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 
 <script>
-
   /**
    * Use `Polymer.IronCheckedElementBehavior` to implement a custom element
    * that has a `checked` property, which can be used for validation if the
@@ -47,23 +46,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * If true, the button toggles the active state with each tap or press
        * of the spacebar.
        */
-      toggles: {
-        type: Boolean,
-        value: true,
-        reflectToAttribute: true
-      },
+      toggles: {type: Boolean, value: true, reflectToAttribute: true},
 
       /* Overriden from Polymer.IronFormElementBehavior */
-      value: {
-        type: String,
-        value: 'on',
-        observer: '_valueChanged'
-      }
+      value: {type: String, value: 'on', observer: '_valueChanged'}
     },
 
-    observers: [
-      '_requiredChanged(required)'
-    ],
+    observers: ['_requiredChanged(required)'],
 
     created: function() {
       // Used by `iron-form` to handle the case that an element with this behavior
@@ -73,7 +62,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Returns false if the element is required and not checked, and true otherwise.
+     * Returns false if the element is required and not checked, and true
+     * otherwise.
      * @param {*=} _value Ignored.
      * @return {boolean} true if `required` is false or if `checked` is true.
      */
@@ -116,5 +106,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer.IronValidatableBehavior,
     Polymer.IronCheckedElementBehaviorImpl
   ];
-
 </script>

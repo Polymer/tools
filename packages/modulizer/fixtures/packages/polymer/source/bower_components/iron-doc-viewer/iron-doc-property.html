@@ -81,37 +81,27 @@ class, etc.
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-property',
+    Polymer({
+      is: 'iron-doc-property',
 
-        properties: {
-          descriptor: {
-            type: Object
-          },
+      properties: {
+        descriptor: {type: Object},
 
-          _privacy: {
-            type: String,
-            computed: '_computePrivacy(descriptor)'
-          },
+        _privacy: {type: String, computed: '_computePrivacy(descriptor)'},
 
-          /**
-           * Unique anchor ID for deep-linking.
-           */
-          anchorId: {
-            type: String,
-            reflectToAttribute: true,
-            value: ''
-          }
-        },
+        /**
+         * Unique anchor ID for deep-linking.
+         */
+        anchorId: {type: String, reflectToAttribute: true, value: ''}
+      },
 
-        _computePrivacy: function(descriptor) {
-          if (!descriptor || !descriptor.privacy
-              || descriptor.privacy === 'public') {
-            return '';
-          }
-          return descriptor.privacy;
+      _computePrivacy: function(descriptor) {
+        if (!descriptor || !descriptor.privacy || descriptor.privacy === 'public') {
+          return '';
         }
-      });
+        return descriptor.privacy;
+      }
+    });
     })();
   </script>
 </dom-module>

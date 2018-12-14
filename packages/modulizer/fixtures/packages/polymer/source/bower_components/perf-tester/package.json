@@ -1,0 +1,11 @@
+{
+  "name": "perf-tester",
+  "version": "0.0.1",
+  "main": "node-perf-tester.js",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "chrome-launcher": "^0.4.0",
+    "chrome-remote-interface": "^0.24.3",
+    "minimist": "^1.2.0"
+  }
+}

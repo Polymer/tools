@@ -42,8 +42,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script type="module">
 import '../../polymer-legacy.js';
 import './sub/resolveurl-elements.js';
-import { PolymerElement } from '../../polymer-element.js';
-class XResolve extends PolymerElement {
+import { Element } from '../../polymer-element.js';
+class XResolve extends Element {
   static get is() { return 'x-resolve'; }
 }
 customElements.define(XResolve.is, XResolve);
@@ -53,17 +53,17 @@ customElements.define(XResolve.is, XResolve);
   <script type="module">
 import '../../polymer-legacy.js';
 import './sub/resolveurl-elements.js';
-import { PolymerElement } from '../../polymer-element.js';
+import { Element } from '../../polymer-element.js';
 import { setRootPath } from '../../lib/utils/settings.js';
 suite('ResolveUrl', function() {
 
-  test('Urls in styles and attributes', function() {
-    var el = document.createElement('p-r');
+  const testStylesAndAttributes = (elementName, folder) => () => {
+    var el = document.createElement(elementName);
     document.body.appendChild(el);
-    var resolvedUrl = /sub\/foo\.z/;
+    var resolvedUrl = new RegExp(`${folder}/foo\\.z`);
     var styleHashUrl = /url\('#bar'\)/;
     var styleAbsUrl = /url\('\/zot'\)/;
-    var style = el.shadowRoot.querySelector('style') || document.querySelector('style[scope=p-r]');
+    var style = el.shadowRoot.querySelector('style') || document.querySelector(`style[scope=${elementName}]`);
     assert.match(style.textContent, resolvedUrl, 'url not relative to main document');
     assert.match(style.textContent, styleHashUrl, 'hash url incorrectly resolved');
     assert.match(style.textContent, styleAbsUrl, 'absolute url incorrectly resolved');
@@ -83,7 +83,13 @@ suite('ResolveUrl', function() {
     assert.equal(el.$.absolute.getAttribute('href'), '/foo.z', 'absolute urls should not be resolved');
     assert.equal(el.$.protocol.getAttribute('href'), 'data:foo.z', 'urls with other protocols should not be resolved');
     document.body.removeChild(el);
-  });
+  };
+
+  test('Urls in styles and attributes', testStylesAndAttributes('p-r', 'sub'));
+
+  test('Urls in styles and attributes (importMeta)', testStylesAndAttributes('p-r-im', 'http://class.com/mymodule'));
+
+  test('Urls in styles and attributes (importMeta, hybrid)', testStylesAndAttributes('p-r-hybrid', 'http://hybrid.com/mymodule'));
 
   test('url changes via setting importPath/rootPath on element instance', function() {
     var el = document.createElement('p-r');
@@ -99,7 +105,7 @@ suite('ResolveUrl', function() {
   });
 
   test('rootPath set early', function() {
-    class XEarly extends PolymerElement {
+    class XEarly extends Element {
       static get is() { return 'x-late';}
     }
     customElements.define('x-early', XEarly);
@@ -112,7 +118,7 @@ suite('ResolveUrl', function() {
 
   test('url changes via setting importPath/rootPath when defining element', function() {
     setRootPath('defineRoot/');
-    class XLate extends PolymerElement {
+    class XLate extends Element {
       static get is() { return 'x-late';}
       static get importPath() { return 'defineImport/';}
     }

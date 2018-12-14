@@ -63,7 +63,7 @@ import '../../polymer-legacy.js';
   <script type="module">
 import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
-import { PolymerElement } from '../../polymer-element.js';
+import { Element } from '../../polymer-element.js';
 import { DomModule } from '../../lib/elements/dom-module.js';
 suite('elements including multiple styles', function() {
 
@@ -72,7 +72,7 @@ suite('elements including multiple styles', function() {
     if (skip) {
       this.skip();
     } else {
-      class MyElement extends PolymerElement {
+      class MyElement extends Element {
         static get is() { return 'my-element'; }
       }
       customElements.define(MyElement.is, MyElement);

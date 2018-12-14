@@ -54,8 +54,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script type="module">
 import '../../polymer-legacy.js';
 import { DirMixin } from '../../lib/mixins/dir-mixin.js';
-import { PolymerElement } from '../../polymer-element.js';
-class XInnerDir extends DirMixin(PolymerElement) {
+import { Element } from '../../polymer-element.js';
+class XInnerDir extends DirMixin(Element) {
   static get is() {return 'x-inner-dir';}
 }
 customElements.define(XInnerDir.is, XInnerDir);
@@ -88,8 +88,8 @@ customElements.define(XInnerDir.is, XInnerDir);
     <script type="module">
 import '../../polymer-legacy.js';
 import { DirMixin } from '../../lib/mixins/dir-mixin.js';
-import { PolymerElement } from '../../polymer-element.js';
-class XDir extends DirMixin(PolymerElement) {
+import { Element } from '../../polymer-element.js';
+class XDir extends DirMixin(Element) {
   static get is() {return 'x-dir';}
 }
 customElements.define(XDir.is, XDir);
@@ -137,8 +137,8 @@ Polymer({is: 'x-dir-legacy'});
   <script type="module">
 import '../../polymer-legacy.js';
 import '../../lib/mixins/dir-mixin.js';
-import { PolymerElement } from '../../polymer-element.js';
-class OtherElement extends PolymerElement {}
+import { Element } from '../../polymer-element.js';
+class OtherElement extends Element {}
 customElements.define('other-element', OtherElement);
 </script>
 
@@ -168,8 +168,8 @@ customElements.define('other-element', OtherElement);
     <script type="module">
 import '../../polymer-legacy.js';
 import { DirMixin } from '../../lib/mixins/dir-mixin.js';
-import { PolymerElement } from '../../polymer-element.js';
-class XComplicated extends DirMixin(PolymerElement) {
+import { Element } from '../../polymer-element.js';
+class XComplicated extends DirMixin(Element) {
   static get is() {return 'x-complicated';}
 }
 customElements.define(XComplicated.is, XComplicated);
@@ -224,6 +224,9 @@ suite(':dir', function() {
   });
 
   test('elements with dir attribute explicitly set will not change', function() {
+    if (window.ShadyDOM && window.ShadyDOM.inUse) {
+      this.skip();
+    }
     let inner = fixture('preset');
     assert.equal(document.documentElement.getAttribute('dir'), 'rtl');
     assertComputed(inner.shadowRoot.querySelector('.special > div'), 'rgb(255, 255, 255)', 'color');
@@ -252,6 +255,9 @@ suite(':dir', function() {
   });
 
   test('complicated setup', function() {
+    if (window.ShadyDOM && window.ShadyDOM.inUse) {
+      this.skip();
+    }
     let el = fixture('complicated');
     assertComputed(el.$.direct, '10px');
     assertComputed(el.$.indirect, '9px');

@@ -7,7 +7,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-import { PolymerElement } from '../../polymer-element.js';
+import { Element } from '../../polymer-element.js';
 
 import { templatize } from '../utils/templatize.js';
 import { Debouncer } from '../utils/debounce.js';
@@ -37,7 +37,7 @@ import { root as root$0 } from '../utils/path.js';
  * @summary Custom element that conditionally stamps and hides or removes
  *   template content based on a boolean flag.
  */
-class DomIf extends PolymerElement {
+class DomIf extends Element {
 
   // Not needed to find template; can be removed once the analyzer
   // can find the tag name from customElements.define call
@@ -252,8 +252,12 @@ class DomIf extends PolymerElement {
       if (c$ && c$.length) {
         // use first child parent, for case when dom-if may have been detached
         let parent = c$[0].parentNode;
-        for (let i=0, n; (i<c$.length) && (n=c$[i]); i++) {
-          parent.removeChild(n);
+        // Instance children may be disconnected from parents when dom-if
+        // detaches if a tree was innerHTML'ed
+        if (parent) {
+          for (let i=0, n; (i<c$.length) && (n=c$[i]); i++) {
+            parent.removeChild(n);
+          }
         }
       }
       this.__instance = null;
@@ -279,4 +283,5 @@ class DomIf extends PolymerElement {
 
 customElements.define(DomIf.is, DomIf);
 
+/** @const */
 export { DomIf };
