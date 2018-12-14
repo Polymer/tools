@@ -18,7 +18,7 @@ import * as semver from 'semver';
 
 import request = require('request');
 import rimraf = require('rimraf');
-import GitHubApi = require('github');
+import GitHubApi = require('@octokit/rest');
 
 const gunzip = require('gunzip-maybe');
 const tar = require('tar-fs');
@@ -164,11 +164,12 @@ export class Github {
     // Note that we only see the 100 most recent releases. If we ever release
     // enough versions that this becomes a concern, we'll need to improve this
     // call to request multiple pages of results.
-    const releases: GitHubApi.Release[] = await this._github.repos.getReleases({
+    const response = await this._github.repos.listReleases({
       owner: this._owner,
       repo: this._repo,
       per_page: 100,
     });
+    const releases = response.data;
     const validReleaseVersions =
         releases.filter((r) => semver.valid(r.tag_name)).map((r) => r.tag_name);
     const maxSatisfyingReleaseVersion =
@@ -186,13 +187,9 @@ export class Github {
   }
 
   async getBranch(branchName: string): Promise<CodeSource> {
-    // GitHubApi.Branch is not correct.
-    interface ActualBranch {
-      name: string;
-      commit: {sha: string};
-    }
-    const branch: ActualBranch = await this._github.repos.getBranch(
+    const response = await this._github.repos.getBranch(
         {owner: this._owner, repo: this._repo, branch: branchName});
+    const branch = response.data;
     return {
       name: branch.name,
       tarball_url: `https://codeload.github.com/${this._owner}/${
@@ -200,17 +197,13 @@ export class Github {
     };
   }
 
-  async getTag(tag: string): Promise<CodeSource> {
-    // GitHubApi.Branch is not correct.
-    interface Reference {
-      object: {sha: string};
-    }
-    const ref: Reference = await this._github.gitdata.getReference(
-        {owner: this._owner, repo: this._repo, ref: `tags/${tag}`});
+  async getTag(tagName: string): Promise<CodeSource> {
+    const response = await this._github.repos.getReleaseByTag(
+        {owner: this._owner, repo: this._repo, tag: tagName});
+    const tag = response.data;
     return {
-      name: tag,
-      tarball_url: `https://codeload.github.com/${this._owner}/${
-          this._repo}/legacy.tar.gz/${ref.object.sha}`
+      name: tag.name,
+      tarball_url: tag.tarball_url
     };
   }
 }
