@@ -205,7 +205,7 @@ export class Bundler {
           continue;
         }
         bundle.files.delete(resolvedExclude);
-        const excludeAsFolder = exclude.endsWith('/') ? exclude : exclude + '/';
+        const excludeAsFolder = resolvedExclude.endsWith('/') ? resolvedExclude : resolvedExclude + '/';
         for (const file of bundle.files) {
           if (file.startsWith(excludeAsFolder)) {
             bundle.files.delete(file);
