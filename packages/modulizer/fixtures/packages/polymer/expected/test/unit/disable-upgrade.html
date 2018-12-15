@@ -34,8 +34,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script type="module">
 import '../../polymer-legacy.js';
 import { DisableUpgradeMixin } from '../../lib/mixins/disable-upgrade-mixin.js';
-import { Element } from '../../polymer-element.js';
-const Disabled = DisableUpgradeMixin(class extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+const Disabled = DisableUpgradeMixin(class extends PolymerElement {
   static get is() { return 'x-disabled'; }
   static get properties() {
     return {
@@ -135,8 +135,8 @@ Polymer$0({
     <script type="module">
 import '../../polymer-legacy.js';
 import '../../lib/mixins/disable-upgrade-mixin.js';
-import { Element } from '../../polymer-element.js';
-class MyElement extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class MyElement extends PolymerElement {
   static get is() { return 'my-element'; }
   static get properties() {
     return {

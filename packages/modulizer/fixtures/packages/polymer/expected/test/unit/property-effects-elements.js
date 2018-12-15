@@ -12,7 +12,7 @@ import '../../polymer-legacy.js';
 import { StrictBindingParser } from '../../lib/mixins/strict-binding-parser.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { MutableDataBehavior } from '../../lib/legacy/mutable-data-behavior.js';
 import { MutableData } from '../../lib/mixins/mutable-data.js';
 let ComputingBehavior = {
@@ -923,7 +923,7 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
-class XImmutableB extends Element {
+class XImmutableB extends PolymerElement {
   static get template() {
     return html`
     <x-immutable-c c="[[b.c]]" x="[[b.x]]" id="c">
@@ -962,7 +962,7 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
-class XMutableB extends MutableData(Element) {
+class XMutableB extends MutableData(PolymerElement) {
   static get template() {
     return html`
     <x-mutable-c c="[[b.c]]" x="[[b.x]]" id="c">
@@ -988,7 +988,7 @@ Polymer({
     this.xChanged = sinon.spy();
   }
 });
-class SVGElement extends Element {
+class SVGElement extends PolymerElement {
   static get template() {
     return html`
     <svg id="svg" viewBox="[[value]]"></svg>

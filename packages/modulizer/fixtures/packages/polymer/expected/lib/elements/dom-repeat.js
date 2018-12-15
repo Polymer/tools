@@ -7,7 +7,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 
 import { TemplateInstanceBase as TemplateInstanceBase$0, templatize, modelForElement as modelForElement$0 } from '../utils/templatize.js';
 import { Debouncer } from '../utils/debounce.js';
@@ -24,7 +24,7 @@ let TemplateInstanceBase = TemplateInstanceBase$0; // eslint-disable-line
  * @extends {Polymer.Element}
  * @private
  */
-const domRepeatBase = OptionalMutableData(Element);
+const domRepeatBase = OptionalMutableData(PolymerElement);
 
 /**
  * The `<dom-repeat>` element will automatically stamp and binds one instance

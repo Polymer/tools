@@ -625,14 +625,14 @@ Polymer({is: 'x-slotted'});
 </template>
 <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-customElements.define('x-class-no-is', class extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+customElements.define('x-class-no-is', class extends PolymerElement {
   static get template() {
     return window.xClass;
   }
 });
 
-customElements.define('x-template-string', class extends Element {
+customElements.define('x-template-string', class extends PolymerElement {
   static get template() {
     return `<style>
       :host {
@@ -695,8 +695,8 @@ customElements.define('x-template-string', class extends Element {
     </template>
     <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class XNestedStyle extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class XNestedStyle extends PolymerElement {
   static get is() {return 'x-nested-style';}
 }
 customElements.define(XNestedStyle.is, XNestedStyle);
@@ -719,8 +719,8 @@ customElements.define(XNestedStyle.is, XNestedStyle);
     </template>
     <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class XInterleaved extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class XInterleaved extends PolymerElement {
   static get is() {return 'x-interleaved-styles';}
 }
 customElements.define(XInterleaved.is, XInterleaved);
@@ -733,8 +733,8 @@ customElements.define(XInterleaved.is, XInterleaved);
     <template></template>
     <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class XOnlyLink extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class XOnlyLink extends PolymerElement {
   static get is() { return 'x-only-link-style'; }
 }
 customElements.define(XOnlyLink.is, XOnlyLink);
@@ -764,8 +764,8 @@ customElements.define(XOnlyLink.is, XOnlyLink);
     </template>
     <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class DoubleSharedStylingElement extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class DoubleSharedStylingElement extends PolymerElement {
   static get is() { return 'double-shared-styling-element'; }
 }
 customElements.define(DoubleSharedStylingElement.is, DoubleSharedStylingElement);

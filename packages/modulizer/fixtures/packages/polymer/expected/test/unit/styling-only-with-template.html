@@ -42,8 +42,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class XFoo extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class XFoo extends PolymerElement {
   connectedCallback() {
     this.spy = sinon.spy(window.ShadyCSS, 'styleElement');
     super.connectedCallback();

@@ -9,13 +9,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 import { html } from '../../../lib/utils/html-tag.js';
 
-import { Element } from '../../../polymer-element.js';
+import { PolymerElement } from '../../../polymer-element.js';
 import { DomModule } from '../../../lib/elements/dom-module.js';
 import { Polymer } from '../../../lib/legacy/polymer-fn.js';
 const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `<dom-module id="p-r-ap" assetpath="../../assets/"></dom-module>`;
 document.head.appendChild($_documentContainer.content);
-class PR extends Element {
+class PR extends PolymerElement {
   static get template() {
     return html`
     <style>
@@ -46,7 +46,7 @@ class PR extends Element {
 }
 customElements.define(PR.is, PR);
 
-class PRImportMeta extends Element {
+class PRImportMeta extends PolymerElement {
   static get template() {
     return DomModule.import('p-r', 'template').cloneNode(true);
   }
@@ -66,7 +66,7 @@ const PRHybrid = Polymer({
   importMeta: { url: 'http://hybrid.com/mymodule/index.js' }
 });
 
-class PRAp extends Element {
+class PRAp extends PolymerElement {
   static get is() { return 'p-r-ap'; }
 }
 customElements.define(PRAp.is, PRAp);

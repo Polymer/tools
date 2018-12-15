@@ -59,7 +59,7 @@
   <script type="module">
 import '../../polymer-legacy.js';
 import { StrictBindingParser } from '../../lib/mixins/strict-binding-parser.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 var COUNT = 1000;
 var templates = [];
 var template = document.querySelector('template');
@@ -68,7 +68,7 @@ for (var i=0; i<COUNT; i++) {
 }
 console.perf();
 for (var i=0; i<COUNT; i++) {
-  const klass = class Foo extends StrictBindingParser(Element) {
+  const klass = class Foo extends StrictBindingParser(PolymerElement) {
     static get _template() { return templates[i]; }
   };
   customElements.define('foo-' + i, klass);

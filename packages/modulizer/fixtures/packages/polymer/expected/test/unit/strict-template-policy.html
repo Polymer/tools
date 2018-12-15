@@ -53,8 +53,8 @@ Debouncer.debounce = function(debouncer, asyncModule, callback) {
     <template>Trusted</template>
     <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class TrustedElement extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class TrustedElement extends PolymerElement {
   static get is() { return 'trusted-element'; }
 }
 customElements.define(TrustedElement.is, TrustedElement);
@@ -93,8 +93,8 @@ Polymer({is: 'trusted-element-legacy'});
     </template>
     <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class TrustedTemplates extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class TrustedTemplates extends PolymerElement {
   static get is() { return 'trusted-templates'; }
 }
 customElements.define(TrustedTemplates.is, TrustedTemplates);
@@ -124,7 +124,7 @@ Polymer({is: 'trusted-templates-legacy'});
   <script type="module">
 import '../../polymer-legacy.js';
 import { flush } from '../../lib/utils/flush.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 suite('strictTemplatePolicy', function() {
 
@@ -253,7 +253,7 @@ suite('strictTemplatePolicy', function() {
       '    <div id="injected"></div>'+
       '  </template>`' +
       '</dom-module>';
-    class HasNoTemplate extends Element {
+    class HasNoTemplate extends PolymerElement {
       static get is() { return 'has-no-template'; }
       static get template() { return null; }
     }
@@ -316,7 +316,7 @@ suite('strictTemplatePolicy', function() {
 
   test('element without explicit template throws', function() {
     assertThrows(function() {
-      class HasNoTemplateThrows extends Element {
+      class HasNoTemplateThrows extends PolymerElement {
         static get is() { return 'has-no-template-throws'; }
       }
       customElements.define(HasNoTemplateThrows.is, HasNoTemplateThrows); 

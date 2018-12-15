@@ -7,7 +7,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 
 import { templatize } from '../utils/templatize.js';
 import { Debouncer } from '../utils/debounce.js';
@@ -37,7 +37,7 @@ import { root as root$0 } from '../utils/path.js';
  * @summary Custom element that conditionally stamps and hides or removes
  *   template content based on a boolean flag.
  */
-class DomIf extends Element {
+class DomIf extends PolymerElement {
 
   // Not needed to find template; can be removed once the analyzer
   // can find the tag name from customElements.define call

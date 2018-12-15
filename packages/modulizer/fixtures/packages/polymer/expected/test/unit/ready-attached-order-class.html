@@ -74,8 +74,8 @@ window.readyMixin = function(base) {
   </template>
   <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class El extends window.readyMixin(Element) {
+import { PolymerElement } from '../../polymer-element.js';
+class El extends window.readyMixin(PolymerElement) {
   static get is() { return 'x-zot'; }
 }
 customElements.define(El.is, El);
@@ -88,8 +88,8 @@ customElements.define(El.is, El);
   </template>
   <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class El extends window.readyMixin(Element) {
+import { PolymerElement } from '../../polymer-element.js';
+class El extends window.readyMixin(PolymerElement) {
   static get is() { return 'x-bar'; }
 }
 customElements.define(El.is, El);
@@ -103,8 +103,8 @@ customElements.define(El.is, El);
   </template>
   <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class El extends window.readyMixin(Element) {
+import { PolymerElement } from '../../polymer-element.js';
+class El extends window.readyMixin(PolymerElement) {
   static get is() { return 'x-foo'; }
 }
 customElements.define(El.is, El);
@@ -123,8 +123,8 @@ customElements.define(El.is, El);
   </template>
   <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class El extends window.readyMixin(Element) {
+import { PolymerElement } from '../../polymer-element.js';
+class El extends window.readyMixin(PolymerElement) {
   static get is() { return 'x-ready'; }
   static get properties() {
     return {
@@ -147,8 +147,8 @@ customElements.define(El.is, El);
   </template>
   <script type="module">
 import '../../polymer-legacy.js';
-import { Element } from '../../polymer-element.js';
-class El extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class El extends PolymerElement {
   static get is() { return 'x-templatized'; }
   static get properties() {
     return {

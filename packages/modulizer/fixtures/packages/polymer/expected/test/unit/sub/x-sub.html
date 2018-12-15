@@ -3,8 +3,8 @@
     <div id="test">test</div>
   </template>
   <script type="module">
-import { Element } from '../../../polymer-element.js';
-class XSub extends Element {
+import { PolymerElement } from '../../../polymer-element.js';
+class XSub extends PolymerElement {
   static get is() { return 'x-sub' }
 }
 customElements.define(XSub.is, XSub);

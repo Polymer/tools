@@ -121,6 +121,8 @@ class RewriteNamespaceExportsPass {
       if (fullyQualifiedName === 'Polymer._polymerFn') {
         correctedNamespaceName = 'Polymer';
         name = 'Polymer';
+      } else if (fullyQualifiedName === 'Polymer.Element') {
+        name = 'PolymerElement';
       }
       const variableKind =
           this.mutableNames.has(correctedNamespaceName) ? 'let' : 'const';

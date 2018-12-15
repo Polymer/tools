@@ -54,8 +54,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script type="module">
 import '../../polymer-legacy.js';
 import { DirMixin } from '../../lib/mixins/dir-mixin.js';
-import { Element } from '../../polymer-element.js';
-class XInnerDir extends DirMixin(Element) {
+import { PolymerElement } from '../../polymer-element.js';
+class XInnerDir extends DirMixin(PolymerElement) {
   static get is() {return 'x-inner-dir';}
 }
 customElements.define(XInnerDir.is, XInnerDir);
@@ -88,8 +88,8 @@ customElements.define(XInnerDir.is, XInnerDir);
     <script type="module">
 import '../../polymer-legacy.js';
 import { DirMixin } from '../../lib/mixins/dir-mixin.js';
-import { Element } from '../../polymer-element.js';
-class XDir extends DirMixin(Element) {
+import { PolymerElement } from '../../polymer-element.js';
+class XDir extends DirMixin(PolymerElement) {
   static get is() {return 'x-dir';}
 }
 customElements.define(XDir.is, XDir);
@@ -137,8 +137,8 @@ Polymer({is: 'x-dir-legacy'});
   <script type="module">
 import '../../polymer-legacy.js';
 import '../../lib/mixins/dir-mixin.js';
-import { Element } from '../../polymer-element.js';
-class OtherElement extends Element {}
+import { PolymerElement } from '../../polymer-element.js';
+class OtherElement extends PolymerElement {}
 customElements.define('other-element', OtherElement);
 </script>
 
@@ -168,8 +168,8 @@ customElements.define('other-element', OtherElement);
     <script type="module">
 import '../../polymer-legacy.js';
 import { DirMixin } from '../../lib/mixins/dir-mixin.js';
-import { Element } from '../../polymer-element.js';
-class XComplicated extends DirMixin(Element) {
+import { PolymerElement } from '../../polymer-element.js';
+class XComplicated extends DirMixin(PolymerElement) {
   static get is() {return 'x-complicated';}
 }
 customElements.define(XComplicated.is, XComplicated);

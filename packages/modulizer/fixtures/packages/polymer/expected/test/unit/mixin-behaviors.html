@@ -212,9 +212,9 @@ window.BehaviorD = {
     <script type="module">
 import '../../polymer-legacy.js';
 import { mixinBehaviors } from '../../lib/legacy/class.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 customElements.define('single-behavior',
-  mixinBehaviors(window.BehaviorA, Element));
+  mixinBehaviors(window.BehaviorA, PolymerElement));
 </script>
   </dom-module>
 
@@ -222,10 +222,10 @@ customElements.define('single-behavior',
     <script type="module">
 import '../../polymer-legacy.js';
 import { mixinBehaviors } from '../../lib/legacy/class.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 customElements.define('lifecycle-behavior',
   mixinBehaviors([window.LifeCycleBehavior1,
-    window.LifeCycleBehavior2], Element));
+    window.LifeCycleBehavior2], PolymerElement));
 </script>
   </dom-module>
 
@@ -233,10 +233,10 @@ customElements.define('lifecycle-behavior',
     <script type="module">
 import '../../polymer-legacy.js';
 import { mixinBehaviors } from '../../lib/legacy/class.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 customElements.define('multi-behaviors',
   class extends mixinBehaviors(
-    [window.BehaviorA, window.BehaviorB], Element) {
+    [window.BehaviorA, window.BehaviorB], PolymerElement) {
 
     static get properties() {
       return {
@@ -272,14 +272,14 @@ customElements.define('multi-behaviors',
     <script type="module">
 import '../../polymer-legacy.js';
 import { mixinBehaviors } from '../../lib/legacy/class.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 
 customElements.define('nested-behaviors',
   class extends mixinBehaviors([window.BehaviorD, window.LifeCycleBehavior1], mixinBehaviors(
     [
       [window.BehaviorB, [window.BehaviorC, window.BehaviorB], window.BehaviorA, window.LifeCycleBehavior2],
-    ], Element)) {
+    ], PolymerElement)) {
 });
 
 var base = Polymer({
@@ -312,7 +312,7 @@ customElements.define('extended-behaviors', extended);
     <script type="module">
 import '../../polymer-legacy.js';
 import { mixinBehaviors } from '../../lib/legacy/class.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 
 window.registerBehavior1 ={
   registeredCount: 0,
@@ -353,7 +353,7 @@ class BehaviorRegistered extends mixinBehaviors([
     window.registerBehavior1,
     window.registerBehavior2,
     window.registerBehavior3
-  ], Element) {
+  ], PolymerElement) {
 
   static get is() { return 'behavior-registered';}
 
@@ -376,7 +376,7 @@ customElements.define(BehaviorRegisteredExt.is, BehaviorRegisteredExt);
   <script type="module">
 import '../../polymer-legacy.js';
 import { mixinBehaviors } from '../../lib/legacy/class.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 var klass = mixinBehaviors([
   {
     __fooChangedCalled: 0,
@@ -389,7 +389,7 @@ var klass = mixinBehaviors([
       this.__fooChangedCalled++;
     }
   }
-], Element);
+], PolymerElement);
 
 customElements.define('before-register-observers', klass);
 
@@ -397,7 +397,7 @@ const Base = mixinBehaviors([{
   registered() {
     this.usedExtendedProto = this.canUseExtendedProto;
   }
-}], Element);
+}], PolymerElement);
 
 customElements.define('registered-proto', mixinBehaviors([
   {canUseExtendedProto: true}
@@ -405,7 +405,7 @@ customElements.define('registered-proto', mixinBehaviors([
 
 
 class Base2 extends mixinBehaviors([{
-    properties: {b1: String} }], Element) {
+    properties: {b1: String} }], PolymerElement) {
 
   static get properties() {
     return { e1: String};
@@ -488,7 +488,7 @@ customElements.define('extended-observed-attributes', El);
 import '../../polymer-legacy.js';
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { mixinBehaviors } from '../../lib/legacy/class.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 
 suite('single behavior element', function() {
   var el;
@@ -659,13 +659,13 @@ suite('multi-behaviors element', function() {
 
   test('behavior array is unique', function() {
     customElements.define('behavior-unique', mixinBehaviors(
-      [window.BehaviorA, window.BehaviorA], Element));
+      [window.BehaviorA, window.BehaviorA], PolymerElement));
     assert.equal(document.createElement('behavior-unique').behaviors.length, 1);
   });
 
   test('duplicate behaviors keep first behavior', function() {
     customElements.define('behavior-unique-last-behavior', mixinBehaviors(
-      [window.BehaviorA, window.BehaviorB, window.BehaviorC, window.BehaviorA, window.BehaviorB], Element));
+      [window.BehaviorA, window.BehaviorB, window.BehaviorC, window.BehaviorA, window.BehaviorB], PolymerElement));
     var behaviors = document.createElement('behavior-unique-last-behavior').behaviors;
     assert.deepEqual(behaviors, [window.BehaviorC, window.BehaviorA, window.BehaviorB]);
   });

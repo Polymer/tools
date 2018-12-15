@@ -19,10 +19,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <body>
 
 <script type="module">
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import '../../lib/mixins/gesture-event-listeners.js';
 import '../../lib/elements/dom-if.js';
-class XElementChild extends Element {
+class XElementChild extends PolymerElement {
   ready() {
     super.ready();
     window.lifecycleOrder.log(this, 'ready');
@@ -39,10 +39,10 @@ customElements.define('x-element-child', XElementChild);
     <x-element-child id="events" on-click="handleClick" on-tap="handleTap"></x-element-child>
   </template>
   <script type="module">
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import '../../lib/mixins/gesture-event-listeners.js';
 import '../../lib/elements/dom-if.js';
-class XElement extends Element {
+class XElement extends PolymerElement {
   static get is() { return 'x-element'; }
   static get observers() { return ['propChanged(prop)', 'pathChanged(path)']; }
   static get properties() { return { prop: { notify: true }, path: { notify: true } }; }
@@ -109,11 +109,11 @@ customElements.define('x-element', XElement);
     <div id="bound">[[otherProp]]</div>
   </template>
   <script type="module">
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { GestureEventListeners } from '../../lib/mixins/gesture-event-listeners.js';
 import '../../lib/elements/dom-if.js';
 import { DomModule } from '../../lib/elements/dom-module.js';
-class XRuntime extends GestureEventListeners(Element) {
+class XRuntime extends GestureEventListeners(PolymerElement) {
   static get is() { return 'x-runtime'; }
   static get observers() { return ['propChanged(prop)', 'pathChanged(obj.path)']; }
   constructor() {
@@ -174,10 +174,10 @@ customElements.define('x-runtime', XRuntime);
   <x-special name="el7" special="attr5"><x-special name="el8" special="attr6"></x-special></x-special>
 </template>
 <script type="module">
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import '../../lib/mixins/gesture-event-listeners.js';
 import '../../lib/elements/dom-if.js';
-class XParsing extends Element {
+class XParsing extends PolymerElement {
   static get template() { return document.getElementById('custom-template'); }
   static _parseTemplateNodeAttribute(node, templateInfo, nodeInfo, name, value) {
     if (name == 'special') {
@@ -244,10 +244,10 @@ customElements.define('x-effects', XEffects);
     </template>
   </template>
   <script type="module">
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import '../../lib/mixins/gesture-event-listeners.js';
 import '../../lib/elements/dom-if.js';
-class XBinding extends Element {
+class XBinding extends PolymerElement {
   static get is() { return 'x-binding'; }
   constructor() {
     super();

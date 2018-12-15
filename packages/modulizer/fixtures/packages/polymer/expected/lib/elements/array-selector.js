@@ -7,7 +7,7 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 
 import { dedupingMixin } from '../utils/mixin.js';
 import { calculateSplices } from '../utils/array-splice.js';
@@ -347,7 +347,7 @@ export { ArraySelectorMixin };
  * @implements {Polymer_ArraySelectorMixin}
  * @private
  */
-let baseArraySelector = ArraySelectorMixin(Element);
+let baseArraySelector = ArraySelectorMixin(PolymerElement);
 
 /**
  * Element implementing the `Polymer.ArraySelector` mixin, which records

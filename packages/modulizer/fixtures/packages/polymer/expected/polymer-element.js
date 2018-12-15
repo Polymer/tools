@@ -31,7 +31,7 @@ import { html as html$0 } from './lib/utils/html-tag.js';
  *   key meta-programming features including template stamping, data-binding,
  *   attribute deserialization, and property change observation
  */
-export const Element = ElementMixin(HTMLElement);
+export const PolymerElement = ElementMixin(HTMLElement);
 
 // NOTE: this is here for modulizer to export `html` for the module version of this file
 export { html$0 as html };

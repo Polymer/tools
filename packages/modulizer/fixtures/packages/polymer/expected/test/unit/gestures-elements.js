@@ -11,7 +11,7 @@ import '../../polymer-legacy.js';
 
 import { Polymer } from '../../lib/legacy/polymer-fn.js';
 import { html } from '../../lib/utils/html-tag.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { GestureEventListeners } from '../../lib/mixins/gesture-event-listeners.js';
 import { addListener } from '../../lib/utils/gestures.js';
 Polymer({
@@ -171,7 +171,7 @@ Polymer({
   is: 'x-imperative',
   behaviors: [EventCaptureBehavior]
 });
-class XNativeLabel extends Element {
+class XNativeLabel extends PolymerElement {
   static get template() {
     return html`
     <label id="label" for="check"></label>
@@ -184,7 +184,7 @@ class XNativeLabel extends Element {
   }
 }
 customElements.define(XNativeLabel.is, XNativeLabel);
-class XNativeLabelNested extends Element {
+class XNativeLabelNested extends PolymerElement {
   static get template() {
     return html`
     <label id="label">
@@ -198,7 +198,7 @@ class XNativeLabelNested extends Element {
   }
 }
 customElements.define(XNativeLabelNested.is, XNativeLabelNested);
-class XDisabled extends Element {
+class XDisabled extends PolymerElement {
   static get is() {
     return 'x-disabled';
   }
@@ -216,7 +216,7 @@ class XDisabled extends Element {
   }
 }
 customElements.define(XDisabled.is, XDisabled);
-class XDisabledTap extends GestureEventListeners(Element) {
+class XDisabledTap extends GestureEventListeners(PolymerElement) {
   static get template() {
     return html`
     <button id="disabled" on-tap="tap" disabled=""></button>
@@ -240,7 +240,7 @@ class XDisabledTap extends GestureEventListeners(Element) {
   }
 }
 customElements.define(XDisabledTap.is, XDisabledTap);
-class AllDisabled extends GestureEventListeners(Element) {
+class AllDisabled extends GestureEventListeners(PolymerElement) {
   static get template() {
     return html`
     <button></button>

@@ -35,10 +35,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </template>
 
 <script type="module">
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { PropertyEffects } from '../../lib/mixins/property-effects.js';
 
-customElements.define('x-a', class extends Element {
+customElements.define('x-a', class extends PolymerElement {
   static get observers() { return ['propChanged(prop)']; }
   constructor() {
     super();
@@ -54,7 +54,7 @@ customElements.define('x-a', class extends Element {
   }
 });
 
-customElements.define('x-b', class extends Element {
+customElements.define('x-b', class extends PolymerElement {
   static get observers() { return ['propChanged(prop)']; }
   constructor() {
     super();

@@ -42,8 +42,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script type="module">
 import '../../polymer-legacy.js';
 import './sub/resolveurl-elements.js';
-import { Element } from '../../polymer-element.js';
-class XResolve extends Element {
+import { PolymerElement } from '../../polymer-element.js';
+class XResolve extends PolymerElement {
   static get is() { return 'x-resolve'; }
 }
 customElements.define(XResolve.is, XResolve);
@@ -53,7 +53,7 @@ customElements.define(XResolve.is, XResolve);
   <script type="module">
 import '../../polymer-legacy.js';
 import './sub/resolveurl-elements.js';
-import { Element } from '../../polymer-element.js';
+import { PolymerElement } from '../../polymer-element.js';
 import { setRootPath } from '../../lib/utils/settings.js';
 suite('ResolveUrl', function() {
 
@@ -105,7 +105,7 @@ suite('ResolveUrl', function() {
   });
 
   test('rootPath set early', function() {
-    class XEarly extends Element {
+    class XEarly extends PolymerElement {
       static get is() { return 'x-late';}
     }
     customElements.define('x-early', XEarly);
@@ -118,7 +118,7 @@ suite('ResolveUrl', function() {
 
   test('url changes via setting importPath/rootPath when defining element', function() {
     setRootPath('defineRoot/');
-    class XLate extends Element {
+    class XLate extends PolymerElement {
       static get is() { return 'x-late';}
       static get importPath() { return 'defineImport/';}
     }
