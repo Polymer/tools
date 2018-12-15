@@ -28,10 +28,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * If true, the element will not produce a ripple effect when interacted
        * with via the pointer.
        */
-      noink: {
-        type: Boolean,
-        observer: '_noinkChanged'
-      },
+      noink: {type: Boolean, observer: '_noinkChanged'},
 
       /**
        * @type {Element|undefined}
@@ -82,7 +79,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // nodes are not valid event targets
           var domContainer = Polymer.dom(this._rippleContainer || this);
           var target = Polymer.dom(optTriggeringEvent).rootTarget;
-          if (domContainer.deepContains( /** @type {Node} */(target))) {
+          if (domContainer.deepContains(/** @type {Node} */ (target))) {
             this._ripple.uiDownAction(optTriggeringEvent);
           }
         }

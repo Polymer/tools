@@ -1,18 +1,21 @@
 language: node_js
 sudo: false
 dist: trusty
-node_js: stable
+node_js: 8
 addons:
   firefox: latest
   chrome: stable
 cache:
   directories:
     - node_modules
+before_install:
+  - npm i -g npm@6.1.0
 before_script:
   - npm install -g gulp-cli@1
   - gulp lint-eslint
 script:
-  - wct --module-resolution=node --npm -l chrome -l firefox
+  - wct --module-resolution=node --npm -l chrome
+  - xvfb-run wct --module-resolution=node --npm -l firefox
   - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then travis_wait 30 ./util/travis-sauce-test.sh; fi'
 env:
   global:

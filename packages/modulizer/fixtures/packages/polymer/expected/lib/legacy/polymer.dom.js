@@ -392,6 +392,6 @@ export { flush$0 as flush };
  *
  * This method facades to `Polymer.enqueueDebouncer`.
  *
- * @param {Polymer.Debouncer} debouncer Debouncer to enqueue
+ * @param {!Polymer.Debouncer} debouncer Debouncer to enqueue
  */
 export { enqueueDebouncer as addDebouncer };

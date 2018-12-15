@@ -44,22 +44,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-hide-bar',
+    Polymer({
+      is: 'iron-doc-hide-bar',
 
-        properties: {
-          visible: {
-            type: Boolean,
-            value: false,
-            notify: true
-          }
-        },
+      properties: {visible: {type: Boolean, value: false, notify: true}},
 
-        _toggle: function(ev) {
-          ev.preventDefault();
-          this.visible = !this.visible;
-        }
-      });
+      _toggle: function(ev) {
+        ev.preventDefault();
+        this.visible = !this.visible;
+      }
+    });
     })();
   </script>
 </dom-module>

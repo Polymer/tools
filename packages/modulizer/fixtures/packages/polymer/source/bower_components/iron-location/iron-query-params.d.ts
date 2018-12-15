@@ -11,7 +11,7 @@
 /// <reference path="../polymer/types/polymer.d.ts" />
 
 interface IronQueryParamsElement extends Polymer.Element {
-  paramsString: string|null|undefined;
+  paramsString: string|undefined;
   paramsObject: object|null|undefined;
   _dontReact: boolean|null|undefined;
   hostAttributes: object|null;

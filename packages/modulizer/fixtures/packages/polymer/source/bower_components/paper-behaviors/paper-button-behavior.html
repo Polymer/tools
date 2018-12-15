@@ -25,11 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @type number
        * @default 1
        */
-      elevation: {
-        type: Number,
-        reflectToAttribute: true,
-        readOnly: true
-      }
+      elevation: {type: Number, reflectToAttribute: true, readOnly: true}
     },
 
     observers: [
@@ -37,11 +33,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       '_computeKeyboardClass(receivedFocusFromKeyboard)'
     ],
 
-    hostAttributes: {
-      role: 'button',
-      tabindex: '0',
-      animated: true
-    },
+    hostAttributes: {role: 'button', tabindex: '0', animated: true},
 
     _calculateElevation: function() {
       var e = 1;

@@ -11,15 +11,18 @@ import './boot.js';
 
 import { PropertyEffects } from '../mixins/property-effects.js';
 import { MutableData } from '../mixins/mutable-data.js';
+import { mixin } from '../legacy/legacy-data-mixin.js';
 
 // Base class for HTMLTemplateElement extension that has property effects
 // machinery for propagating host properties to children. This is an ES5
 // class only because Babel (incorrectly) requires super() in the class
 // constructor even though no `this` is used and it returns an instance.
 let newInstance = null;
+
 /**
  * @constructor
  * @extends {HTMLTemplateElement}
+ * @private
  */
 function HTMLTemplateElementExtension() { return newInstance; }
 HTMLTemplateElementExtension.prototype = Object.create(HTMLTemplateElement.prototype, {
@@ -28,16 +31,20 @@ HTMLTemplateElementExtension.prototype = Object.create(HTMLTemplateElement.proto
     writable: true
   }
 });
+
 /**
  * @constructor
  * @implements {Polymer_PropertyEffects}
  * @extends {HTMLTemplateElementExtension}
+ * @private
  */
 const DataTemplate = PropertyEffects(HTMLTemplateElementExtension);
+
 /**
  * @constructor
  * @implements {Polymer_MutableData}
  * @extends {DataTemplate}
+ * @private
  */
 const MutableDataTemplate = MutableData(DataTemplate);
 
@@ -49,10 +56,11 @@ function upgradeTemplate(template, constructor) {
   newInstance = null;
 }
 
-// Base class for TemplateInstance's
 /**
+ * Base class for TemplateInstance.
  * @constructor
  * @implements {Polymer_PropertyEffects}
+ * @private
  */
 const base = PropertyEffects(class {});
 
@@ -264,6 +272,7 @@ TemplateInstanceBase.prototype.__hostProps;
  * @constructor
  * @extends {TemplateInstanceBase}
  * @implements {Polymer_MutableData}
+ * @private
  */
 const MutableTemplateInstanceBase = MutableData(TemplateInstanceBase);
 
@@ -285,6 +294,10 @@ function createTemplatizerClass(template, templateInfo, options) {
   // Anonymous class created by the templatize
   let base = options.mutableData ?
     MutableTemplateInstanceBase : TemplateInstanceBase;
+  // Affordance for global mixins onto TemplatizeInstance
+  if (mixin) {
+    base = mixin(base);
+  }
   /**
    * @constructor
    * @extends {base}
@@ -307,6 +320,7 @@ function addPropagateEffects(template, templateInfo, options) {
     let klass = templateInfo.templatizeTemplateClass;
     if (!klass) {
       let base = options.mutableData ? MutableDataTemplate : DataTemplate;
+      /** @private */
       klass = templateInfo.templatizeTemplateClass =
         class TemplatizedTemplate extends base {};
       // Add template - >instances effects
@@ -495,6 +509,12 @@ and this string can then be deleted`;
  * @suppress {invalidCasts}
  */
 export function templatize(template, owner, options) {
+  // Under strictTemplatePolicy, the templatized element must be owned
+  // by a (trusted) Polymer element, indicated by existence of _methodHost;
+  // e.g. for dom-if & dom-repeat in main document, _methodHost is null
+  if (Polymer.strictTemplatePolicy && !findMethodHost(template)) {
+    throw new Error('strictTemplatePolicy: template owner not trusted');
+  }
   options = /** @type {!TemplatizeOptions} */(options || {});
   if (template.__templatizeOwner) {
     throw new Error('A <template> can only be templatized once');

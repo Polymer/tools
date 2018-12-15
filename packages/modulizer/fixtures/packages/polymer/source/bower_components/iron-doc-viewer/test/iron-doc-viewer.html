@@ -36,9 +36,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
       <script>
         window.addEventListener('WebComponentsReady', function() {
-          Polymer({
-            is: 'bound-fixture'
-          });
+          Polymer({is: 'bound-fixture'});
         });
       </script>
     </dom-module>
@@ -51,38 +49,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
       var descriptor = {
-        "elements": [
-          {
-            "name": "my-element",
-            "description": "I am an element",
-            "demos": [
-              {
-                "url": "demo/fancy-demo.html",
-                "description": "My Fancy Demo"
-              }
-            ]
-          }
-        ],
-        "mixins": [
-          {
-            "name": "my-mixin",
-            "description": "I am a mixin"
-          }
-        ],
-        "classes": [
-          {
-            "name": "my-class",
-            "description": "I am a class"
-          }
-        ],
-        "metadata": {
-          "polymer": {
-            "behaviors": [
-              {
-                "name": "my-behavior",
-                "description": "I am a behavior"
-              }
-            ]
+        'elements': [{
+          'name': 'my-element',
+          'description': 'I am an element',
+          'demos':
+              [{'url': 'demo/fancy-demo.html', 'description': 'My Fancy Demo'}]
+        }],
+        'mixins': [{'name': 'my-mixin', 'description': 'I am a mixin'}],
+        'classes': [{'name': 'my-class', 'description': 'I am a class'}],
+        'metadata': {
+          'polymer': {
+            'behaviors':
+                [{'name': 'my-behavior', 'description': 'I am a behavior'}]
           }
         }
       };
@@ -97,10 +75,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         it('renders top-level namespace', function() {
           page.path = '/';
           Polymer.dom.flush();
-          var view = page
-              .$$('iron-doc-viewer')
-              .$$('iron-doc-namespace')
-              .$$('iron-doc-summary');
+          var view = page.$$('iron-doc-viewer')
+                         .$$('iron-doc-namespace')
+                         .$$('iron-doc-summary');
           var text = Polymer.dom(view.root).textContent;
           expect(text).contains('my-element');
         });
@@ -108,9 +85,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         it('renders element', function() {
           page.path = '/elements/my-element';
           Polymer.dom.flush();
-          var view = page
-              .$$('iron-doc-viewer')
-              .$$('iron-doc-element');
+          var view = page.$$('iron-doc-viewer').$$('iron-doc-element');
           var text = Polymer.dom(view.root).textContent;
           expect(text).contains('my-element');
         });
@@ -118,9 +93,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         it('renders mixin', function() {
           page.path = '/mixins/my-mixin';
           Polymer.dom.flush();
-          var view = page
-              .$$('iron-doc-viewer')
-              .$$('iron-doc-mixin');
+          var view = page.$$('iron-doc-viewer').$$('iron-doc-mixin');
           var text = Polymer.dom(view.root).textContent;
           expect(text).contains('my-mixin');
         });
@@ -128,9 +101,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         it('renders class', function() {
           page.path = '/classes/my-class';
           Polymer.dom.flush();
-          var view = page
-              .$$('iron-doc-viewer')
-              .$$('iron-doc-class');
+          var view = page.$$('iron-doc-viewer').$$('iron-doc-class');
           var text = Polymer.dom(view.root).textContent;
           expect(text).contains('my-class');
         });
@@ -138,9 +109,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         it('renders behavior', function() {
           page.path = '/behaviors/my-behavior';
           Polymer.dom.flush();
-          var view = page
-              .$$('iron-doc-viewer')
-              .$$('iron-doc-behavior');
+          var view = page.$$('iron-doc-viewer').$$('iron-doc-behavior');
           var text = Polymer.dom(view.root).textContent;
           expect(text).contains('my-behavior');
         });
@@ -148,23 +117,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         it('renders demo by short name', function() {
           page.path = '/elements/my-element/demos/my-fancy-demo';
           Polymer.dom.flush();
-          var iframe = page
-              .$$('iron-doc-viewer')
-              .$$('iron-doc-demo')
-              .$$('iframe');
-          expect(iframe.getAttribute('src'))
-              .equals('/demo-dir/demo/fancy-demo.html');
+          var iframe = page.$$('iron-doc-viewer').$$('iron-doc-demo').$$('iframe');
+          expect(iframe.getAttribute('src')).equals('/demo-dir/demo/fancy-demo.html');
         });
 
         it('renders demo by path', function() {
           page.path = '/elements/my-element/demos/demo/fancy-demo.html';
           Polymer.dom.flush();
-          var iframe = page
-              .$$('iron-doc-viewer')
-              .$$('iron-doc-demo')
-              .$$('iframe');
-          expect(iframe.getAttribute('src'))
-              .equals('/demo-dir/demo/fancy-demo.html');
+          var iframe = page.$$('iron-doc-viewer').$$('iron-doc-demo').$$('iframe');
+          expect(iframe.getAttribute('src')).equals('/demo-dir/demo/fancy-demo.html');
         });
       });
     </script>

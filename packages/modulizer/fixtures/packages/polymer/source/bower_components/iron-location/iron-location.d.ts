@@ -86,8 +86,8 @@ interface IronLocationElement extends Polymer.Element {
   urlSpaceRegex: string|RegExp|null;
 
   /**
-   * A flag that specifies whether the spaces in query that would normally be encoded as %20 should be
-   * encoded as +.
+   * A flag that specifies whether the spaces in query that would normally be
+   * encoded as %20 should be encoded as +.
    *
    * Given an example text "hello world", it is encoded in query as
    * - "hello%20world" without the parameter
