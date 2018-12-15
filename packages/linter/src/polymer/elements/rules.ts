@@ -17,3 +17,4 @@ import './iron-flex-layout-import';
 import './iron-form-v1-to-v2';
 import './iron-input-v1-to-v2';
 import './paper-toolbar-v1-to-v2';
+import './paper-input-v1-to-v2';

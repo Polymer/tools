@@ -1,0 +1,47 @@
+<html>
+
+<body>
+
+  <paper-input use-v2-underline></paper-input>
+  <paper-input use-v2-underline></paper-input>
+  <paper-input value="hello world" use-v2-underline></paper-input>
+  <paper-input value="hello world" use-v2-underline>
+    <div>stuff really shouldn't be in here</div>
+  </paper-input>
+
+  <paper-input-container use-v2-underline><input is="iron-input" slot="input" id="myId"></paper-input-container>
+
+  <paper-input-container
+      id="container"
+      no-label-float="[[noLabelFloat]]"
+      always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]"
+      auto-validate$="[[autoValidate]]"
+      disabled$="[[disabled]]"
+      invalid="[[invalid]]"
+      use-v2-underline>
+    <slot name="prefix" slot="prefix"></slot>
+    <label hidden$="[[!label]]" aria-hidden="true" for$="[[_inputId]]" slot="label">[[label]]</label>
+    <span id="template-placeholder"></span>
+    <slot name="suffix" slot="suffix"></slot>
+    <template is="dom-if" if="[[errorMessage]]">
+      <paper-input-error aria-live="assertive" slot="add-on">[[errorMessage]]</paper-input-error>
+    </template>
+    <template is="dom-if" if="[[charCounter]]">
+      <paper-input-char-counter slot="add-on"></paper-input-char-counter>
+    </template>
+  </paper-input-container>
+
+  <dom-module id="my-element">
+    <template>
+      <paper-textarea id="input" value="some random text" use-v2-underline></paper-textarea>
+    </template>
+    <script>
+      Polymer({
+        is: "my-element"
+      });
+    </script>
+  </dom-module>
+
+</body>
+
+</html>
