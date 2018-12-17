@@ -13,9 +13,8 @@
  */
 
 import * as chalk from 'chalk';
-import {Gulp, series} from 'gulp';
+import {Gulp} from 'gulp';
 
-import {Config} from './config';
 import {test} from './test';
 
 
@@ -24,24 +23,24 @@ export function init(gulp: Gulp, dependencies?: string[]): void {
     dependencies = [];
   }
 
-  // TODO(nevir): Migrate fully to wct:local/etc.
-  gulp.task('test', series(['wct:local']));
-  gulp.task('test:local', series(['wct:local']));
-  gulp.task('test:remote', series(['wct:sauce']));
-
-  gulp.task('wct', series(['wct:local']));
-
   gulp.task(
-      'wct:local', series([
+      'wct:local', gulp.series([
         ...dependencies,
         () => test(<any>{plugins: {local: {}, sauce: false}}).catch(cleanError)
       ]));
 
   gulp.task(
-      'wct:sauce', series([
+      'wct:sauce', gulp.series([
         ...dependencies,
         () => test(<any>{plugins: {local: false, sauce: {}}}).catch(cleanError)
       ]));
+
+  // TODO(nevir): Migrate fully to wct:local/etc.
+  gulp.task('test', gulp.series(['wct:local']));
+  gulp.task('test:local', gulp.series(['wct:local']));
+  gulp.task('test:remote', gulp.series(['wct:sauce']));
+
+  gulp.task('wct', gulp.series(['wct:local']));
 }
 
 // Utility

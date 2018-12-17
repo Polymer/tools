@@ -15,11 +15,10 @@ const depcheck = require('depcheck');
 const fs = require('fs');
 const glob = require('glob');
 const gulp = require('gulp');
-const bower = require('gulp-bower');
 const mocha = require('gulp-spawn-mocha');
 const tslint = require('gulp-tslint');
 const ts = require('gulp-typescript');
-const lazypipe = require('lazypipe');
+const bower = require('bower');
 const path = require('path');
 const rollup = require('rollup');
 const runSequence = require('run-sequence');
@@ -172,8 +171,10 @@ gulp.task('test:unit', function() {
       .pipe(mocha(mochaConfig));
 });
 
-gulp.task('bower', function() {
-  return bower();
+gulp.task('bower', function(done) {
+  return new Promise((resolve) => {
+    bower.commands.install().on('end', resolve);
+  });
 });
 
 gulp.task('test:integration', gulp.series(['bower']), function() {
