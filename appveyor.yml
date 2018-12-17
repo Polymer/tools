@@ -11,6 +11,8 @@ install:
   - npm ci
   - npm run bootstrap
   - npm run build
+  # NOTE(keanulee): Following needed until Chrome in AppVeyor images are
+  # updated - see https://github.com/appveyor/ci/issues/2772.
   - choco install googlechrome
 
 test_script:
