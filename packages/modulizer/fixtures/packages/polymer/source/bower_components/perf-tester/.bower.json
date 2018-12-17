@@ -1,0 +1,17 @@
+{
+  "name": "perf-tester",
+  "private": true,
+  "devDependencies": {
+    "webcomponentsjs": "webcomponents/webcomponentsjs"
+  },
+  "homepage": "https://github.com/polymerlabs/perf-tester",
+  "_release": "a7bba489e1",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "a7bba489e144bc3150fbbd976c896900aa2f3653"
+  },
+  "_source": "https://github.com/polymerlabs/perf-tester.git",
+  "_target": "*",
+  "_originalSource": "polymerlabs/perf-tester"
+}

@@ -138,22 +138,17 @@ JSON descriptor output by
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-namespace',
+    Polymer({
+      is: 'iron-doc-namespace',
 
-        behaviors: [Polymer.IronDocViewerBehavior],
+      behaviors: [Polymer.IronDocViewerBehavior],
 
-        properties: {
-          title: {
-            computed: '_computeTitle(descriptor)',
-            notify: true
-          }
-        },
+      properties: {title: {computed: '_computeTitle(descriptor)', notify: true}},
 
-        _computeTitle: function(descriptor) {
-          return descriptor && 'Namespace ' + (descriptor.name || 'global');
-        }
-      });
+      _computeTitle: function(descriptor) {
+        return descriptor && 'Namespace ' + (descriptor.name || 'global');
+      }
+    });
     })();
   </script>
 </dom-module>

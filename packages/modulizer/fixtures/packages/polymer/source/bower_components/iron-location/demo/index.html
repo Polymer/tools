@@ -93,18 +93,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         Polymer({
           is: 'iron-location-demo',
           properties: {
-            historyElementsAdded: {
-              type: Number
-            },
+            historyElementsAdded: {type: Number},
 
-            dwellTime: {
-              type: Number,
-              value: 2000
-            }
+            dwellTime: {type: Number, value: 2000}
           },
-          observers: [
-            'checkHistorySize(path, hash, query, startingHistoryLength)'
-          ],
+          observers: ['checkHistorySize(path, hash, query, startingHistoryLength)'],
 
           ready: function() {
             this.startingHistoryLength = window.history.length;

@@ -56,9 +56,6 @@ Custom property | Description | Default
 </dom-module>
 
 <script>
-(function() {
-'use strict';
-
   Polymer({
 
     is: 'iron-overlay-backdrop',
@@ -77,9 +74,7 @@ Custom property | Description | Default
 
     },
 
-    listeners: {
-      'transitionend': '_onTransitionend'
-    },
+    listeners: {'transitionend': '_onTransitionend'},
 
     created: function() {
       // Used to cancel previous requestAnimationFrame calls when opened changes.
@@ -162,7 +157,4 @@ Custom property | Description | Default
       }.bind(this));
     }
   });
-
-})();
-
 </script>

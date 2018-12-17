@@ -16,7 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="iron-focusables-helper.html">
 
 <script>
-(function() {
+  (function() {
   'use strict';
 
   /** @polymerBehavior */
@@ -27,12 +27,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /**
        * True if the overlay is currently displayed.
        */
-      opened: {
-        observer: '_openedChanged',
-        type: Boolean,
-        value: false,
-        notify: true
-      },
+      opened:
+          {observer: '_openedChanged', type: Boolean, value: false, notify: true},
 
       /**
        * True if the overlay was canceled when it was last closed.
@@ -48,40 +44,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * Set to true to display a backdrop behind the overlay. It traps the focus
        * within the light DOM of the overlay.
        */
-      withBackdrop: {
-        observer: '_withBackdropChanged',
-        type: Boolean
-      },
+      withBackdrop: {observer: '_withBackdropChanged', type: Boolean},
 
       /**
        * Set to true to disable auto-focusing the overlay or child nodes with
        * the `autofocus` attribute` when the overlay is opened.
        */
-      noAutoFocus: {
-        type: Boolean,
-        value: false
-      },
+      noAutoFocus: {type: Boolean, value: false},
 
       /**
        * Set to true to disable canceling the overlay with the ESC key.
        */
-      noCancelOnEscKey: {
-        type: Boolean,
-        value: false
-      },
+      noCancelOnEscKey: {type: Boolean, value: false},
 
       /**
        * Set to true to disable canceling the overlay by clicking outside it.
        */
-      noCancelOnOutsideClick: {
-        type: Boolean,
-        value: false
-      },
+      noCancelOnOutsideClick: {type: Boolean, value: false},
 
       /**
-       * Contains the reason(s) this overlay was last closed (see `iron-overlay-closed`).
-       * `IronOverlayBehavior` provides the `canceled` reason; implementers of the
-       * behavior can provide other reasons in addition to `canceled`.
+       * Contains the reason(s) this overlay was last closed (see
+       * `iron-overlay-closed`). `IronOverlayBehavior` provides the `canceled`
+       * reason; implementers of the behavior can provide other reasons in
+       * addition to `canceled`.
        */
       closingReason: {
         // was a getter before, but needs to be a property so other
@@ -92,65 +77,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /**
        * Set to true to enable restoring of focus when overlay is closed.
        */
-      restoreFocusOnClose: {
-        type: Boolean,
-        value: false
-      },
+      restoreFocusOnClose: {type: Boolean, value: false},
 
       /**
        * Set to true to allow clicks to go through overlays.
        * When the user clicks outside this overlay, the click may
        * close the overlay below.
        */
-      allowClickThrough: {
-        type: Boolean
-      },
+      allowClickThrough: {type: Boolean},
 
       /**
        * Set to true to keep overlay always on top.
        */
-      alwaysOnTop: {
-        type: Boolean
-      },
+      alwaysOnTop: {type: Boolean},
 
       /**
-       * Determines which action to perform when scroll outside an opened overlay happens.
-       * Possible values:
-       * lock - blocks scrolling from happening,
-       * refit - computes the new position on the overlay
-       * cancel - causes the overlay to close
+       * Determines which action to perform when scroll outside an opened overlay
+       * happens. Possible values: lock - blocks scrolling from happening, refit -
+       * computes the new position on the overlay cancel - causes the overlay to
+       * close
        */
-      scrollAction: {
-        type: String
-      },
+      scrollAction: {type: String},
 
       /**
        * Shortcut to access to the overlay manager.
        * @private
        * @type {!Polymer.IronOverlayManagerClass}
        */
-      _manager: {
-        type: Object,
-        value: Polymer.IronOverlayManager
-      },
+      _manager: {type: Object, value: Polymer.IronOverlayManager},
 
       /**
        * The node being focused.
        * @type {?Node}
        */
-      _focusedChild: {
-        type: Object
-      }
+      _focusedChild: {type: Object}
 
     },
 
-    listeners: {
-      'iron-resize': '_onIronResize'
-    },
+    listeners: {'iron-resize': '_onIronResize'},
 
-    observers: [
-      '__updateScrollObservers(isAttached, opened, scrollAction)'
-    ],
+    observers: ['__updateScrollObservers(isAttached, opened, scrollAction)'],
 
     /**
      * The backdrop element.
@@ -165,16 +131,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @return {!Node}
      */
     get _focusNode() {
-      return this._focusedChild || Polymer.dom(this).querySelector('[autofocus]') || this;
+      return this._focusedChild ||
+          Polymer.dom(this).querySelector('[autofocus]') || this;
     },
 
     /**
-     * Array of nodes that can receive focus (overlay included), ordered by `tabindex`.
-     * This is used to retrieve which is the first and last focusable nodes in order
-     * to wrap the focus for overlays `with-backdrop`.
+     * Array of nodes that can receive focus (overlay included), ordered by
+     * `tabindex`. This is used to retrieve which is the first and last focusable
+     * nodes in order to wrap the focus for overlays `with-backdrop`.
      *
-     * If you know what is your content (specifically the first and last focusable children),
-     * you can override this method to return only `[firstFocusable, lastFocusable];`
+     * If you know what is your content (specifically the first and last focusable
+     * children), you can override this method to return only `[firstFocusable,
+     * lastFocusable];`
      * @return {!Array<!Node>}
      * @protected
      */
@@ -186,10 +154,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @return {void}
      */
     ready: function() {
-      // Used to skip calls to notifyResize and refit while the overlay is animating.
+      // Used to skip calls to notifyResize and refit while the overlay is
+      // animating.
       this.__isAnimating = false;
       // with-backdrop needs tabindex to be set in order to trap the focus.
-      // If it is not set, IronOverlayBehavior will set it, and remove it if with-backdrop = false.
+      // If it is not set, IronOverlayBehavior will set it, and remove it if
+      // with-backdrop = false.
       this.__shouldRemoveTabIndex = false;
       // Used for wrapping the focus on TAB / Shift+TAB.
       this.__firstFocusableNode = this.__lastFocusableNode = null;
@@ -266,7 +236,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @param {Event=} event The original event
      */
     cancel: function(event) {
-      var cancelEvent = this.fire('iron-overlay-canceled', event, {cancelable: true});
+      var cancelEvent =
+          this.fire('iron-overlay-canceled', event, {cancelable: true});
       if (cancelEvent.defaultPrevented) {
         return;
       }
@@ -276,8 +247,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Invalidates the cached tabbable nodes. To be called when any of the focusable
-     * content changes (e.g. a button is disabled).
+     * Invalidates the cached tabbable nodes. To be called when any of the
+     * focusable content changes (e.g. a button is disabled).
      */
     invalidateTabbables: function() {
       this.__firstFocusableNode = this.__lastFocusableNode = null;
@@ -343,8 +314,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // Store focused node.
       this.__restoreFocusNode = this._manager.deepActiveElement;
 
-      // Needed to calculate the size of the overlay so that transitions on its size
-      // will have the correct starting points.
+      // Needed to calculate the size of the overlay so that transitions on its
+      // size will have the correct starting points.
       this._preparePositioning();
       this.refit();
       this._finishPositioning();
@@ -358,7 +329,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Tasks which cause the overlay to actually open; typically play an animation.
+     * Tasks which cause the overlay to actually open; typically play an
+     * animation.
      * @protected
      */
     _renderOpened: function() {
@@ -366,7 +338,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Tasks which cause the overlay to actually close; typically play an animation.
+     * Tasks which cause the overlay to actually close; typically play an
+     * animation.
      * @protected
      */
     _renderClosed: function() {
@@ -374,7 +347,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Tasks to be performed at the end of open action. Will fire `iron-overlay-opened`.
+     * Tasks to be performed at the end of open action. Will fire
+     * `iron-overlay-opened`.
      * @protected
      */
     _finishRenderOpened: function() {
@@ -385,7 +359,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Tasks to be performed at the end of close action. Will fire `iron-overlay-closed`.
+     * Tasks to be performed at the end of close action. Will fire
+     * `iron-overlay-closed`.
      * @protected
      */
     _finishRenderClosed: function() {
@@ -428,10 +403,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!this.noAutoFocus) {
           this._focusNode.focus();
         }
-      }
-      else {
-        this._focusNode.blur();
-        this._focusedChild = null;
+      } else {
         // Restore focus.
         if (this.restoreFocusOnClose && this.__restoreFocusNode) {
           // If the activeElement is `<body>` or inside the overlay,
@@ -441,18 +413,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // button outside the overlay).
           var activeElement = this._manager.deepActiveElement;
           if (activeElement === document.body ||
-            Polymer.dom(this).deepContains(activeElement)) {
+              Polymer.dom(this).deepContains(activeElement)) {
             this.__restoreFocusNode.focus();
           }
         }
         this.__restoreFocusNode = null;
-        // If many overlays get closed at the same time, one of them would still
-        // be the currentOverlay even if already closed, and would call _applyFocus
-        // infinitely, so we check for this not to be the current overlay.
-        var currentOverlay = this._manager.currentOverlay();
-        if (currentOverlay && this !== currentOverlay) {
-          currentOverlay._applyFocus();
-        }
+        this._focusNode.blur();
+        this._focusedChild = null;
       }
     },
 
@@ -468,11 +435,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Keeps track of the focused child. If withBackdrop, traps focus within overlay.
+     * Keeps track of the focused child. If withBackdrop, traps focus within
+     * overlay.
      * @param {!Event} event
      * @protected
      */
-    _onCaptureFocus: function (event) {
+    _onCaptureFocus: function(event) {
       if (!this.withBackdrop) {
         return;
       }
@@ -510,8 +478,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       // TAB wraps from last to first focusable.
       // Shift + TAB wraps from first to last focusable.
       var shift = event.shiftKey;
-      var nodeToCheck = shift ? this.__firstFocusableNode : this.__lastFocusableNode;
-      var nodeToSet = shift ? this.__lastFocusableNode : this.__firstFocusableNode;
+      var nodeToCheck =
+          shift ? this.__firstFocusableNode : this.__lastFocusableNode;
+      var nodeToSet =
+          shift ? this.__lastFocusableNode : this.__firstFocusableNode;
       var shouldWrap = false;
       if (nodeToCheck === nodeToSet) {
         // If nodeToCheck is the same as nodeToSet, it means we have an overlay
@@ -690,9 +660,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @private
      */
     __isValidScrollAction: function(scrollAction) {
-      return scrollAction === 'lock' ||
-             scrollAction === 'refit' ||
-             scrollAction === 'cancel';
+      return scrollAction === 'lock' || scrollAction === 'refit' ||
+          scrollAction === 'cancel';
     },
 
     /**
@@ -708,9 +677,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
       switch (this.scrollAction) {
         case 'lock':
-          // NOTE: scrolling might happen if a scroll event is not cancellable, or if
-          // user pressed keys that cause scrolling (they're not prevented in order not to
-          // break a11y features like navigate with arrow keys).
+          // NOTE: scrolling might happen if a scroll event is not cancellable, or
+          // if user pressed keys that cause scrolling (they're not prevented in
+          // order not to break a11y features like navigate with arrow keys).
           this.__restoreScrollPosition();
           break;
         case 'refit':
@@ -732,8 +701,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.__scrollLeft = document.scrollingElement.scrollLeft;
       } else {
         // Since we don't know if is the body or html, get max.
-        this.__scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
-        this.__scrollLeft = Math.max(document.documentElement.scrollLeft, document.body.scrollLeft);
+        this.__scrollTop =
+            Math.max(document.documentElement.scrollTop, document.body.scrollTop);
+        this.__scrollLeft = Math.max(
+            document.documentElement.scrollLeft, document.body.scrollLeft);
       }
     },
 
@@ -747,56 +718,69 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         document.scrollingElement.scrollLeft = this.__scrollLeft;
       } else {
         // Since we don't know if is the body or html, set both.
-        document.documentElement.scrollTop = document.body.scrollTop = this.__scrollTop;
-        document.documentElement.scrollLeft = document.body.scrollLeft = this.__scrollLeft;
+        document.documentElement.scrollTop = document.body.scrollTop =
+            this.__scrollTop;
+        document.documentElement.scrollLeft = document.body.scrollLeft =
+            this.__scrollLeft;
       }
     },
 
   };
 
   /**
-  Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or shown, and displays
-  on top of other content. It includes an optional backdrop, and can be used to implement a variety
-  of UI controls including dialogs and drop downs. Multiple overlays may be displayed at once.
+  Use `Polymer.IronOverlayBehavior` to implement an element that can be hidden or
+  shown, and displays on top of other content. It includes an optional backdrop,
+  and can be used to implement a variety of UI controls including dialogs and drop
+  downs. Multiple overlays may be displayed at once.
 
-  See the [demo source code](https://github.com/PolymerElements/iron-overlay-behavior/blob/master/demo/simple-overlay.html)
+  See the [demo source
+  code](https://github.com/PolymerElements/iron-overlay-behavior/blob/master/demo/simple-overlay.html)
   for an example.
 
   ### Closing and canceling
 
-  An overlay may be hidden by closing or canceling. The difference between close and cancel is user
-  intent. Closing generally implies that the user acknowledged the content on the overlay. By default,
-  it will cancel whenever the user taps outside it or presses the escape key. This behavior is
-  configurable with the `no-cancel-on-esc-key` and the `no-cancel-on-outside-click` properties.
-  `close()` should be called explicitly by the implementer when the user interacts with a control
-  in the overlay element. When the dialog is canceled, the overlay fires an 'iron-overlay-canceled'
-  event. Call `preventDefault` on this event to prevent the overlay from closing.
+  An overlay may be hidden by closing or canceling. The difference between close
+  and cancel is user intent. Closing generally implies that the user acknowledged
+  the content on the overlay. By default, it will cancel whenever the user taps
+  outside it or presses the escape key. This behavior is configurable with the
+  `no-cancel-on-esc-key` and the `no-cancel-on-outside-click` properties.
+  `close()` should be called explicitly by the implementer when the user interacts
+  with a control in the overlay element. When the dialog is canceled, the overlay
+  fires an 'iron-overlay-canceled' event. Call `preventDefault` on this event to
+  prevent the overlay from closing.
 
   ### Positioning
 
-  By default the element is sized and positioned to fit and centered inside the window. You can
-  position and size it manually using CSS. See `Polymer.IronFitBehavior`.
+  By default the element is sized and positioned to fit and centered inside the
+  window. You can position and size it manually using CSS. See
+  `Polymer.IronFitBehavior`.
 
   ### Backdrop
 
-  Set the `with-backdrop` attribute to display a backdrop behind the overlay. The backdrop is
-  appended to `<body>` and is of type `<iron-overlay-backdrop>`. See its doc page for styling
-  options.
+  Set the `with-backdrop` attribute to display a backdrop behind the overlay. The
+  backdrop is appended to `<body>` and is of type `<iron-overlay-backdrop>`. See
+  its doc page for styling options.
 
-  In addition, `with-backdrop` will wrap the focus within the content in the light DOM.
-  Override the [`_focusableNodes` getter](#Polymer.IronOverlayBehavior:property-_focusableNodes)
-  to achieve a different behavior.
+  In addition, `with-backdrop` will wrap the focus within the content in the light
+  DOM. Override the [`_focusableNodes`
+  getter](#Polymer.IronOverlayBehavior:property-_focusableNodes) to achieve a
+  different behavior.
 
   ### Limitations
 
-  The element is styled to appear on top of other content by setting its `z-index` property. You
-  must ensure no element has a stacking context with a higher `z-index` than its parent stacking
-  context. You should place this element as a child of `<body>` whenever possible.
+  The element is styled to appear on top of other content by setting its `z-index`
+  property. You must ensure no element has a stacking context with a higher
+  `z-index` than its parent stacking context. You should place this element as a
+  child of `<body>` whenever possible.
 
   @demo demo/index.html
   @polymerBehavior
   */
-  Polymer.IronOverlayBehavior = [Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
+  Polymer.IronOverlayBehavior = [
+    Polymer.IronFitBehavior,
+    Polymer.IronResizableBehavior,
+    Polymer.IronOverlayBehaviorImpl
+  ];
 
   /**
    * Fired after the overlay opens.
@@ -807,8 +791,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
    * Fired when the overlay is canceled, but before it is closed.
    * @event iron-overlay-canceled
    * @param {Event} event The closing of the overlay can be prevented
-   * by calling `event.preventDefault()`. The `event.detail` is the original event that
-   * originated the canceling (e.g. ESC keyboard event or click event outside the overlay).
+   * by calling `event.preventDefault()`. The `event.detail` is the original event
+   * that originated the canceling (e.g. ESC keyboard event or click event outside
+   * the overlay).
    */
 
   /**
@@ -817,6 +802,5 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
    * @param {Event} event The `event.detail` is the `closingReason` property
    * (contains `canceled`, whether the overlay was canceled).
    */
-
-})();
+  })();
 </script>

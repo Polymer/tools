@@ -28,14 +28,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template>
     </template>
     <script>
-    HTMLImports.whenReady(function() {
-      Polymer({
-        is: 'test-checked',
-        behaviors: [
-          Polymer.PaperCheckedElementBehavior
-        ]
+      HTMLImports.whenReady(function() {
+        Polymer(
+            {is: 'test-checked', behaviors: [Polymer.PaperCheckedElementBehavior]});
       });
-    });
     </script>
   </dom-module>
 
@@ -75,18 +71,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.isFalse(checked.checked);
       });
 
-      test('element ripple has checked attribute when element tapped to check', function() {
-        MockInteractions.tap(checked);
-        assert.isTrue(checked.hasRipple());
-        assert.isTrue(checked.getRipple().hasAttribute('checked'));
-      });
+      test(
+          'element ripple has checked attribute when element tapped to check',
+          function() {
+            MockInteractions.tap(checked);
+            assert.isTrue(checked.hasRipple());
+            assert.isTrue(checked.getRipple().hasAttribute('checked'));
+          });
 
-      test('element ripple does not have checked attribute when element tapped to uncheck', function() {
-        MockInteractions.tap(checked);
-        MockInteractions.tap(checked);
-        assert.isFalse(checked.getRipple().hasAttribute('checked'));
-      });
-
+      test(
+          'element ripple does not have checked attribute when element tapped to uncheck',
+          function() {
+            MockInteractions.tap(checked);
+            MockInteractions.tap(checked);
+            assert.isFalse(checked.getRipple().hasAttribute('checked'));
+          });
     });
   </script>
 

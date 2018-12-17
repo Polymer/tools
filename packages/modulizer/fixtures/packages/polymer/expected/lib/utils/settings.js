@@ -14,7 +14,6 @@ export const useShadow = !(window.ShadyDOM);
 export const useNativeCSSProperties = Boolean(!window.ShadyCSS || window.ShadyCSS.nativeCss);
 export const useNativeCustomElements = !(window.customElements.polyfillWrapFlushCallback);
 
-
 /**
  * Globally settable property that is automatically assigned to
  * `Polymer.ElementMixin` instances, useful for binding in templates to
@@ -23,12 +22,9 @@ export const useNativeCustomElements = !(window.customElements.polyfillWrapFlush
  * `Polymer.rootPath` to provide a stable application mount path when
  * using client side routing.
  *
- * @memberof Polymer
  */
-let rootPath = undefined ||
+export let rootPath = undefined ||
   pathFromUrl(document.baseURI || window.location.href);
-
-export { rootPath };
 
 /**
  * Sets the global rootPath property used by `Polymer.ElementMixin` and
@@ -56,12 +52,8 @@ export const setRootPath = function(path) {
  * `node` is the node where the value is being inserted.
  *
  * @type {(function(*,string,string,Node):*)|undefined}
- * @memberof Polymer
  */
-let sanitizeDOMValue = undefined;
-
-// This is needed for tooling
-export { sanitizeDOMValue };
+export let sanitizeDOMValue = undefined || null;
 
 /**
  * Sets the global sanitizeDOMValue available via `Polymer.sanitizeDOMValue`.
@@ -79,11 +71,8 @@ export const setSanitizeDOMValue = function(newSanitizeDOMValue) {
  * scrolling performance.
  * Defaults to `false` for backwards compatibility.
  *
- * @memberof Polymer
  */
-let passiveTouchGestures = false;
-
-export { passiveTouchGestures };
+export let passiveTouchGestures = passiveTouchGestures || false;
 
 /**
  * Sets `passiveTouchGestures` globally for all elements using Polymer Gestures.
@@ -93,4 +82,18 @@ export { passiveTouchGestures };
  */
 export const setPassiveTouchGestures = function(usePassive) {
   passiveTouchGestures = usePassive;
+};
+
+export let legacyOptimizations = legacyOptimizations ||
+    window.PolymerSettings && window.PolymerSettings.legacyOptimizations || false;
+
+/**
+ * Sets `legacyOptimizations` globally for all elements. Enables
+ * optimizations when only legacy Polymer() style elements are used.
+ *
+ * @param {boolean} useLegacyOptimizations enable or disable legacy optimizations globally.
+ * @return {void}
+ */
+export const setLegacyOptimizations = function(useLegacyOptimizations) {
+  legacyOptimizations = useLegacyOptimizations;
 };

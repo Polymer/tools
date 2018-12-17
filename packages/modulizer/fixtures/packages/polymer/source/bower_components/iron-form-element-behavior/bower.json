@@ -1,6 +1,6 @@
 {
   "name": "iron-form-element-behavior",
-  "version": "2.1.1",
+  "version": "2.1.3",
   "license": "http://polymer.github.io/LICENSE.txt",
   "private": true,
   "main": "iron-form-element-behavior.html",

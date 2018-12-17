@@ -18,12 +18,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </head>
   <body>
     <script>
-      window.addEventListener("message", messageReceived, false);
+      window.addEventListener('message', messageReceived, false);
 
       window.addEventListener('WebComponentsReady', function() {
-        window.parent.postMessage({
-          'type': 'ready'
-        }, '*');
+        window.parent.postMessage({'type': 'ready'}, '*');
       });
 
       var appendBodyReceived = false;
@@ -33,13 +31,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         // the parent can (at any time) ask for our URL.
         if (msg.data.type === 'urlQuery') {
-          msg.source.postMessage({
-            'type': 'urlQueryResponse',
-            'href': window.location.href,
-            'pathname': window.location.pathname,
-            'hash': window.location.hash,
-            'search': window.location.search
-          }, '*');
+          msg.source.postMessage(
+              {
+                'type': 'urlQueryResponse',
+                'href': window.location.href,
+                'pathname': window.location.pathname,
+                'hash': window.location.hash,
+                'search': window.location.search
+              },
+              '*');
         } else if (msg.data.type === 'appendBody') {
           if (appendBodyReceived) {
             throw new Error('should only receive at most one appendBody call');
@@ -51,10 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       window.addEventListener('error', function(e) {
-        window.parent.postMessage({
-          'type': 'error',
-          'error': e.message
-        }, '*');
+        window.parent.postMessage({'type': 'error', 'error': e.message}, '*');
       });
     </script>
   </body>

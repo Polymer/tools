@@ -252,8 +252,12 @@ class DomIf extends PolymerElement {
       if (c$ && c$.length) {
         // use first child parent, for case when dom-if may have been detached
         let parent = c$[0].parentNode;
-        for (let i=0, n; (i<c$.length) && (n=c$[i]); i++) {
-          parent.removeChild(n);
+        // Instance children may be disconnected from parents when dom-if
+        // detaches if a tree was innerHTML'ed
+        if (parent) {
+          for (let i=0, n; (i<c$.length) && (n=c$[i]); i++) {
+            parent.removeChild(n);
+          }
         }
       }
       this.__instance = null;
@@ -279,4 +283,5 @@ class DomIf extends PolymerElement {
 
 customElements.define(DomIf.is, DomIf);
 
+/** @const */
 export { DomIf };

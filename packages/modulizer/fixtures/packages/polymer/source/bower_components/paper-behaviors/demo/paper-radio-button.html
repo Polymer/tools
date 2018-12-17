@@ -93,13 +93,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
       is: 'paper-radio-button',
 
-      behaviors: [
-        Polymer.PaperCheckedElementBehavior
-      ],
+      behaviors: [Polymer.PaperCheckedElementBehavior],
 
-      hostAttributes: {
-        role: 'radio'
-      },
+      hostAttributes: {role: 'radio'},
 
       ready: function() {
         this.toggles = true;

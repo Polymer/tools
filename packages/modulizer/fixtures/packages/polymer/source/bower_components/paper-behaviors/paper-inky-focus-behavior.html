@@ -14,14 +14,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <script>
   /**
-   * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
+   * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has
+   * keyboard focus.
    *
    * @polymerBehavior Polymer.PaperInkyFocusBehavior
    */
   Polymer.PaperInkyFocusBehaviorImpl = {
-    observers: [
-      '_focusedChanged(receivedFocusFromKeyboard)'
-    ],
+    observers: ['_focusedChanged(receivedFocusFromKeyboard)'],
 
     _focusedChanged: function(receivedFocusFromKeyboard) {
       if (receivedFocusFromKeyboard) {

@@ -132,7 +132,8 @@ interface PaperToastElement extends Polymer.Element, Polymer.IronOverlayBehavior
   _renderClosed(): void;
 
   /**
-   * Show the toast. Without arguments, this is the same as `open()` from `IronOverlayBehavior`.
+   * Show the toast. Without arguments, this is the same as `open()` from
+   * `IronOverlayBehavior`.
    *
    * @param properties Properties to be set before opening the toast.
    * e.g. `toast.show('hello')` or `toast.show({text: 'hello', duration: 3000})`

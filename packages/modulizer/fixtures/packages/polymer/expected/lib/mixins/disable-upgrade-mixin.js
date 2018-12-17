@@ -43,8 +43,10 @@ export const DisableUpgradeMixin = dedupingMixin((base) => {
    * @constructor
    * @extends {base}
    * @implements {Polymer_ElementMixin}
+   * @private
    */
   const superClass = ElementMixin(base);
+
   /**
    * @polymer
    * @mixinClass
@@ -58,13 +60,13 @@ export const DisableUpgradeMixin = dedupingMixin((base) => {
     }
 
     /** @override */
-    attributeChangedCallback(name, old, value) {
+    attributeChangedCallback(name, old, value, namespace) {
       if (name == DISABLED_ATTR) {
         if (!this.__dataEnabled && value == null && this.isConnected) {
           super.connectedCallback();
         }
       } else {
-        super.attributeChangedCallback(name, old, value);
+        super.attributeChangedCallback(name, old, value, namespace);
       }
     }
 

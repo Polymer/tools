@@ -27,12 +27,12 @@
     "utopia.js",
     "code.js"
   ],
-  "version": "1.13.0",
-  "_release": "1.13.0",
+  "version": "1.15.0",
+  "_release": "1.15.0",
   "_resolution": {
     "type": "version",
-    "tag": "v1.13.0",
-    "commit": "595d173837f6cbe4be0051cc4914e8aaa8256fe3"
+    "tag": "v1.15.0",
+    "commit": "7d084d5f17fa40d3451d46cac605308382c9c499"
   },
   "_source": "https://github.com/LeaVerou/prism.git",
   "_target": "*",

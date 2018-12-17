@@ -45,6 +45,12 @@ export default class CustomStyleInterface {
     /** @type {!Array<!CustomStyleProvider>} */
     this['customStyles'] = [];
     this['enqueued'] = false;
+    // NOTE(dfreedm): use quotes here to prevent closure inlining to `function(){}`;
+    documentWait(() => {
+      if (window['ShadyCSS']['flushCustomStyles']) {
+        window['ShadyCSS']['flushCustomStyles']();
+      }
+    })
   }
   /**
    * Queue a validation for new custom styles to batch style recalculations
@@ -107,9 +113,11 @@ export default class CustomStyleInterface {
   }
 }
 
+/* eslint-disable no-self-assign */
 CustomStyleInterface.prototype['addCustomStyle'] = CustomStyleInterface.prototype.addCustomStyle;
 CustomStyleInterface.prototype['getStyleForCustomStyle'] = CustomStyleInterface.prototype.getStyleForCustomStyle;
 CustomStyleInterface.prototype['processStyles'] = CustomStyleInterface.prototype.processStyles;
+/* eslint-enable no-self-assign */
 
 Object.defineProperties(CustomStyleInterface.prototype, {
   'transformCallback': {
@@ -153,4 +161,4 @@ Object.defineProperties(CustomStyleInterface.prototype, {
  * validateCallback: ?function()
  * }}
  */
-export let CustomStyleInterfaceInterface;
+export const CustomStyleInterfaceInterface = {};
