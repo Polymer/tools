@@ -39,20 +39,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         it('shows static methods even when no regular methods', function() {
-          api.descriptor = {
-            "staticMethods": [
-              {
-                "name": "foo"
-              },
-              {
-                "name": "bar"
-              }
-            ]
-          };
+          api.descriptor = {'staticMethods': [{'name': 'foo'}, {'name': 'bar'}]};
           Polymer.dom.flush();
           expect(api.$$('#methods').hidden).to.be.false;
-          var methods =
-              Polymer.dom(api.root).querySelectorAll('iron-doc-function');
+          var methods = Polymer.dom(api.root).querySelectorAll('iron-doc-function');
           expect(methods.length).equals(2);
         });
       });

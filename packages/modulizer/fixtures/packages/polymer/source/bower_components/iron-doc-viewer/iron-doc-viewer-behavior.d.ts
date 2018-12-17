@@ -13,8 +13,9 @@ declare namespace Polymer {
   interface IronDocViewerBehavior {
 
     /**
-     * The [Polymer Analyzer](https://github.com/Polymer/polymer-analyzer)-generated
-     * element descriptor to display details for.
+     * The [Polymer
+     * Analyzer](https://github.com/Polymer/polymer-analyzer)-generated element
+     * descriptor to display details for.
      */
     descriptor: object|null|undefined;
 

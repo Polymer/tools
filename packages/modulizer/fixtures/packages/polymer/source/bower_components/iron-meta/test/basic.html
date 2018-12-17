@@ -26,13 +26,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <iron-meta key="info" value="foo/bar"></iron-meta>
 
   <script>
-
     suite('basic', function() {
-
       test('byKey', function() {
-        var meta = new Polymer.IronMeta({
-          key: 'info'
-        });
+        var meta = new Polymer.IronMeta({key: 'info'});
 
         expect(meta.value).to.be.eql('foo/bar');
       });
@@ -46,9 +42,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           new Polymer.IronMeta();
         }).to.not.throw();
       });
-
     });
-
   </script>
 
 </body>

@@ -39,7 +39,8 @@ declare namespace Polymer {
     toggles: boolean|null|undefined;
 
     /**
-     * Returns false if the element is required and not checked, and true otherwise.
+     * Returns false if the element is required and not checked, and true
+     * otherwise.
      *
      * @param _value Ignored.
      * @returns true if `required` is false or if `checked` is true.

@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+*  Fix regression in conversion of `Polymer.Element` => `PolymerElement`
+   affecting latest Polymer 2.x source.
 <!-- Add new, unreleased changes here. -->
 
 ## [0.4.1] - 2018-07-10
@@ -40,4 +42,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Replaces slow/fragile nodegit with much faster polymer-workspaces git workflow
 * New: Generates symlinked `node_modules` folder after workspace conversion
 * New: Can support conversions with multiple import url styles ("path", "name")
-

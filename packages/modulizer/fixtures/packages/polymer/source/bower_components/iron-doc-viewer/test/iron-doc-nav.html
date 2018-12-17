@@ -33,46 +33,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
       var descriptor = {
-        "elements": [
-          {
-            "name": "my-element",
-            "description": "I am an element",
-            "demos": [
-              {
-                "url": "demo/fancy-demo.html",
-                "description": "My Fancy Demo"
-              }
-            ]
-          }
-        ],
-        "mixins": [
-          {
-            "name": "my-mixin",
-            "description": "I am a mixin"
-          }
-        ],
-        "classes": [
-          {
-            "name": "my-class",
-            "description": "I am a class"
-          }
-        ],
-        "metadata": {
-          "polymer": {
-            "behaviors": [
-              {
-                "name": "my-behavior",
-                "description": "I am a behavior"
-              }
-            ]
+        'elements': [{
+          'name': 'my-element',
+          'description': 'I am an element',
+          'demos':
+              [{'url': 'demo/fancy-demo.html', 'description': 'My Fancy Demo'}]
+        }],
+        'mixins': [{'name': 'my-mixin', 'description': 'I am a mixin'}],
+        'classes': [{'name': 'my-class', 'description': 'I am a class'}],
+        'metadata': {
+          'polymer': {
+            'behaviors':
+                [{'name': 'my-behavior', 'description': 'I am a behavior'}]
           }
         },
-        "namespaces": [
-          {
-            "name": "my-namespace",
-            "description": "I am a namespace"
-          }
-        ],
+        'namespaces': [{'name': 'my-namespace', 'description': 'I am a namespace'}],
       };
 
       describe('<iron-doc-nav>', function() {
@@ -91,7 +66,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             text.push(headings[i].textContent);
           }
           expect(text).to.deep.equals([
-            'Namespaces', 'Elements', 'Behaviors', 'Mixins', 'Classes',
+            'Namespaces',
+            'Elements',
+            'Behaviors',
+            'Mixins',
+            'Classes',
           ]);
         });
       });

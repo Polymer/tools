@@ -110,6 +110,20 @@ const labellable = {
   'select': true
 };
 
+// Defined at https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#enabling-and-disabling-form-controls:-the-disabled-attribute
+/** @type {!Object<boolean>} */
+const canBeDisabled = {
+  'button': true,
+  'command': true,
+  'fieldset': true,
+  'input': true,
+  'keygen': true,
+  'optgroup': true,
+  'option': true,
+  'select': true,
+  'textarea': true
+};
+
 /**
  * @param {HTMLElement} el Element to check labelling status
  * @return {boolean} element can have labels
@@ -123,7 +137,7 @@ function canBeLabelled(el) {
  * @return {!Array<!HTMLLabelElement>} Relevant label for `el`
  */
 function matchingLabels(el) {
-  let labels = [...(/** @type {HTMLInputElement} */((el).labels || []))];
+  let labels = Array.from(/** @type {HTMLInputElement} */(el).labels || []);
   // IE doesn't have `labels` and Safari doesn't populate `labels`
   // if element is in a shadowroot.
   // In this instance, finding the non-ancestor labels is enough,
@@ -1049,7 +1063,7 @@ register({
     let dy = Math.abs(e.clientY - this.info.y);
     // find original target from `preventer` for TouchEvents, or `e` for MouseEvents
     let t = _findOriginalTarget((preventer || e));
-    if (!t || t.disabled) {
+    if (!t || (canBeDisabled[/** @type {!HTMLElement} */(t).localName] && t.hasAttribute('disabled'))) {
       return;
     }
     // dx,dy can be NaN if `click` has been simulated and there was no `down` for `start`

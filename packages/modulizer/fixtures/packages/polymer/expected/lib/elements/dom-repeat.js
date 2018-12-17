@@ -22,6 +22,7 @@ let TemplateInstanceBase = TemplateInstanceBase$0; // eslint-disable-line
  * @constructor
  * @implements {Polymer_OptionalMutableData}
  * @extends {Polymer.Element}
+ * @private
  */
 const domRepeatBase = OptionalMutableData(PolymerElement);
 
@@ -729,4 +730,5 @@ class DomRepeat extends domRepeatBase {
 
 customElements.define(DomRepeat.is, DomRepeat);
 
+/** @const */
 export { DomRepeat };

@@ -18,33 +18,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     is: 'iron-query-params',
 
     properties: {
+      /**
+       * @type{string|undefined}
+       */
       paramsString: {
         type: String,
         notify: true,
         observer: 'paramsStringChanged',
       },
 
+      /**
+       * @type{Object|undefined}
+       */
       paramsObject: {
         type: Object,
         notify: true,
-        value: function() {
-          return {};
-        }
       },
 
-      _dontReact: {
-        type: Boolean,
-        value: false
-      }
+      _dontReact: {type: Boolean, value: false}
     },
 
-    hostAttributes: {
-      hidden: true
-    },
+    hostAttributes: {hidden: true},
 
-    observers: [
-      'paramsObjectChanged(paramsObject.*)'
-    ],
+    observers: ['paramsObjectChanged(paramsObject.*)'],
 
     paramsStringChanged: function() {
       this._dontReact = true;
@@ -57,7 +53,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return;
       }
       this.paramsString = this._encodeParams(this.paramsObject)
-          .replace(/%3F/g, '?').replace(/%2F/g, '/').replace(/'/g, '%27');
+                              .replace(/%3F/g, '?')
+                              .replace(/%2F/g, '/')
+                              .replace(/'/g, '%27');
     },
 
     _encodeParams: function(params) {
@@ -71,10 +69,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         } else if (value) {
           encodedParams.push(
-              encodeURIComponent(key) +
-              '=' +
-              encodeURIComponent(value.toString())
-          );
+              encodeURIComponent(key) + '=' +
+              encodeURIComponent(value.toString()));
         }
       }
       return encodedParams.join('&');

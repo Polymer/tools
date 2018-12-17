@@ -13,6 +13,12 @@ import { resolveUrl, pathFromUrl } from '../utils/resolve-url.js';
 
 let modules = {};
 let lcModules = {};
+function setModule(id, module) {
+  // store id separate from lowercased id so that
+  // in all cases mixedCase id will stored distinctly
+  // and lowercase version is a fallback
+  modules[id] = lcModules[id.toLowerCase()] = module;
+}
 function findModule(id) {
   return modules[id] || lcModules[id.toLowerCase()];
 }
@@ -72,17 +78,20 @@ class DomModule extends HTMLElement {
     return null;
   }
 
+  /* eslint-disable no-unused-vars */
   /**
    * @param {string} name Name of attribute.
    * @param {?string} old Old value of attribute.
    * @param {?string} value Current value of attribute.
+   * @param {?string} namespace Attribute namespace.
    * @return {void}
    */
-  attributeChangedCallback(name, old, value) {
+  attributeChangedCallback(name, old, value, namespace) {
     if (old !== value) {
       this.register();
     }
   }
+  /* eslint-enable no-unused-args */
 
   /**
    * The absolute URL of the original location of this `dom-module`.
@@ -119,12 +128,14 @@ class DomModule extends HTMLElement {
   register(id) {
     id = id || this.id;
     if (id) {
+      // Under strictTemplatePolicy, reject and null out any re-registered
+      // dom-module since it is ambiguous whether first-in or last-in is trusted 
+      if (Polymer.strictTemplatePolicy && findModule(id) !== undefined) {
+        setModule(id, null);
+        throw new Error(`strictTemplatePolicy: dom-module ${id} re-registered`);
+      }
       this.id = id;
-      // store id separate from lowercased id so that
-      // in all cases mixedCase id will stored distinctly
-      // and lowercase version is a fallback
-      modules[id] = this;
-      lcModules[id.toLowerCase()] = this;
+      setModule(id, this);
       styleOutsideTemplateCheck(this);
     }
   }
@@ -134,5 +145,5 @@ DomModule.prototype['modules'] = modules;
 
 customElements.define('dom-module', DomModule);
 
-// export
+/** @const */
 export { DomModule };

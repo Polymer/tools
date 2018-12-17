@@ -30,23 +30,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </dom-module>
 
 <script>
-
-(function() {
+  (function() {
 
   Polymer({
 
     is: 'test-overlay2',
 
-    behaviors: [
-      Polymer.IronOverlayBehavior
-    ],
+    behaviors: [Polymer.IronOverlayBehavior],
 
     get _focusableNodes() {
       return [this.$.first, this.$.last];
     }
 
   });
-
-})();
-
+  })();
 </script>

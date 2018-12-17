@@ -10,6 +10,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 import '../utils/boot.js';
 
 import { dedupingMixin } from '../utils/mixin.js';
+import { legacyOptimizations } from '../utils/settings.js';
+
+const walker = document.createTreeWalker(document, NodeFilter.SHOW_ALL,
+    null, false);
 
 // 1.x backwards-compatible auto-wrapper for template type extensions
 // This is a clear layering violation and gives favored-nation status to
@@ -45,7 +49,8 @@ function findTemplateNode(root, nodeInfo) {
   if (parent) {
     // note: marginally faster than indexing via childNodes
     // (http://jsperf.com/childnodes-lookup)
-    for (let n=parent.firstChild, i=0; n; n=n.nextSibling) {
+    walker.currentNode = parent;
+    for (let n=walker.firstChild(), i=0; n; n=walker.nextSibling()) {
       if (nodeInfo.parentIndex === i++) {
         return n;
       }
@@ -194,7 +199,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
       if (!template._templateInfo) {
         let templateInfo = template._templateInfo = {};
         templateInfo.nodeInfoList = [];
-        templateInfo.stripWhiteSpace =
+        templateInfo.stripWhiteSpace = legacyOptimizations ||
           (outerTemplateInfo && outerTemplateInfo.stripWhiteSpace) ||
           template.hasAttribute('strip-whitespace');
         this._parseTemplateContent(template, templateInfo, {parent: null});
@@ -228,7 +233,8 @@ export const TemplateStamp = dedupingMixin(superClass => {
         // For ShadyDom optimization, indicating there is an insertion point
         templateInfo.hasInsertionPoint = true;
       }
-      if (element.firstChild) {
+      walker.currentNode = element;
+      if (walker.firstChild()) {
         noted = this._parseTemplateChildNodes(element, templateInfo, nodeInfo) || noted;
       }
       if (element.hasAttributes && element.hasAttributes()) {
@@ -254,7 +260,8 @@ export const TemplateStamp = dedupingMixin(superClass => {
       if (root.localName === 'script' || root.localName === 'style') {
         return;
       }
-      for (let node=root.firstChild, parentIndex=0, next; node; node=next) {
+      walker.currentNode = root;
+      for (let node=walker.firstChild(), parentIndex=0, next; node; node=next) {
         // Wrap templates
         if (node.localName == 'template') {
           node = wrapTemplateExtension(node);
@@ -263,12 +270,13 @@ export const TemplateStamp = dedupingMixin(superClass => {
         // text nodes to be inexplicably split =(
         // note that root.normalize() should work but does not so we do this
         // manually.
-        next = node.nextSibling;
+        walker.currentNode = node;
+        next = walker.nextSibling();
         if (node.nodeType === Node.TEXT_NODE) {
           let /** Node */ n = next;
           while (n && (n.nodeType === Node.TEXT_NODE)) {
             node.textContent += n.textContent;
-            next = n.nextSibling;
+            next = walker.nextSibling();
             root.removeChild(n);
             n = next;
           }
@@ -283,7 +291,8 @@ export const TemplateStamp = dedupingMixin(superClass => {
           childInfo.infoIndex = templateInfo.nodeInfoList.push(/** @type {!NodeInfo} */(childInfo)) - 1;
         }
         // Increment if not removed
-        if (node.parentNode) {
+        walker.currentNode = node;
+        if (walker.parentNode()) {
           parentIndex++;
         }
       }
@@ -466,7 +475,7 @@ export const TemplateStamp = dedupingMixin(superClass => {
     /**
      * Override point for adding custom or simulated event handling.
      *
-     * @param {Node} node Node to remove event listener from
+     * @param {!Node} node Node to remove event listener from
      * @param {string} eventName Name of event
      * @param {function(!Event):void} handler Listener function to remove
      * @return {void}

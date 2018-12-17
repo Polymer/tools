@@ -122,101 +122,98 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-nav',
+    Polymer({
+      is: 'iron-doc-nav',
 
-        properties: {
-          descriptor: {
-            type: Object,
-            observer: '_descriptorChanged'
-          },
+      properties: {
+        descriptor: {type: Object, observer: '_descriptorChanged'},
 
-          path: String,
+        path: String,
 
-          baseHref: {
-            type: String,
-            value: '#'
-          },
+        baseHref: {type: String, value: '#'},
 
-          _sections: Array
-        },
+        _sections: Array
+      },
 
-        _descriptorChanged(descriptor) {
-          descriptor = descriptor || {};
-          this._sections = [
-            _section('Namespaces', '/namespaces/', descriptor.namespaces),
-            _section('Elements', '/elements/', descriptor.elements),
-            _section('Behaviors', '/behaviors/',
-                ((descriptor.metadata || {}).polymer || {}).behaviors),
-            _section('Mixins', '/mixins/', descriptor.mixins),
-            _section('Classes', '/classes/', descriptor.classes),
-          ];
+      _descriptorChanged(descriptor) {
+        descriptor = descriptor || {};
+        this._sections = [
+          _section('Namespaces', '/namespaces/', descriptor.namespaces),
+          _section('Elements', '/elements/', descriptor.elements),
+          _section(
+              'Behaviors',
+              '/behaviors/',
+              ((descriptor.metadata || {}).polymer || {}).behaviors),
+          _section('Mixins', '/mixins/', descriptor.mixins),
+          _section('Classes', '/classes/', descriptor.classes),
+        ];
 
-          // Store the height of each expanding tray for transitions.
-          Polymer.dom.flush();
-          var trays = Polymer.dom(this.root).querySelectorAll('.tray');
-          for (var i = 0; i < trays.length; i++) {
-            var tray = trays[i];
-            var expanded = tray.hasAttribute('expanded');
-            if (!expanded) {
-              tray.setAttribute('expanded', '');
-            }
-            tray.style.height = 'auto';
-            tray.style.height = tray.offsetHeight + 'px';
-            if (!expanded) {
-              tray.removeAttribute('expanded', '');
-            }
+        // Store the height of each expanding tray for transitions.
+        Polymer.dom.flush();
+        var trays = Polymer.dom(this.root).querySelectorAll('.tray');
+        for (var i = 0; i < trays.length; i++) {
+          var tray = trays[i];
+          var expanded = tray.hasAttribute('expanded');
+          if (!expanded) {
+            tray.setAttribute('expanded', '');
           }
-        },
-
-        _select(event) {
-          this.fire('select');
-        },
-
-        _isSelected(a, b) {
-          return a === b;
-        },
-
-        _isExpanded(item, path) {
-          return !!(item && path && item.path && item.demos && item.demos.length > 0
-              && (path === item.path || path.indexOf(item.path + '/') === 0));
+          tray.style.height = 'auto';
+          tray.style.height = tray.offsetHeight + 'px';
+          if (!expanded) {
+            tray.removeAttribute('expanded', '');
+          }
         }
-      });
+      },
 
-      function _section(heading, pathPrefix, descriptorItems) {
-        var sectionItems = [];
-        for (var i = 0; i < (descriptorItems || []).length; i++) {
-          var item = descriptorItems[i];
-          var name = item.tagname ? '<' + item.tagname + '>' : item.name;
-          if (!name) {
+      _select(event) {
+        this.fire('select');
+      },
+
+      _isSelected(a, b) {
+        return a === b;
+      },
+
+      _isExpanded(item, path) {
+        return !!(
+            item && path && item.path && item.demos && item.demos.length > 0 &&
+            (path === item.path || path.indexOf(item.path + '/') === 0));
+      }
+    });
+
+    function _section(heading, pathPrefix, descriptorItems) {
+      var sectionItems = [];
+      for (var i = 0; i < (descriptorItems || []).length; i++) {
+        var item = descriptorItems[i];
+        var name = item.tagname ? '<' + item.tagname + '>' : item.name;
+        if (!name) {
+          continue;
+        }
+        var path = pathPrefix + (item.tagname || item.name);
+
+        var demos = [];
+        for (var d = 0; d < (item.demos || []).length; d++) {
+          var demo = item.demos[d];
+          if (!demo.url) {
             continue;
           }
-          var path = pathPrefix + (item.tagname || item.name);
-
-          var demos = [];
-          for (var d = 0; d < (item.demos || []).length; d++) {
-            var demo = item.demos[d];
-            if (!demo.url) {
-              continue;
-            }
-            var demoPath = demo.description
-                ? demo.description.toLowerCase().replace(/\s+/g, '-')
-                : demo.url;
-            demos.push({
-              path: path + '/demos/' + demoPath,
-              description: demo.description || 'Demo'
-            });
-          }
-
-          sectionItems.push({name: name, path: path, demos: demos});
+          var demoPath = demo.description ?
+              demo.description.toLowerCase().replace(/\s+/g, '-') :
+              demo.url;
+          demos.push({
+            path: path + '/demos/' + demoPath,
+            description: demo.description || 'Demo'
+          });
         }
 
-        sectionItems.sort(function(a, b) {
-          return a.name.localeCompare(b.name);
-        });
-
-        return {heading: heading, items: sectionItems};
+        sectionItems.push({name: name, path: path, demos: demos});
       }
+
+      sectionItems.sort(function(a, b) {
+        return a.name.localeCompare(b.name);
+      });
+
+      return {heading: heading, items: sectionItems};
+    }
     })();
   </script>
 </dom-module>

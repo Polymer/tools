@@ -38,7 +38,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <iron-ajax
         id="ajax"
         auto
-        url="/demo/analysis.json"
+        url="./demo/analysis.json"
         handle-as="json"></iron-ajax>
     <iron-doc-viewer
         id="doc-viewer"
@@ -48,9 +48,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       const ajax = document.querySelector('#ajax');
       const docViewer = document.querySelector('#doc-viewer');
 
-      ajax.addEventListener('response', (e) => {
+      function handleResponse() {
         docViewer.descriptor = ajax.lastResponse;
-      });
+      }
+      if (ajax.lastResponse) {
+        handleResponse();
+      } else {
+        ajax.addEventListener('iron-ajax-response', handleResponse);
+      }
     </script>
   </body>
 </html>

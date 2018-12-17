@@ -107,16 +107,19 @@ async function overridePolymer(sourceDir: string) {
   await Promise.all([
     updateFixture({
       folder: 'polymer',
+      branch: '2.x',
       repoUrl: 'https://github.com/Polymer/polymer.git',
       skipSourceUpdate,
     }),
     updateFixture({
       folder: 'paper-button',
+      branch: '2.x',
       repoUrl: 'https://github.com/PolymerElements/paper-button.git',
       skipSourceUpdate,
     }),
     updateFixture({
       folder: 'iron-icon',
+      branch: '2.x',
       repoUrl: 'https://github.com/PolymerElements/iron-icon.git',
       skipSourceUpdate,
     }),

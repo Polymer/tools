@@ -146,76 +146,73 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-api',
+    Polymer({
+      is: 'iron-doc-api',
 
-        behaviors: [Polymer.IronDocViewerBehavior],
+      behaviors: [Polymer.IronDocViewerBehavior],
 
-        properties: {
-          descriptor: Object,
+      properties: {
+        descriptor: Object,
 
-          _showProtectedProperties: Boolean,
-          _showProtectedMethods: Boolean,
-          _showProtectedEvents: Boolean,
+        _showProtectedProperties: Boolean,
+        _showProtectedMethods: Boolean,
+        _showProtectedEvents: Boolean,
 
-          _staticMethods: {
-            computed: '_computeStaticMethods(descriptor)'
-          },
+        _staticMethods: {computed: '_computeStaticMethods(descriptor)'},
 
-          _hasMethods: {
-            computed: '_computeHasMethods(descriptor)'
-          },
-        },
+        _hasMethods: {computed: '_computeHasMethods(descriptor)'},
+      },
 
-        _anyVisible: function(items) {
-          for (var i = 0; i < (items || []).length; i++) {
-            var item = items[i];
-            if (!item.privacy || item.privacy === 'public' || item.privacy === 'protected') {
-              return true;
-            }
-          };
-          return false;
-        },
-
-        _public: function(items) {
-          var filtered = [];
-          for (var i = 0; i < (items || []).length; i++) {
-            var item = items[i];
-            if (!item.privacy || item.privacy === 'public') {
-              filtered.push(item);
-            }
+      _anyVisible: function(items) {
+        for (var i = 0; i < (items || []).length; i++) {
+          var item = items[i];
+          if (!item.privacy || item.privacy === 'public' ||
+              item.privacy === 'protected') {
+            return true;
           }
-          return filtered;
-        },
+        };
+        return false;
+      },
 
-        _protected: function(items) {
-          var filtered = [];
-          for (var i = 0; i < (items || []).length; i++) {
-            var item = items[i];
-            if (item.privacy === 'protected') {
-              filtered.push(item);
-            }
+      _public: function(items) {
+        var filtered = [];
+        for (var i = 0; i < (items || []).length; i++) {
+          var item = items[i];
+          if (!item.privacy || item.privacy === 'public') {
+            filtered.push(item);
           }
-          return filtered;
-        },
+        }
+        return filtered;
+      },
 
-        _protectedCount: function(/** arguments */) {
-          var sum = 0;
-          for (var i = 0; i < arguments.length; i++) {
-            sum += this._protected(arguments[i]).length
+      _protected: function(items) {
+        var filtered = [];
+        for (var i = 0; i < (items || []).length; i++) {
+          var item = items[i];
+          if (item.privacy === 'protected') {
+            filtered.push(item);
           }
-          return sum;
-        },
+        }
+        return filtered;
+      },
 
-        _computeStaticMethods: function(descriptor) {
-          return descriptor.staticMethods || [];
-        },
+      _protectedCount: function(/** arguments */) {
+        var sum = 0;
+        for (var i = 0; i < arguments.length; i++) {
+          sum += this._protected(arguments[i]).length
+        }
+        return sum;
+      },
 
-        _computeHasMethods: function(descriptor) {
-          return (descriptor.methods && descriptor.methods.length > 0) ||
-              (descriptor.staticMethods && descriptor.staticMethods.length > 0);
-        },
-      });
+      _computeStaticMethods: function(descriptor) {
+        return descriptor.staticMethods || [];
+      },
+
+      _computeHasMethods: function(descriptor) {
+        return (descriptor.methods && descriptor.methods.length > 0) ||
+            (descriptor.staticMethods && descriptor.staticMethods.length > 0);
+      },
+    });
     })();
   </script>
 </dom-module>

@@ -33,27 +33,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-demo',
+    Polymer({
+      is: 'iron-doc-demo',
 
-        properties: {
-          demo: Object,
+      properties: {
+        demo: Object,
 
-          srcPrefix: {
-            type: String,
-            value: ''
-          },
+        srcPrefix: {type: String, value: ''},
 
-          title: {
-            computed: '_computeTitle(demo)',
-            notify: true
-          }
-        },
+        title: {computed: '_computeTitle(demo)', notify: true}
+      },
 
-        _computeTitle: function(demo) {
-          return 'Demo ' + (demo.description || demo.url);
-        }
-      });
+      _computeTitle: function(demo) {
+        return 'Demo ' + (demo.description || demo.url);
+      }
+    });
     })();
   </script>
 </dom-module>

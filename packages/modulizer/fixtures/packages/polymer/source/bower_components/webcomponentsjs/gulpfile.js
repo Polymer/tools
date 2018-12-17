@@ -22,6 +22,7 @@ const del = require('del');
 const runseq = require('run-sequence');
 const closure = require('google-closure-compiler').gulp();
 const babel = require('rollup-plugin-babel');
+const license = require('rollup-plugin-license');
 
 function debugify(sourceName, fileName, extraRollupOptions) {
   if (!fileName)
@@ -47,7 +48,6 @@ function closurify(sourceName, fileName) {
   }
 
   const closureOptions = {
-    new_type_inf: true,
     compilation_level: 'ADVANCED',
     language_in: 'ES6_STRICT',
     language_out: 'ES5_STRICT',
@@ -72,7 +72,7 @@ function closurify(sourceName, fileName) {
   return gulp.src([
       'entrypoints/*.js',
       'src/*.js',
-      'node_modules/es6-promise/lib/es6-promise/**/*.js',
+      'node_modules/promise-polyfill/src/*.js',
       'node_modules/@webcomponents/**/*.js',
       '!node_modules/@webcomponents/*/externs/*.js',
       '!node_modules/@webcomponents/*/node_modules/**',
@@ -107,6 +107,14 @@ gulp.task('debugify-sd-ce', () => {
   return debugify('webcomponents-sd-ce')
 });
 
+gulp.task('debugify-ce', () => {
+  return debugify('webcomponents-ce')
+});
+
+gulp.task('debugify-sd', () => {
+  return debugify('webcomponents-sd')
+});
+
 gulp.task('debugify-hi-sd', () => {
   return debugify('webcomponents-hi-sd')
 });
@@ -133,25 +141,32 @@ gulp.task('closurify-sd-ce', () => {
 
 gulp.task('closurify-hi-sd', () => {
   return closurify('webcomponents-hi-sd')
+});
+
+gulp.task('closurify-ce', () => {
+  return closurify('webcomponents-ce')
 })
 
-function singleLicenseComment() {
-  let hasLicense = false;
-  return (comment) => {
-    if (hasLicense) {
-      return false;
-    }
-    return hasLicense = /@license/.test(comment);
-  }
-}
+gulp.task('closurify-sd', () => {
+  return closurify('webcomponents-sd')
+})
 
 const babelOptions = {
-  presets: 'minify',
-  shouldPrintComment: singleLicenseComment()
+  presets: [
+    ['minify', {'keepFnName': true}],
+  ],
 };
 
 gulp.task('debugify-ce-es5-adapter', () => {
-  return debugify('custom-elements-es5-adapter', '', {plugins: [babel(babelOptions)]});
+  return debugify('custom-elements-es5-adapter', '', {
+    plugins: [
+      babel(babelOptions),
+      license({
+        banner: {
+          file: './license-header.txt'
+        }
+      })
+    ]});
 });
 
 gulp.task('default', ['closure']);
@@ -162,11 +177,13 @@ gulp.task('clean-builds', () => {
 
 gulp.task('debug', (cb) => {
   const tasks = [
+    'debugify-ce',
     'debugify-hi',
     'debugify-hi-ce',
     'debugify-hi-sd',
     'debugify-hi-sd-ce',
     'debugify-hi-sd-ce-pf',
+    'debugify-sd',
     'debugify-sd-ce',
     'debugify-ce-es5-adapter'
   ];
@@ -175,11 +192,13 @@ gulp.task('debug', (cb) => {
 
 gulp.task('closure', (cb) => {
   const tasks = [
+    'closurify-ce',
     'closurify-hi',
     'closurify-hi-ce',
     'closurify-hi-sd',
     'closurify-hi-sd-ce',
     'closurify-hi-sd-ce-pf',
+    'closurify-sd',
     'closurify-sd-ce',
     'debugify-ce-es5-adapter'
   ];

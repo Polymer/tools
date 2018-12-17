@@ -17,6 +17,10 @@ const HOST_DIR_REPLACMENT = ':host([dir="$1"])';
 const EL_DIR = /([\s\w-#\.\[\]\*]*):dir\((ltr|rtl)\)/g;
 const EL_DIR_REPLACMENT = ':host([dir="$2"]) $1';
 
+const DIR_CHECK = /:dir\((?:ltr|rtl)\)/;
+
+const SHIM_SHADOW = Boolean(window['ShadyDOM'] && window['ShadyDOM']['inUse']);
+
 /**
  * @type {!Array<!Polymer_DirMixin>}
  */
@@ -77,16 +81,19 @@ function takeRecords() {
  */
 export const DirMixin = dedupingMixin((base) => {
 
-  if (!observer) {
-    getRTL();
-    observer = new MutationObserver(updateDirection);
-    observer.observe(document.documentElement, {attributes: true, attributeFilter: ['dir']});
+  if (!SHIM_SHADOW) {
+    if (!observer) {
+      getRTL();
+      observer = new MutationObserver(updateDirection);
+      observer.observe(document.documentElement, {attributes: true, attributeFilter: ['dir']});
+    }
   }
 
   /**
    * @constructor
    * @extends {base}
    * @implements {Polymer_PropertyAccessors}
+   * @private
    */
   const elementBase = PropertyAccessors(base);
 
@@ -103,7 +110,10 @@ export const DirMixin = dedupingMixin((base) => {
      */
     static _processStyleText(cssText, baseURI) {
       cssText = super._processStyleText(cssText, baseURI);
-      cssText = this._replaceDirInCssText(cssText);
+      if (!SHIM_SHADOW && DIR_CHECK.test(cssText)) {
+        cssText = this._replaceDirInCssText(cssText);
+        this.__activateDir = true;
+      }
       return cssText;
     }
 
@@ -117,9 +127,6 @@ export const DirMixin = dedupingMixin((base) => {
       let replacedText = text;
       replacedText = replacedText.replace(HOST_DIR, HOST_DIR_REPLACMENT);
       replacedText = replacedText.replace(EL_DIR, EL_DIR_REPLACMENT);
-      if (text !== replacedText) {
-        this.__activateDir = true;
-      }
       return replacedText;
     }
 
