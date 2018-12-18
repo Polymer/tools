@@ -89,39 +89,35 @@ gulp.task('build:typescript-browser', function() {
       .js.pipe(gulp.dest('./browser/'));
 });
 
-gulp.task('test', function(done) {
-  runSequence(
-      'build:typescript-server', 'lint', 'test:unit', 'test:integration', done);
+gulp.task('test', function() {
+  return runSequence(
+      'build:typescript-server', 'lint', 'test:unit', 'test:integration');
 });
 
-gulp.task('build-all', (done) => {
-  runSequence('clean', 'lint', 'build', done);
+gulp.task('build-all', () => {
+  return runSequence('clean', 'lint', 'build');
 });
 
 // Specific tasks
 
 gulp.task(
-    'build:browser', gulp.series(['build:typescript-browser']), function(done) {
-      rollup
-          .rollup({
-            entry: 'browser/index.js',
-          })
-          .then(function(bundle) {
-            bundle
-                .write({
-                  indent: false,
-                  format: 'iife',
-                  banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
-                  intro: 'window.__wctUseNpm = false;',
-                  dest: 'browser.js',
-                  sourceMap: true,
-                  sourceMapFile: path.resolve('browser.js.map')
-                })
-                .then(function() {
-                  done();
-                });
-          })
-          .catch(done);
+    'build:browser',
+    gulp.series(['build:typescript-browser']),
+    function() {
+      return rollup.rollup({
+        entry: 'browser/index.js',
+      })
+      .then(function(bundle) {
+        return bundle.write({
+          indent: false,
+          format: 'iife',
+          banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
+          intro: 'window.__wctUseNpm = false;',
+          dest: 'browser.js',
+          sourceMap: true,
+          sourceMapFile: path.resolve('browser.js.map')
+        });
+      });
     });
 
 gulp.task('build:wct-browser-legacy:a11ySuite', function() {
@@ -133,27 +129,21 @@ gulp.task('build:wct-browser-legacy:a11ySuite', function() {
 gulp.task(
     'build:wct-browser-legacy:browser',
     gulp.series(['build:typescript-browser']),
-    function(done) {
-      rollup
-          .rollup({
-            entry: 'browser/index.js',
-          })
-          .then(function(bundle) {
-            bundle
-                .write({
-                  indent: false,
-                  format: 'iife',
-                  banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
-                  intro: 'window.__wctUseNpm = true;',
-                  dest: '../wct-browser-legacy/browser.js',
-                  sourceMap: true,
-                  sourceMapFile: path.resolve('browser.js.map')
-                })
-                .then(function() {
-                  done();
-                });
-          })
-          .catch(done);
+    function() {
+      return rollup.rollup({
+        entry: 'browser/index.js',
+      })
+      .then(function(bundle) {
+        return bundle.write({
+          indent: false,
+          format: 'iife',
+          banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
+          intro: 'window.__wctUseNpm = true;',
+          dest: '../wct-browser-legacy/browser.js',
+          sourceMap: true,
+          sourceMapFile: path.resolve('browser.js.map')
+        });
+      });
     });
 
 gulp.task('build:wct-browser-legacy', gulp.series([
@@ -171,7 +161,7 @@ gulp.task('test:unit', function() {
       .pipe(mocha(mochaConfig));
 });
 
-gulp.task('bower', function(done) {
+gulp.task('bower', function() {
   return new Promise((resolve) => {
     bower.commands.install().on('end', resolve);
   });
@@ -226,12 +216,12 @@ gulp.task('build', gulp.series([
 
 gulp.task('lint', gulp.series(['tslint', 'depcheck']));
 
-gulp.task('prepublish', function(done) {
+gulp.task('prepublish', function() {
   // We can't run the integration tests here because on travis we may not
   // be running with an x instance when we do `npm install`. We can change
   // this to just `test` from `test:unit` once all supported npm versions
   // no longer run `prepublish` on install.
-  runSequence('build-all', 'test:unit', done);
+  return runSequence('build-all', 'test:unit');
 });
 
 function commonDepCheck(options) {
