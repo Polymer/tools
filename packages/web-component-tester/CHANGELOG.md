@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## 6.9.1 - 2018-12-19
+* Update WCT dependencies to reduce vulnerabilities in npm security audit.
+
 ## 6.9.0 - 2018-10-25
 * Official release with `wct-mocha` support after verifying it in active projects.
 
