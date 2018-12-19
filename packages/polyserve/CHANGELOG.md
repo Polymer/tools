@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## [0.27.14] (2018-12-19)
+* Fix `compile-cache` cli option not being respected.
+
 ## [0.27.13] (2018-10-15)
 * Allow file requests to specify `?nocompile` to prevent any compilation
 

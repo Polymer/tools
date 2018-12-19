@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## v1.9.3 [12-19-2018]
+* Replace `github` library with `@octokit/rest` to pass npm audit.
+
 ## v1.9.2 [12-06-2018]
 * Updated dependencies.
   * @polymer/esm-amd-loader@1.0.4 - loads AMD modules with

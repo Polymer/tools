@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.2.1] - 2018-12-19
+* Recognize .mjs as JavaScript files.
+
 ## [3.2.0] - 2018-12-03
 * Support annotating mixin class properties and methods using
   `MixinClass.prototype.foo` syntax.
