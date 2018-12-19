@@ -1322,8 +1322,8 @@ export function deepReferenceFn() {
       });
       assertSources(await convert(), {
         'test.js': `
-import { Element } from './dep.js';
-class MyElement extends Element {}
+import { PolymerElement } from './dep.js';
+class MyElement extends PolymerElement {}
 `
       });
     });
@@ -1465,8 +1465,8 @@ export const isDeep = isPath;
           }),
           {
             'test.js': `
-import { Element } from './dep.js';
-class MyElement extends Element {}
+import { PolymerElement } from './dep.js';
+class MyElement extends PolymerElement {}
 `
           });
     });
@@ -1588,13 +1588,13 @@ export const setRootPath = function(path) {
       });
       assertSources(await convert(), {
         'test.js': `
-import { Element } from './polymer.js';
+import { PolymerElement } from './polymer.js';
 import { html } from './html-tag.js';
 /**
  * @customElement
  * @polymer
  */
-class TestElement extends Element {
+class TestElement extends PolymerElement {
   static get template() {
     return html\`
     <h1>Hi!</h1>
@@ -1773,12 +1773,12 @@ export { qux as zug };
       assertSources(
           await convert({namespaces: [/* No explicit namespaces! */]}), {
             'test.js': `
-import { Element as Element$0 } from './polymer.js';
-class Element extends Element$0 {}
+import { PolymerElement } from './polymer.js';
+class Element extends PolymerElement {}
 `,
 
             'polymer.js': `
-export const Element = class Element {};
+export const PolymerElement = class Element {};
 `
           });
     });
@@ -1847,7 +1847,7 @@ export const Element = class Element {};
               }),
               {
                 'test.js': `
-export const Element = class Element {};
+export const PolymerElement = class Element {};
 `,
 
                 'index.html': `
@@ -1894,7 +1894,7 @@ export const Element = class Element {};
               }),
               {
                 'test.js': `
-export const Element = class Element {};
+export const PolymerElement = class Element {};
 `,
 
                 'index.html': `
@@ -1926,9 +1926,9 @@ export const Element = class Element {};
       });
       assertSources(await convert(), {
         'test.js': `
-import { Element } from './polymer.js';
-class FooElem extends Element {}
-class BarElem extends Element {}
+import { PolymerElement } from './polymer.js';
+class FooElem extends PolymerElement {}
+class BarElem extends PolymerElement {}
 `
       });
     });
@@ -1955,12 +1955,12 @@ class BarElem extends Element {}
       });
       assertSources(await convert(), {
         'test.js': `
-import { Element } from './polymer.js';
+import { PolymerElement } from './polymer.js';
 const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = \`<div>Top</div><div>Middle</div><div>Bottom</div>\`;
 document.head.appendChild($_documentContainer.content);
-class FooElem extends Element {}
-class BarElem extends Element {}
+class FooElem extends PolymerElement {}
+class BarElem extends PolymerElement {}
 `
       });
     });
@@ -1995,18 +1995,18 @@ class BarElem extends Element {}
       });
       assertSources(await convert(), {
         'test.js': `
-import { Element } from './polymer.js';
+import { PolymerElement } from './polymer.js';
 const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = \`<div>Random footer</div>\`;
 document.head.appendChild($_documentContainer.content);
-customElements.define('foo-elem', class FooElem extends Element {
+customElements.define('foo-elem', class FooElem extends PolymerElement {
   static get template() {
     return Polymer.html\`
     <div>foo-element body</div>
 \`;
   }
 });
-customElements.define('bar-elem', class BarElem extends Element {
+customElements.define('bar-elem', class BarElem extends PolymerElement {
   static get template() {
     return Polymer.html\`
     <div>bar body</div>
@@ -2072,7 +2072,7 @@ import '../lib.js';
       });
       assertSources(await convert(), {
         'polymer.js': `
-export const Element = class Element {};
+export const PolymerElement = class Element {};
 `,
 
         'index.html': `
@@ -2080,9 +2080,9 @@ export const Element = class Element {};
           <div>This is some html.</div>
           <script type="module" src="./polymer.js"></script>
           <script type="module">
-import { Element } from './polymer.js';
+import { PolymerElement } from './polymer.js';
 document.registerElement(
-  'foo-elem', class FooElem extends Element {});
+  'foo-elem', class FooElem extends PolymerElement {});
 </script>
           <script type="module">
             // this should not be changed because it is a module already
@@ -2090,9 +2090,9 @@ document.registerElement(
               'bar-elem', class BarElem extends HTMLElement {});
           </script>
           <script type="module">
-import { Element } from './polymer.js';
+import { PolymerElement } from './polymer.js';
 document.registerElement(
-  'baz-elem', class BazElem extends Element {});
+  'baz-elem', class BazElem extends PolymerElement {});
 </script>
         `,
       });
