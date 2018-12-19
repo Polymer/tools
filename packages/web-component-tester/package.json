@@ -113,7 +113,6 @@
     "gulp-typescript": "^3.1.2",
     "rimraf": "^2.5.4",
     "rollup": "^0.25.1",
-    "run-sequence": "^1.0.1",
     "source-map-support": "^0.5.4",
     "watch": "^0.18.0",
     "wct-local": "^2.1.1",
