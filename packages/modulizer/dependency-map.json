@@ -89,7 +89,7 @@
   },
   "iron-component-page": {
     "npm": "@polymer/iron-component-page",
-    "semver": "^3.0.0"
+    "semver": "^4.0.0"
   },
   "iron-jsonp-library": {
     "npm": "@polymer/iron-jsonp-library",
