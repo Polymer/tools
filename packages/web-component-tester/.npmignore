@@ -6,7 +6,9 @@
 /.vscode/
 /a11ySuiteExample.png
 /bower.json
-/data/
+/browser/
+/data/a11ySuite-npm-header.txt
+/data/browser-js-header.txt
 /gulpfile.js
 /mocha.opts
 /test/
