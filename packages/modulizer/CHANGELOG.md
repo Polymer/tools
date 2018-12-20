@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [0.4.3] - 2018-12-20
+
+* Update dependency map to use @polymer/iron-component-page 4.0.0.
+
 ## [0.4.2] - 2018-12-19
 
 * Fix regression in conversion of `Polymer.Element` => `PolymerElement`
