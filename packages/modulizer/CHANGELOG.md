@@ -6,10 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-* Fix regression in conversion of `Polymer.Element` => `PolymerElement`
-  affecting latest Polymer 2.x source.
 * Updated `.npmignore` to eliminate non-essential files from npm published package.
 <!-- Add new, unreleased changes here. -->
+
+## [0.4.2] - 2018-12-19
+
+* Fix regression in conversion of `Polymer.Element` => `PolymerElement`
+  affecting latest Polymer 2.x source.
+* Update dependency map to use stable 3.0.0 releases.
 
 ## [0.4.1] - 2018-07-10
 

@@ -21,7 +21,6 @@ const ts = require('gulp-typescript');
 const bower = require('bower');
 const path = require('path');
 const rollup = require('rollup');
-const runSequence = require('run-sequence');
 const typescript = require('typescript');
 
 const mochaConfig = {
@@ -87,15 +86,6 @@ gulp.task('build:typescript-browser', function() {
   return browserTsProject.src()
       .pipe(browserTsProject(ts.reporter.nullReporter()))
       .js.pipe(gulp.dest('./browser/'));
-});
-
-gulp.task('test', function() {
-  return runSequence(
-      'build:typescript-server', 'lint', 'test:unit', 'test:integration');
-});
-
-gulp.task('build-all', () => {
-  return runSequence('clean', 'lint', 'build');
 });
 
 // Specific tasks
@@ -206,8 +196,6 @@ gulp.task(
               .pipe(tslint())
               .pipe(tslint.report({formatter: 'verbose'})));
 
-gulp.task('default', gulp.series(['test']));
-
 gulp.task('build', gulp.series([
   'build:typescript-server',
   'build:browser',
@@ -216,13 +204,29 @@ gulp.task('build', gulp.series([
 
 gulp.task('lint', gulp.series(['tslint', 'depcheck']));
 
-gulp.task('prepublish', function() {
+gulp.task('test', gulp.series([
+  'build:typescript-server',
+  'lint',
+  'test:unit',
+  'test:integration'
+]));
+
+gulp.task('build-all', gulp.series([
+  'clean',
+  'lint',
+  'build'
+]));
+
+gulp.task('default', gulp.series(['test']));
+
+gulp.task('prepublish', gulp.series([
   // We can't run the integration tests here because on travis we may not
   // be running with an x instance when we do `npm install`. We can change
   // this to just `test` from `test:unit` once all supported npm versions
   // no longer run `prepublish` on install.
-  return runSequence('build-all', 'test:unit');
-});
+  'build-all',
+  'test:unit'
+]));
 
 function commonDepCheck(options) {
   const defaultOptions = {stickyDeps: new Set()};
