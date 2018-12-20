@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   appropriate.
 -->
 
-<!-- ## Unreleased -->
+## Unreleased
+- Updated `.npmignore` to filter non-essential files from published package.
 <!-- Add new, unreleased changes here. -->
 
 ## 2.2.2 - 2018-06-28

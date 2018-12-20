@@ -1,6 +1,6 @@
 # Any changes you make here you should also make in .gitignore
 
-/node_modules/
-
+/.eslintrc.json
 /src/
-
+/tsconfig.json
+/tslint.json

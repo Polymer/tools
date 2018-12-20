@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Removed files array from package.json to defer packaged file filter to
+  `.npmignore`.  Eliminates test and demo files from npm published package.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.2.0] - 2018-12-03

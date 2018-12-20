@@ -1,5 +1,7 @@
-# npmignore
-CHANGELOG.md
-README.md
-node_modules
-test
+/.editorconfig
+/.vscode
+/lib/test/
+/src/
+/test/
+/tsconfig.json
+/tslint.json

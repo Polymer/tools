@@ -9,11 +9,6 @@
   "author": "The Polymer Project Authors",
   "main": "lib/bundler.js",
   "typings": "lib/bundler.d.ts",
-  "files": [
-    "LICENSE",
-    "lib/",
-    "custom_typings/"
-  ],
   "bin": {
     "polymer-bundler": "lib/bin/polymer-bundler.js"
   },

@@ -1,1 +1,8 @@
-./fixtures
+/.gitattributes
+/.vscode/
+/fixtures/
+/lib/test/
+/src/
+/test/
+/tsconfig.json
+/tslint.json

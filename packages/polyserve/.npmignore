@@ -1,9 +1,6 @@
-.clang-format
-.github
-.gitignore
-.travis.yml
-.vscode
-node_modules
-src/test
-test
-
+/.vscode
+/lib/test/
+/src/
+/test/
+/tsconfig.json
+/tslint.json

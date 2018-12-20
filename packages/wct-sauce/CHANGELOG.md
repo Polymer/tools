@@ -1,6 +1,7 @@
 # Changelog
 
-<!-- ## Unreleased -->
+## Unreleased
+* Added `.npmignore` to filter out non-essential files from published package.
 <!-- Add new, unreleased changes here. -->
 
 ## 2.1.0 - 2018-08-15

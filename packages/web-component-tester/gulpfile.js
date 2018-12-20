@@ -101,23 +101,22 @@ gulp.task('build-all', () => {
 // Specific tasks
 
 gulp.task(
-    'build:browser',
-    gulp.series(['build:typescript-browser']),
-    function() {
-      return rollup.rollup({
-        entry: 'browser/index.js',
-      })
-      .then(function(bundle) {
-        return bundle.write({
-          indent: false,
-          format: 'iife',
-          banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
-          intro: 'window.__wctUseNpm = false;',
-          dest: 'browser.js',
-          sourceMap: true,
-          sourceMapFile: path.resolve('browser.js.map')
-        });
-      });
+    'build:browser', gulp.series(['build:typescript-browser']), function() {
+      return rollup
+          .rollup({
+            entry: 'browser/index.js',
+          })
+          .then(function(bundle) {
+            return bundle.write({
+              indent: false,
+              format: 'iife',
+              banner: fs.readFileSync('data/browser-js-header.txt', 'utf-8'),
+              intro: 'window.__wctUseNpm = false;',
+              dest: 'browser.js',
+              sourceMap: true,
+              sourceMapFile: path.resolve('browser.js.map')
+            });
+          });
     });
 
 gulp.task('build:wct-browser-legacy:a11ySuite', function() {
@@ -130,20 +129,21 @@ gulp.task(
     'build:wct-browser-legacy:browser',
     gulp.series(['build:typescript-browser']),
     function() {
-      return rollup.rollup({
-        entry: 'browser/index.js',
-      })
-      .then(function(bundle) {
-        return bundle.write({
-          indent: false,
-          format: 'iife',
-          banner: fs.readFileSync('browser-js-header.txt', 'utf-8'),
-          intro: 'window.__wctUseNpm = true;',
-          dest: '../wct-browser-legacy/browser.js',
-          sourceMap: true,
-          sourceMapFile: path.resolve('browser.js.map')
-        });
-      });
+      return rollup
+          .rollup({
+            entry: 'browser/index.js',
+          })
+          .then(function(bundle) {
+            return bundle.write({
+              indent: false,
+              format: 'iife',
+              banner: fs.readFileSync('data/browser-js-header.txt', 'utf-8'),
+              intro: 'window.__wctUseNpm = true;',
+              dest: '../wct-browser-legacy/browser.js',
+              sourceMap: true,
+              sourceMapFile: path.resolve('browser.js.map')
+            });
+          });
     });
 
 gulp.task('build:wct-browser-legacy', gulp.series([

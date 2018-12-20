@@ -17,7 +17,8 @@
   "scripts": {
     "format": "find scripts lib -name \"*.js\" | xargs clang-format --style=file -i",
     "postinstall": "node scripts/postinstall.js",
-    "test": "mocha"
+    "test": "mocha",
+    "test:integration": "npm test"
   },
   "main": "lib/plugin.js",
   "wct-plugin": {

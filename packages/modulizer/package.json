@@ -11,13 +11,6 @@
   "bin": {
     "modulizer": "bin/modulizer.js"
   },
-  "files": [
-    "dependency-map.json",
-    "lib/",
-    "custom_typings/",
-    "bin/",
-    "src/"
-  ],
   "scripts": {
     "build": "tsc && npm run lint",
     "build:fixtures": "npm run build && node lib/tools/update-fixtures",

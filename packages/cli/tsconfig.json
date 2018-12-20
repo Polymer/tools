@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig-base.json",
   "compilerOptions": {
-    "declaration": false,
+    "declaration": true,
     "noUnusedParameters": true,
     "skipLibCheck": true,
     "outDir": "./lib"

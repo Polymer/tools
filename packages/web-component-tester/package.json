@@ -27,21 +27,6 @@
     "wct": "./bin/wct",
     "wct-st": "./bin/wct-st"
   },
-  "files": [
-    "bin/",
-    "data/",
-    "runner/",
-    "scripts/",
-    "tasks/",
-    ".bowerrc",
-    "bower.json",
-    "browser.js",
-    "browser.js.map",
-    "package.json",
-    "LICENSE",
-    "README.md",
-    "runner.js"
-  ],
   "scripts": {
     "lint": "tslint -p .",
     "build": "tsc && gulp build",

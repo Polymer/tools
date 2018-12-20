@@ -1,9 +1,16 @@
 # Update .gitignore whenever you update this file!
 
-.todo
-bower_components
-node_modules
-npm-debug.log
-typings/
+/*.ts
+/!*.d.ts
+/.todo
+/.vscode/
+/a11ySuiteExample.png
+/bower.json
+/data/
+/gulpfile.js
+/mocha.opts
+/test/
+/tsconfig.json
+/tslint.json
 
 # Don't ignore runner/*.js

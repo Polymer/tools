@@ -1,9 +1,8 @@
-test
-dom5.ts
-.vscode
-.editorconfig
-.clang-format
-tslint.json
-tsconfig.json
-.travis.yml
-node_modules
+/.editorconfig
+/.gitattributes
+/.vscode/
+/dom5.ts
+/lib/test/
+/src/
+/tslint.json
+/tsconfig.json

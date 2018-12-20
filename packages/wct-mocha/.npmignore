@@ -1,7 +1,5 @@
-/lib/test/
-/scripts/
+/rollup.config.js
 /src/
 /test/
 /tsconfig.json
 /tslint.json
-

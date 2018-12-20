@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Removed files array from package.json to defer packaged file filter to
+  `.npmignore`.  Eliminates test and demo files from npm published package.
+* Publish `*.d.ts` files to support programmatic use of CLI for Typescript.
 <!-- Add new, unreleased changes here. -->
 
 ## v1.9.2 [12-06-2018]

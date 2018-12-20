@@ -1,6 +1,7 @@
 # Change Log
 
-<!-- ## Unreleased -->
+## Unreleased
+* Updated `.npmignore` to eliminate non-essential files from published package.
 <!-- Add new, unreleased changes here. -->
 
 ## [1.1.3] - 2018-11-15

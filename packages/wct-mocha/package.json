@@ -3,12 +3,6 @@
   "version": "1.0.0",
   "description": "Client-side library for testing web-components with Mocha.",
   "main": "lib/index.js",
-  "files": [
-    "wct-mocha.js",
-    "lib/",
-    "LICENSE",
-    "README.md"
-  ],
   "scripts": {
     "build": "npm run build:compile && npm run build:browserjs",
     "build:browserjs": "rollup -c",

@@ -1,7 +1,7 @@
-.clang-format
-.github
-/.gitignore
-.travis.yml
-appveyor.yml
-node_modules
-/test
+/.editorconfig
+/lib/test/
+/scripts/
+/src/
+/test/
+/tsconfig.json
+/tslint.json

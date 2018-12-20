@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Updated `.npmignore` to eliminate non-essential files from published
+  package.
 <!-- Add new, unreleased changes here. -->
 
 ## [1.0.4] - 2018-12-06
