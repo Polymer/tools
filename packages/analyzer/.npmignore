@@ -3,8 +3,10 @@
 /.gitattributes
 /.idea
 /.vscode
+/design/
 /lib/demo/
 /lib/test/
+/scripts/
 /src/
 /test/
 /tsconfig.json
