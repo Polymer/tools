@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## 6.9.2 - 2018-12-23
+* Fix gulpfile to actually build browser.js.
+
 ## 6.9.1 - 2018-12-19
 * Update WCT dependencies to reduce vulnerabilities in npm security audit.
 
