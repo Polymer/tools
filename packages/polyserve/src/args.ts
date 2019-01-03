@@ -157,4 +157,10 @@ export const args: ArgDescriptor[] = [
         'Host URL to proxy to, for example `https://myredirect:8080/foo`.',
     type: String,
   },
+  {
+    name: 'allow-origin',
+    description:
+        'Enables CORS be setting the Access-Control-Allow-Origin header',
+    type: String,
+  },
 ];
