@@ -159,8 +159,7 @@ export const args: ArgDescriptor[] = [
   },
   {
     name: 'allow-origin',
-    description:
-        'Enables CORS be setting the Access-Control-Allow-Origin header',
+    description: 'Set the Access-Control-Allow-Origin header.',
     type: String,
   },
 ];
