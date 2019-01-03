@@ -1,6 +1,32 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/)
+and this project adheres to [Semantic Versioning](http://semver.org/).
+
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## v1.9.4 [12-23-2018]
+* Updated dependencies.
+  * web-component-tester@6.9.2 - Fix gulpfile to actually build browser.js.
+
+## v1.9.3 [12-19-2018]
+* Replace `github` library with `@octokit/rest` to pass npm audit.
+
+## v1.9.2 [12-06-2018]
+* Updated dependencies.
+  * @polymer/esm-amd-loader@1.0.4 - loads AMD modules with
+    `crossorigin=anonymous` by default to match native module script
+    behavior.
+
+## v1.9.1 [11-15-2018]
+* Updated dependencies.
+
+## v1.9.0 [11-12-2018]
+* Polymer 3.x templates now use lighter-weight dependency-free `wct-mocha`
+  for testing.
 
 ## v1.9.0-pre.2 [10-25-2018]
 * Include latest official `web-component-tester` update adding

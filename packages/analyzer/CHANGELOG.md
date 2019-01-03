@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.2.1] - 2018-12-19
+* Recognize .mjs as JavaScript files.
+
+## [3.2.0] - 2018-12-03
+* Support annotating mixin class properties and methods using
+  `MixinClass.prototype.foo` syntax.
+
 ## [3.1.3] - 2018-10-15
 * Make `HtmlDocument#stringify()` faster by only cloning the ast and stringifing
   inline documents into the cloned ast.

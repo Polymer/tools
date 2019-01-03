@@ -104,59 +104,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     (function() {
-      /**
-       * Renders documentation describing a function or method.
-       */
-      Polymer({
-        is: 'iron-doc-function',
+    /**
+     * Renders documentation describing a function or method.
+     */
+    Polymer({
+      is: 'iron-doc-function',
 
-        properties: {
-          anchorId: {
-            type: String,
-            reflectToAttribute: true,
-            value: ''
-          },
+      properties: {
+        anchorId: {type: String, reflectToAttribute: true, value: ''},
 
-          static: {
-            type: Boolean,
-            value: false
-          },
+        static: {type: Boolean, value: false},
 
-          _privacy: {
-            type: String,
-            computed: '_computePrivacy(descriptor)'
-          },
+        _privacy: {type: String, computed: '_computePrivacy(descriptor)'},
 
-          _showParamList: {
-            type: Boolean,
-            computed: '_computeShowParamList(descriptor)'
-          },
+        _showParamList:
+            {type: Boolean, computed: '_computeShowParamList(descriptor)'},
 
-          addImportPath: {
-            type: Boolean,
-            value: false
-          }
-        },
+        addImportPath: {type: Boolean, value: false}
+      },
 
-        _computePrivacy: function(descriptor) {
-          if (!descriptor || !descriptor.privacy
-              || descriptor.privacy === 'public') {
-            return '';
-          }
-          return descriptor.privacy;
-        },
+      _computePrivacy: function(descriptor) {
+        if (!descriptor || !descriptor.privacy || descriptor.privacy === 'public') {
+          return '';
+        }
+        return descriptor.privacy;
+      },
 
-        _computeShowParamList: function(descriptor) {
-          if (descriptor && descriptor.params) {
-            for (var i = 0; i < descriptor.params.length; i++) {
-              if (descriptor.params[i].description) {
-                return true;
-              }
+      _computeShowParamList: function(descriptor) {
+        if (descriptor && descriptor.params) {
+          for (var i = 0; i < descriptor.params.length; i++) {
+            if (descriptor.params[i].description) {
+              return true;
             }
           }
-          return false;
         }
-      });
+        return false;
+      }
+    });
     })();
   </script>
 </dom-module>

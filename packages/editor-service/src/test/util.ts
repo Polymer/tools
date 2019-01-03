@@ -18,7 +18,7 @@ import * as path from 'path';
 import {PackageUrlResolver, SourcePosition, SourceRange, UrlLoader, UrlResolver} from 'polymer-analyzer';
 import {CodeUnderliner as BaseUnderliner} from 'polymer-analyzer/lib/test/test-utils';
 import {Duplex} from 'stream';
-import {ClientCapabilities, CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeConfigurationNotification, DidChangeConfigurationParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
+import {ClientCapabilities, CodeLens, CodeLensParams, CodeLensRequest, CompletionList, CompletionRequest, createConnection, Definition, Diagnostic, DidChangeConfigurationNotification, DidChangeConfigurationParams, DidChangeTextDocumentNotification, DidChangeTextDocumentParams, DidChangeWatchedFilesNotification, DidChangeWatchedFilesParams, DidCloseTextDocumentNotification, DidCloseTextDocumentParams, DidOpenTextDocumentNotification, DidOpenTextDocumentParams, DocumentSymbolParams, DocumentSymbolRequest, FileChangeType, Hover, HoverRequest, IConnection, InitializeParams, Location, LocationLink, PublishDiagnosticsNotification, PublishDiagnosticsParams, ReferenceParams, ReferencesRequest, SymbolInformation, TextDocumentPositionParams, TextDocuments, WorkspaceSymbolParams, WorkspaceSymbolRequest} from 'vscode-languageserver';
 import {CancellationToken, DefinitionRequest, InitializeRequest, InitializeResult} from 'vscode-languageserver-protocol';
 import URI from 'vscode-uri';
 
@@ -119,7 +119,7 @@ export class Underliner extends BaseUnderliner {
   underline(references: Array<SourceRange|undefined>): Promise<string[]>;
   underline(location: Location|undefined): Promise<string>;
   underline(location: Array<Location|undefined>): Promise<string[]>;
-  underline(location: Location|Array<Location>|undefined|
+  underline(location: Location|Array<Location>|Array<LocationLink>|undefined|
             null): Promise<string|Array<string>>;
   underline(location: undefined|null): Promise<string>;
   // tslint:disable-next-line: no-any Crazily overloaded function.
@@ -164,6 +164,7 @@ export const defaultClientCapabilities: ClientCapabilities = {
     typeDefinition: {},
     colorProvider: {},
     foldingRange: {},
+    declaration: {}
   },
   workspace: {
     applyEdit: true,
@@ -249,7 +250,7 @@ export class TestClient {
   }
 
   async getDefinition(path: string, position: SourcePosition):
-      Promise<Definition|undefined> {
+      Promise<Definition|LocationLink[]|null> {
     const params: TextDocumentPositionParams = {
       position: this.converter.convertSourcePosition(position),
       textDocument: {uri: this.converter.getUriForLocalPath(path)}

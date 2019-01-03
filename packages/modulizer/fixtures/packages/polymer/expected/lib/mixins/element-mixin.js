@@ -9,13 +9,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 import '../utils/boot.js';
 
-import { rootPath as rootPath$0 } from '../utils/settings.js';
+import { legacyOptimizations, rootPath as rootPath$0 } from '../utils/settings.js';
 import { dedupingMixin } from '../utils/mixin.js';
 import { stylesFromTemplate, stylesFromModuleImports } from '../utils/style-gather.js';
-import { resolveCss, resolveUrl as resolveUrl$0 } from '../utils/resolve-url.js';
+import { pathFromUrl, resolveCss, resolveUrl as resolveUrl$0 } from '../utils/resolve-url.js';
 import { DomModule } from '../elements/dom-module.js';
 import { PropertyEffects } from './property-effects.js';
 import { PropertiesMixin } from './properties-mixin.js';
+
+const builtCSS = window.ShadyCSS && window.ShadyCSS['cssBuild'];
 
 /**
  * Element class mixin that provides the core API for Polymer's meta-programming
@@ -93,6 +95,7 @@ export const ElementMixin = dedupingMixin(base => {
    * @extends {base}
    * @implements {Polymer_PropertyEffects}
    * @implements {Polymer_PropertiesMixin}
+   * @private
    */
   const polymerElementBase = PropertiesMixin(PropertyEffects(base));
 
@@ -124,7 +127,7 @@ export const ElementMixin = dedupingMixin(base => {
   }
 
   /**
-   * Returns a memoized version of the the `observers` array.
+   * Returns a memoized version of the `observers` array.
    * @param {PolymerElementConstructor} constructor Element class
    * @return {Array} Array containing own observers for the given class
    * @protected
@@ -148,7 +151,7 @@ export const ElementMixin = dedupingMixin(base => {
    * alter these settings. However, additional `observers` may be added
    * by subclasses.
    *
-   * The info object should may contain property metadata as follows:
+   * The info object should contain property metadata as follows:
    *
    * * `type`: {function} type to which an attribute matching the property
    * is deserialized. Note the property is camel-cased from a dash-cased
@@ -160,7 +163,7 @@ export const ElementMixin = dedupingMixin(base => {
    * property 'foo',
    *
    * * `computed`: {string} creates a computed property. A computed property
-   * also automatically is set to `readOnly: true`. The value is calculated
+   * is also automatically set to `readOnly: true`. The value is calculated
    * by running a method and arguments parsed from the given string. For
    * example 'compute(foo)' will compute a given property when the
    * 'foo' property changes by executing the 'compute' method. This method
@@ -239,31 +242,33 @@ export const ElementMixin = dedupingMixin(base => {
    * @private
    */
   function processElementStyles(klass, template, is, baseURI) {
-    const templateStyles = template.content.querySelectorAll('style');
-    const stylesWithImports = stylesFromTemplate(template);
-    // insert styles from <link rel="import" type="css"> at the top of the template
-    const linkedStyles = stylesFromModuleImports(is);
-    const firstTemplateChild = template.content.firstElementChild;
-    for (let idx = 0; idx < linkedStyles.length; idx++) {
-      let s = linkedStyles[idx];
-      s.textContent = klass._processStyleText(s.textContent, baseURI);
-      template.content.insertBefore(s, firstTemplateChild);
-    }
-    // keep track of the last "concrete" style in the template we have encountered
-    let templateStyleIndex = 0;
-    // ensure all gathered styles are actually in this template.
-    for (let i = 0; i < stylesWithImports.length; i++) {
-      let s = stylesWithImports[i];
-      let templateStyle = templateStyles[templateStyleIndex];
-      // if the style is not in this template, it's been "included" and
-      // we put a clone of it in the template before the style that included it
-      if (templateStyle !== s) {
-        s = s.cloneNode(true);
-        templateStyle.parentNode.insertBefore(s, templateStyle);
-      } else {
-        templateStyleIndex++;
+    if (!builtCSS) {
+      const templateStyles = template.content.querySelectorAll('style');
+      const stylesWithImports = stylesFromTemplate(template);
+      // insert styles from <link rel="import" type="css"> at the top of the template
+      const linkedStyles = stylesFromModuleImports(is);
+      const firstTemplateChild = template.content.firstElementChild;
+      for (let idx = 0; idx < linkedStyles.length; idx++) {
+        let s = linkedStyles[idx];
+        s.textContent = klass._processStyleText(s.textContent, baseURI);
+        template.content.insertBefore(s, firstTemplateChild);
       }
-      s.textContent = klass._processStyleText(s.textContent, baseURI);
+      // keep track of the last "concrete" style in the template we have encountered
+      let templateStyleIndex = 0;
+      // ensure all gathered styles are actually in this template.
+      for (let i = 0; i < stylesWithImports.length; i++) {
+        let s = stylesWithImports[i];
+        let templateStyle = templateStyles[templateStyleIndex];
+        // if the style is not in this template, it's been "included" and
+        // we put a clone of it in the template before the style that included it
+        if (templateStyle !== s) {
+          s = s.cloneNode(true);
+          templateStyle.parentNode.insertBefore(s, templateStyle);
+        } else {
+          templateStyleIndex++;
+        }
+        s.textContent = klass._processStyleText(s.textContent, baseURI);
+      }
     }
     if (window.ShadyCSS) {
       window.ShadyCSS.prepareTemplate(template, is);
@@ -271,6 +276,27 @@ export const ElementMixin = dedupingMixin(base => {
   }
 
   /**
+   * Look up template from dom-module for element
+   *
+   * @param {!string} is Element name to look up
+   * @return {!HTMLTemplateElement} Template found in dom module, or
+   *   undefined if not found
+   * @protected
+   */
+  function getTemplateFromDomModule(is) {
+    let template = null;
+    if (is && DomModule) {
+      template = DomModule.import(is, 'template');
+      // Under strictTemplatePolicy, require any element with an `is`
+      // specified to have a dom-module
+      if (Polymer.strictTemplatePolicy && !template) {
+        throw new Error(`strictTemplatePolicy: expecting dom-module or null template for ${is}`);
+      }
+    }
+    return template;
+  }
+
+/**
    * @polymer
    * @mixinClass
    * @unrestricted
@@ -286,16 +312,16 @@ export const ElementMixin = dedupingMixin(base => {
      * @override
      * @suppress {missingProperties} Interfaces in closure do not inherit statics, but classes do
      */
-   static _finalizeClass() {
+    static _finalizeClass() {
       super._finalizeClass();
-      if (this.hasOwnProperty(
-        JSCompiler_renameProperty('is', this)) &&  this.is) {
-        register(this.prototype);
-      }
       const observers = ownObservers(this);
       if (observers) {
         this.createObservers(observers, this._properties);
       }
+      this._prepareTemplate();
+    }
+
+    static _prepareTemplate() {
       // note: create "working" template that is finalized at instance time
       let template = /** @type {PolymerElementConstructor} */ (this).template;
       if (template) {
@@ -303,8 +329,8 @@ export const ElementMixin = dedupingMixin(base => {
           let t = document.createElement('template');
           t.innerHTML = template;
           template = t;
-        } else {
-          template = template.cloneNode(true);
+        } else if (!legacyOptimizations) {
+           template = template.cloneNode(true);
         }
       }
 
@@ -318,7 +344,7 @@ export const ElementMixin = dedupingMixin(base => {
      * @protected
      * @override
      */
-     static createProperties(props) {
+    static createProperties(props) {
       for (let p in props) {
         createPropertyFromConfig(this.prototype, p, props[p], props);
       }
@@ -368,7 +394,7 @@ export const ElementMixin = dedupingMixin(base => {
      *   class MySubClass extends MySuperClass {
      *     static get template() {
      *       if (!memoizedTemplate) {
-     *         memoizedTemplate = super.template.cloneNode(true);
+     *         memoizedTemplate = MySuperClass.template.cloneNode(true);
      *         let subContent = document.createElement('div');
      *         subContent.textContent = 'This came from MySubClass';
      *         memoizedTemplate.content.appendChild(subContent);
@@ -380,33 +406,72 @@ export const ElementMixin = dedupingMixin(base => {
      * @return {HTMLTemplateElement|string} Template to be stamped
      */
     static get template() {
+      // Explanation of template-related properties:
+      // - constructor.template (this getter): the template for the class.
+      //     This can come from the prototype (for legacy elements), from a
+      //     dom-module, or from the super class's template (or can be overridden
+      //     altogether by the user)
+      // - constructor._template: memoized version of constructor.template
+      // - prototype._template: working template for the element, which will be
+      //     parsed and modified in place. It is a cloned version of
+      //     constructor.template, saved in _finalizeClass(). Note that before
+      //     this getter is called, for legacy elements this could be from a
+      //     _template field on the info object passed to Polymer(), a behavior,
+      //     or set in registered(); once the static getter runs, a clone of it
+      //     will overwrite it on the prototype as the working template.
       if (!this.hasOwnProperty(JSCompiler_renameProperty('_template', this))) {
-        this._template = DomModule && DomModule.import(
-          /** @type {PolymerElementConstructor}*/ (this).is, 'template') ||
-          // note: implemented so a subclass can retrieve the super
-          // template; call the super impl this way so that `this` points
-          // to the superclass.
-          Object.getPrototypeOf(/** @type {PolymerElementConstructor}*/ (this).prototype).constructor.template;
+        this._template =
+          // If user has put template on prototype (e.g. in legacy via registered
+          // callback or info object), prefer that first
+          this.prototype.hasOwnProperty(JSCompiler_renameProperty('_template', this.prototype)) ?
+          this.prototype._template :
+          // Look in dom-module associated with this element's is
+          (getTemplateFromDomModule(/** @type {PolymerElementConstructor}*/ (this).is) ||
+          // Next look for superclass template (call the super impl this
+          // way so that `this` points to the superclass)
+          Object.getPrototypeOf(/** @type {PolymerElementConstructor}*/ (this).prototype).constructor.template);
       }
       return this._template;
     }
 
     /**
+     * Set the template.
+     *
+     * @param {!HTMLTemplateElement|string} value Template to set.
+     */
+    static set template(value) {
+      this._template = value;
+    }
+
+    /**
      * Path matching the url from which the element was imported.
+     *
      * This path is used to resolve url's in template style cssText.
      * The `importPath` property is also set on element instances and can be
      * used to create bindings relative to the import path.
-     * Defaults to the path matching the url containing a `dom-module` element
-     * matching this element's static `is` property.
+     *
+     * For elements defined in ES modules, users should implement
+     * `static get importMeta() { return import.meta; }`, and the default
+     * implementation of `importPath` will  return `import.meta.url`'s path.
+     * For elements defined in HTML imports, this getter will return the path
+     * to the document containing a `dom-module` element matching this
+     * element's static `is` property.
+     *
      * Note, this path should contain a trailing `/`.
      *
      * @return {string} The import path for this element class
+     * @suppress {missingProperties}
      */
     static get importPath() {
       if (!this.hasOwnProperty(JSCompiler_renameProperty('_importPath', this))) {
+        const meta = this.importMeta;
+        if (meta) {
+          this._importPath = pathFromUrl(meta.url);
+        } else {
           const module = DomModule && DomModule.import(/** @type {PolymerElementConstructor} */ (this).is);
-          this._importPath = module ? module.assetpath : '' ||
-          Object.getPrototypeOf(/** @type {PolymerElementConstructor}*/ (this).prototype).constructor.importPath;
+          this._importPath = (module && module.assetpath) ||
+            Object.getPrototypeOf(/** @type {PolymerElementConstructor}*/ (this).prototype).constructor.importPath;
+        }
       }
       return this._importPath;
     }
@@ -440,16 +505,14 @@ export const ElementMixin = dedupingMixin(base => {
      * @suppress {invalidCasts}
      */
     _initializeProperties() {
-      instanceCount++;
       this.constructor.finalize();
-      const importPath = this.constructor.importPath;
       // note: finalize template when we have access to `localName` to
       // avoid dependence on `is` for polyfilling styling.
       this.constructor._finalizeTemplate(/** @type {!HTMLElement} */(this).localName);
       super._initializeProperties();
       // set path defaults
       this.rootPath = rootPath$0;
-      this.importPath = importPath;
+      this.importPath = this.constructor.importPath;
       // apply property defaults...
       let p$ = propertyDefaults(this.constructor);
       if (!p$) {
@@ -659,58 +722,6 @@ export const ElementMixin = dedupingMixin(base => {
 
   return PolymerElement;
 });
-
-/**
- * Provides basic tracking of element definitions (registrations) and
- * instance counts.
- *
- * @summary Provides basic tracking of element definitions (registrations) and
- * instance counts.
- */
-`TODO(modulizer): A namespace named Polymer.telemetry was
-declared here. The surrounding comments should be reviewed,
-and this string can then be deleted`;
-
-/**
- * Total number of Polymer element instances created.
- * @type {number}
- */
-export let instanceCount = 0;
-
-/**
- * Array of Polymer element classes that have been finalized.
- * @type {Array<Polymer.Element>}
- */
-export const registrations = [];
-
-/**
- * @param {!PolymerElementConstructor} prototype Element prototype to log
- * @this {this}
- * @private
- */
-export function _regLog(prototype) {
-  console.log('[' + prototype.is + ']: registered');
-}
-
-/**
- * Registers a class prototype for telemetry purposes.
- * @param {HTMLElement} prototype Element prototype to register
- * @this {this}
- * @protected
- */
-export function register(prototype) {
-  registrations.push(prototype);
-  undefined && _regLog(prototype);
-}
-
-/**
- * Logs all elements registered with an `is` to the console.
- * @public
- * @this {this}
- */
-export function dumpRegistrations() {
-  registrations.forEach(_regLog);
-}
 
 /**
  * When using the ShadyCSS scoping and custom property shim, causes all

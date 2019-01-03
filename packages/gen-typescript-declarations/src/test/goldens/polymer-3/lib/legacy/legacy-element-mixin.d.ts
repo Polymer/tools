@@ -8,6 +8,10 @@
  *   lib/legacy/legacy-element-mixin.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 import {ElementMixin} from '../mixins/element-mixin.js';
 
 import {GestureEventListeners} from '../mixins/gesture-event-listeners.js';
@@ -67,6 +71,7 @@ interface LegacyElementMixin extends ElementMixin, PropertyEffects, TemplateStam
    * `this.getRootNode().host`.
    */
   readonly domHost: any;
+  is: string;
 
   /**
    * Overrides the default `Polymer.PropertyEffects` implementation to

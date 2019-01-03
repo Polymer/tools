@@ -8,6 +8,9 @@
  *   lib/elements/dom-bind.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 import {PropertyEffects} from '../mixins/property-effects.js';
 
 import {OptionalMutableData} from '../mixins/mutable-data.js';

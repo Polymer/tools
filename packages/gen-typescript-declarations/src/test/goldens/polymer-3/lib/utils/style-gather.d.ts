@@ -8,6 +8,9 @@
  *   lib/utils/style-gather.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+
 import {DomModule} from '../elements/dom-module.js';
 
 import {resolveCss} from './resolve-url.js';

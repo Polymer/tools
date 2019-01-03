@@ -41,6 +41,17 @@ Example:
 </paper-toast>
 ```
 
+`<paper-toast>` is affected by the [stacking context](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context) of its container. Adding `<paper-toast>` inside elements that create a new stacking context - e.g. `<app-drawer>`, `<app-layout>` or `<iron-list>` - might result in toasts partially obstructed or clipped. Add `<paper-toast>` to the top level (`<body>`) element, outside the structure, e.g.:
+
+```html
+  <!-- ... -->
+  </app-drawer-layout>
+  <paper-toast id="toast"></paper-toast>
+</template>
+```
+
+You can then use custom events to communicate with it from within child components, using `addEventListener` and `dispatchEvent`.
+
 ### Styling
 
 The following custom properties and mixins are available for styling:

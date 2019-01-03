@@ -1,6 +1,6 @@
 {
   "name": "polymer-cli",
-  "version": "1.9.0-pre.2",
+  "version": "1.9.4",
   "description": "A commandline tool for Polymer projects",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/cli",
   "repository": "github:Polymer/tools",
@@ -23,7 +23,7 @@
     "test": "npm run build && npm run test:unit && npm run lint",
     "test:smoke": "gulp test",
     "test:smoke-lint": "gulp test lint",
-    "test:integration": "bash -c \"TEST_RETRY_TARGET_MAX=7 mocha \\\"lib/test/integration/**/*_test.js\\\" --reporter \\\"./node_modules/web-component-tester/test/retry-failures-reporter.js\\\"\"",
+    "test:integration": "bash -c \"TEST_RETRY_TARGET_MAX=7 mocha \\\"lib/test/integration/**/*_test.js\\\" --reporter \\\"$(pwd)/node_modules/web-component-tester/test/retry-failures-reporter.js\\\"\"",
     "test:unit": "mocha \"lib/test/unit/**/*_test.js\"",
     "test:watch": "tsc-then -- mocha \"lib/test/**/*_test.js\"",
     "test:watch:unit": "tsc-then -- mocha \"lib/test/unit/**/*_test.js\"",
@@ -31,6 +31,7 @@
     "update-goldens": "tsc && UPDATE_POLYMER_CLI_GOLDENS=true mocha lib/test/integration/build_test.js || echo ''"
   },
   "dependencies": {
+    "@octokit/rest": "^16.2.0",
     "@types/chalk": "^0.4.31",
     "@types/del": "^3.0.0",
     "@types/findup-sync": "^0.3.29",
@@ -57,7 +58,6 @@
     "command-line-usage": "^5.0.5",
     "del": "^3.0.0",
     "findup-sync": "^0.4.2",
-    "github": "^7.2.1",
     "globby": "^8.0.1",
     "gunzip-maybe": "^1.3.1",
     "inquirer": "^1.0.2",

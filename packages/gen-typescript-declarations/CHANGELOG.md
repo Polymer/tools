@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 <!-- ## [Unreleased] -->
 <!-- Add new, unreleased changes here. -->
 
+## [1.6.0] - 2018-12-05
+* Added `--googModules` flag, for generating declarations compatible
+  with `goog.module`-style modules.
+* Added `--hideWarnings` flag, for hiding warning-level severity diagnostics.
+* Generate declarations with tslint disables for relevant rules, like variable
+  names, and no-any.
+
 ## [1.5.1] - 2018-08-25
 * Legacy Polymer function element interfaces are now exported from ES modules.
 

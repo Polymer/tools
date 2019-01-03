@@ -17,12 +17,12 @@
   "devDependencies": {
     "@polymer/gen-typescript-declarations": "^1.2.0",
     "bower": "^1.8.0",
-    "@polymer/iron-component-page": "^3.0.0-pre.18",
-    "@polymer/iron-demo-helpers": "^3.0.0-pre.18",
-    "@polymer/iron-icon": "^3.0.0-pre.18",
-    "@polymer/iron-icons": "^3.0.0-pre.18",
-    "@polymer/iron-test-helpers": "^3.0.0-pre.18",
-    "@polymer/test-fixture": "^3.0.0-pre.18",
+    "@polymer/iron-component-page": "^4.0.0",
+    "@polymer/iron-demo-helpers": "^3.0.0",
+    "@polymer/iron-icon": "^3.0.0",
+    "@polymer/iron-icons": "^3.0.0",
+    "@polymer/iron-test-helpers": "^3.0.0",
+    "@polymer/test-fixture": "^4.0.0",
     "wct-browser-legacy": "^1.0.1",
     "@webcomponents/webcomponentsjs": "^2.0.0"
   },
@@ -40,8 +40,8 @@
   "author": "The Polymer Authors",
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
-    "@polymer/iron-flex-layout": "^3.0.0-pre.18",
-    "@polymer/paper-behaviors": "^3.0.0-pre.18",
-    "@polymer/paper-styles": "^3.0.0-pre.18"
+    "@polymer/iron-flex-layout": "^3.0.0",
+    "@polymer/paper-behaviors": "^3.0.0",
+    "@polymer/paper-styles": "^3.0.0"
   }
 }

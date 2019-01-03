@@ -97,14 +97,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script>
     suite('getTabbableNodes', function() {
-
       test('returns tabbable nodes', function() {
         var node = fixture('basic');
         var focusableNodes = Polymer.IronFocusablesHelper.getTabbableNodes(node);
         assert.equal(focusableNodes.length, 3, '3 nodes are focusable');
-        assert.equal(focusableNodes[0], Polymer.dom(node).querySelector('.focusable1'));
-        assert.equal(focusableNodes[1], Polymer.dom(node).querySelector('.focusable2'));
-        assert.equal(focusableNodes[2], Polymer.dom(node).querySelector('.focusable3'));
+        assert.equal(
+            focusableNodes[0], Polymer.dom(node).querySelector('.focusable1'));
+        assert.equal(
+            focusableNodes[1], Polymer.dom(node).querySelector('.focusable2'));
+        assert.equal(
+            focusableNodes[2], Polymer.dom(node).querySelector('.focusable3'));
       });
 
       test('includes the root if it has a valid tabindex', function() {
@@ -121,7 +123,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         focusable.classList.add('hidden');
         var focusableNodes = Polymer.IronFocusablesHelper.getTabbableNodes(node);
         assert.equal(focusableNodes.length, 2, '2 focusable nodes');
-        assert.equal(focusableNodes.indexOf(focusable), -1, 'hidden element is not included');
+        assert.equal(
+            focusableNodes.indexOf(focusable),
+            -1,
+            'hidden element is not included');
       });
 
       test('excludes display: none elements', function() {
@@ -130,7 +135,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         focusable.classList.add('no-display');
         var focusableNodes = Polymer.IronFocusablesHelper.getTabbableNodes(node);
         assert.equal(focusableNodes.length, 2, '2 focusable nodes');
-        assert.equal(focusableNodes.indexOf(focusable), -1, 'hidden element is not included');
+        assert.equal(
+            focusableNodes.indexOf(focusable),
+            -1,
+            'hidden element is not included');
       });
 
       test('respects the tabindex order', function() {
@@ -138,7 +146,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var focusableNodes = Polymer.IronFocusablesHelper.getTabbableNodes(node);
         assert.equal(focusableNodes.length, 12, '12 nodes are focusable');
         for (var i = 0; i < 12; i++) {
-          assert.equal(focusableNodes[i], Polymer.dom(node).querySelector('.focusable' + (i + 1)));
+          assert.equal(
+              focusableNodes[i],
+              Polymer.dom(node).querySelector('.focusable' + (i + 1)));
         }
       });
 

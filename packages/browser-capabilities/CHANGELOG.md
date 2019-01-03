@@ -3,6 +3,9 @@
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [1.1.3] - 2018-11-15
+* Updated Firefox 63 support for push.
+
 ## [1.1.2] - 2018-08-20
 * Opera is now detected.
 

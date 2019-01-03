@@ -68,22 +68,17 @@ descriptor output by
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-mixin',
+    Polymer({
+      is: 'iron-doc-mixin',
 
-        behaviors: [Polymer.IronDocViewerBehavior],
+      behaviors: [Polymer.IronDocViewerBehavior],
 
-        properties: {
-          title: {
-            computed: '_computeTitle(descriptor)',
-            notify: true
-          }
-        },
+      properties: {title: {computed: '_computeTitle(descriptor)', notify: true}},
 
-        _computeTitle: function(descriptor) {
-          return descriptor && 'Mixin ' + descriptor.name;
-        }
-      });
+      _computeTitle: function(descriptor) {
+        return descriptor && 'Mixin ' + descriptor.name;
+      }
+    });
     })();
   </script>
 </dom-module>

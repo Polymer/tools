@@ -17,7 +17,7 @@
     "@webcomponents/webcomponentsjs": "^2.1.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
-    "wct-mocha": "^1.0.0-pre.3",
+    "wct-mocha": "^1.0.0",
     "web-component-tester": "^6.9.0"
   }
 }

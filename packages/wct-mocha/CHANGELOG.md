@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## 1.0.0
+* Official initial release of `wct-mocha` as a drop-in replacement for `wct-browser-legacy`.
+
 ## 1.0.0-pre.3
 * Minor refactorings, updated typings, but no functional differences intentionally introduced.
 

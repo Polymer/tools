@@ -63,22 +63,17 @@ descriptor output by
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-class',
+    Polymer({
+      is: 'iron-doc-class',
 
-        behaviors: [Polymer.IronDocViewerBehavior],
+      behaviors: [Polymer.IronDocViewerBehavior],
 
-        properties: {
-          title: {
-            computed: '_computeTitle(descriptor)',
-            notify: true
-          }
-        },
+      properties: {title: {computed: '_computeTitle(descriptor)', notify: true}},
 
-        _computeTitle: function(descriptor) {
-          return descriptor && 'Class ' + descriptor.name;
-        }
-      });
+      _computeTitle: function(descriptor) {
+        return descriptor && 'Class ' + descriptor.name;
+      }
+    });
     })();
   </script>
 </dom-module>

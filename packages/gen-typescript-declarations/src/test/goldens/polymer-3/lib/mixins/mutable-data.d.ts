@@ -8,6 +8,10 @@
  *   lib/mixins/mutable-data.js
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 import {dedupingMixin} from '../utils/mixin.js';
 
 export {MutableData};

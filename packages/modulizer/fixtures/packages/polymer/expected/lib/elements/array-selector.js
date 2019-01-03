@@ -40,6 +40,7 @@ let ArraySelectorMixin = dedupingMixin(superClass => {
    * @constructor
    * @extends {superClass}
    * @implements {Polymer_ElementMixin}
+   * @private
    */
   let elementBase = ElementMixin(superClass);
 
@@ -344,6 +345,7 @@ export { ArraySelectorMixin };
  * @constructor
  * @extends {Polymer.Element}
  * @implements {Polymer_ArraySelectorMixin}
+ * @private
  */
 let baseArraySelector = ArraySelectorMixin(PolymerElement);
 
@@ -430,4 +432,6 @@ class ArraySelector extends baseArraySelector {
   static get is() { return 'array-selector'; }
 }
 customElements.define(ArraySelector.is, ArraySelector);
+
+/** @const */
 export { ArraySelector };

@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [0.4.3] - 2018-12-20
+
+* Update dependency map to use @polymer/iron-component-page 4.0.0.
+
+## [0.4.2] - 2018-12-19
+
+* Fix regression in conversion of `Polymer.Element` => `PolymerElement`
+  affecting latest Polymer 2.x source.
+* Update dependency map to use stable 3.0.0 releases.
+
 ## [0.4.1] - 2018-07-10
 
 * Fix error where package js-yaml couldn't be found
@@ -40,4 +50,3 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Replaces slow/fragile nodegit with much faster polymer-workspaces git workflow
 * New: Generates symlinked `node_modules` folder after workspace conversion
 * New: Can support conversions with multiple import url styles ("path", "name")
-

@@ -29,6 +29,7 @@ const {generateDeclarations} = require('../lib/gen-ts');
 
 const fixturesDir = path.join(__dirname, '..', 'src', 'test', 'fixtures');
 const goldensDir = path.join(__dirname, '..', 'src', 'test', 'goldens');
+const googGoldensDir = path.join(__dirname, '..', 'src', 'test', 'goldens_goog');
 
 const filter = process.env.UPDATE_GOLDENS_FILTER || '';
 
@@ -36,25 +37,62 @@ if (!filter) {
   fsExtra.emptyDirSync(goldensDir);
 }
 
-for (const fixture of fs.readdirSync(fixturesDir)) {
-  if (filter && !fixture.includes(filter)) {
-    continue;
-  }
-  console.log('making goldens for ' + fixture);
-  fsExtra.emptyDirSync(path.join(goldensDir, fixture));
+async function main() {
+  const promises = [];
+  for (const fixture of fs.readdirSync(fixturesDir)) {
+    promises.push((async () => {
+      if (filter && !fixture.includes(filter)) {
+        return;
+      }
+      fsExtra.emptyDirSync(path.join(goldensDir, fixture));
 
-  let config = {};
-  const configPath = path.join(fixturesDir, fixture, 'gen-tsd.json');
-  if (fs.existsSync(configPath)) {
-    config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      let config = {};
+      const configPath = path.join(fixturesDir, fixture, 'gen-tsd.json');
+      if (fs.existsSync(configPath)) {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      }
+      config.hideWarnings = true;
+
+      const declarations = await generateDeclarations(
+          path.join(fixturesDir, fixture), config);
+
+      for (const [filename, contents] of declarations) {
+        const outPath = path.join(goldensDir, fixture, filename);
+        fsExtra.mkdirsSync(path.dirname(outPath));
+        fs.writeFileSync(outPath, contents);
+      };
+    })());
   }
 
-  generateDeclarations(path.join(fixturesDir, fixture), config)
-      .then((declarations) => {
-        for (const [filename, contents] of declarations) {
-          const outPath = path.join(goldensDir, fixture, filename);
-          fsExtra.mkdirsSync(path.dirname(outPath));
-          fs.writeFileSync(outPath, contents);
-        };
-      });
+  for (const fixture of fs.readdirSync(fixturesDir)) {
+    promises.push((async () => {
+      if (filter && !fixture.includes(filter)) {
+        return;
+      }
+      fsExtra.emptyDirSync(path.join(googGoldensDir, fixture));
+
+      let config = {};
+      const configPath = path.join(fixturesDir, fixture, 'gen-tsd.json');
+      if (fs.existsSync(configPath)) {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      }
+      config.hideWarnings = true;
+      config.googModules = true;
+
+      const declarations = await generateDeclarations(path.join(fixturesDir, fixture), config)
+
+      for (const [filename, contents] of declarations) {
+        const outPath = path.join(googGoldensDir, fixture, filename);
+        fsExtra.mkdirsSync(path.dirname(outPath));
+        fs.writeFileSync(outPath, contents);
+      };
+    })());
+  }
+
+  await Promise.all(promises);
 }
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

@@ -9,6 +9,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <html>
+
 <head>
   <title>iron-location</title>
 
@@ -19,27 +20,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../../promise-polyfill/promise-polyfill.html">
   <link rel="import" href="../iron-query-params.html">
   <link rel="import" href="../iron-location.html">
+  <link rel="import" href="./replace-state-patch.html">
 </head>
+
 <body>
+  <div id='safari-cooldown' hidden>
+    <div>Danger: URL overheating.</div>
+    <div>
+      Safari and Chrome require a cooldown period before we call pushState/replaceState any more.
+    </div>
+    <div>Testing will resume after 30 seconds.</div>
+    <div>
+      <a href="https://forums.developer.apple.com/thread/36650">More info Safari</a>
+      <a href="https://codereview.chromium.org/2972073002">Chrome</a>
+    </div>
+  </div>
   <dom-module id="integration-element">
     <template>
-      <iron-location
-          id="location"
-          path="{{path}}"
-          query="{{query}}"
-          hash="{{hash}}">
+      <iron-location id="location" path="{{path}}" query="{{query}}" hash="{{hash}}">
       </iron-location>
-      <iron-query-params
-          id="queryParams"
-          params-string="{{query}}"
-          params-object="{{queryParams}}">
+      <iron-query-params id="queryParams" params-string="{{query}}" params-object="{{queryParams}}">
       </iron-query-params>
     </template>
     <script>
       HTMLImports.whenReady(function() {
-        Polymer({
-          is: 'integration-element'
-        });
+        Polymer({is: 'integration-element'});
       });
     </script>
   </dom-module>
@@ -53,83 +58,89 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script>
     'use strict';
 
-    suite('Integration tests', function () {
+    window.addEventListener('WebComponentsReady', function() {
+      suite('Integration tests', function() {
+        var integration;
+        var ironLocation;
+        var ironQueryParams;
 
-      var integration;
-      var ironLocation;
-      var ironQueryParams;
+        setup(function() {
+          integration = fixture('Integration');
+          ironLocation = integration.$.location;
+          ironQueryParams = integration.$.queryParams;
 
-      setup(function() {
-        integration = fixture('Integration');
-        ironLocation = integration.$.location;
-        ironQueryParams = integration.$.queryParams;
-      });
+          return cooldownFunction.call(this);
+        });
 
-      test('propagations from location to iqp', function() {
-        var queryEncodingExamples = {
-          'foo': '?foo',
-          '': '',
-          'foo bar': '?foo%20bar',
-          'foo#bar': '?foo%23bar',
-          'foo?bar': '?foo?bar',
-          '/foo\'bar\'baz': ['?/foo%27bar%27baz', '?/foo\'bar\'baz'],
-          'foo/bar/baz': '?foo/bar/baz'
-        };
-        for (var plainTextQuery in queryEncodingExamples) {
-          var encodedQueries = queryEncodingExamples[plainTextQuery];
-          var ironLocationQuery = encodedQueries;
-          if (typeof encodedQueries === 'string') {
-            encodedQueries = [encodedQueries];
-            ironLocationQuery = [ironLocationQuery.substring(1)];
-          } else {
-            ironLocationQuery = ironLocationQuery.map(function(value) {
-              return value.substring(1);
-            });
+        teardown(function() {
+          return cooldownFunction.call(this);
+        });
+
+        test('propagations from location to iqp', function() {
+          var queryEncodingExamples = {
+            'foo': '?foo',
+            '': '',
+            'foo bar': '?foo%20bar',
+            'foo#bar': '?foo%23bar',
+            'foo?bar': '?foo?bar',
+            '/foo\'bar\'baz': ['?/foo%27bar%27baz', '?/foo\'bar\'baz'],
+            'foo/bar/baz': '?foo/bar/baz'
+          };
+          for (var plainTextQuery in queryEncodingExamples) {
+            var encodedQueries = queryEncodingExamples[plainTextQuery];
+            var ironLocationQuery = encodedQueries;
+            if (typeof encodedQueries === 'string') {
+              encodedQueries = [encodedQueries];
+              ironLocationQuery = [ironLocationQuery.substring(1)];
+            } else {
+              ironLocationQuery = ironLocationQuery.map(function(value) {
+                return value.substring(1);
+              });
+            }
+
+            ironLocation.query = plainTextQuery;
+            expect(encodedQueries).to.contain(window.location.search);
+            expect(ironLocationQuery).to.contain(ironLocation.query);
+            expect(ironLocationQuery).to.contain(ironQueryParams.paramsString);
+            if (plainTextQuery) {
+              expect('').to.be.equal(ironQueryParams.paramsObject[plainTextQuery])
+            } else {
+              expect(ironQueryParams.paramsObject[plainTextQuery]).to.be.undefined;
+            }
           }
+        });
 
-          ironLocation.query = plainTextQuery;
-          expect(encodedQueries).to.contain(window.location.search);
-          expect(ironLocationQuery).to.contain(ironLocation.query);
-          expect(ironLocationQuery).to.contain(ironQueryParams.paramsString);
-          if (plainTextQuery) {
-            expect('').to.be.equal(ironQueryParams.paramsObject[plainTextQuery])
-          } else {
-            expect(ironQueryParams.paramsObject[plainTextQuery]).to.be.undefined;
+        test('propagations from iqp to location', function() {
+          var queryEncodingExamples = {
+            'foo': '?foo',
+            '': '',
+            'foo bar': '?foo%20bar',
+            'foo#bar': '?foo%23bar',
+            'foo?bar': '?foo?bar',
+            '/foo\'bar\'baz': ['?/foo%27bar%27baz', '?/foo\'bar\'baz'],
+            'foo/bar/baz': '?foo/bar/baz'
+          };
+          for (var plainTextQuery in queryEncodingExamples) {
+            var encodedQueries = queryEncodingExamples[plainTextQuery];
+            var ironLocationQuery = encodedQueries;
+            if (typeof encodedQueries === 'string') {
+              encodedQueries = [encodedQueries];
+              ironLocationQuery = [ironLocationQuery.substring(1)];
+            } else {
+              ironLocationQuery = ironLocationQuery.map(function(value) {
+                return value.substring(1);
+              });
+            }
+
+            var newParamsObject = {};
+            newParamsObject[plainTextQuery] = '';
+
+            ironQueryParams.paramsObject = newParamsObject;
+            expect(encodedQueries).to.contain(window.location.search);
+            expect(ironLocationQuery).to.contain(ironLocation.query);
           }
-        }
-      });
-
-      test('propagations from iqp to location', function() {
-        var queryEncodingExamples = {
-          'foo': '?foo',
-          '': '',
-          'foo bar': '?foo%20bar',
-          'foo#bar': '?foo%23bar',
-          'foo?bar': '?foo?bar',
-          '/foo\'bar\'baz': ['?/foo%27bar%27baz', '?/foo\'bar\'baz'],
-          'foo/bar/baz': '?foo/bar/baz'
-        };
-        for (var plainTextQuery in queryEncodingExamples) {
-          var encodedQueries = queryEncodingExamples[plainTextQuery];
-          var ironLocationQuery = encodedQueries;
-          if (typeof encodedQueries === 'string') {
-            encodedQueries = [encodedQueries];
-            ironLocationQuery = [ironLocationQuery.substring(1)];
-          } else {
-            ironLocationQuery = ironLocationQuery.map(function(value) {
-              return value.substring(1);
-            });
-          }
-
-          var newParamsObject = {};
-          newParamsObject[plainTextQuery] = '';
-
-          ironQueryParams.paramsObject = newParamsObject;
-          expect(encodedQueries).to.contain(window.location.search);
-          expect(ironLocationQuery).to.contain(ironLocation.query);
-        }
+        });
       });
     });
-
   </script>
 </body>

@@ -70,22 +70,17 @@ JSON descriptor output by
 
   <script>
     (function() {
-      Polymer({
-        is: 'iron-doc-behavior',
+    Polymer({
+      is: 'iron-doc-behavior',
 
-        behaviors: [Polymer.IronDocViewerBehavior],
+      behaviors: [Polymer.IronDocViewerBehavior],
 
-        properties: {
-          title: {
-            computed: '_computeTitle(descriptor)',
-            notify: true
-          }
-        },
+      properties: {title: {computed: '_computeTitle(descriptor)', notify: true}},
 
-        _computeTitle: function(descriptor) {
-          return descriptor && 'Behavior ' + descriptor.name;
-        }
-      });
+      _computeTitle: function(descriptor) {
+        return descriptor && 'Behavior ' + descriptor.name;
+      }
+    });
     })();
   </script>
 </dom-module>

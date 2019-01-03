@@ -126,28 +126,30 @@ suite('github/github', () => {
   });
 
   suite('getSemverRelease()', () => {
-    let getReleasesStub: sinon.SinonStub;
+    let listReleasesStub: sinon.SinonStub;
     let github: Github;
 
-    const basicReleasesResponse = [
-      {tag_name: 'v1.0.0'},
-      {tag_name: 'v1.1.0'},
-      {tag_name: 'v1.2.1'},
-      {tag_name: 'v2.0.0'},
-      {tag_name: 'v2.0.0-pre.1'},
-      {tag_name: 'v2.0.1'},
-      {tag_name: 'v2.1.0'},
-      {tag_name: 'TAG_NAME_WITHOUT_VERSION'},
-    ];
+    const basicReleasesResponse = {
+      data: [
+        {tag_name: 'v1.0.0'},
+        {tag_name: 'v1.1.0'},
+        {tag_name: 'v1.2.1'},
+        {tag_name: 'v2.0.0'},
+        {tag_name: 'v2.0.0-pre.1'},
+        {tag_name: 'v2.0.1'},
+        {tag_name: 'v2.1.0'},
+        {tag_name: 'TAG_NAME_WITHOUT_VERSION'},
+      ]
+    };
 
     setup(() => {
-      getReleasesStub = sinon.stub();
+      listReleasesStub = sinon.stub();
       github = new Github({
         owner: 'TEST_OWNER',
         repo: 'TEST_REPO',
         githubApi: {
           repos: {
-            getReleases: getReleasesStub,
+            listReleases: listReleasesStub,
           },
         },
         // tslint:disable-next-line: no-any
@@ -155,10 +157,10 @@ suite('github/github', () => {
     });
 
     test('calls the github API with correct params', async () => {
-      getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
+      listReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       await github.getSemverRelease('*');
-      assert.isOk(getReleasesStub.calledWithExactly({
+      assert.isOk(listReleasesStub.calledWithExactly({
         owner: 'TEST_OWNER',
         repo: 'TEST_REPO',
         per_page: 100,
@@ -168,7 +170,7 @@ suite('github/github', () => {
     let testName =
         'resolves with latest semver release that matches the range: *';
     test(testName, async () => {
-      getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
+      listReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('*');
       assert.containSubset(release, {name: 'v2.1.0'});
@@ -177,7 +179,7 @@ suite('github/github', () => {
     testName =
         'resolves with latest semver release that matches the range: ^v1.0.0';
     test(testName, async () => {
-      getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
+      listReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('^v1.0.0');
       assert.containSubset(release, {name: 'v1.2.1'});
@@ -186,7 +188,7 @@ suite('github/github', () => {
     testName =
         'resolves with latest semver release that matches the range: ^v2.0.0';
     test(testName, async () => {
-      getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
+      listReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const release = await github.getSemverRelease('^v2.0.0');
       assert.containSubset(release, {name: 'v2.1.0'});
@@ -194,7 +196,7 @@ suite('github/github', () => {
 
     testName = 'rejects with an error if no matching releases are found';
     test(testName, async () => {
-      getReleasesStub.returns(Promise.resolve(basicReleasesResponse));
+      listReleasesStub.returns(Promise.resolve(basicReleasesResponse));
 
       const err = await invertPromise(github.getSemverRelease('^v3.0.0'));
       assert.equal(

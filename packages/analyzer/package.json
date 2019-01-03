@@ -1,6 +1,6 @@
 {
   "name": "polymer-analyzer",
-  "version": "3.1.3",
+  "version": "3.2.1",
   "description": "Static analysis for Web Components",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/analyzer",
   "repository": "github:Polymer/tools",

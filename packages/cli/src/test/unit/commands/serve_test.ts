@@ -20,14 +20,18 @@ suite('serve', () => {
     let getServerUrlsStub: sinon.SinonStub;
 
     setup(() => {
-      startServersStub =
-          sinon.stub(polyserve, 'startServers').returns(Promise.resolve());
+      startServersStub = sinon
+                             .stub(polyserve, 'startServers')
+                             // tslint:disable-next-line: no-any
+                             .returns(Promise.resolve() as any);
       startServersStub.returns({
         kind: 'mainline',
       });
 
-      getServerUrlsStub =
-          sinon.stub(polyserve, 'getServerUrls').returns(Promise.resolve());
+      getServerUrlsStub = sinon
+                              .stub(polyserve, 'getServerUrls')
+                              // tslint:disable-next-line: no-any
+                              .returns(Promise.resolve() as any);
       getServerUrlsStub.returns({
         serverUrl: 'http://applications.example.com/',
         componentUrl: 'http://components.example.com/',

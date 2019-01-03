@@ -107,4 +107,6 @@ class CustomStyle extends HTMLElement {
 }
 
 window.customElements.define('custom-style', CustomStyle);
+
+/** @const */
 export { CustomStyle };

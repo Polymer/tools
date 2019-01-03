@@ -16,7 +16,8 @@ declare namespace Polymer {
    *   Polymer.IronFormElementBehavior enables a custom element to be included
    *   in an `iron-form`.
    *
-   *   Events `iron-form-element-register` and `iron-form-element-unregister` are not fired on Polymer 2.0.
+   *   Events `iron-form-element-register` and `iron-form-element-unregister` are not
+   *   fired on Polymer 2.0.
    *
    *   
    */
@@ -30,7 +31,7 @@ declare namespace Polymer {
     /**
      * The value for this element.
      */
-    value: string|null|undefined;
+    value: any;
 
     /**
      * Set to true to mark the input as required. If used in a form, a

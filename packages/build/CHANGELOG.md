@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.1.1] - 2018-11-12
+* Fix issue with deadcode removal in babel-minify, by turning it off, as it can be error prone and result in removal of code which should not be removed and cause hard to debug errors. https://github.com/Polymer/tools/issues/724
+
 ## [3.1.0] - 2018-10-15
 * Added `wct-mocha` to the set of recognized WCT client-side packages in `htmlTransform` when using [@polymer/esm-amd-loader](https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader).
 
