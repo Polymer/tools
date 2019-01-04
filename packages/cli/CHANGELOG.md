@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## v1.9.4 [12-23-2018]
+* Updated dependencies.
+  * web-component-tester@6.9.2 - Fix gulpfile to actually build browser.js.
+
 ## v1.9.3 [12-19-2018]
 * Replace `github` library with `@octokit/rest` to pass npm audit.
 

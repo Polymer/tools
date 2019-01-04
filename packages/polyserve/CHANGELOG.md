@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Add `--allow-origin` flag which sets the `Access-Control-Allow-Origin` header.
 <!-- Add new, unreleased items here. -->
 
 ## [0.27.14] (2018-12-19)
