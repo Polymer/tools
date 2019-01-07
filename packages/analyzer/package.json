@@ -10,10 +10,10 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
-    "LICENSE",
-    "lib/",
     "custom_typings/",
-    "bin/"
+    "lib/",
+    "!lib/demo",
+    "!lib/test"
   ],
   "scripts": {
     "clean": "touch lib && rm -rf lib && mkdir lib",
