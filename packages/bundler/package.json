@@ -12,6 +12,11 @@
   "bin": {
     "polymer-bundler": "lib/bin/polymer-bundler.js"
   },
+  "files": [
+    "custom_typings/",
+    "lib/",
+    "!lib/test/"
+  ],
   "dependencies": {
     "@types/babel-generator": "^6.25.1",
     "@types/babel-traverse": "^6.25.3",
