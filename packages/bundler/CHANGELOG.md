@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
+* Fixed issue where excluded URLs were not resolved by the analyzer when bundler was initialized, resulting in some imports not being treated as excluded.
 * Removed non-essential files from published package, such as tests.
 <!-- Add new, unreleased changes here. -->
 

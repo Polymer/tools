@@ -152,13 +152,14 @@ suite('polymer-bundler CLI', () => {
   });
 
   suite('--redirect', () => {
+    const projectRoot =
+        resolvePath(__dirname, '../../test/html')
+            // Force forward-slashes so quoting works with Windows paths.
+            .replace(/\\/g, '/');
+    const tempdir = getTempDir();
+    const manifestPath = resolvePath(tempdir, 'bundle-manifest.json');
+
     test('handles URLs with arbitrary protocols and hosts', async () => {
-      const projectRoot =
-          resolvePath(__dirname, '../../test/html')
-              // Force forward-slashes so quoting works with Windows paths.
-              .replace(/\\/g, '/');
-      const tempdir = getTempDir();
-      const manifestPath = resolvePath(tempdir, 'bundle-manifest.json');
       const stdout =
           execSync([
             `cd ${projectRoot}`,
@@ -171,14 +172,60 @@ suite('polymer-bundler CLI', () => {
       assert.include(stdout, 'This is an external dependency');
       assert.include(stdout, 'id="home-page"');
       assert.include(stdout, 'id="settings-page"');
-      const manifestJson = fs.readFileSync(manifestPath).toString();
-      const manifest = JSON.parse(manifestJson);
+      const manifest = JSON.parse(fs.readFileSync(manifestPath).toString());
       assert.deepEqual(manifest, {
         'myapp://app/index.html': [
           'myapp://app/index.html',
           'myapp://app/home.html',
           'vendor://external-dependency/external-dependency.html',
           'myapp://app/settings.html'
+        ],
+      });
+    });
+
+    test('handles redirection to folders outside project root', async () => {
+      const stdout = execSync([
+                       `cd ${projectRoot}/complicated`,
+                       `node ${cliPath} myapp://app/index.html ` +
+                           `--redirect="myapp://app/|../url-redirection/" ` +
+                           `--redirect="vendor://|../bower_components/" ` +
+                           `--manifest-out ${manifestPath}`
+                     ].join(' && '))
+                         .toString();
+      assert.include(stdout, 'This is an external dependency');
+      assert.include(stdout, 'id="home-page"');
+      assert.include(stdout, 'id="settings-page"');
+      const manifest = JSON.parse(fs.readFileSync(manifestPath).toString());
+      assert.deepEqual(manifest, {
+        'myapp://app/index.html': [
+          'myapp://app/index.html',
+          'myapp://app/home.html',
+          'vendor://external-dependency/external-dependency.html',
+          'myapp://app/settings.html'
+        ],
+      });
+    });
+
+    test('handles excludes which are redirected URLs', async () => {
+      const stdout =
+          execSync([
+            `cd ${projectRoot}`,
+            `node ${cliPath} myapp://app/index.html ` +
+                `--redirect="myapp://app/|${projectRoot}/url-redirection/" ` +
+                `--redirect="vendor://|${projectRoot}/bower_components/" ` +
+                `--exclude="myapp://app/settings.html" ` +
+                `--manifest-out ${manifestPath}`
+          ].join(' && '))
+              .toString();
+      assert.include(stdout, 'This is an external dependency');
+      assert.include(stdout, 'id="home-page"');
+      assert.notInclude(stdout, 'id="settings-page"');
+      const manifest = JSON.parse(fs.readFileSync(manifestPath).toString());
+      assert.deepEqual(manifest, {
+        'myapp://app/index.html': [
+          'myapp://app/index.html',
+          'myapp://app/home.html',
+          'vendor://external-dependency/external-dependency.html'
         ],
       });
     });
