@@ -118,7 +118,7 @@ export const globalArguments: ArgDescriptor[] = [
   },
   {
     name: 'version',
-    description: 'Print the current version.',
+    description: 'Print version info.',
     type: Boolean,
     group: 'global',
   },
