@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Add `--help` description for `--version`.
 <!-- Add new, unreleased changes here. -->
 
 ## v1.9.4 [12-23-2018]
@@ -42,7 +43,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 * Update package-lock to pickup wct-local 2.1.3 to fix Firefox 63 testing.
 
 ## v1.8.0 [08-15-2018]
-* Fix a case where the CustomElementsEs5Adapter script was not added to the 
+* Fix a case where the CustomElementsEs5Adapter script was not added to the
   builds when the `js.compile` is an object with a target property of es5.
 * Updated web-component-tester to v6.8.0, which changes the set of browsers
   when testing on Travis CI.
