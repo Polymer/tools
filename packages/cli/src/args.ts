@@ -116,6 +116,12 @@ export const globalArguments: ArgDescriptor[] = [
     alias: 'q',
     group: 'global',
   },
+  {
+    name: 'version',
+    description: 'Print version info.',
+    type: Boolean,
+    group: 'global',
+  },
 ];
 
 /**
