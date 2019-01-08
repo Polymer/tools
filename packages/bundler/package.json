@@ -9,14 +9,14 @@
   "author": "The Polymer Project Authors",
   "main": "lib/bundler.js",
   "typings": "lib/bundler.d.ts",
-  "files": [
-    "LICENSE",
-    "lib/",
-    "custom_typings/"
-  ],
   "bin": {
     "polymer-bundler": "lib/bin/polymer-bundler.js"
   },
+  "files": [
+    "custom_typings/",
+    "lib/",
+    "!lib/test/"
+  ],
   "dependencies": {
     "@types/babel-generator": "^6.25.1",
     "@types/babel-traverse": "^6.25.3",
