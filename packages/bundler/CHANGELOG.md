@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Fixed issue where excluded URLs were not resolved by the analyzer when bundler was initialized, resulting in some imports not being treated as excluded.
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.4 - 2018-10-18

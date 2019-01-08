@@ -182,5 +182,34 @@ suite('polymer-bundler CLI', () => {
         ],
       });
     });
+    test('handles excludes which are redirected URLs', async () => {
+      const projectRoot =
+          resolvePath(__dirname, '../../test/html')
+              // Force forward-slashes so quoting works with Windows paths.
+              .replace(/\\/g, '/');
+      const tempdir = getTempDir();
+      const manifestPath = resolvePath(tempdir, 'bundle-manifest.json');
+      const stdout = execSync([
+                       `cd ${projectRoot}/complicated`,
+                       `node ${cliPath} myapp://app/index.html ` +
+                           `--redirect="myapp://app/|../url-redirection/" ` +
+                           `--redirect="vendor://|../bower_components/" ` +
+                           `--exclude="myapp://app/settings.html" ` +
+                           `--manifest-out ${manifestPath}`
+                     ].join(' && '))
+                         .toString();
+      assert.include(stdout, 'This is an external dependency');
+      assert.include(stdout, 'id="home-page"');
+      assert.notInclude(stdout, 'id="settings-page"');
+      const manifestJson = fs.readFileSync(manifestPath).toString();
+      const manifest = JSON.parse(manifestJson);
+      assert.deepEqual(manifest, {
+        'myapp://app/index.html': [
+          'myapp://app/index.html',
+          'myapp://app/home.html',
+          'vendor://external-dependency/external-dependency.html'
+        ],
+      });
+    });
   });
 });

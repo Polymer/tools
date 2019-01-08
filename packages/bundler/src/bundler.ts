@@ -93,7 +93,9 @@ export class Bundler {
       this.analyzer = new Analyzer({urlLoader: this._overlayUrlLoader});
     }
 
-    this.excludes = Array.isArray(opts.excludes) ? opts.excludes : [];
+    this.excludes = Array.isArray(opts.excludes) ?
+        opts.excludes.map((url) => this.analyzer.resolveUrl(url)!) :
+        [];
     this.stripComments = Boolean(opts.stripComments);
     this.enableCssInlining =
         opts.inlineCss === undefined ? true : opts.inlineCss;
