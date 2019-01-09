@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Removed non-essential files from published package, such as tests.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.2.2] - 2018-01-08
+* Removed non-essential files from published package, such as tests.
 
 ## [3.2.1] - 2018-12-19
 * Recognize .mjs as JavaScript files.

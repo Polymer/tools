@@ -83,9 +83,7 @@ export class Github {
     this._token = opts.githubToken || Github.tokenFromFile('token');
     this._owner = opts.owner;
     this._repo = opts.repo;
-    this._github = opts.githubApi || new GitHubApi({
-                     protocol: 'https',
-                   });
+    this._github = opts.githubApi || new GitHubApi();
     if (this._token != null) {
       this._github.authenticate({
         type: 'oauth',
@@ -201,9 +199,6 @@ export class Github {
     const response = await this._github.repos.getReleaseByTag(
         {owner: this._owner, repo: this._repo, tag: tagName});
     const tag = response.data;
-    return {
-      name: tag.name,
-      tarball_url: tag.tarball_url
-    };
+    return {name: tag.name, tarball_url: tag.tarball_url};
   }
 }

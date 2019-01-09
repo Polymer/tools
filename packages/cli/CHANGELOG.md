@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Add `--help` description for `--version`.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## v1.9.5 [01-08-2019]
+* Add `--help` description for `--version`.
 
 ## v1.9.4 [12-23-2018]
 * Updated dependencies.
