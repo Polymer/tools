@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Add `--help` description for `--version`.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## v1.9.5 [01-10-2019]
+* Add `--help` description for `--version`.
+* Updated dependencies for bug fixes and reduced package sizes.
+  * polymer-analyzer@3.2.2 - 50% smaller package.
+  * polymer-bundler@4.0.5 - 50% smaller package and a fix to external
+    es6 module inlining bug.
 
 ## v1.9.4 [12-23-2018]
 * Updated dependencies.
