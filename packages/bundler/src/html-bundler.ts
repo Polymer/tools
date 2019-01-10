@@ -511,7 +511,7 @@ export class HtmlBundler {
       if (!this.assignedBundle.bundle.files.has(resolvedImportUrl)) {
         return;
       }
-      const scriptContent = `import ${JSON.stringify(scriptHref)};`;
+      const scriptContent = `import ${JSON.stringify(resolvedImportUrl)};`;
       dom5.removeAttribute(scriptTag, 'src');
       dom5.setTextContent(scriptTag, encodeString(scriptContent, true));
     }
