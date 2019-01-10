@@ -94,7 +94,8 @@ export class Bundler {
     }
 
     this.excludes = Array.isArray(opts.excludes) ?
-        opts.excludes.map((url) => this.analyzer.resolveUrl(url)!) :
+        opts.excludes.map((url) => this.analyzer.resolveUrl(url)!)
+            .filter((url) => !!url) :
         [];
     this.stripComments = Boolean(opts.stripComments);
     this.enableCssInlining =
