@@ -11,7 +11,7 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import {Analyzer, InMemoryOverlayUrlLoader, PackageRelativeUrl, PackageUrlResolver} from 'polymer-analyzer';
+import {Analyzer, InMemoryOverlayUrlLoader, PackageRelativeUrl, PackageUrlResolver, ResolvedUrl} from 'polymer-analyzer';
 
 /**
  * Automatically left-justifies an indented multi-line template literal string
@@ -86,6 +86,17 @@ export function mindent(text: string): number {
     }
   }
   return mindent === null ? 0 : mindent;
+}
+
+export const noOpTag =
+    (strings: TemplateStringsArray, ...values: string[]): string =>
+        values.reduce(
+            (r: string, v: string, i) => r + String(v) + strings[i + 1],
+            strings[0]);
+
+export function resolvedUrl(
+    strings: TemplateStringsArray, ...values: string[]): ResolvedUrl {
+  return noOpTag(strings, ...values) as ResolvedUrl;
 }
 
 /**

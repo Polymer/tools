@@ -15,9 +15,9 @@
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
 import * as chai from 'chai';
 import {ResolvedUrl} from 'polymer-analyzer';
-import {resolvedUrl as r} from 'polymer-analyzer/lib/test/test-utils';
 
 import {Bundle, BundleManifest, composeStrategies, generateBundles, generateCountingSharedBundleUrlMapper, generateEagerMergeStrategy, generateMatchMergeStrategy, generateSharedBundleUrlMapper, generateSharedDepsMergeStrategy, generateShellMergeStrategy, mergeBundles, mergeSingleEntrypointSubBundles, TransitiveDependenciesMap} from '../bundle-manifest';
+import {resolvedUrl as r} from '../test/test-utils';
 
 chai.config.showDiff = true;
 
