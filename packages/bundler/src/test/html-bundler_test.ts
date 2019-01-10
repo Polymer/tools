@@ -30,6 +30,28 @@ const stripSpace = (html: string): string =>
     html.replace(/>\s+/g, '>').replace(/>/g, '>\n').trim();
 
 suite('HtmlBundler', () => {
+  test('external script tag inlines without imports/exports', async () => {
+    // This is a regression test added to ensure coverage for
+    // https://github.com/Polymer/tools/issues/3323
+    const analyzer = inMemoryAnalyzer({
+      'entrypoint.html': heredoc`
+        <script src="module.js" type="module"></script>
+      `,
+      'module.js': heredoc`
+        console.log('import/export-free code');
+      `
+    });
+    const bundler = new Bundler({analyzer});
+    const entrypointUrl = analyzer.resolveUrl('entrypoint.html')!;
+    const {documents} =
+        await bundler.bundle(await bundler.generateManifest([entrypointUrl]));
+    const entrypointDoc = documents.getHtmlDoc(entrypointUrl)!;
+    assert.deepEqual(entrypointDoc.content, heredoc`
+        <script type="module">
+        console.log('import/export-free code');
+        </script>
+      `);
+  });
   test('external script tag inlines an es6 module', async () => {
     const root = 'test/html/inline-es6-modules';
     const analyzer = new Analyzer({

@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import {Analyzer, Document, Import, ResolvedUrl} from 'polymer-analyzer';
-import {JavaScriptDocument} from 'polymer-analyzer/lib/javascript/javascript-document';
+import {ScriptTagImport} from 'polymer-analyzer/lib/html/html-script-tag';
 
 import {getAnalysisDocument} from './analyzer-utils';
 
@@ -165,8 +165,7 @@ function getDependencies(
         [...document.getFeatures({kind: 'html-script', ...getFeaturesOptions})]
             .filter(
                 (i) => i.document !== undefined &&
-                    (i.document.parsedDocument as JavaScriptDocument)
-                            .parsedAsSourceType === 'module');
+                    i instanceof ScriptTagImport && i.isModule);
     for (const htmlScript of htmlScripts) {
       const relativeUrl =
           analyzer.urlResolver.relative(document.url, htmlScript.document!.url);

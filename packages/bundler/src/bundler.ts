@@ -94,7 +94,8 @@ export class Bundler {
     }
 
     this.excludes = Array.isArray(opts.excludes) ?
-        opts.excludes.map((url) => this.analyzer.resolveUrl(url)!) :
+        opts.excludes.map((url) => this.analyzer.resolveUrl(url)!)
+            .filter((url) => !!url) :
         [];
     this.stripComments = Boolean(opts.stripComments);
     this.enableCssInlining =
@@ -202,11 +203,7 @@ export class Bundler {
     // Remove excluded files from bundles.
     for (const bundle of bundles) {
       for (const exclude of this.excludes) {
-        const resolvedExclude = this.analyzer.resolveUrl(exclude);
-        if (!resolvedExclude) {
-          continue;
-        }
-        bundle.files.delete(resolvedExclude);
+        bundle.files.delete(exclude);
         const excludeAsFolder = exclude.endsWith('/') ? exclude : exclude + '/';
         for (const file of bundle.files) {
           if (file.startsWith(excludeAsFolder)) {
@@ -218,7 +215,7 @@ export class Bundler {
 
     let b = 0;
     while (b < bundles.length) {
-      if (bundles[b].files.size < 0) {
+      if (bundles[b].files.size <= 0) {
         bundles.splice(b, 1);
         continue;
       }
