@@ -202,12 +202,8 @@ export class Bundler {
     // Remove excluded files from bundles.
     for (const bundle of bundles) {
       for (const exclude of this.excludes) {
-        const resolvedExclude = this.analyzer.resolveUrl(exclude);
-        if (!resolvedExclude) {
-          continue;
-        }
-        bundle.files.delete(resolvedExclude);
-        const excludeAsFolder = resolvedExclude.endsWith('/') ? resolvedExclude : resolvedExclude + '/';
+        bundle.files.delete(exclude);
+        const excludeAsFolder = exclude.endsWith('/') ? exclude : exclude + '/';
         for (const file of bundle.files) {
           if (file.startsWith(excludeAsFolder)) {
             bundle.files.delete(file);
@@ -218,7 +214,7 @@ export class Bundler {
 
     let b = 0;
     while (b < bundles.length) {
-      if (bundles[b].files.size < 0) {
+      if (bundles[b].files.size <= 0) {
         bundles.splice(b, 1);
         continue;
       }
