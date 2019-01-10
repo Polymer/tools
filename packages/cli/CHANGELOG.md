@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## v1.9.5 [01-08-2019]
 * Add `--help` description for `--version`.
+* Updated dependencies for bug fixes and reduced package sizes.
+  * polymer-analyzer@3.2.2 - 50% smaller package.
+  * polymer-bundler@4.0.5 - 50% smaller package and a fix to external
+    es6 module inlining bug.
 
 ## v1.9.4 [12-23-2018]
 * Updated dependencies.
