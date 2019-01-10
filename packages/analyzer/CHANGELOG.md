@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## [3.2.2] - 2018-01-08
+## [3.2.2] - 2019-01-10
 * Removed non-essential files from published package, such as tests.
 
 ## [3.2.1] - 2018-12-19

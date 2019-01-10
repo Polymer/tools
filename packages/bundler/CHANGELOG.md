@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## 4.0.5 - 2019-01-08
+## 4.0.5 - 2019-01-10
 * Fixed issue where excluded URLs were not resolved by the analyzer when bundler was initialized, resulting in some imports not being treated as excluded.
 * Fixed issue where `<script type="module" src="x.js">` tags would not inline if the referenced script contained no `import` or `export` statements.
 * Removed non-essential files from published package, such as tests.

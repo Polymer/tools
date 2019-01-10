@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
-## [0.27.15] (2019-01-08)
+## [0.27.15] (2019-01-10)
 * Add `--allow-origin` flag which sets the `Access-Control-Allow-Origin` header.
 
 ## [0.27.14] (2018-12-19)
