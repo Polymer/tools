@@ -124,7 +124,7 @@ const bundler = new require('polymer-bundler').Bundler();
 bundler.generateManifest(['my-app.html']).then((manifest) => {
   bundler.bundle(manifest).then((result) => {
     console.log('<!-- BUNDLED VERSION OF my-app.html: -->');
-    console.log(result.documents.get('my-app.html').content));
+    console.log(result.documents.get('my-app.html').content);
   });
 });
 ```
