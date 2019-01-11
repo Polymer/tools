@@ -51,13 +51,17 @@ suite('init/github', () => {
             repo: 'shop',
           },
           function setupGeneratorStubs(generator) {
+            const {_github} = (generator as unknown as {
+              _github:
+                  {getSemverRelease: unknown, extractReleaseTarball: unknown}
+            });
             getSemverReleaseStub =
                 // tslint:disable-next-line: no-any
-                sinon.stub((generator as any)._github, 'getSemverRelease')
+                sinon.stub(_github, 'getSemverRelease')
                     .returns(Promise.resolve(semverMatchingRelease));
             extractReleaseTarballStub =
                 // tslint:disable-next-line: no-any
-                sinon.stub((generator as any)._github, 'extractReleaseTarball')
+                sinon.stub(_github, 'extractReleaseTarball')
                     .returns(Promise.resolve());
           });
 
@@ -84,13 +88,17 @@ suite('init/github', () => {
             semverRange: testSemverRange,
           },
           function setupGeneratorStubs(generator) {
+            const {_github} = generator as unknown as {
+              _github:
+                  {getSemverRelease: unknown, extractReleaseTarball: unknown}
+            };
             getSemverReleaseStub =
                 // tslint:disable-next-line: no-any
-                sinon.stub((generator as any)._github, 'getSemverRelease')
+                sinon.stub(_github, 'getSemverRelease')
                     .returns(Promise.resolve(semverMatchingRelease));
             extractReleaseTarballStub =
                 // tslint:disable-next-line: no-any
-                sinon.stub((generator as any)._github, 'extractReleaseTarball')
+                sinon.stub(_github, 'extractReleaseTarball')
                     .returns(Promise.resolve());
           });
 
