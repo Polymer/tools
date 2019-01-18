@@ -189,11 +189,15 @@ suite('polymer-bundler CLI', () => {
                        `node ${cliPath} myapp://app/index.html ` +
                            `--redirect="myapp://app/|../url-redirection/" ` +
                            `--redirect="vendor://|../bower_components/" ` +
+                           `--rewrite-urls-in-templates ` +
                            `--manifest-out ${manifestPath}`
                      ].join(' && '))
                          .toString();
       assert.include(stdout, 'This is an external dependency');
       assert.include(stdout, 'id="home-page"');
+      assert.include(
+          stdout,
+          'background-image: url("vendor://external-dependency/bg.png");');
       assert.include(stdout, 'id="settings-page"');
       const manifest = JSON.parse(fs.readFileSync(manifestPath).toString());
       assert.deepEqual(manifest, {
@@ -219,6 +223,7 @@ suite('polymer-bundler CLI', () => {
               .toString();
       assert.include(stdout, 'This is an external dependency');
       assert.include(stdout, 'id="home-page"');
+      assert.include(stdout, 'background-image: url(\'./bg.png\');');
       assert.notInclude(stdout, 'id="settings-page"');
       const manifest = JSON.parse(fs.readFileSync(manifestPath).toString());
       assert.deepEqual(manifest, {
