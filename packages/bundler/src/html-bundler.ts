@@ -29,7 +29,7 @@ import {findAncestor, insertAfter, insertAllBefore, inSourceOrder, isSameNode, p
 import {addOrUpdateSourcemapComment} from './source-map';
 import {updateSourcemapLocations} from './source-map';
 import encodeString from './third_party/UglifyJS2/encode-string';
-import {ensureTrailingSlash, getFileExtension, isTemplatedUrl, rewriteHrefBaseUrl, stripUrlFileSearchAndHash} from './url-utils';
+import {ensureTrailingSlash, getFileExtension, isTemplatedUrl, stripUrlFileSearchAndHash} from './url-utils';
 import {find, rewriteObject} from './utils';
 
 /**
@@ -859,7 +859,7 @@ export class HtmlBundler {
       newBaseUrl: ResolvedUrl): string {
     return cssText.replace(constants.URL, (match) => {
       let path = match.replace(/["']/g, '').slice(4, -1);
-      path = rewriteHrefBaseUrl(path, oldBaseUrl, newBaseUrl);
+      path = this._rewriteHrefBaseUrl(path, oldBaseUrl, newBaseUrl);
       return 'url("' + path + '")';
     });
   }
@@ -885,12 +885,24 @@ export class HtmlBundler {
             relUrl =
                 this._rewriteCssTextBaseUrl(attrValue, oldBaseUrl, newBaseUrl);
           } else {
-            relUrl = rewriteHrefBaseUrl(attrValue, oldBaseUrl, newBaseUrl);
+            relUrl =
+                this._rewriteHrefBaseUrl(attrValue, oldBaseUrl, newBaseUrl);
           }
           dom5.setAttribute(node, attr, relUrl);
         }
       }
     }
+  }
+
+  private _rewriteHrefBaseUrl<T extends string>(
+      href: T, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl): T
+      |FileRelativeUrl {
+    const resolvedHref = this.bundler.analyzer.urlResolver.resolve(
+        oldBaseUrl, href as string as FileRelativeUrl);
+    if (typeof resolvedHref === 'undefined') {
+      return href;
+    }
+    return this.bundler.analyzer.urlResolver.relative(newBaseUrl, resolvedHref);
   }
 
   /**
