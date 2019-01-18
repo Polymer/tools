@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
 * Fixed issue involving rewriting relative URLs involving crossing `--redirect` boundaries (polymer-bundler CLI feature).
+* Removed a couple of exported functions from `url-utils`: `pathPosixRelative` and `rewriteHrefBaseUrl`.
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.5 - 2019-01-10

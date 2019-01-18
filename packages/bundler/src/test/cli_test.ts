@@ -208,7 +208,6 @@ suite('polymer-bundler CLI', () => {
           'myapp://app/settings.html'
         ],
       });
-      console.log(stdout);
     });
 
     test('handles excludes which are redirected URLs', async () => {
