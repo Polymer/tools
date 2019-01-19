@@ -1,6 +1,6 @@
 {
   "name": "@polymer/gen-typescript-declarations",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Generate TypeScript type declarations for Polymer components.",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations",
   "repository": "github:Polymer/tools",
