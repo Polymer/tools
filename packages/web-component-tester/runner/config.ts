@@ -60,6 +60,17 @@ export interface Config {
     // The hostname used when generating URLs for the webdriver client.
     hostname: string;
 
+    // An additional hostname for calling the tests. By default 'hostname' is used 
+    // to format the tests url. If the tests are called from an external network
+    // an addition hostname can be defined for running tests. For example calling tests 
+    // from selenium running in docker testsHostname can be defined as 'host.docker.internal'
+    testsHostname: string,
+  
+    // An additional port for calling the tests. By default 'port' is used 
+    // to format the tests url. If the tests are called from an external network
+    // an addition port can be defined for running tests.
+    testsPort: number,
+    
     _generatedIndexContent?: string;
     _servers?: {variant: string, url: string}[];
   };
@@ -227,6 +238,17 @@ export function defaults(): Config {
       // runtime if none is provided.
       port: undefined,
       hostname: 'localhost',
+      
+      // An additional hostname for calling the tests. By default 'hostname' is used 
+      // to format the tests url. If the tests are called from an external network
+      // an addition hostname can be defined for running tests. For example calling tests 
+      // from selenium running in docker testsHostname can be defined as 'host.docker.internal'
+      testsHostname: undefined,
+  
+      // An additional port for calling the tests. By default 'port' is used 
+      // to format the tests url. If the tests are called from an external network
+      // an addition port can be defined for running tests.
+      testsPort: undefined      
     },
     // The name of the NPM package that is vending wct's browser.js will be
     // determined automatically if no name is specified.
@@ -320,6 +342,14 @@ const ARG_CONFIG = {
     full: 'webserver-hostname',
     hidden: true,
   },
+  'webserver.testsPort': {
+    full: 'webserver-tests-port',
+    hidden: true,
+  },
+  'webserver.testsHostname': {
+    full: 'webserver-tests-hostname',
+    hidden: true,
+  },  
   // Managed by supports-color; let's not freak out if we see it.
   color: {flag: true},
 

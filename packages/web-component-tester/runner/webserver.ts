@@ -323,11 +323,13 @@ Expected to find a ${mdFilenames.join(' or ')} at: ${pathToLocalWct}/
 
     options.webserver._servers = servers.map((s) => {
       const address = s.server.address();
-      const port = typeof address === 'string' ? '' : `:${address.port}`;
-      const hostname = s.options.hostname;
+      const serverPort = typeof address === 'string' ? '' : `:${address.port}`;
+      const port = options.webserver.testsPort ? options.webserver.testsPort : serverPort;
+      const hostname = options.webserver.testsHostname ? options.webserver.testsHostname :  s.options.hostname;
       const url = `http://${hostname}${port}${pathToGeneratedIndex}`;
       return {url, variant: s.kind === 'mainline' ? '' : s.variantName};
     });
+
 
     // TODO(rictic): re-enable this stuff. need to either move this code
     // into polyserve or let the polyserve API expose this stuff.
