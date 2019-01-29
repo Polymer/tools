@@ -17,7 +17,6 @@ import * as dom5 from 'dom5';
 import {ASTNode, parseFragment, serialize, treeAdapters} from 'parse5';
 import {Document, FileRelativeUrl, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
 import {parse as parseUrl} from 'url';
-import {isNull} from 'util';
 
 import {assertIsHtmlDocument, assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
 import {serialize as serializeEs6} from './babel-utils';
