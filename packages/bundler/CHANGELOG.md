@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* URLs in bundled output will now honor developer's intent to render URLs with protocols instead of as relative URLs where applicable.
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.6 - 2019-01-18
