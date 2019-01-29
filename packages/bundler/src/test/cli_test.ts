@@ -197,7 +197,10 @@ suite('polymer-bundler CLI', () => {
       assert.include(stdout, 'id="home-page"');
       assert.include(
           stdout,
-          'background-image: url("vendor://external-dependency/bg.png");');
+          'background-image: url("vendor://external-dependency/images/external-bg.png");');
+      assert.include(stdout, 'background-image: url("images/gear.png");');
+      assert.include(
+          stdout, 'background-image: url("myapp://images/wrench.png");');
       assert.include(stdout, 'id="settings-page"');
       const manifest = JSON.parse(fs.readFileSync(manifestPath).toString());
       assert.deepEqual(manifest, {
@@ -223,7 +226,8 @@ suite('polymer-bundler CLI', () => {
               .toString();
       assert.include(stdout, 'This is an external dependency');
       assert.include(stdout, 'id="home-page"');
-      assert.include(stdout, 'background-image: url(\'./bg.png\');');
+      assert.include(
+          stdout, 'background-image: url(\'./images/external-bg.png\');');
       assert.notInclude(stdout, 'id="settings-page"');
       const manifest = JSON.parse(fs.readFileSync(manifestPath).toString());
       assert.deepEqual(manifest, {
