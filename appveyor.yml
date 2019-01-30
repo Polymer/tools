@@ -6,6 +6,7 @@ branches:
     - master
 
 install:
+  - choco install googlechrome
   - ps: Install-Product node $env:nodejs_version
   - npm i -g npm@latest
   - npm ci
