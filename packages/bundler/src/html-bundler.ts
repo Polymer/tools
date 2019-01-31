@@ -16,6 +16,7 @@ import * as clone from 'clone';
 import * as dom5 from 'dom5';
 import {ASTNode, parseFragment, serialize, treeAdapters} from 'parse5';
 import {Document, FileRelativeUrl, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
+import {parse as parseUrl} from 'url';
 
 import {assertIsHtmlDocument, assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
 import {serialize as serializeEs6} from './babel-utils';
@@ -899,9 +900,20 @@ export class HtmlBundler {
       |FileRelativeUrl {
     const resolvedHref = this.bundler.analyzer.urlResolver.resolve(
         oldBaseUrl, href as string as FileRelativeUrl);
+    // If we can't resolve the href, we need to return it as-is, since we can't
+    // relativize or rewrite it.
     if (typeof resolvedHref === 'undefined') {
       return href;
     }
+
+    const parsedHref = parseUrl(href);
+    // If the href was initially expressed with a protocol in the URL, we should
+    // not attempt to relativize or rewrite it.
+    if (typeof parsedHref.protocol === 'string') {
+      return href;
+    }
+
+    // Return a new relative form of the given URL.
     return this.bundler.analyzer.urlResolver.relative(newBaseUrl, resolvedHref);
   }
 

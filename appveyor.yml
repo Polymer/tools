@@ -6,14 +6,12 @@ branches:
     - master
 
 install:
+  - choco install googlechrome
   - ps: Install-Product node $env:nodejs_version
   - npm i -g npm@latest
   - npm ci
   - npm run bootstrap
   - npm run build
-  # NOTE(keanulee): Following needed until Chrome in AppVeyor images are
-  # updated - see https://github.com/appveyor/ci/issues/2772.
-  - choco install googlechrome
 
 test_script:
   - node --version
