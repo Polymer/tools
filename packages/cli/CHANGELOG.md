@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## v1.9.6 [02-07-2019]
+* Update `bower` library to pass npm audit.
+
 ## v1.9.5 [01-10-2019]
 * Add `--help` description for `--version`.
 * Updated dependencies for bug fixes and reduced package sizes.
