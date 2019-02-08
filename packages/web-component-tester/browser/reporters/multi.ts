@@ -164,6 +164,9 @@ export default class MultiReporter implements Reporter {
   suiteTitle(location: Location|string) {
     let path = util.relativeLocation(location, this.basePath);
     path = util.cleanLocation(path);
+    if (location.search) {
+      path += location.search;
+    }
     return path;
   }
 

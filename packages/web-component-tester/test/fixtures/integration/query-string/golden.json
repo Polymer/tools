@@ -4,7 +4,7 @@
   "failing": 0,
   "status": "complete",
   "tests": {
-    "test/tests.html": {
+    "test/tests.html?foo=bar": {
       "preserves query strings": {
         "state": "passing"
       }

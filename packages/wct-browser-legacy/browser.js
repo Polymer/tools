@@ -1110,6 +1110,9 @@ var MultiReporter = /** @class */ (function () {
     MultiReporter.prototype.suiteTitle = function (location) {
         var path = relativeLocation(location, this.basePath);
         path = cleanLocation(path);
+        if (location.search) {
+            path += location.search;
+        }
         return path;
     };
     // Internal Interface
