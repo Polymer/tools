@@ -54,6 +54,16 @@ matrix:
     - TEST_COMMAND="xvfb-run npm run test:integration"
 
   - node_js: '10'
+    if: type = pull_request
+    addons:
+      chrome: stable
+      firefox: latest
+    env:
+    - SKIP_LOCAL_BROWSERS=true
+    - TEST_COMMAND="xvfb-run npx lerna run test:integration --stream --scope wct-browser-legacy --scope wct-mocha --scope web-component-tester --scope @polymer/esm-amd-loader --concurrency 1"
+
+  - node_js: '10'
+    if: type != pull_request
     addons:
       sauce_connect: true
     env:
