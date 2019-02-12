@@ -225,6 +225,24 @@ suite('HtmlBundler', () => {
       });
 
       suite('Resolve Paths', () => {
+        test('rewrite relative paths, not absolute paths', () => {
+          const html = `
+            <a href="/absolute/path">Absolute Path</a>
+            <a href="relative/path">Relative Path</a>
+          `;
+
+          const expected = `
+            <a href="/absolute/path">Absolute Path</a>
+            <a href="my-element/relative/path">Relative Path</a>
+          `;
+
+          const ast = parse(html);
+          htmlBundler['_rewriteAstBaseUrl'](ast, importDocUrl, mainDocUrl);
+
+          const actual = parse5.serialize(ast);
+          assert.deepEqual(stripSpace(actual), stripSpace(expected));
+        });
+
         test('excluding template elements', () => {
           const html = `
             <link rel="import" href="../polymer/polymer.html">
@@ -237,8 +255,6 @@ suite('HtmlBundler', () => {
             </template>
             <script>Polymer({is: "my-element"})</script>
             </dom-module>
-            <a href="/absolute/path">Absolute Path</a>
-            <a href="relative/path">Relative Path</a>
             <template is="dom-bind">
             <style>.outside-dom-module { background-image: url(outside-dom-module.png); }</style>
             </template>
@@ -255,8 +271,6 @@ suite('HtmlBundler', () => {
             </template>
             <script>Polymer({is: "my-element"})</script>
             </dom-module>
-            <a href="/absolute/path">Absolute Path</a>
-            <a href="my-element/relative/path">Relative Path</a>
             <template is="dom-bind">
             <style>.outside-dom-module { background-image: url(outside-dom-module.png); }</style>
             </template>
