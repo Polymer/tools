@@ -39,7 +39,7 @@ suite('HtmlBundler', () => {
       `,
       'module.js': heredoc`
         console.log('import/export-free code');
-      `
+      `,
     });
     const bundler = new Bundler({analyzer});
     const entrypointUrl = analyzer.resolveUrl('entrypoint.html')!;
@@ -81,7 +81,7 @@ suite('HtmlBundler', () => {
     const analyzer = new Analyzer({
       urlResolver: new FsUrlResolver(root),
       urlLoader: new FsUrlLoader(root),
-      moduleResolution: 'node'
+      moduleResolution: 'node',
     });
     const bundler = new Bundler({analyzer});
     const importUsingNodeModuleResolutionUrl =
@@ -237,6 +237,8 @@ suite('HtmlBundler', () => {
             </template>
             <script>Polymer({is: "my-element"})</script>
             </dom-module>
+            <a href="/absolute/path">Absolute Path</a>
+            <a href="relative/path">Relative Path</a>
             <template is="dom-bind">
             <style>.outside-dom-module { background-image: url(outside-dom-module.png); }</style>
             </template>
@@ -253,6 +255,8 @@ suite('HtmlBundler', () => {
             </template>
             <script>Polymer({is: "my-element"})</script>
             </dom-module>
+            <a href="/absolute/path">Absolute Path</a>
+            <a href="my-element/relative/path">Relative Path</a>
             <template is="dom-bind">
             <style>.outside-dom-module { background-image: url(outside-dom-module.png); }</style>
             </template>

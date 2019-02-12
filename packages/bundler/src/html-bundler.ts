@@ -30,7 +30,7 @@ import {findAncestor, insertAfter, insertAllBefore, inSourceOrder, isSameNode, p
 import {addOrUpdateSourcemapComment} from './source-map';
 import {updateSourcemapLocations} from './source-map';
 import encodeString from './third_party/UglifyJS2/encode-string';
-import {ensureTrailingSlash, getFileExtension, isTemplatedUrl, stripUrlFileSearchAndHash} from './url-utils';
+import {ensureTrailingSlash, getFileExtension, isAbsolutePath, isTemplatedUrl, stripUrlFileSearchAndHash} from './url-utils';
 import {find, rewriteObject} from './utils';
 
 /**
@@ -907,9 +907,16 @@ export class HtmlBundler {
     }
 
     const parsedHref = parseUrl(href);
+
     // If the href was initially expressed with a protocol in the URL, we should
     // not attempt to relativize or rewrite it.
     if (typeof parsedHref.protocol === 'string') {
+      return href;
+    }
+
+    // If the href was originally expressed as an absolute path, we should not
+    // attempt to relativize it.
+    if (parsedHref.pathname && isAbsolutePath(parsedHref.pathname)) {
       return href;
     }
 
