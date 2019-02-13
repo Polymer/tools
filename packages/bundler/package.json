@@ -1,6 +1,6 @@
 {
   "name": "polymer-bundler",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "description": "Process Web Components into one output file",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/bundler",
   "repository": "github:Polymer/tools",
