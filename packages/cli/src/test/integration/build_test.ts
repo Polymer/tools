@@ -213,7 +213,7 @@ function assertDirsEqual(actual: string, expected: string, basedir = actual) {
   if (process.env['UPDATE_POLYMER_CLI_GOLDENS']) {
     fsExtra.emptyDirSync(expected);
     fsExtra.copySync(actual, expected);
-    throw new Error('Goldens updated, test failing for your saftey.');
+    throw new Error('Goldens updated, test failing for your safety.');
   }
 
   const actualNames = fs.readdirSync(actual).sort();
