@@ -306,7 +306,7 @@ suite('compile-middleware', () => {
                            .set('User-Agent', chrome60UA);
       if (process.env['UPDATE_POLYSERVE_GOLDENS']) {
         fs.writeFileSync(path.join(root, goldenPath), response.text);
-        throw new Error('Goldens updated, test failing for your saftey.');
+        throw new Error('Goldens updated, test failing for your safety.');
       }
       assert.equal(response.text.trim(), golden.trim());
     }
@@ -343,7 +343,7 @@ suite('compile-middleware', () => {
       /**
       fs.writeFileSync(path.join(root, goldenPath), response.text);
       if (1 + 1 === 2) {
-        throw new Error('Goldens updated, test failing for your saftey.');
+        throw new Error('Goldens updated, test failing for your safety.');
       }
       */
       assert.equal(response.text.trim(), golden.trim());
