@@ -1,0 +1,6 @@
+# Ignore this file
+.npmignore
+
+# Ignore *.ts files but not *.d.ts files
+*.ts
+!*.d.ts

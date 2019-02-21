@@ -23,6 +23,7 @@
     "web"
   ],
   "main": "runner.js",
+  "types": "runner.d.ts",
   "bin": {
     "wct": "./bin/wct",
     "wct-st": "./bin/wct-st"
@@ -40,7 +41,8 @@
     "package.json",
     "LICENSE",
     "README.md",
-    "runner.js"
+    "runner.js",
+    "runner.d.ts"
   ],
   "scripts": {
     "lint": "tslint -p .",
