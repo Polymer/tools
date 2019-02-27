@@ -55,6 +55,9 @@ export interface Options {
   // Bundle strategy used to construct the output bundles.
   strategy?: BundleStrategy;
 
+  // Use Rollup's treeshake feature
+  treeshake?: boolean;
+
   // Bundle URL mapper function that produces URLs for the generated bundles.
   urlMapper?: BundleUrlMapper;
 }
@@ -73,6 +76,7 @@ export class Bundler {
   sourcemaps: boolean;
   stripComments: boolean;
   strategy: BundleStrategy;
+  treeshake: boolean;
   urlMapper: BundleUrlMapper;
 
   private _overlayUrlLoader: InMemoryOverlayUrlLoader;
@@ -95,7 +99,7 @@ export class Bundler {
 
     this.excludes = Array.isArray(opts.excludes) ?
         opts.excludes.map((url) => this.analyzer.resolveUrl(url)!)
-            .filter((url) => !!url) :
+            .filter(Boolean) :
         [];
     this.stripComments = Boolean(opts.stripComments);
     this.enableCssInlining =
@@ -106,6 +110,7 @@ export class Bundler {
     this.sourcemaps = Boolean(opts.sourcemaps);
     this.strategy =
         opts.strategy || bundleManifestLib.generateSharedDepsMergeStrategy();
+    this.treeshake = Boolean(opts.treeshake);
     this.urlMapper = opts.urlMapper ||
         bundleManifestLib.generateCountingSharedBundleUrlMapper(
             this.analyzer.resolveUrl('shared_bundle_')!);

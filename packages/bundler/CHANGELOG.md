@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Upgraded Rollup to version 1.3.0.
+* Added `treeshake` option to enable Rollup to remove dead code when bundling.
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.8 - 2019-02-12
