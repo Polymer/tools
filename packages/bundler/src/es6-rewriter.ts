@@ -152,24 +152,22 @@ export class Es6Rewriter {
       throw new Error(`Failed to bundle.  Rollup generated ${
           output.length} chunks or assets.  Expected 1.`);
     }
-    for (const chunkOrAsset of output) {
-      const rolledUpCode = chunkOrAsset.code || '';
-      // We have to force the extension of the URL to analyze here because
-      // inline es6 module document url is going to end in `.html` and the file
-      // would be incorrectly analyzed as an HTML document.
-      const rolledUpUrl = getFileExtension(url) === '.js' ?
-          url :
-          appendUrlPath(url, '_inline_es6_module.js');
-      const rolledUpDocument = await this.bundler.analyzeContents(
-          rolledUpUrl as ResolvedUrl, rolledUpCode);
-      const babelFile = assertIsJsDocument(rolledUpDocument).parsedDocument.ast;
-      this._rewriteExportStatements(url, babelFile);
-      this._rewriteImportStatements(url, babelFile);
-      this._deduplicateImportStatements(babelFile);
-      const {code: rewrittenCode} = serialize(babelFile);
-      return {code: rewrittenCode, map: undefined};
-    }
-    throw new Error(`Failed to bundle.  Rollup generated no chunks or assets.`);
+    const chunkOrAsset = output[0];
+    const rolledUpCode = chunkOrAsset.code || '';
+    // We have to force the extension of the URL to analyze here because
+    // inline es6 module document url is going to end in `.html` and the file
+    // would be incorrectly analyzed as an HTML document.
+    const rolledUpUrl = getFileExtension(url) === '.js' ?
+        url :
+        appendUrlPath(url, '_inline_es6_module.js');
+    const rolledUpDocument = await this.bundler.analyzeContents(
+        rolledUpUrl as ResolvedUrl, rolledUpCode);
+    const babelFile = assertIsJsDocument(rolledUpDocument).parsedDocument.ast;
+    this._rewriteExportStatements(url, babelFile);
+    this._rewriteImportStatements(url, babelFile);
+    this._deduplicateImportStatements(babelFile);
+    const {code: rewrittenCode} = serialize(babelFile);
+    return {code: rewrittenCode, map: undefined};
   }
 
   getEs6ImportResolutions(document: Document): Map<string, ResolvedUrl> {
