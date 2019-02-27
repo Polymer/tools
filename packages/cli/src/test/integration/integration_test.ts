@@ -69,7 +69,7 @@ async function requestAnimationFrame(page: puppeteer.Page) {
   // tslint:disable-next-line: no-any
   type Window = any;
   await page.waitFor(function(this: Window) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.requestAnimationFrame(resolve);
     });
   });
@@ -104,7 +104,7 @@ suite('integration tests', function() {
   this.timeout(4 * 60 * 1000);
 
   suiteTeardown(async () => {
-    await Promise.all(disposables.map(d => d()));
+    await Promise.all(disposables.map((d) => d()));
     disposables.length = 0;
   });
 
@@ -334,7 +334,7 @@ suite('import.meta support', async () => {
         path.join(tempDir, 'polymer.json'), JSON.stringify(options));
   });
   teardown(async () => {
-    await Promise.all(disposables.map(d => d()));
+    await Promise.all(disposables.map((d) => d()));
     disposables.length = 0;
   });
 
@@ -438,7 +438,7 @@ suite('polymer shop', function() {
     }
     disposables.push(() => browser.close());
     const page = await browser.newPage();
-    page.on('pageerror', e => (error = error || e));
+    page.on('pageerror', (e) => (error = error || e));
     // Evaluate an expression as a string in the browser.
     const evaluate = async (expression: string) => {
       try {
@@ -520,7 +520,7 @@ suite('polymer shop', function() {
       throw new Error(
           `Error encountered in browser page while testing: ${error}`);
     }
-    await Promise.all(disposables.map(d => d()));
+    await Promise.all(disposables.map((d) => d()));
     disposables.length = 0;
   });
 
@@ -597,7 +597,7 @@ suite('polymer shop', function() {
           throw new Error('Failed to load shop\'s polymer.json');
         }
         assert.deepEqual(
-            config.builds.map(b => b.name || 'default').sort(),
+            config.builds.map((b) => b.name || 'default').sort(),
             expectedBuildNames);
       });
 
@@ -683,7 +683,7 @@ suite('polymer shop', function() {
           throw new Error('Failed to load shop\'s polymer.json');
         }
         assert.deepEqual(
-            config.builds.map(b => b.name || 'default').sort(),
+            config.builds.map((b) => b.name || 'default').sort(),
             expectedBuildNames);
       });
 
