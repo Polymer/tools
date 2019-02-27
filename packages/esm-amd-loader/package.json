@@ -11,7 +11,7 @@
   "types": "lib/esm-amd-loader.d.ts",
   "scripts": {
     "build": "npm run clean && tsc && npm run minify && npm run lint",
-    "clean": "rm -rf lib/",
+    "clean": "rimraf -rf lib/",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
     "lint": "tslint -p . --format stylish",
     "minify": "babel-minify lib/esm-amd-loader.js --outFile=lib/esm-amd-loader.min.js",
