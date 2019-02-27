@@ -106,6 +106,9 @@ export interface ProjectBuildOptions {
      * `<!--!` or `<!--#`, when true.
      */
     stripComments?: boolean,
+
+    /** Remove unreachable/unused code when bundling. */
+    treeshake?: boolean,
   };
 
   /** Options for processing HTML. */
