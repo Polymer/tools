@@ -120,6 +120,12 @@ const optionDefinitions = [
     description: 'Create and process sourcemaps for scripts.'
   },
   {
+    name: 'treeshake',
+    type: Boolean,
+    description:
+        'Use Rollup\'s treeshake feature to remove unused code from bundled output.'
+  },
+  {
     name: 'root',
     alias: 'r',
     type: String,
@@ -206,6 +212,7 @@ options.inlineScripts = Boolean(options['inline-scripts']);
 options.inlineCss = Boolean(options['inline-css']);
 options.rewriteUrlsInTemplates = Boolean(options['rewrite-urls-in-templates']);
 options.moduleResolution = options['module-resolution'];
+options.treeshake = Boolean(options['treeshake']);
 
 const {moduleResolution} = options;
 const urlLoader = new FsUrlLoader(projectRoot);

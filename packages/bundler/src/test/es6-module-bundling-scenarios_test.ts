@@ -58,7 +58,7 @@ suite('Es6 Module Bundling', () => {
         C: C,
         B: B
       };
-      export { a as $a, b as $b, c as $c, C, B, A, C as C$1, B as B$1, C as C$2, C as $cDefault };`);
+      export { a as $a, b as $b, c as $c, C, C as C$1, C as C$2, C as $cDefault, B, B as B$1, A };`);
   });
 
   suite('rewriting export specifiers', () => {
@@ -83,7 +83,7 @@ suite('Es6 Module Bundling', () => {
       `,
       'd.js': `
         export * from './b.js';
-      `
+      `,
     });
     const aUrl = analyzer.resolveUrl('a.js')!;
     const bUrl = analyzer.resolveUrl('b.js')!;
@@ -91,8 +91,10 @@ suite('Es6 Module Bundling', () => {
     const dUrl = analyzer.resolveUrl('d.js')!;
 
     test('export specifier is in a bundle', async () => {
-      const bundler =
-          new Bundler({analyzer, strategy: generateSharedDepsMergeStrategy(2)});
+      const bundler = new Bundler({
+        analyzer,
+        strategy: generateSharedDepsMergeStrategy(2),
+      });
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, cUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
@@ -216,8 +218,10 @@ suite('Es6 Module Bundling', () => {
     });
 
     test('shell bundle', async () => {
-      const bundler =
-          new Bundler({analyzer, strategy: generateShellMergeStrategy(bUrl)});
+      const bundler = new Bundler({
+        analyzer,
+        strategy: generateShellMergeStrategy(bUrl),
+      });
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, bUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
@@ -346,10 +350,11 @@ suite('Es6 Module Bundling', () => {
         `,
       });
       const appUrl = analyzer.resolveUrl('app.js')!;
-      const com1Url = analyzer.resolveUrl('component-1.js')!;
       const com2Url = analyzer.resolveUrl('component-2.js')!;
-      const bundler =
-          new Bundler({analyzer, strategy: generateShellMergeStrategy(appUrl)});
+      const bundler = new Bundler({
+        analyzer,
+        strategy: generateShellMergeStrategy(appUrl),
+      });
       const manifest = await bundler.generateManifest([appUrl]);
       assert.deepEqual([...manifest.bundles.keys()], [com2Url, appUrl]);
       const {documents} = await bundler.bundle(manifest);
@@ -368,6 +373,35 @@ suite('Es6 Module Bundling', () => {
         }
 
         export { component1 as $component$1, Component1 };`);
+    });
+
+    test('honor rollup\'s PURE annotations with treeshake', async () => {
+      const analyzer = inMemoryAnalyzer({
+        'app.js': `
+          import * as comp1 from './component-1.js';
+          console.log(comp1.value);
+        `,
+        'component-1.js': `
+          /*@__PURE__*/ unknownGlobalFunction();
+          /*@__PURE__*/ new UnknownGlobalClass();
+
+          export default /*@__PURE__*/ unknownGlobalFunction();
+          export const value = /*@__PURE__*/ unknownGlobalFunction();
+        `,
+      });
+      const appUrl = analyzer.resolveUrl('app.js')!;
+      const bundler = new Bundler({analyzer, treeshake: true});
+      const manifest = await bundler.generateManifest([appUrl]);
+      const {documents} = await bundler.bundle(manifest);
+      assert.deepEqual(documents.get(appUrl)!.content, heredoc`
+        var component1 = /*@__PURE__*/unknownGlobalFunction();
+        const value = /*@__PURE__*/unknownGlobalFunction();
+        var component1$1 = {
+          default: component1,
+          value: value
+        };
+        console.log(value);
+        export { component1$1 as $component$1, component1 as $component$1Default, value };`);
     });
   });
 });

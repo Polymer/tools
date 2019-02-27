@@ -13,9 +13,8 @@
  */
 import traverse, {NodePath} from 'babel-traverse';
 import * as babel from 'babel-types';
-import {ExportDeclaration} from 'babel-types';
 import * as clone from 'clone';
-import {Document, FileRelativeUrl, PackageRelativeUrl, ParsedJavaScriptDocument, ResolvedUrl} from 'polymer-analyzer';
+import {Document, FileRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {Analysis} from 'polymer-analyzer';
 import {rollup} from 'rollup';
 
@@ -73,7 +72,7 @@ export class Es6Rewriter {
       input,
       external,
       onwarn: (warning: string) => {},
-      treeshake: false,
+      treeshake: this.bundler.treeshake,
       plugins: [
         {
           name: 'analyzerPlugin',
@@ -139,28 +138,38 @@ export class Es6Rewriter {
               const newCode = serialize(newAst).code;
               return newCode;
             }
+            return null;
           }
         },
       ],
     });
-    const {code: rolledUpCode} = await rollupBundle.generate({
+    const {output} = await rollupBundle.generate({
       format: 'es',
       freeze: false,
     });
-    // We have to force the extension of the URL to analyze here because
-    // inline es6 module document url is going to end in `.html` and the file
-    // would be incorrectly analyzed as an HTML document.
-    const rolledUpUrl = getFileExtension(url) === '.js' ?
-        url :
-        appendUrlPath(url, '_inline_es6_module.js');
-    const rolledUpDocument = await this.bundler.analyzeContents(
-        rolledUpUrl as ResolvedUrl, rolledUpCode);
-    const babelFile = assertIsJsDocument(rolledUpDocument).parsedDocument.ast;
-    this._rewriteExportStatements(url, babelFile);
-    this._rewriteImportStatements(url, babelFile);
-    this._deduplicateImportStatements(babelFile);
-    const {code: rewrittenCode} = serialize(babelFile);
-    return {code: rewrittenCode, map: undefined};
+
+    if (output.length !== 1) {
+      throw new Error(`Failed to bundle.  Rollup generated ${
+          output.length} chunks or assets.  Expected 1.`);
+    }
+    for (const chunkOrAsset of output) {
+      const rolledUpCode = chunkOrAsset.code || '';
+      // We have to force the extension of the URL to analyze here because
+      // inline es6 module document url is going to end in `.html` and the file
+      // would be incorrectly analyzed as an HTML document.
+      const rolledUpUrl = getFileExtension(url) === '.js' ?
+          url :
+          appendUrlPath(url, '_inline_es6_module.js');
+      const rolledUpDocument = await this.bundler.analyzeContents(
+          rolledUpUrl as ResolvedUrl, rolledUpCode);
+      const babelFile = assertIsJsDocument(rolledUpDocument).parsedDocument.ast;
+      this._rewriteExportStatements(url, babelFile);
+      this._rewriteImportStatements(url, babelFile);
+      this._deduplicateImportStatements(babelFile);
+      const {code: rewrittenCode} = serialize(babelFile);
+      return {code: rewrittenCode, map: undefined};
+    }
+    throw new Error(`Failed to bundle.  Rollup generated no chunks or assets.`);
   }
 
   getEs6ImportResolutions(document: Document): Map<string, ResolvedUrl> {
