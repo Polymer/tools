@@ -59,7 +59,7 @@ async function serve(dirToServe: string, options: ServerOptions = {}) {
     return `http://${address.address}:${address.port}`;
   } else {
     // How you gonna serve without an address?  How is that even a server?  If a
-    // server can't respond to requests, is it *reall* a server?
+    // server can't respond to requests, is it *really* a server?
     throw new Error(`No address returned when starting server. ${startResult}`);
   }
 }
