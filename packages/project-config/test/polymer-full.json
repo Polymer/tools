@@ -23,23 +23,38 @@
         "es2015"
       ],
       "basePath": true,
+      "bundle": {
+        "treeshake": true
+      },
       "js": {
         "compile": {
-          "exclude": ["js/breaks-when-compiled.js", "js/no-compilation-necessary.js"]
+          "exclude": [
+            "js/breaks-when-compiled.js",
+            "js/no-compilation-necessary.js"
+          ]
         },
         "minify": {
-          "exclude": ["js/unminifiable.js", "js/already-minified.js"]
+          "exclude": [
+            "js/unminifiable.js",
+            "js/already-minified.js"
+          ]
         },
         "transformEsModulesToAmd": true
       },
       "html": {
         "minify": {
-          "exclude": ["human-readable-example.html", "weird-ie-comments-issue.html"]
+          "exclude": [
+            "human-readable-example.html",
+            "weird-ie-comments-issue.html"
+          ]
         }
       },
       "css": {
         "minify": {
-          "exclude": ["css/human-readable-example.css", "css/advanced-syntax.css"]
+          "exclude": [
+            "css/human-readable-example.css",
+            "css/advanced-syntax.css"
+          ]
         }
       }
     }

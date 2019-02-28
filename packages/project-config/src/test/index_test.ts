@@ -686,6 +686,7 @@ suite('Project Config', () => {
             swPrecacheConfig: 'sw.conf',
             browserCapabilities: ['es2015'],
             basePath: true,
+            bundle: {treeshake: true},
             html: {
               minify: {
                 exclude: [
