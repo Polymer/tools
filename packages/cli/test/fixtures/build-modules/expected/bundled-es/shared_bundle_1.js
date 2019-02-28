@@ -7,6 +7,10 @@ var mod2$1 = {
   mod2: mod2
 };
 const mod1 = 'mod1';
+sideEffectFunction();
+/*@__PURE__*/
+
+noSideEffectFunction();
 var mod1$1 = {
   mod1: mod1
 };

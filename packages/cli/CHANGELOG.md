@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Added support for the `treeshake` bundle option.
 <!-- Add new, unreleased changes here. -->
 
 ## v1.9.6 [02-07-2019]

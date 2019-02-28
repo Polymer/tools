@@ -32,6 +32,12 @@
     {
       "name": "bundled-inlined-es",
       "bundle": true
+    },
+    {
+      "name": "bundled-inlined-es-treeshake",
+      "bundle": {
+        "treeshake": true
+      }
     }
   ]
 }

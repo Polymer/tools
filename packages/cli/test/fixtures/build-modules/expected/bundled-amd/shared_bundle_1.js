@@ -19,6 +19,10 @@ define(["exports"], function (_exports) {
   _exports.$mod2 = mod2$1;
   const mod1 = 'mod1';
   _exports.mod1 = mod1;
+  sideEffectFunction();
+  /*@__PURE__*/
+
+  noSideEffectFunction();
   var mod1$1 = {
     mod1: mod1
   };
