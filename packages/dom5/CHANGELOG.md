@@ -25,7 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   `prior`, and `ancestors` APIs, which simply iterators now. In addition
   `queryAll` will return an iterator rather than an array.
 - Moved development-only dependencies in package.json to devDependencies.
-<!-- Add new, unreleased changes here. -->
 
 ## [v2.3.0](https://github.com/Polymer/dom5/tree/v2.3.0) (2017-05-03)
 - **Added** `insertAfter()` function

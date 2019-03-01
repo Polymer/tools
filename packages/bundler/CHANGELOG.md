@@ -6,9 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## 4.0.9 - 2019-03-01
 * Upgraded Rollup to version 1.3.0.
 * Added support for `treeshake` option to remove dead JavaScript code when bundling.
-<!-- Add new, unreleased changes here. -->
 
 ## 4.0.8 - 2019-02-12
 * Fixed issue involving absolute paths being rewritten as relative paths when bundled https://github.com/Polymer/tools/issues/3348.

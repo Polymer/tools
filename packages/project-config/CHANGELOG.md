@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
-* Added support for `treeshake` option to remove dead JavaScript code when bundling.
 <!-- Add new, unreleased changes here. -->
+
+## [4.0.3] - 2019-03-01
+* Added support for `treeshake` option to remove dead JavaScript code when bundling.
 
 ## [4.0.2] - 2018-06-28
 * Add `modules` to the browser capabilities of the `uncompiled-bundled` and 
