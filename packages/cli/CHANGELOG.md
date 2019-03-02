@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
-* Added support for `treeshake` option to remove dead JavaScript code when bundling.
 <!-- Add new, unreleased changes here. -->
+
+## v1.9.7 [03-01-2019]
+* Added support for `treeshake` option to remove dead JavaScript code when bundling.
 
 ## v1.9.6 [02-07-2019]
 * Update `bower` library to pass npm audit.

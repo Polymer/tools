@@ -214,7 +214,7 @@ Fixed 4 warnings.
       const cwd = getTempCopy(fixtureDir);
       const forkedProcess =
           child_process.fork(binPath, ['lint', '--watch'], {cwd, silent: true});
-      const reader = new StreamReader(forkedProcess.stdout);
+      const reader = new StreamReader(forkedProcess.stdout!);
       assert.deepEqual(await reader.readUntil(delimiter), '');
       fs.writeFileSync(
           path.join(cwd, 'my-elem.html'),
@@ -249,7 +249,7 @@ Found 1 error. 1 can be automatically fixed with --fix.
       const cwd = getTempCopy(fixtureDir);
       const forkedProcess = child_process.fork(
           binPath, ['lint', '--watch', '--fix'], {cwd, silent: true});
-      const reader = new StreamReader(forkedProcess.stdout);
+      const reader = new StreamReader(forkedProcess.stdout!);
       // The first pass yields no warnings:
       assert.deepEqual(
           await reader.readUntil(delimiter), 'No fixes to apply.\n');

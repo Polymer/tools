@@ -6,8 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Unreleased -->
-* Added support for `treeshake` option to remove dead JavaScript code when bundling.
 <!-- Add new, unreleased changes here. -->
+
+## [3.1.2] - 2019-03-01
+* Added support for `treeshake` option to remove dead JavaScript code when bundling.
 
 ## [3.1.1] - 2018-11-12
 * Fix issue with deadcode removal in babel-minify, by turning it off, as it can be error prone and result in removal of code which should not be removed and cause hard to debug errors. https://github.com/Polymer/tools/issues/724

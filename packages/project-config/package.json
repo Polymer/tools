@@ -1,6 +1,6 @@
 {
   "name": "polymer-project-config",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "reads, validates, and shapes your polymer.json project configuration",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/project-config",
   "repository": "github:Polymer/tools",
