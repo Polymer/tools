@@ -1,10 +1,7 @@
 {
     "extends": "../../tsconfig-base.json",
     "compilerOptions": {
-        "noUnusedLocals": false,
-        "noImplicitThis": false,
-        "strictNullChecks": false,
-        "suppressImplicitAnyIndexErrors": true,
+        "suppressImplicitAnyIndexErrors": true
     },
     "exclude": [
         "node_modules"
