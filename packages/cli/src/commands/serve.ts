@@ -74,6 +74,7 @@ export class ServeCommand implements Command {
       certPath: options['cert'],
       pushManifestPath: options['manifest'],
       proxy: proxyArgs.path && proxyArgs.target && proxyArgs,
+      allowOrigin: options['allow-origin']
     };
 
     logger.debug('serving with options', serverOptions);
