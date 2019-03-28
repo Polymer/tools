@@ -14,4 +14,4 @@ noSideEffectFunction();
 var mod1$1 = {
   mod1: mod1
 };
-export { mod1$1 as $mod1, mod2$1 as $mod2, dep1$1 as $dep1, mod1, mod2, dep1 };
+export { dep1$1 as $dep1, mod1$1 as $mod1, mod2$1 as $mod2, dep1, mod1, mod2 };
