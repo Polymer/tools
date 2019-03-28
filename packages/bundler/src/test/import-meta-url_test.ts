@@ -70,7 +70,7 @@ suite('import.meta.url', () => {
         aUrl: myUrl,
         bDefinedImportMeta: bundledImportMeta$1
       };
-      export { a as $a, b as $b, myUrl as myUrl$1, myUrl as aUrl, myUrl$1 as myUrl, bundledImportMeta$1 as bDefinedImportMeta };`);
+      export { a as $a, b as $b, myUrl as aUrl, bundledImportMeta$1 as bDefinedImportMeta, myUrl$1 as myUrl, myUrl as myUrl$1 };`);
   });
 
   test('multiple corrected import.meta.url values', async () => {
@@ -101,6 +101,6 @@ suite('import.meta.url', () => {
         bUrl: myUrl$1,
         myMeta: myMeta
       };
-      export { a as $a, c as $c, b as $b, myUrl, myUrl as aUrl, myUrl as aUrl$1, myUrl$1 as bUrl, myUrl$1, myMeta, bundledImportMeta$2 as bDefinedImportMeta };`);
+      export { a as $a, b as $b, c as $c, myUrl as aUrl, myUrl as aUrl$1, bundledImportMeta$2 as bDefinedImportMeta, myUrl$1 as bUrl, myMeta, myUrl, myUrl$1 };`);
   });
 });

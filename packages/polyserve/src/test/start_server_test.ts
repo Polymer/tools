@@ -485,7 +485,10 @@ suite('startServer', () => {
           // tslint:disable-next-line: no-any
           () => sinon.createStubInstance(http['Server']) as any as http.Server);
       createServerStub = sinon.stub(http, 'createServer').returns(_stubServer);
-      _stubServer.close = (cb) => cb.call(_stubServer);
+      _stubServer.close = (cb) => {
+        cb.call(_stubServer);
+        return _stubServer;
+      };
     }
 
     function _teardownStubServer() {

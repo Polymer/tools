@@ -84,7 +84,7 @@ suite('Es6ModuleBundler', () => {
         manifest.getBundleForFile(multipleInlineModulesUrl)!;
     const sharedBundle = {
       url: sharedBundleUrl,
-      bundle: manifest.bundles.get(sharedBundleUrl)!
+      bundle: manifest.bundles.get(sharedBundleUrl)!,
     };
     assert.deepEqual(manifest.getBundleForFile(abcUrl)!, sharedBundle);
     assert.deepEqual(
@@ -115,12 +115,14 @@ suite('Es6ModuleBundler', () => {
         Y: Y,
         Z: Z
       };
-      export { abc as $abc, upcase$1 as $upcase, xyz as $xyz, A, B, C, upcase, X, Y, Z };`);
+      export { abc as $abc, upcase$1 as $upcase, xyz as $xyz, A, B, C, X, Y, Z, upcase };`);
   });
 
   test('resolving name conflict in a shared bundle', async () => {
-    const bundler = new Bundler(
-        {analyzer, strategy: (bundles: Bundle[]) => [mergeBundles(bundles)]});
+    const bundler = new Bundler({
+      analyzer,
+      strategy: (bundles: Bundle[]) => [mergeBundles(bundles)],
+    });
     const manifest = await bundler.generateManifest([xyzUrl, omgzUrl]);
     const sharedBundleDocument =
         await bundle(bundler, manifest, sharedBundleUrl);
@@ -144,6 +146,6 @@ suite('Es6ModuleBundler', () => {
         Y: Y,
         Z: Z$1
       };
-      export { omgz as $omgz, upcase$1 as $upcase, xyz as $xyz, Z, upcase, X, Y, Z$1 };`);
+      export { omgz as $omgz, upcase$1 as $upcase, xyz as $xyz, X, Y, Z, Z$1, upcase };`);
   });
 });
