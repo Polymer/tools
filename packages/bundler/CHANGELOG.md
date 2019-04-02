@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
-* Updated packages and unpinned `babel-preset-minify` from an alpha to use latest version `^0.5.0`.
 <!-- Add new, unreleased changes here. -->
 
 ## 4.0.9 - 2019-03-01
