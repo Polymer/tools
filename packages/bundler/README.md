@@ -111,8 +111,8 @@ polymer-bundler as a library has two exported function.
 - `rewriteUrlsInTemplates`: Fix URLs found inside `<style>` tags and certain element attributes (`action`, `assetpath`, `href`, `src`, and `style`) when inside `<template>` tags.  This may be necessary to bundle some Polymer 1.x projects with components that ues relative image URLs in their styles, as Polymer 1.x did not use the `assetpath` of `<dom-module>` to resolve URLs in styles like Polymer 2.x does.  Defaults to `false`.
 - `sourcemaps`: Honor (or create) sourcemaps for inline scripts.  Defaults to `false`.
 - `stripComments`: Remove all HTML comments, except for `@license`, which are merely de-duplicated, server-side include directives like `<!--# ... -->`, and other important comments of the form `<!--! ... -->`.  Defaults to `false`.
-- `strategy`: A function that takes an array of bundles and returns an array of bundles.  There are a strategy factory functions available in [bundle-manifest](https://github.com/Polymer/polymer-bundler/blob/master/src/bundle-manifest.ts).
-- `urlMapper`: A function that takes bundles and returns a Map of URLs to bundles.  This determines the location of generated bundles.  There are URL mapper factory functions available in [bundle-manifest](https://github.com/Polymer/polymer-bundler/blob/master/src/bundle-manifest.ts)
+- `strategy`: A function that takes an array of bundles and returns an array of bundles.  There are a strategy factory functions available in [bundle-manifest](https://github.com/Polymer/tools/blob/master/packages/bundler/src/bundle-manifest.ts).
+- `urlMapper`: A function that takes bundles and returns a Map of URLs to bundles.  This determines the location of generated bundles.  There are URL mapper factory functions available in [bundle-manifest](https://github.com/Polymer/tools/blob/master/packages/bundler/src/bundle-manifest.ts)
 
 `.generateManifest()` takes a collection of entrypoint URLs and promises a `BundleManifest` which describes all the bundles it will produce.
 
