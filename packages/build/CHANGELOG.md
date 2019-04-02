@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- Unreleased -->
-* Disabled `babel-plugin-minify-builtins` and `babel-plugin-minify-remove-undefined` due to errors in `babel-preset-minify`.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.1.3] - 2019-04-02
+* Disabled `babel-plugin-minify-builtins` and `babel-plugin-minify-remove-undefined` due to errors in `babel-preset-minify`.
 
 ## [3.1.2] - 2019-03-01
 * Added support for `treeshake` option to remove dead JavaScript code when bundling.

@@ -6,9 +6,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## v1.9.8 [04-02-2019]
 * Updated `polymer-build` to latest versions, disabling babel minify features
   which contained bugs causing builds to break when minifying Polymer 3.2.0.
-<!-- Add new, unreleased changes here. -->
 
 ## v1.9.7 [03-01-2019]
 * Added support for `treeshake` option to remove dead JavaScript code when bundling.

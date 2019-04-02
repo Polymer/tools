@@ -1,6 +1,6 @@
 {
   "name": "polymer-cli",
-  "version": "1.9.7",
+  "version": "1.9.8",
   "description": "A commandline tool for Polymer projects",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/cli",
   "repository": "github:Polymer/tools",
@@ -65,7 +65,7 @@
     "mz": "^2.6.0",
     "plylog": "^1.0.0",
     "polymer-analyzer": "^3.2.2",
-    "polymer-build": "^3.1.2",
+    "polymer-build": "^3.1.3",
     "polymer-bundler": "^4.0.9",
     "polymer-linter": "^3.0.0",
     "polymer-project-config": "^4.0.3",
