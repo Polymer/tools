@@ -83,13 +83,9 @@ export class Github {
     this._token = opts.githubToken || Github.tokenFromFile('token');
     this._owner = opts.owner;
     this._repo = opts.repo;
-    this._github = opts.githubApi || new GitHubApi();
-    if (this._token != null) {
-      this._github.authenticate({
-        type: 'oauth',
-        token: this._token,
-      });
-    }
+    this._github = opts.githubApi ||
+        (this._token ? new GitHubApi({auth: `token ${this._token}`}) :
+                       new GitHubApi());
     this._request = opts.requestApi || request;
   }
 

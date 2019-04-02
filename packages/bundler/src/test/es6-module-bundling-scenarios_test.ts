@@ -58,7 +58,7 @@ suite('Es6 Module Bundling', () => {
         C: C,
         B: B
       };
-      export { a as $a, b as $b, c as $c, C, C as C$1, C as C$2, C as $cDefault, B, B as B$1, A };`);
+      export { a as $a, b as $b, c as $c, C as $cDefault, A, B, B as B$1, C, C as C$1, C as C$2 };`);
   });
 
   suite('rewriting export specifiers', () => {
@@ -180,7 +180,7 @@ suite('Es6 Module Bundling', () => {
           honey: honey,
           beeSea: beeSea
         };
-        export { b$1 as $b, b as $bDefault, honey, beeSea };`);
+        export { b$1 as $b, b as $bDefault, beeSea, honey };`);
       assert.deepEqual(documents.get(cUrl)!.content, heredoc`
         var c = sea = '🌊';
         const boat = '⛵️';
@@ -205,7 +205,7 @@ suite('Es6 Module Bundling', () => {
           honey: honey,
           beeSea: beeSea
         };
-        export { b$1 as $b, b as $bDefault, honey, beeSea };`);
+        export { b$1 as $b, b as $bDefault, beeSea, honey };`);
       assert.deepEqual(documents.get(dUrl)!.content, heredoc`
         import { boat } from './shared_bundle_1.js';
         var d = deer = '🦌';
@@ -243,7 +243,7 @@ suite('Es6 Module Bundling', () => {
           honey: honey,
           beeSea: beeSea
         };
-        export { b$1 as $b, c as $c, b as $bDefault, honey, beeSea, sea$1 as $cDefault, boat };`);
+        export { b$1 as $b, b as $bDefault, c as $c, sea$1 as $cDefault, beeSea, boat, honey };`);
     });
   });
 

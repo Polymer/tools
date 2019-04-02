@@ -98,6 +98,11 @@ const babelSyntaxPlugins = [
 ];
 
 const babelPresetMinify = require('babel-preset-minify')({}, {
+
+  // Disable this or you get `{ err: 'Couldn\'t find intersection' }` now.
+  // https://github.com/babel/minify/issues/904
+  builtIns: false,
+
   // Disable the minify-constant-folding plugin because it has a bug relating
   // to invalid substitution of constant values into export specifiers:
   // https://github.com/babel/minify/issues/820
@@ -109,6 +114,10 @@ const babelPresetMinify = require('babel-preset-minify')({}, {
   // Prevent removal of things that babel thinks are unreachable, but sometimes
   // gets wrong: https://github.com/Polymer/tools/issues/724
   deadcode: false,
+
+  // Prevents this `isPure` on null problem from blowing up minification.
+  // https://github.com/babel/minify/issues/790
+  removeUndefined: false,
 
   // Disable the simplify plugin because it can eat some statements preceeding
   // loops. https://github.com/babel/minify/issues/824

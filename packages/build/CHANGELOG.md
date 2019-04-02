@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- Unreleased -->
+* Disabled `babel-plugin-minify-builtins` and `babel-plugin-minify-remove-undefined` due to errors in `babel-preset-minify`.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.1.2] - 2019-03-01

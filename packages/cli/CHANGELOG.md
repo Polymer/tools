@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
+* Updated `polymer-build` to latest versions, disabling babel minify features
+  which contained bugs causing builds to break when minifying Polymer 3.2.0.
 <!-- Add new, unreleased changes here. -->
 
 ## v1.9.7 [03-01-2019]
