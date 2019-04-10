@@ -48,7 +48,7 @@
     "@types/vinyl": "^2.0.0",
     "@types/vinyl-fs": "0.0.28",
     "@types/yeoman-generator": "^2.0.3",
-    "bower": "^1.8.2",
+    "bower": "^1.8.8",
     "bower-json": "^0.8.1",
     "bower-logger": "^0.2.2",
     "chalk": "^1.1.3",
