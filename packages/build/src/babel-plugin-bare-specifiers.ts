@@ -14,7 +14,7 @@
 
 import dynamicImportSyntax from '@babel/plugin-syntax-dynamic-import';
 import {NodePath} from '@babel/traverse';
-import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration} from 'babel-types';
+import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration, Program} from 'babel-types';
 import {resolve} from 'polymer-analyzer/lib/javascript/resolve-specifier-node';
 
 const isPathSpecifier = (s: string) => /^\.{0,2}\//.test(s);
