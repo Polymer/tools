@@ -201,6 +201,19 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     // Minify last, so push first.
     presets.push(babelPresetMinify);
   }
+  if (options.moduleResolution === 'node') {
+    if (!options.filePath) {
+      throw new Error(
+          'Cannot perform node module resolution without filePath.');
+    }
+    doBabelTransform = true;
+    plugins.push(resolveBareSpecifiers(
+        options.filePath,
+        !!options.isComponentRequest,
+        options.packageName,
+        options.componentDir,
+        options.rootDir));
+  }
   if (options.compile === true || options.compile === 'es5') {
     doBabelTransform = true;
     plugins.push(...babelTransformEs2015);
@@ -219,19 +232,6 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
   } else if (options.compile === 'es2017') {
     doBabelTransform = true;
     plugins.push(...babelTransformEs2018);
-  }
-  if (options.moduleResolution === 'node') {
-    if (!options.filePath) {
-      throw new Error(
-          'Cannot perform node module resolution without filePath.');
-    }
-    doBabelTransform = true;
-    plugins.push(resolveBareSpecifiers(
-        options.filePath,
-        !!options.isComponentRequest,
-        options.packageName,
-        options.componentDir,
-        options.rootDir));
   }
 
   // When the AMD option is "auto", these options will change based on whether
