@@ -14,7 +14,7 @@
 
 import dynamicImportSyntax from '@babel/plugin-syntax-dynamic-import';
 import {NodePath} from '@babel/traverse';
-import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration} from 'babel-types';
+import {CallExpression, ExportAllDeclaration, ExportNamedDeclaration, ImportDeclaration, Program} from 'babel-types';
 import {resolve} from 'polymer-analyzer/lib/javascript/resolve-specifier-node';
 
 const isPathSpecifier = (s: string) => /^\.{0,2}\//.test(s);
@@ -35,23 +35,26 @@ export const resolveBareSpecifiers = (
   inherits: dynamicImportSyntax,
 
   visitor: {
-    CallExpression(path: NodePath<CallExpression>) {
-      const node = path.node;
-      if (node.callee.type as string === 'Import') {
-        const specifierArg = node.arguments[0];
-        if (specifierArg.type !== 'StringLiteral') {
-          // Should never happen
-          return;
+    Program(path: NodePath<Program>) {
+      path.traverse({
+        CallExpression(path: NodePath<CallExpression>) {
+          if (path.node.callee.type as string === 'Import') {
+            const specifierArg = path.node.arguments[0];
+            if (specifierArg.type !== 'StringLiteral') {
+              // Should never happen
+              return;
+            }
+            const specifier = specifierArg.value;
+            specifierArg.value = maybeResolve(
+              specifier,
+              filePath,
+              isComponentRequest,
+              packageName,
+              componentDir,
+              rootDir);
+          }
         }
-        const specifier = specifierArg.value;
-        specifierArg.value = maybeResolve(
-            specifier,
-            filePath,
-            isComponentRequest,
-            packageName,
-            componentDir,
-            rootDir);
-      }
+      });
     },
     'ImportDeclaration|ExportNamedDeclaration|ExportAllDeclaration'(
         path: NodePath<HasSpecifier>) {
