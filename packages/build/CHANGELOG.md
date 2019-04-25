@@ -5,7 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Fixed an issue where bare specifiers were not rewritten for dynamic imports after transforming them to AMD require statements.
 <!-- Add new, unreleased changes here. -->
 
 ## [3.1.3] - 2019-04-02
