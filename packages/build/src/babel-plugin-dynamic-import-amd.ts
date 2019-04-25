@@ -71,9 +71,9 @@ export const dynamicImportAmd = {
           // assume is running next will rewrite `require` from a function to a
           // module object with the function at `default`.
           importPath.replaceWith(ast`(
-          new Promise((res, rej) => ${requireId}.default([${
+            new Promise((res, rej) => ${requireId}.default([${
               specifier}], res, rej))
-        )`);
+          )`);
         }
       },
     },
