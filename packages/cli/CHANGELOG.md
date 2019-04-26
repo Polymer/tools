@@ -158,8 +158,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     hence when to automatically transform modules to AMD. We now require support
     for dynamic import and import.meta.
 
-<!-- Add new, unreleased items here. -->
-
 ## v1.7.0-pre.13 [04-19-2018]
 * `init`
   * Added the `polymer-3-starter-kit` template; a (prerelease) version of
