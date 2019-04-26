@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## v1.9.9 [04-26-2019]
+* Updated `polymer-build` to latest version, fixing issue where NPM specifiers
+  were not converted to paths when AMD transform was applied to non-bundled
+  output.
+
 ## v1.9.8 [04-02-2019]
 * Updated `polymer-build` to latest versions, disabling babel minify features
   which contained bugs causing builds to break when minifying Polymer 3.2.0.
@@ -157,8 +162,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   * Stricter requirements for determining when a browser supports modules, and
     hence when to automatically transform modules to AMD. We now require support
     for dynamic import and import.meta.
-
-<!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.13 [04-19-2018]
 * `init`

@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Fixed an issue where bare specifiers were not rewritten for dynamic imports after transforming them to AMD require statements.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [3.1.4] - 2019-04-26
+* Fixed an issue where bare specifiers were not rewritten for dynamic imports after transforming them to AMD require statements.
 
 ## [3.1.3] - 2019-04-02
 * Disabled `babel-plugin-minify-builtins` and `babel-plugin-minify-remove-undefined` due to errors in `babel-preset-minify`.
