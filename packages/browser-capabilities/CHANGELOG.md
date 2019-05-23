@@ -1,6 +1,6 @@
 # Change Log
 
-<!-- ## Unreleased -->
+## Unreleased
 <!-- Add new, unreleased changes here. -->
 * Upated Firefox 67 support for modules (specifically because of dynamic import)
 
