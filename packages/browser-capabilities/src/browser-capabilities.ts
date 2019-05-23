@@ -120,7 +120,7 @@ const browserPredicates: {
     // Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1409570
     push: since(63),
     serviceworker: since(44),
-    modules: () => false,
+    modules: since(67),
   },
 };
 
