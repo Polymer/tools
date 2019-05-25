@@ -283,7 +283,7 @@ export function jsTransform(js: string, options: JsTransformOptions): string {
     }
 
     if (doBabelTransform) {
-      const result = babelCore.transformFromAst(ast, js, {presets, plugins});
+      const result = babelCore.transformFromAst(ast, js, {presets, plugins, retainLines: true});
       if (result.code === undefined) {
         throw new Error(
             'Babel transform failed: resulting code was undefined.');
