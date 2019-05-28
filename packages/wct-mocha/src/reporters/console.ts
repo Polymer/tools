@@ -9,6 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 import * as util from '../util.js';
+import {createStatsCollector} from './stats-collector.js';
 
 // We capture console events when running tests; so make sure we have a
 // reference to the original one.
@@ -81,6 +82,12 @@ export default class Console {
    * @param runner The runner that is being reported on.
    */
   constructor(runner: Mocha.IRunner) {
+    // Mocha 6 runner doesn't have stats at this point so we need to use
+    // the stats-collector from Mocha to add them before calling the base
+    // reporter.
+    if (!runner.stats) {
+      createStatsCollector(runner as unknown as Mocha.Runner);
+    }
     Mocha.reporters.Base.call(this, runner);
 
     runner.on(

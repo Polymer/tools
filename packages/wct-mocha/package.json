@@ -33,6 +33,7 @@
   "repository": "github:Polymer/tools",
   "dependencies": {},
   "devDependencies": {
+    "@types/mocha": "^5.2.6",
     "@types/socket.io": "^1.4.36"
   },
   "peerDependencies": {
