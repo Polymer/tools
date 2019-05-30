@@ -1,7 +1,9 @@
 # Change Log
 
-## Unreleased
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [1.1.4] - 2019-05-30
 * Updated Firefox 67 support for modules (specifically because of dynamic import)
 
 ## [1.1.3] - 2018-11-15
