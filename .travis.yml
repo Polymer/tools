@@ -42,14 +42,14 @@ matrix:
   - node_js: '8'
     addons:
       chrome: stable
-      firefox: 66
+      firefox: '66.0'
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
 
   - node_js: '10'
     addons:
       chrome: stable
-      firefox: 66
+      firefox: '66.0'
     env:
     - TEST_COMMAND="xvfb-run npm run test:integration"
 
