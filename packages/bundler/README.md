@@ -63,7 +63,7 @@ will inline the HTML Imports of `target.html` and print the result to `build.htm
 
 The command
 
-    polymer-bundler -p "path/to/target/" /target.html
+    polymer-bundler -r "path/to/target/" /target.html
 
 will inline the HTML Imports of `target.html`, treat `path/to/target/` as the webroot of target.html, and make all URLs absolute to the provided webroot.
 
