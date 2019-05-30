@@ -14,7 +14,7 @@ module.exports = {
         'baseURL': 'https://selenium-release.storage.googleapis.com'
       },
       'firefox': {
-        'version': process.platform === 'win32' ? '0.20.1' : '0.20.1',
+        'version': process.platform === 'win32' ? '0.20.1' : '0.24.0',
         'arch': process.arch,
         'baseURL': 'https://github.com/mozilla/geckodriver/releases/download'
       },
