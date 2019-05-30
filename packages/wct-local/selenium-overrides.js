@@ -21,4 +21,4 @@ module.exports = {
       'edge': {'version': '17134'}
     }
   }
-}
+};
