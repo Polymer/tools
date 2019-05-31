@@ -45,7 +45,7 @@ suite('Es6 Module Bundling', () => {
       const C = 'c';
       var c = {
         C: C,
-        default: C
+        'default': C
       };
       const B = 'b';
       var b = {
@@ -176,7 +176,7 @@ suite('Es6 Module Bundling', () => {
         const honey = '🍯';
         const beeSea = bee + sea;
         var b$1 = {
-          default: b,
+          'default': b,
           honey: honey,
           beeSea: beeSea
         };
@@ -185,7 +185,7 @@ suite('Es6 Module Bundling', () => {
         var c = sea = '🌊';
         const boat = '⛵️';
         var c$1 = {
-          default: c,
+          'default': c,
           boat: boat
         };
         export { c$1 as $c, c as $cDefault, boat };`);
@@ -201,7 +201,7 @@ suite('Es6 Module Bundling', () => {
         const honey = '🍯';
         const beeSea = bee + sea;
         var b$1 = {
-          default: b,
+          'default': b,
           honey: honey,
           beeSea: beeSea
         };
@@ -211,7 +211,7 @@ suite('Es6 Module Bundling', () => {
         var d = deer = '🦌';
         const deerBoat = deer + boat;
         var d$1 = {
-          default: d,
+          'default': d,
           deerBoat: deerBoat
         };
         export { d$1 as $d, d as $dDefault, deerBoat };`);
@@ -232,14 +232,14 @@ suite('Es6 Module Bundling', () => {
         var sea$1 = sea = '🌊';
         const boat = '⛵️';
         var c = {
-          default: sea$1,
+          'default': sea$1,
           boat: boat
         };
         var b = bee = '🐝';
         const honey = '🍯';
         const beeSea = bee + sea$1;
         var b$1 = {
-          default: b,
+          'default': b,
           honey: honey,
           beeSea: beeSea
         };
@@ -397,7 +397,7 @@ suite('Es6 Module Bundling', () => {
         var component1 = /*@__PURE__*/unknownGlobalFunction();
         const value = /*@__PURE__*/unknownGlobalFunction();
         var component1$1 = {
-          default: component1,
+          'default': component1,
           value: value
         };
         console.log(value);
