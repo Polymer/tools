@@ -377,7 +377,7 @@ function transformToGoogStyle(tsDoc: ts.Document, rootDir: string) {
  * Return all local identifiers imported by the given typings.
  */
 function getImportedIdentifiers(tsDoc: ts.Document): Set<string> {
-  const identifiers = new Set();
+  const identifiers = new Set<string>();
   for (const member of tsDoc.members) {
     if (member.kind === 'import') {
       for (const {identifier, alias} of member.identifiers) {
