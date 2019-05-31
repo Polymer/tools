@@ -81,7 +81,7 @@
     "shady-css-parser": "^0.1.0",
     "stable": "^0.1.6",
     "strip-indent": "^2.0.0",
-    "vscode-uri": "^1.0.1",
+    "vscode-uri": "=1.0.6",
     "whatwg-url": "^6.4.0"
   },
   "engines": {

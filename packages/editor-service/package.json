@@ -46,7 +46,7 @@
     "shady-css-parser": "^0.1.0",
     "split": "^1.0.0",
     "vscode-languageserver": "^4.1.1",
-    "vscode-uri": "^1.0.0",
+    "vscode-uri": "=1.0.6",
     "winston-transport": "^4.2.0"
   },
   "engines": {
