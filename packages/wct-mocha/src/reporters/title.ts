@@ -9,6 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 import * as util from '../util.js';
+import {createStatsCollector} from './stats-collector.js';
 
 const ARC_OFFSET = 0;  // start at the right.
 const ARC_WIDTH = 6;
@@ -21,6 +22,12 @@ const ARC_WIDTH = 6;
  */
 export default class Title {
   constructor(runner: Mocha.IRunner) {
+    // Mocha 6 runner doesn't have stats at this point so we need to use
+    // the stats-collector from Mocha to add them before calling the base
+    // reporter.
+    if (!runner.stats) {
+      createStatsCollector(runner as unknown as Mocha.Runner);
+    }
     Mocha.reporters.Base.call(this, runner);
 
     runner.on('test end', this.report.bind(this));
