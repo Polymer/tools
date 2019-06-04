@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [3.2.3] - 2019-06-04
+* Fix "Scheme is missing" errors from `vscode-uri` dependency which was broken
+  from a bad patch release in
+  https://github.com/microsoft/vscode-uri/commit/7f15d244457fd4e09c88264c676dc915beffb634
+
 ## [3.2.2] - 2019-01-10
 * Removed non-essential files from published package, such as tests.
 
