@@ -2,6 +2,8 @@ sudo: required
 dist: trusty
 language: node_js
 
+jdk:
+  - oraclejdk10
 env:
   global:
   - secure: IbrybaUaJDiwNh8VodFfTIAdSw2Nl4DGRh2oDIO2vL8SPgGilwxY0go5DWrxAG0aP+YIXFkK+SpblFppQqqxnAoLVYmd7kFSJoOZraNqmcJqUYSzrHrWArmuiGzY8gMgOWTsnbzVVNRldN8tpoSwpQB/+YhCtbYb9eqvw+u5Izk=
@@ -26,6 +28,7 @@ install:
 - npm run build
 
 script:
+- java -version
 - $TEST_COMMAND
 
 matrix:
@@ -44,24 +47,14 @@ matrix:
       chrome: stable
       firefox: '66.0'
     env:
-    - JDK="OpenJDK 10"
     - TEST_COMMAND="xvfb-run npm run test:integration"
-    install:
-    - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
-    - . ./install-jdk.sh -F 10 -L GPL
-    - java -version
 
   - node_js: '10'
     addons:
       chrome: stable
       firefox: '66.0'
     env:
-    - JDK="OpenJDK 10"
     - TEST_COMMAND="xvfb-run npm run test:integration"
-    install:
-    - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
-    - . ./install-jdk.sh -F 10 -L GPL
-    - java -version
 
   - node_js: '10'
     addons:
