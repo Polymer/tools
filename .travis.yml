@@ -1,8 +1,6 @@
 sudo: required
 dist: trusty
 language: node_js
-before_install:
-  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
 
 env:
   global:
@@ -22,7 +20,6 @@ cache:
   - "$HOME/.npm"
 
 install:
-- JDK='OpenJDK 10' . ./install-jdk.sh -F 10 -L GPL
 - npm i -g npm@latest
 - npm ci
 - npm run bootstrap
@@ -47,14 +44,24 @@ matrix:
       chrome: stable
       firefox: '66.0'
     env:
+    - JDK="OpenJDK 10"
     - TEST_COMMAND="xvfb-run npm run test:integration"
+    install:
+    - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+    - . ./install-jdk.sh -F 10 -L GPL
+    - java -version
 
   - node_js: '10'
     addons:
       chrome: stable
       firefox: '66.0'
     env:
+    - JDK="OpenJDK 10"
     - TEST_COMMAND="xvfb-run npm run test:integration"
+    install:
+    - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+    - . ./install-jdk.sh -F 10 -L GPL
+    - java -version
 
   - node_js: '10'
     addons:
