@@ -2,8 +2,7 @@ sudo: required
 dist: trusty
 language: node_js
 
-jdk:
-  - oraclejdk10
+jdk: oraclejdk11
 env:
   global:
   - secure: IbrybaUaJDiwNh8VodFfTIAdSw2Nl4DGRh2oDIO2vL8SPgGilwxY0go5DWrxAG0aP+YIXFkK+SpblFppQqqxnAoLVYmd7kFSJoOZraNqmcJqUYSzrHrWArmuiGzY8gMgOWTsnbzVVNRldN8tpoSwpQB/+YhCtbYb9eqvw+u5Izk=
