@@ -1,6 +1,8 @@
 sudo: required
 dist: trusty
 language: node_js
+before_install:
+  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
 
 env:
   global:
@@ -20,6 +22,7 @@ cache:
   - "$HOME/.npm"
 
 install:
+- ./install-jdk.sh -F 10 -L BCL
 - npm i -g npm@latest
 - npm ci
 - npm run bootstrap
