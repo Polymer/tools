@@ -1,3 +1,7 @@
+language: java
+env:
+  - NODE_VERSION=12.4.0
+
 sudo: required
 dist: trusty
 language: node_js
@@ -21,13 +25,15 @@ cache:
   - "$HOME/.npm"
 
 install:
+- java -version
+- nvm use $NODE_VERSION
+- node --version
 - npm i -g npm@latest
 - npm ci
 - npm run bootstrap
 - npm run build
 
 script:
-- java -version
 - $TEST_COMMAND
 
 matrix:
