@@ -1,14 +1,12 @@
 language: java
-env:
-  - NODE_VERSION=12.4.0
 
 sudo: required
 dist: trusty
-language: node_js
 
 jdk: oraclejdk11
 env:
   global:
+  - NODE_VERSION=12.4.0
   - secure: IbrybaUaJDiwNh8VodFfTIAdSw2Nl4DGRh2oDIO2vL8SPgGilwxY0go5DWrxAG0aP+YIXFkK+SpblFppQqqxnAoLVYmd7kFSJoOZraNqmcJqUYSzrHrWArmuiGzY8gMgOWTsnbzVVNRldN8tpoSwpQB/+YhCtbYb9eqvw+u5Izk=
   - secure: grvHX6c0ReQwRsuQZferI+uyGsKlubujURKuJB8coNdA9lgZcvf+nmCkNBpSML83hSjQkJUTt8XnucNNgL/1VxUhgy0O/wkTUEmcDAU1b80As8NJkbreJcc3HFASA68wou4HoJsFmJV2cpBYoAJJSX+HyT6mYd6pBh09tPfOeBg=
 
