@@ -22,7 +22,7 @@ cache:
   - "$HOME/.npm"
 
 install:
-- . ./install-jdk.sh -F 10 -L BCL
+- JDK='OpenJDK 10' . ./install-jdk.sh -F 10 -L GPL
 - npm i -g npm@latest
 - npm ci
 - npm run bootstrap
