@@ -1,7 +1,7 @@
 module.exports = {
   'selenium-overrides': {
     'baseURL': 'https://selenium-release.storage.googleapis.com',
-    'version': '3.12.0',
+    'version': '3.141.59',
     'drivers': {
       'chrome': {
         'version': '2.43',
