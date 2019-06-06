@@ -1,6 +1,6 @@
 {
   "name": "polymer-cli",
-  "version": "1.9.9",
+  "version": "1.9.10",
   "description": "A commandline tool for Polymer projects",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/cli",
   "repository": "github:Polymer/tools",
