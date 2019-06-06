@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## v1.9.10 [06-05-2019]
+* Updated Polymer 3.x application/element templates to use Mocha 6+ and updated
+  version of `wct-mocha`.
+* Updated version of `web-component-tester` to support Java 10+. 
+
 ## v1.9.9 [04-26-2019]
 * Updated `polymer-build` to latest version, fixing issue where NPM specifiers
   were not converted to paths when AMD transform was applied to non-bundled

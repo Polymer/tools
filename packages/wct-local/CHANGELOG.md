@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-- Updated selenium version to 3.141.59 to support latest JDK versions.
+<!-- ## Unreleased -->
 <!-- Add unreleased changes here. -->
+
+## [v2.1.4] - 2019-06-05
+- Updated selenium version to 3.141.59 to support latest JDK versions.
 
 ## [v2.1.3] - 2018-10-24
 - Updated postinstall.js script to specify latest geckodriver to support Firefox 63.
