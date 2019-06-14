@@ -3,6 +3,14 @@
     "target": "es6",
     "module": "commonjs",
     "moduleResolution": "node",
+    "types": [
+        "chai",
+        "chai-as-promised",
+        "chai-subset",
+        "mocha",
+        "node",
+        "sinon-chai"
+    ],
 
     "strict": true,
     "noUnusedLocals": true,
