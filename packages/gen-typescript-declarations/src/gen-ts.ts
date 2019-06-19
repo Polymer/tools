@@ -1053,6 +1053,9 @@ class TypeGenerator {
     if (this.forceResolvable.has(identifier)) {
       return true;
     }
+    if (this.excludeIdentifiers.has(identifier)) {
+      return false;
+    }
     const resolved =
         resolveImportExportFeature(fromFeature, identifier, this.analyzerDoc);
     return resolved !== undefined && resolved.feature !== undefined &&
