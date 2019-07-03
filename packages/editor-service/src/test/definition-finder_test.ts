@@ -21,9 +21,7 @@ import {createTestEnvironment} from './util';
 
 const fixtureDir = path.join(__dirname, '..', '..', 'src', 'test', 'static');
 
-// TODO(https://github.com/Polymer/tools/issues/170): these tests are slightly
-//     flaky, skip for now.
-suite.skip('DefinitionFinder', function() {
+suite('DefinitionFinder', function() {
   const indexFile = path.join('editor-service', 'index.html');
   const tagPosition = {line: 7, column: 9};
   const localAttributePosition = {line: 7, column: 31};
