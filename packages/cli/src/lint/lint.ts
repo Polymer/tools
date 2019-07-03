@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import * as chokidar from 'chokidar';
 import * as fs from 'mz/fs';
 import * as path from 'path';
