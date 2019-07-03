@@ -15,24 +15,23 @@ import * as sinon from 'sinon';
 import {PolymerCli} from '../../../polymer-cli';
 
 suite('serve', () => {
-
   suite('--npm and --component-dir', () => {
-
-    let sandbox: sinon.SinonSandbox;
     let startServersStub: sinon.SinonStub;
     let getServerUrlsStub: sinon.SinonStub;
 
     setup(() => {
-      sandbox = sinon.sandbox.create();
-
-      startServersStub =
-          sandbox.stub(polyserve, 'startServers').returns(Promise.resolve());
+      startServersStub = sinon
+                             .stub(polyserve, 'startServers')
+                             // tslint:disable-next-line: no-any
+                             .returns(Promise.resolve() as any);
       startServersStub.returns({
         kind: 'mainline',
       });
 
-      getServerUrlsStub =
-          sandbox.stub(polyserve, 'getServerUrls').returns(Promise.resolve());
+      getServerUrlsStub = sinon
+                              .stub(polyserve, 'getServerUrls')
+                              // tslint:disable-next-line: no-any
+                              .returns(Promise.resolve() as any);
       getServerUrlsStub.returns({
         serverUrl: 'http://applications.example.com/',
         componentUrl: 'http://components.example.com/',
@@ -40,7 +39,7 @@ suite('serve', () => {
     });
 
     teardown(() => {
-      sandbox.restore();
+      sinon.restore();
     });
 
     test(
@@ -83,7 +82,5 @@ suite('serve', () => {
       const serverOptions = startServersStub.args[0][0];
       assert.propertyVal(serverOptions, 'moduleResolution', 'node');
     });
-
   });
-
 });

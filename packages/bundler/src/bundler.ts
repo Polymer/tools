@@ -55,6 +55,9 @@ export interface Options {
   // Bundle strategy used to construct the output bundles.
   strategy?: BundleStrategy;
 
+  // Use Rollup's treeshake feature
+  treeshake?: boolean;
+
   // Bundle URL mapper function that produces URLs for the generated bundles.
   urlMapper?: BundleUrlMapper;
 }
@@ -73,6 +76,7 @@ export class Bundler {
   sourcemaps: boolean;
   stripComments: boolean;
   strategy: BundleStrategy;
+  treeshake: boolean;
   urlMapper: BundleUrlMapper;
 
   private _overlayUrlLoader: InMemoryOverlayUrlLoader;
@@ -93,7 +97,10 @@ export class Bundler {
       this.analyzer = new Analyzer({urlLoader: this._overlayUrlLoader});
     }
 
-    this.excludes = Array.isArray(opts.excludes) ? opts.excludes : [];
+    this.excludes = Array.isArray(opts.excludes) ?
+        opts.excludes.map((url) => this.analyzer.resolveUrl(url)!)
+            .filter(Boolean) :
+        [];
     this.stripComments = Boolean(opts.stripComments);
     this.enableCssInlining =
         opts.inlineCss === undefined ? true : opts.inlineCss;
@@ -103,6 +110,7 @@ export class Bundler {
     this.sourcemaps = Boolean(opts.sourcemaps);
     this.strategy =
         opts.strategy || bundleManifestLib.generateSharedDepsMergeStrategy();
+    this.treeshake = Boolean(opts.treeshake);
     this.urlMapper = opts.urlMapper ||
         bundleManifestLib.generateCountingSharedBundleUrlMapper(
             this.analyzer.resolveUrl('shared_bundle_')!);
@@ -113,8 +121,7 @@ export class Bundler {
    * otherwise have been loaded.
    */
   async analyzeContents(
-      url: ResolvedUrl,
-      contents: string,
+      url: ResolvedUrl, contents: string,
       // By default, the contents given to analyzeContents are not kept in the
       // Analyzer's cache and the Analyzer will act as though it never happened.
       // By giving a `true` value to `permanent`, the Analysis cache and the
@@ -201,11 +208,7 @@ export class Bundler {
     // Remove excluded files from bundles.
     for (const bundle of bundles) {
       for (const exclude of this.excludes) {
-        const resolvedExclude = this.analyzer.resolveUrl(exclude);
-        if (!resolvedExclude) {
-          continue;
-        }
-        bundle.files.delete(resolvedExclude);
+        bundle.files.delete(exclude);
         const excludeAsFolder = exclude.endsWith('/') ? exclude : exclude + '/';
         for (const file of bundle.files) {
           if (file.startsWith(excludeAsFolder)) {
@@ -217,7 +220,7 @@ export class Bundler {
 
     let b = 0;
     while (b < bundles.length) {
-      if (bundles[b].files.size < 0) {
+      if (bundles[b].files.size <= 0) {
         bundles.splice(b, 1);
         continue;
       }

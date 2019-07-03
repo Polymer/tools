@@ -196,7 +196,7 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
             cwd: file.cwd,
             base: file.base,
             path: childPath,
-            contents: new Buffer(source),
+            contents: Buffer.from(source),
           });
           scriptFile.fromHtmlSplitter = true;
           scriptFile.isModule = typeAttribute === 'module';
@@ -210,7 +210,7 @@ class HtmlSplitTransform extends AsyncTransformStream<File, File> {
         cwd: file.cwd,
         base: file.base,
         path: filePath,
-        contents: new Buffer(splitContents),
+        contents: Buffer.from(splitContents),
       });
       yield newFile;
     }
@@ -291,7 +291,7 @@ class HtmlRejoinTransform extends AsyncTransformStream<File, File> {
       cwd: file.cwd,
       base: file.base,
       path: filePath,
-      contents: new Buffer(joinedContents),
+      contents: Buffer.from(joinedContents),
     });
   }
 }

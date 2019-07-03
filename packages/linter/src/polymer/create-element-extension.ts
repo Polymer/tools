@@ -56,7 +56,8 @@ class CreateElementExtension extends Rule {
             warnings.push(new Warning({
               parsedDocument: document.parsedDocument,
               code: 'create-element-string-extension',
-              severity: Severity.WARNING, sourceRange,
+              severity: Severity.WARNING,
+              sourceRange,
               message: stripWhitespace(`
                 document.createElement with a custom element tagname as the second parameter is deprecated.
               `)
@@ -65,7 +66,8 @@ class CreateElementExtension extends Rule {
             warnings.push(new Warning({
               parsedDocument: document.parsedDocument,
               code: 'create-element-is-property-extension',
-              severity: Severity.WARNING, sourceRange,
+              severity: Severity.WARNING,
+              sourceRange,
               message: stripWhitespace(`
                 Creating a custom element extension of a built-in element is not widely supported, and is not recommended.
               `)

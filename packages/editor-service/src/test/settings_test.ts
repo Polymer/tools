@@ -31,13 +31,13 @@ suite('Settings', () => {
     return {settings, serverConnection, clientConnection, baseDir};
   }
 
-  test('starts with default values', async() => {
+  test('starts with default values', async () => {
     const {settings} = await createSettings();
     assert.deepEqual(settings.analyzeWholePackage, false);
     assert.deepEqual(settings.fixOnSave, false);
   });
 
-  test('updates when an update comes in', async() => {
+  test('updates when an update comes in', async () => {
     const {settings, clientConnection} = await createSettings();
     assert.deepEqual(
         {
@@ -82,7 +82,7 @@ suite('Settings', () => {
         });
   });
 
-  test('missing settings are filled in with defaults.', async() => {
+  test('missing settings are filled in with defaults.', async () => {
     const {settings, clientConnection} = await createSettings();
     clientConnection.sendNotification(DidChangeConfigurationNotification.type, {
       settings: {'polymer-ide': {fixOnSave: true, analyzeWholePackage: true}}
@@ -109,7 +109,7 @@ suite('Settings', () => {
         {analyzeWholePackage: false, fixOnSave: true});
   });
 
-  test('keeps ProjectConfig synchronized', async() => {
+  test('keeps ProjectConfig synchronized', async () => {
     const {settings, clientConnection, baseDir} = await createSettings();
     assert.equal(settings.projectConfig.lint, undefined);
     assert.equal(settings.projectConfigDiagnostic, null);

@@ -1,0 +1,43 @@
+{
+  "npm": true,
+  "moduleResolution": "node",
+  "builds": [
+    {
+      "name": "unbundled-es",
+      "bundle": false,
+      "addPushManifest": true
+    },
+    {
+      "name": "unbundled-amd",
+      "bundle": false,
+      "js": {
+        "transformModulesToAmd": true
+      }
+    },
+    {
+      "name": "bundled-es",
+      "bundle": {
+        "inlineScripts": false
+      }
+    },
+    {
+      "name": "bundled-amd",
+      "bundle": {
+        "inlineScripts": false
+      },
+      "js": {
+        "transformModulesToAmd": true
+      }
+    },
+    {
+      "name": "bundled-inlined-es",
+      "bundle": true
+    },
+    {
+      "name": "bundled-inlined-es-treeshake",
+      "bundle": {
+        "treeshake": true
+      }
+    }
+  ]
+}

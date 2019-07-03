@@ -92,7 +92,9 @@ class DeprecatedCustomPropertySyntax extends CssRule {
             parsedDocument.sourceRangeForShadyRange({start, end});
         warnings.push(new Warning({
           code: 'invalid-second-arg-to-var-expression',
-          severity: Severity.WARNING, parsedDocument, sourceRange,
+          severity: Severity.WARNING,
+          parsedDocument,
+          sourceRange,
           message:
               'When the second argument to a var() expression is another ' +
               'custom property, it must also be wrapped in a var().',

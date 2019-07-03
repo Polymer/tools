@@ -167,22 +167,19 @@ suite('Class', () => {
           description: 'An exported class.',
           name: 'ExportedClass',
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method1', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method1', return: {type: 'void'}}]
         },
         {
           description: 'A default exported class.',
           name: undefined,
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method2', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method2', return: {type: 'void'}}]
         },
         {
           description: '',
           name: 'ExportedConstClass',
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method3', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method3', return: {type: 'void'}}]
         }
       ]);
     });
@@ -537,22 +534,19 @@ suite('Class', () => {
           description: 'An exported class.',
           name: 'ExportedClass',
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method1', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method1', return: {type: 'void'}}]
         },
         {
           description: 'A default exported class.',
           name: undefined,
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method2', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method2', return: {type: 'void'}}]
         },
         {
           description: '',
           name: 'ExportedConstClass',
           privacy: 'public',
-          methods:
-              [{description: '', name: 'method3', return: {type: 'void'}}]
+          methods: [{description: '', name: 'method3', return: {type: 'void'}}]
         }
       ]);
     });
@@ -823,6 +817,56 @@ suite('Class', () => {
         'PolymerElement',
         'PolymerElementMixin',
         'PolymerElementMixin'
+      ]);
+    });
+
+    test('recognizes class and constructor annotations', async () => {
+      const classes = (await getClasses('class/annotated-classes.js'))
+                          .classes
+                          // Mixin functions are classes too, but we don't care
+                          // about them here.
+                          .filter((c) => !c.kinds.has('element-mixin'));
+
+      assert.deepEqual(await Promise.all(classes.map(getTestProps)), [
+        {
+          name: 'hasConstructorAnnotation',
+          description: '',
+          privacy: 'public',
+        },
+        {
+          name: 'hasConstructorExtendsMixinAnnotations',
+          description: '',
+          privacy: 'public',
+          superClass: 'HTMLElement',
+          mixins: [
+            {identifier: 'someMixin'},
+          ],
+        },
+        {
+          name: 'hasEphemeralSuperclass1',
+          description: '',
+          privacy: 'public',
+          superClass: 'HTMLElement',
+          mixins: [
+            {identifier: 'someMixin'},
+          ],
+        },
+        {
+          name: 'hasEphemeralSuperclass2',
+          description: '',
+          privacy: 'public',
+        },
+        {
+          name: 'Polymer.notEphemeralSuperclass',
+          description: '',
+          privacy: 'private',
+        },
+        {
+          name: 'hasNotEphemeralSuperclass',
+          description: '',
+          superClass: 'Polymer.notEphemeralSuperclass',
+          privacy: 'public'
+        }
       ]);
     });
 

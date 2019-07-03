@@ -11,9 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-/// <reference path="../../node_modules/@types/chai/index.d.ts" />
+
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import {assert} from 'chai';
 import {PackageRelativeUrl} from 'polymer-analyzer';
 
@@ -46,7 +45,7 @@ suite('Es6 Module Bundling', () => {
       const C = 'c';
       var c = {
         C: C,
-        default: C
+        'default': C
       };
       const B = 'b';
       var b = {
@@ -56,14 +55,13 @@ suite('Es6 Module Bundling', () => {
       const A = 'a';
       var a = {
         A: A,
-        B: B,
-        C: C
+        C: C,
+        B: B
       };
-      export { a as $a, b as $b, c as $c, C, B, A, C as C$1, B as B$1, C as C$2, C as $cDefault };`);
+      export { a as $a, b as $b, c as $c, C as $cDefault, A, B, B as B$1, C, C as C$1, C as C$2 };`);
   });
 
   suite('rewriting export specifiers', () => {
-
     // TODO(usergenic): If we want to support `export x from './something.js'`
     // then Rollup returns the following message: "This experimental syntax
     // requires enabling the parser plugin: 'exportDefaultFrom' (1:7)"
@@ -83,17 +81,24 @@ suite('Es6 Module Bundling', () => {
         import {b} from './b.js';
         export {b as bee};
       `,
+      'd.js': `
+        export * from './b.js';
+      `,
     });
     const aUrl = analyzer.resolveUrl('a.js')!;
     const bUrl = analyzer.resolveUrl('b.js')!;
     const cUrl = analyzer.resolveUrl('c.js')!;
+    const dUrl = analyzer.resolveUrl('d.js')!;
 
     test('export specifier is in a bundle', async () => {
-      const bundler =
-          new Bundler({analyzer, strategy: generateSharedDepsMergeStrategy(2)});
+      const bundler = new Bundler({
+        analyzer,
+        strategy: generateSharedDepsMergeStrategy(2),
+      });
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, cUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        import { b } from './shared_bundle_1.js';
         export { b } from './shared_bundle_1.js';
         var a = {
           b: b
@@ -104,13 +109,21 @@ suite('Es6 Module Bundling', () => {
     test('export specifier is not in a bundle', async () => {
       const bundler = new Bundler({analyzer, excludes: [bUrl]});
       const {documents} =
-          await bundler.bundle(await bundler.generateManifest([aUrl]));
+          await bundler.bundle(await bundler.generateManifest([aUrl, dUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
+        import { b } from './b.js';
         export { b } from './b.js';
         var a = {
           b: b
         };
         export { a as $a };`);
+      assert.deepEqual(documents.get(dUrl)!.content, heredoc`
+        import { b } from './b.js';
+        export { b } from './b.js';
+        var d = {
+          b: b
+        };
+        export { d as $d };`);
     });
   });
 
@@ -163,16 +176,16 @@ suite('Es6 Module Bundling', () => {
         const honey = '🍯';
         const beeSea = bee + sea;
         var b$1 = {
-          default: b,
+          'default': b,
           honey: honey,
           beeSea: beeSea
         };
-        export { b$1 as $b, b as $bDefault, honey, beeSea };`);
+        export { b$1 as $b, b as $bDefault, beeSea, honey };`);
       assert.deepEqual(documents.get(cUrl)!.content, heredoc`
         var c = sea = '🌊';
         const boat = '⛵️';
         var c$1 = {
-          default: c,
+          'default': c,
           boat: boat
         };
         export { c$1 as $c, c as $cDefault, boat };`);
@@ -188,25 +201,27 @@ suite('Es6 Module Bundling', () => {
         const honey = '🍯';
         const beeSea = bee + sea;
         var b$1 = {
-          default: b,
+          'default': b,
           honey: honey,
           beeSea: beeSea
         };
-        export { b$1 as $b, b as $bDefault, honey, beeSea };`);
+        export { b$1 as $b, b as $bDefault, beeSea, honey };`);
       assert.deepEqual(documents.get(dUrl)!.content, heredoc`
         import { boat } from './shared_bundle_1.js';
         var d = deer = '🦌';
         const deerBoat = deer + boat;
         var d$1 = {
-          default: d,
+          'default': d,
           deerBoat: deerBoat
         };
         export { d$1 as $d, d as $dDefault, deerBoat };`);
     });
 
     test('shell bundle', async () => {
-      const bundler =
-          new Bundler({analyzer, strategy: generateShellMergeStrategy(bUrl)});
+      const bundler = new Bundler({
+        analyzer,
+        strategy: generateShellMergeStrategy(bUrl),
+      });
       const {documents} =
           await bundler.bundle(await bundler.generateManifest([aUrl, bUrl]));
       assert.deepEqual(documents.get(aUrl)!.content, heredoc`
@@ -217,18 +232,18 @@ suite('Es6 Module Bundling', () => {
         var sea$1 = sea = '🌊';
         const boat = '⛵️';
         var c = {
-          default: sea$1,
+          'default': sea$1,
           boat: boat
         };
         var b = bee = '🐝';
         const honey = '🍯';
         const beeSea = bee + sea$1;
         var b$1 = {
-          default: b,
+          'default': b,
           honey: honey,
           beeSea: beeSea
         };
-        export { b$1 as $b, c as $c, b as $bDefault, honey, beeSea, sea$1 as $cDefault, boat };`);
+        export { b$1 as $b, b as $bDefault, c as $c, sea$1 as $cDefault, beeSea, boat, honey };`);
     });
   });
 
@@ -297,8 +312,7 @@ suite('Es6 Module Bundling', () => {
       const manifest = await bundler.generateManifest([indexUrl]);
       assert.deepEqual(
           [...manifest.bundles.keys()], [indexUrl, sharedBundleUrl]);
-      const {documents} =
-          await bundler.bundle(await bundler.generateManifest([indexUrl]));
+      const {documents} = await bundler.bundle(manifest);
 
       assert.deepEqual(documents.get(indexUrl)!.content, heredoc`
         <script type="module" src="shared_bundle_1.js"></script>
@@ -314,6 +328,80 @@ suite('Es6 Module Bundling', () => {
           a: a
         };
         export { a$1 as $a, b$1 as $b, a, b };`);
+    });
+
+    test('deduplicate static imports, not dynamic', async () => {
+      const analyzer = inMemoryAnalyzer({
+        'app.js': `
+          import './component-1.js';
+          import './component-1.js';
+          if (something()) {
+            import('./component-2.js');
+          }
+          if (somethingElse()) {
+            import('./component-2.js');
+          }
+        `,
+        'component-1.js': `
+          export const Component1 = 'component-1';
+        `,
+        'component-2.js': `
+          export const Component2 = 'component-2';
+        `,
+      });
+      const appUrl = analyzer.resolveUrl('app.js')!;
+      const com2Url = analyzer.resolveUrl('component-2.js')!;
+      const bundler = new Bundler({
+        analyzer,
+        strategy: generateShellMergeStrategy(appUrl),
+      });
+      const manifest = await bundler.generateManifest([appUrl]);
+      assert.deepEqual([...manifest.bundles.keys()], [com2Url, appUrl]);
+      const {documents} = await bundler.bundle(manifest);
+      assert.deepEqual(documents.get(appUrl)!.content, heredoc`
+        const Component1 = 'component-1';
+        var component1 = {
+          Component1: Component1
+        };
+
+        if (something()) {
+          import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        }
+
+        if (somethingElse()) {
+          import('./component-2.js').then(bundle => bundle && bundle.$component$2 || {});
+        }
+
+        export { component1 as $component$1, Component1 };`);
+    });
+
+    test('honor rollup\'s PURE annotations with treeshake', async () => {
+      const analyzer = inMemoryAnalyzer({
+        'app.js': `
+          import * as comp1 from './component-1.js';
+          console.log(comp1.value);
+        `,
+        'component-1.js': `
+          /*@__PURE__*/ unknownGlobalFunction();
+          /*@__PURE__*/ new UnknownGlobalClass();
+
+          export default /*@__PURE__*/ unknownGlobalFunction();
+          export const value = /*@__PURE__*/ unknownGlobalFunction();
+        `,
+      });
+      const appUrl = analyzer.resolveUrl('app.js')!;
+      const bundler = new Bundler({analyzer, treeshake: true});
+      const manifest = await bundler.generateManifest([appUrl]);
+      const {documents} = await bundler.bundle(manifest);
+      assert.deepEqual(documents.get(appUrl)!.content, heredoc`
+        var component1 = /*@__PURE__*/unknownGlobalFunction();
+        const value = /*@__PURE__*/unknownGlobalFunction();
+        var component1$1 = {
+          'default': component1,
+          value: value
+        };
+        console.log(value);
+        export { component1$1 as $component$1, component1 as $component$1Default, value };`);
     });
   });
 });

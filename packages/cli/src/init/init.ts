@@ -56,7 +56,11 @@ const localGenerators: {[name: string]: GeneratorInfo} = {
     generator: createGithubGenerator({
       owner: 'Polymer',
       repo: 'polymer-starter-kit',
-      semverRange: '^4.0.0-pre.1',
+      semverRange: '^4.0.0',
+      installDependencies: {
+        bower: false,
+        npm: true,
+      },
     }),
   },
   'polymer-2-element': {
@@ -77,6 +81,10 @@ const localGenerators: {[name: string]: GeneratorInfo} = {
       owner: 'Polymer',
       repo: 'polymer-starter-kit',
       semverRange: '^3.0.0',
+      installDependencies: {
+        bower: true,
+        npm: true,
+      },
     }),
   },
   'shop': {
@@ -86,6 +94,10 @@ const localGenerators: {[name: string]: GeneratorInfo} = {
       owner: 'Polymer',
       repo: 'shop',
       semverRange: '^2.0.0',
+      installDependencies: {
+        bower: true,
+        npm: false,
+      },
     }),
   },
 };
@@ -219,8 +231,8 @@ function createSelectPrompt(env: YeomanEnvironment) {
  * error will be thrown.
  */
 export async function runGenerator(
-    // tslint:disable-next-line: no-any typings issues in yeoman
     generatorName: string,
+    // tslint:disable-next-line: no-any typings issues in yeoman
     options: {[name: string]: any} = {}): Promise<void> {
   const templateName = options['templateName'] || generatorName;
 

@@ -2,6 +2,7 @@
   "rules": {
     "arrow-parens": true,
     "class-name": true,
+    "curly": true,
     "indent": [
       true,
       "spaces"

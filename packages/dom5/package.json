@@ -1,0 +1,33 @@
+{
+  "name": "dom5",
+  "version": "3.0.1",
+  "description": "Utilities for working with parse5 ASTs",
+  "license": "BSD-3-Clause",
+  "author": "The Polymer Authors",
+  "bugs": "https://github.com/Polymer/tools/issues",
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/dom5",
+  "repository": "github:Polymer/tools",
+  "scripts": {
+    "build": "tsc",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint 'src/**/*.ts'",
+    "prepublishOnly": "npm run test",
+    "test": "npm run build && npm run lint && npm run test:unit",
+    "test:unit": "mocha -c --ui tdd \"lib/test/*_test.js\"",
+    "test:watch": "tsc-then -- mocha -c --ui tdd \"lib/test/*_test.js\""
+  },
+  "dependencies": {
+    "@types/parse5": "^2.2.34",
+    "clone": "^2.1.0",
+    "parse5": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/clone": "^0.1.29",
+    "tsc-then": "^1.1.0"
+  },
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "directories": {
+    "test": "test"
+  }
+}

@@ -16,6 +16,8 @@ interface Window {
   define: ((deps: string[], moduleBody: OnExecutedCallback) => void)&{
     _reset?: () => void;
   };
+  HTMLImports?:
+      {importForElement: (element: Element) => HTMLLinkElement | undefined};
 }
 
 type OnExecutedCallback = (...args: Array<{}>) => void;
@@ -23,6 +25,10 @@ type onFailedCallback = (error: Error) => void;
 type NormalizedUrl = string&{_normalized: never};
 
 (function() {
+if (window.define) {
+  /* The loader was already loaded, make sure we don't reset it's state. */
+  return;
+}
 
 // Set to true for more logging. Anything guarded by an
 // `if (debugging)` check will not appear in the final output.
@@ -124,8 +130,15 @@ interface ModuleG<State extends keyof StateDataMap> {
   readonly url: NormalizedUrl;
   readonly urlBase: NormalizedUrl;
   readonly exports: {[id: string]: {}};
-  /** True if this is a top-level module. */
+  /**
+   * True if this is a top-level module.
+   */
   isTopLevel: boolean;
+  /**
+   * Value of the `crossorigin` attribute that will be used to load this
+   * module.
+   */
+  readonly crossorigin: string;
   /**
    * Callbacks that are called exactly once, for the next time the module
    * progresses to a new state.
@@ -182,6 +195,11 @@ function load(module: ModuleG<StateEnum.Initialized>):
   const script = document.createElement('script');
   script.src = module.url;
 
+  // Crossorigin attribute could be the empty string - preserve this.
+  if (module.crossorigin !== null) {
+    script.setAttribute('crossorigin', module.crossorigin);
+  }
+
   /**
    * Remove our script tags from the document after they have loaded/errored, to
    * reduce the number of nodes. Since the file load order is arbitrary and not
@@ -191,7 +209,7 @@ function load(module: ModuleG<StateEnum.Initialized>):
    */
   function removeScript() {
     try {
-      document.head.removeChild(script);
+      document.head!.removeChild(script);
     } catch { /* Something else removed the script. We don't care. */
     }
   }
@@ -216,7 +234,7 @@ function load(module: ModuleG<StateEnum.Initialized>):
     removeScript();
   };
 
-  document.head.appendChild(script);
+  document.head!.appendChild(script);
 
   return mutatedModule;
 }
@@ -263,13 +281,16 @@ function loadDeps(
       args.push({
         // We append "#<script index>" to top-level scripts so that they have
         // unique keys in the registry. We don't want to see that here.
-        url: (module.isTopLevel === true) ? baseUrl : module.url
+        url: (module.isTopLevel === true) ?
+            module.url.substring(0, module.url.lastIndexOf('#')) :
+            module.url
       });
       continue;
     }
 
     // We have a dependency on a real module.
-    const dependency = getModule(resolveUrl(module.urlBase, depSpec));
+    const dependency =
+      getModule(resolveUrl(module.urlBase, depSpec), module.crossorigin);
     args.push(dependency.exports);
     depModules.push(dependency);
 
@@ -421,17 +442,27 @@ window.define = function(deps: string[], moduleBody?: OnExecutedCallback) {
     return [deps, moduleBody];
   };
 
-  // Case #2: We are a top-level script in the HTML document. Our URL is the
-  // document's base URL. We can discover this case by waiting a tick, and if
-  // we haven't already been defined by the "onload" handler from case #1,
-  // then this must be case #2.
+  // Case #2: We are a top-level script in the HTML document or a HTML import.
+  // Resolve the URL relative to the document url. We can discover this case
+  // by waiting a tick, and if we haven't already been defined by the "onload"
+  // handler from case #1, then this must be case #2.
+  const documentUrl = getDocumentUrl();
+
+  // Save the value of the crossorigin attribute before setTimeout while we
+  // can still get document.currentScript. If not set, default to 'anonymous'
+  // to match native <script type="module"> behavior. Note: IE11 doesn't
+  // support the crossorigin attribute nor currentScript, so it will use the
+  // default.
+  const crossorigin = document.currentScript &&
+      document.currentScript.getAttribute('crossorigin') || 'anonymous';
+
   setTimeout(() => {
     if (defined === false) {
       pendingDefine = undefined;
-      const url = baseUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
+      const url = documentUrl + '#' + topLevelScriptIdx++ as NormalizedUrl;
       // It's actually Initialized, but we're skipping over the Loading
       // state, because this is a top level document and it's already loaded.
-      const mod = getModule(url) as ModuleG<StateEnum.Loading>;
+      const mod = getModule(url, crossorigin) as ModuleG<StateEnum.Loading>;
       mod.isTopLevel = true;
       const waitingModule = beginWaitingForTurn(mod, deps, moduleBody);
       if (previousTopLevelUrl !== undefined) {
@@ -480,7 +511,7 @@ window.define._reset = () => {
  * Return a module object from the registry for the given URL, creating one if
  * it doesn't exist yet.
  */
-function getModule(url: NormalizedUrl): Module {
+function getModule(url: NormalizedUrl, crossorigin: string = 'anonymous') {
   let mod = registry[url];
   if (mod === undefined) {
     mod = registry[url] = {
@@ -490,6 +521,7 @@ function getModule(url: NormalizedUrl): Module {
       state: StateEnum.Initialized,
       stateData: undefined,
       isTopLevel: false,
+      crossorigin,
       onNextStateChange: []
     };
   }
@@ -503,6 +535,7 @@ const anchor = document.createElement('a');
  *
  * Examples:
  *
+ *  - /foo => http://example.com/foo
  *  - //example.com/ => http://example.com/
  *  - http://example.com => http://example.com/
  *  - http://example.com/foo/bar/../baz => http://example.com/foo/baz
@@ -536,7 +569,7 @@ function resolveUrl(urlBase: NormalizedUrl, url: string): NormalizedUrl {
     // Already a fully qualified URL.
     return url as NormalizedUrl;
   }
-  return normalizeUrl(urlBase + url);
+  return normalizeUrl(url[0] === '/' ? url : urlBase + url);
 }
 
 function getBaseUrl(): NormalizedUrl {
@@ -544,5 +577,42 @@ function getBaseUrl(): NormalizedUrl {
   return (document.baseURI ||
           (document.querySelector('base') || window.location).href) as
       NormalizedUrl;
+}
+
+/**
+ * Get the url of the current document. If the document is the main document,
+ * the base url is returned. Otherwise if the module was imported by a HTML
+ * import we need to resolve the URL relative to the HTML import.
+ *
+ * document.currentScript does not work in IE11, but the HTML import polyfill
+ * mocks it when executing an import so for this case that's ok
+ */
+function getDocumentUrl() {
+  const {currentScript} = document;
+  // On IE11 document.currentScript is not defined when not in a HTML import
+  if (!currentScript) {
+    return baseUrl;
+  }
+
+  if (window.HTMLImports) {
+    // When the HTMLImports polyfill is active, we can take the path from the
+    // link element
+    const htmlImport = window.HTMLImports.importForElement(currentScript);
+    if (!htmlImport) {
+      // If there is no import for the current script, we are in the index.html.
+      // Take the base url.
+      return baseUrl;
+    }
+
+    // Return the import href
+    return htmlImport.href;
+  } else {
+    // On chrome's native implementation it's not possible to get a direct
+    // reference to the link element, create an anchor and let the browser
+    // resolve the url.
+    const a = currentScript.ownerDocument!.createElement('a');
+    a.href = '';
+    return a.href;
+  }
 }
 })();

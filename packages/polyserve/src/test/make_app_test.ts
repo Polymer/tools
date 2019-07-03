@@ -23,7 +23,6 @@ const componentDir = path.join(root, 'components');
 const packageName = 'polyserve-test';
 
 suite('makeApp', () => {
-
   test('returns an app', () => {
     const app = makeApp({root, componentDir, packageName});
     assert.isOk(app);
@@ -97,5 +96,4 @@ suite('makeApp', () => {
         .get('/@polymer/test-component/test-file.txt')
         .expect(200, 'TEST COMPONENT\n');
   });
-
 });

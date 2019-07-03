@@ -23,11 +23,11 @@ export interface BundledBaseDocument<Node> {
 
 export type BundledHtmlDocument = {
   language: 'html'
-} & BundledBaseDocument<ASTNode>;
+}&BundledBaseDocument<ASTNode>;
 export type BundledJsDocument = {
   language: 'js'
-} & BundledBaseDocument<babel.Node>;
-export type BundledDocument = BundledHtmlDocument | BundledJsDocument;
+}&BundledBaseDocument<babel.Node>;
+export type BundledDocument = BundledHtmlDocument|BundledJsDocument;
 
 
 /* A collection of documents, keyed by path */

@@ -1,8 +1,108 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](http://keepachangelog.com/)
+and this project adheres to [Semantic Versioning](http://semver.org/).
 
 <!-- ## Unreleased -->
-<!-- Add new, unreleased items here. -->
+<!-- Add new, unreleased changes here. -->
+
+## v1.9.10 [06-05-2019]
+* Updated Polymer 3.x application/element templates to use Mocha 6+ and updated
+  version of `wct-mocha`.
+* Updated version of `web-component-tester` to support Java 10+. 
+
+## v1.9.9 [04-26-2019]
+* Updated `polymer-build` to latest version, fixing issue where NPM specifiers
+  were not converted to paths when AMD transform was applied to non-bundled
+  output.
+
+## v1.9.8 [04-02-2019]
+* Updated `polymer-build` to latest versions, disabling babel minify features
+  which contained bugs causing builds to break when minifying Polymer 3.2.0.
+
+## v1.9.7 [03-01-2019]
+* Added support for `treeshake` option to remove dead JavaScript code when bundling.
+
+## v1.9.6 [02-07-2019]
+* Update `bower` library to pass npm audit.
+
+## v1.9.5 [01-10-2019]
+* Add `--help` description for `--version`.
+* Updated dependencies for bug fixes and reduced package sizes.
+  * polymer-analyzer@3.2.2 - 50% smaller package.
+  * polymer-bundler@4.0.5 - 50% smaller package and a fix to external
+    es6 module inlining bug.
+
+## v1.9.4 [12-23-2018]
+* Updated dependencies.
+  * web-component-tester@6.9.2 - Fix gulpfile to actually build browser.js.
+
+## v1.9.3 [12-19-2018]
+* Replace `github` library with `@octokit/rest` to pass npm audit.
+
+## v1.9.2 [12-06-2018]
+* Updated dependencies.
+  * @polymer/esm-amd-loader@1.0.4 - loads AMD modules with
+    `crossorigin=anonymous` by default to match native module script
+    behavior.
+
+## v1.9.1 [11-15-2018]
+* Updated dependencies.
+
+## v1.9.0 [11-12-2018]
+* Polymer 3.x templates now use lighter-weight dependency-free `wct-mocha`
+  for testing.
+
+## v1.9.0-pre.2 [10-25-2018]
+* Include latest official `web-component-tester` update adding
+  support for `wct-mocha` alternative to `wct-browser-legacy` package.
+* Update `wct-local` to fix Firefox 63 testing issue with outdated
+  geckodriver.
+
+## v1.9.0-pre.1 [10-15-2018]
+* Fix an issue where we were passing lint rule help text through chalk
+  with unescaped chalk-specific syntax, causing chalk parsing errors.
+
+## v1.8.1 [10-25-2018]
+* Update package-lock to pickup wct-local 2.1.3 to fix Firefox 63 testing.
+
+## v1.8.0 [08-15-2018]
+* Fix a case where the CustomElementsEs5Adapter script was not added to the
+  builds when the `js.compile` is an object with a target property of es5.
+* Updated web-component-tester to v6.8.0, which changes the set of browsers
+  when testing on Travis CI.
+
+## v1.7.7 [06-28-2018]
+* Update dependencies.
+
+## v1.7.6 [06-25-2018]
+* Node 10.5+ now supported!
+* Breaks Node 6; using Node's built-in promisify, which is not available in
+  versions of Node prior to 8.
+
+## v1.7.4 [06-19-2018]
+* Regenerate shrinkwrap to pick up latest dependencies.
+* Fix issue caused by previous update where `polymer test -s` flag could not
+  be used multiple times.
+* Fix incorrect relative paths to the component directory in push manifests.
+* Fix push manifest generation crash with ES module projects.
+
+## v1.7.3 [06-11-2018]
+* Regenerate shrinkwrap to pick up latest dependencies.
+
+## v1.7.2 [05-11-2018]
+* Fix bug in `polymer-3-element` init template where `polymer/dom-module.js`
+  could be loaded twice when serving from the polyserve `/components/`
+  directory.
+* Fix names of `uncompiled-bundled` and `uncompiled-unbundled` build presets.
+
+## v1.7.1 [05-09-2018]
+* Workaround an NPM shrinkwrap bug which was causing users to install the CLI's
+  250MB of devDependencies unnecessarily.
+* Fixed polymer 3.x application and element templates to use the `html` tagged
+  template literal function.
 
 ## v1.7.0 [05-08-2018]
 * Fix bug with `init` templates and missing `.gitignore` files due to npm
@@ -67,8 +167,6 @@
   * Stricter requirements for determining when a browser supports modules, and
     hence when to automatically transform modules to AMD. We now require support
     for dynamic import and import.meta.
-
-<!-- Add new, unreleased items here. -->
 
 ## v1.7.0-pre.13 [04-19-2018]
 * `init`

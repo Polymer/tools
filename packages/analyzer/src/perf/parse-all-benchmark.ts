@@ -147,4 +147,7 @@ function printMeasurements(measurements: number[]) {
   }
 }
 
-measure().catch(((err) => console.log(err.stack) && process.exit(1)));
+measure().catch((err) => {
+  console.log(err.stack);
+  process.exit(1);
+});

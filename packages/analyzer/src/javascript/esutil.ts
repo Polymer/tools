@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import * as assert from 'assert';
 import generate from '@babel/generator';
 import babelTraverse from '@babel/traverse';
 import {NodePath} from '@babel/traverse';
 import * as babel from '@babel/types';
+import * as assert from 'assert';
 import * as doctrine from 'doctrine';
 import * as util from 'util';
 

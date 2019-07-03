@@ -1,0 +1,26 @@
+language: node_js
+sudo: required
+before_script:
+  - npm install -g polymer-cli
+  - polymer install --variants
+env:
+  global:
+    - secure: >-
+        OqWtaAPVAWrMk+C50ECYQBxTBjJNnhVargB5yCMMhZdRruUV8qP64lI+rme+pPzLOOZZyjiepjvPycLxHe8ha8pW2FYxz4mpPwHjcgodEN+VypiXf7JtxfUXF2R7J6I0tI+oGlS/d9eJgl5HQmTjJqNjop6rTqCAH6tXuOo8PXs=
+    - secure: >-
+        SnvNLWCibiemlbhjr+r+lSRKZD1bbGuqGfp9kNGWDqjzMh8R2DuNNtp10vBlNDQiotkK/J9jTdq11ng1Brk2YGF/65TRI5Vj9VxfsOuKuzLAmNUlfteYFDI7PMVeeB9FcgC0b51DBXKeyNr/sD5VmUqUoIrtDfKUT1pHaMZHAjQ=
+node_js: stable
+addons:
+  firefox: latest
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+  sauce_connect: true
+script:
+  - xvfb-run polymer test
+  - >-
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
+    fi
+dist: trusty

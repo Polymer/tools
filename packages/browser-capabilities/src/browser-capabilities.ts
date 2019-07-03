@@ -51,7 +51,7 @@ const browserPredicates: {
   'Chrome': chrome,
   'Chromium': chrome,
   'Chrome Headless': chrome,
-  'OPR': {
+  'Opera': {
     es2015: since(36),
     es2016: since(45),
     es2017: since(45),
@@ -75,16 +75,13 @@ const browserPredicates: {
   // least the OS bit). Be sure to actually test real user agents rather than
   // making assumptions based on release notes.
   'Mobile Safari': {
-    es2015: since(10),
-    es2016: since(10, 3),
-    es2017: since(10, 3),
+    es2015: sinceOS(10),
+    es2016: sinceOS(10, 3),
+    es2017: sinceOS(10, 3),
     es2018: () => false,  // No async iterators
-    push: since(9, 2),
-    serviceworker: since(11, 3),
-    modules: (ua) => {
-      return versionAtLeast([11], parseVersion(ua.getBrowser().version)) &&
-          versionAtLeast([11, 3], parseVersion(ua.getOS().version));
-    },
+    push: sinceOS(9, 2),
+    serviceworker: sinceOS(11, 3),
+    modules: sinceOS(11, 3),
   },
   'Safari': {
     es2015: since(10),
@@ -121,9 +118,9 @@ const browserPredicates: {
     es2017: since(52),
     es2018: since(58),  // Except RegEx additions
     // Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1409570
-    push: () => false,
+    push: since(63),
     serviceworker: since(44),
-    modules: () => false,
+    modules: since(67),
   },
 };
 
@@ -133,7 +130,12 @@ const browserPredicates: {
 export function browserCapabilities(userAgent: string): Set<BrowserCapability> {
   const ua = new UAParser(userAgent);
   const capabilities = new Set<BrowserCapability>();
-  const predicates = browserPredicates[ua.getBrowser().name || ''] || {};
+  let browserName = ua.getBrowser().name || '';
+  if (browserName === 'Chrome' && ua.getOS().name === 'iOS') {
+    // Chrome on iOS is really Safari.
+    browserName = 'Mobile Safari';
+  }
+  const predicates = browserPredicates[browserName] || {};
   for (const capability of Object.keys(predicates) as BrowserCapability[]) {
     if (predicates[capability](ua)) {
       capabilities.add(capability);
@@ -178,4 +180,11 @@ export function versionAtLeast(atLeast: number[], version: number[]): boolean {
  */
 function since(...atLeast: number[]): UserAgentPredicate {
   return (ua) => versionAtLeast(atLeast, parseVersion(ua.getBrowser().version));
+}
+
+/**
+ * Make a predicate that checks if the OS version is at least this high.
+ */
+function sinceOS(...atLeast: number[]): UserAgentPredicate {
+  return (ua) => versionAtLeast(atLeast, parseVersion(ua.getOS().version));
 }

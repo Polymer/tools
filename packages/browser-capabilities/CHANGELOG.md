@@ -1,6 +1,21 @@
 # Change Log
 
 <!-- ## Unreleased -->
+<!-- Add new, unreleased changes here. -->
+
+## [1.1.4] - 2019-05-30
+* Updated Firefox 67 support for modules (specifically because of dynamic import)
+
+## [1.1.3] - 2018-11-15
+* Updated Firefox 63 support for push.
+
+## [1.1.2] - 2018-08-20
+* Opera is now detected.
+
+## [1.1.1] - 2018-06-28
+* Chrome for iOS is now handled correctly, by delegating to the corresponding
+  Safari feature matrix.
+* Safari for iOS is handled more accurately, using iOS version.
 
 ## [1.1.0] - 2018-05-03
 * Added new capabilities for es2016, es2017, and es2018.

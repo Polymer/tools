@@ -119,7 +119,9 @@ export function expandUrl(url: string, base: string) {
   return base + url;
 }
 
-export interface Params { [param: string]: string[]; }
+export interface Params {
+  [param: string]: string[];
+}
 
 /**
  * @param {string=} opt_query A query string to parse.
@@ -235,7 +237,8 @@ export function parallel(runners: Runner[], done: (error?: any) => void): void;
 export function parallel(
     runners: Runner[], limit: number, done: (error?: any) => void): void;
 export function parallel(
-    runners: Runner[], maybeLimit: number|((error?: any) => void),
+    runners: Runner[],
+    maybeLimit: number|((error?: any) => void),
     done?: (error?: any) => void) {
   let limit: number;
   if (typeof maybeLimit !== 'number') {

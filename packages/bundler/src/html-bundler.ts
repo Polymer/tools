@@ -16,8 +16,10 @@ import * as clone from 'clone';
 import * as dom5 from 'dom5';
 import {ASTNode, parseFragment, serialize, treeAdapters} from 'parse5';
 import {Document, FileRelativeUrl, ParsedHtmlDocument, ResolvedUrl} from 'polymer-analyzer';
+import {parse as parseUrl} from 'url';
 
 import {assertIsHtmlDocument, assertIsJsDocument, getAnalysisDocument} from './analyzer-utils';
+import {serialize as serializeEs6} from './babel-utils';
 import {AssignedBundle, BundleManifest} from './bundle-manifest';
 import {Bundler} from './bundler';
 import constants from './constants';
@@ -28,7 +30,7 @@ import {findAncestor, insertAfter, insertAllBefore, inSourceOrder, isSameNode, p
 import {addOrUpdateSourcemapComment} from './source-map';
 import {updateSourcemapLocations} from './source-map';
 import encodeString from './third_party/UglifyJS2/encode-string';
-import {ensureTrailingSlash, getFileExtension, isTemplatedUrl, rewriteHrefBaseUrl, stripUrlFileSearchAndHash} from './url-utils';
+import {ensureTrailingSlash, getFileExtension, isAbsolutePath, isTemplatedUrl, stripUrlFileSearchAndHash} from './url-utils';
 import {find, rewriteObject} from './utils';
 
 /**
@@ -56,8 +58,7 @@ export class HtmlBundler {
   protected document: Document<ParsedHtmlDocument>;
 
   constructor(
-      public bundler: Bundler,
-      public assignedBundle: AssignedBundle,
+      public bundler: Bundler, public assignedBundle: AssignedBundle,
       public manifest: BundleManifest) {
   }
 
@@ -105,8 +106,7 @@ export class HtmlBundler {
    * line offset within the final bundle.
    */
   private async _addOrUpdateSourcemapsForInlineScripts(
-      originalDoc: Document,
-      reparsedDoc: ParsedHtmlDocument,
+      originalDoc: Document, reparsedDoc: ParsedHtmlDocument,
       oldBaseUrl: ResolvedUrl) {
     const inlineScripts =
         dom5.queryAll(reparsedDoc.ast, matchers.inlineNonModuleScript);
@@ -472,9 +472,14 @@ export class HtmlBundler {
                      parsedDocument: {parsedAsSourceType}
                    }) => isInline && parsedAsSourceType === 'module');
     for (const inlineModuleScript of inlineModuleScripts) {
+      const ast = clone(inlineModuleScript.parsedDocument.ast);
+      const importResolutions =
+          es6Rewriter.getEs6ImportResolutions(inlineModuleScript);
+      es6Rewriter.rewriteEs6SourceUrlsToResolved(ast, importResolutions);
+      const serializedCode = serializeEs6(ast).code;
       const {code} = await es6Rewriter.rollup(
           this.document.parsedDocument.baseUrl,
-          inlineModuleScript.parsedDocument.contents,
+          serializedCode,
           inlineModuleScript);
       if (inlineModuleScript.astNode &&
           inlineModuleScript.astNode.language === 'html') {
@@ -507,7 +512,7 @@ export class HtmlBundler {
       if (!this.assignedBundle.bundle.files.has(resolvedImportUrl)) {
         return;
       }
-      const scriptContent = `import ${JSON.stringify(scriptHref)};`;
+      const scriptContent = `import ${JSON.stringify(resolvedImportUrl)};`;
       dom5.removeAttribute(scriptTag, 'src');
       dom5.setTextContent(scriptTag, encodeString(scriptContent, true));
     }
@@ -805,9 +810,7 @@ export class HtmlBundler {
    * imported from the import URL.
    */
   private _rewriteAstBaseUrl(
-      ast: ASTNode,
-      oldBaseUrl: ResolvedUrl,
-      newBaseUrl: ResolvedUrl) {
+      ast: ASTNode, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl) {
     this._rewriteElementAttrsBaseUrl(ast, oldBaseUrl, newBaseUrl);
     this._rewriteStyleTagsBaseUrl(ast, oldBaseUrl, newBaseUrl);
     this._setDomModuleAssetpaths(ast, oldBaseUrl, newBaseUrl);
@@ -853,12 +856,11 @@ export class HtmlBundler {
    * new base URL.
    */
   private _rewriteCssTextBaseUrl(
-      cssText: string,
-      oldBaseUrl: ResolvedUrl,
+      cssText: string, oldBaseUrl: ResolvedUrl,
       newBaseUrl: ResolvedUrl): string {
     return cssText.replace(constants.URL, (match) => {
       let path = match.replace(/["']/g, '').slice(4, -1);
-      path = rewriteHrefBaseUrl(path, oldBaseUrl, newBaseUrl);
+      path = this._rewriteHrefBaseUrl(path, oldBaseUrl, newBaseUrl);
       return 'url("' + path + '")';
     });
   }
@@ -868,9 +870,7 @@ export class HtmlBundler {
    * are based on the relationship of the old base URL to the new base URL.
    */
   private _rewriteElementAttrsBaseUrl(
-      ast: ASTNode,
-      oldBaseUrl: ResolvedUrl,
-      newBaseUrl: ResolvedUrl) {
+      ast: ASTNode, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl) {
     const nodes = dom5.queryAll(
         ast,
         matchers.elementsWithUrlAttrsToRewrite,
@@ -886,7 +886,8 @@ export class HtmlBundler {
             relUrl =
                 this._rewriteCssTextBaseUrl(attrValue, oldBaseUrl, newBaseUrl);
           } else {
-            relUrl = rewriteHrefBaseUrl(attrValue, oldBaseUrl, newBaseUrl);
+            relUrl =
+                this._rewriteHrefBaseUrl(attrValue, oldBaseUrl, newBaseUrl);
           }
           dom5.setAttribute(node, attr, relUrl);
         }
@@ -894,14 +895,41 @@ export class HtmlBundler {
     }
   }
 
+  private _rewriteHrefBaseUrl<T extends string>(
+      href: T, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl): T
+      |FileRelativeUrl {
+    const resolvedHref = this.bundler.analyzer.urlResolver.resolve(
+        oldBaseUrl, href as string as FileRelativeUrl);
+    // If we can't resolve the href, we need to return it as-is, since we can't
+    // relativize or rewrite it.
+    if (typeof resolvedHref === 'undefined') {
+      return href;
+    }
+
+    const parsedHref = parseUrl(href);
+
+    // If the href was initially expressed with a protocol in the URL, we should
+    // not attempt to relativize or rewrite it.
+    if (typeof parsedHref.protocol === 'string') {
+      return href;
+    }
+
+    // If the href was originally expressed as an absolute path, we should not
+    // attempt to relativize it.
+    if (parsedHref.pathname && isAbsolutePath(parsedHref.pathname)) {
+      return href;
+    }
+
+    // Return a new relative form of the given URL.
+    return this.bundler.analyzer.urlResolver.relative(newBaseUrl, resolvedHref);
+  }
+
   /**
    * Find all URLs in imported style nodes and rewrite them so they are based
    * on the relationship of the old base URL to the new base URL.
    */
   private _rewriteStyleTagsBaseUrl(
-      ast: ASTNode,
-      oldBaseUrl: ResolvedUrl,
-      newBaseUrl: ResolvedUrl) {
+      ast: ASTNode, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl) {
     const childNodesOption = this.bundler.rewriteUrlsInTemplates ?
         dom5.childNodesIncludeTemplate :
         dom5.defaultChildNodes;
@@ -943,9 +971,7 @@ export class HtmlBundler {
    * have them if the base URLs are different.
    */
   private _setDomModuleAssetpaths(
-      ast: ASTNode,
-      oldBaseUrl: ResolvedUrl,
-      newBaseUrl: ResolvedUrl) {
+      ast: ASTNode, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl) {
     const domModules = dom5.queryAll(ast, matchers.domModuleWithoutAssetpath);
     for (let i = 0, node: ASTNode; i < domModules.length; i++) {
       node = domModules[i];

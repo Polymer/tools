@@ -150,14 +150,14 @@ export interface Options {
   observers: Observer[];
   listeners: {event: string, handler: string}[];
   behaviors: ScannedReference<'behavior'>[];
-
   events: Map<string, ScannedEvent>;
-
   abstract: boolean;
   privacy: Privacy;
   astNode: AstNodeWithLanguage;
   statementAst: babel.Statement|undefined;
   sourceRange: SourceRange|undefined;
+  /** true iff element was defined using the legacy Polymer() function. */
+  isLegacyFactoryCall: boolean|undefined;
 }
 
 export interface ScannedPolymerExtension extends ScannedElementBase {
@@ -231,6 +231,7 @@ export class ScannedPolymerElement extends ScannedElement implements
   // Indicates if an element is a pseudo element
   pseudo: boolean = false;
   abstract: boolean = false;
+  isLegacyFactoryCall: boolean;
 
   constructor(options: Options) {
     super();
@@ -251,6 +252,7 @@ export class ScannedPolymerElement extends ScannedElement implements
     this.astNode = options.astNode;
     this.statementAst = options.statementAst;
     this.sourceRange = options.sourceRange;
+    this.isLegacyFactoryCall = options.isLegacyFactoryCall || false;
 
     if (options.properties) {
       options.properties.forEach((p) => this.addProperty(p));
@@ -288,12 +290,11 @@ export class ScannedPolymerElement extends ScannedElement implements
 export interface PolymerExtension extends ElementBase {
   properties: Map<string, PolymerProperty>;
 
-  observers: ImmutableArray < {
-    javascriptNode: babel.Expression|babel.SpreadElement,
-        expression: LiteralValue,
-        parsedExpression: JavascriptDatabindingExpression|undefined;
-  }
-  > ;
+  observers: ImmutableArray<{
+    javascriptNode: babel.Expression | babel.SpreadElement,
+    expression: LiteralValue,
+    parsedExpression: JavascriptDatabindingExpression|undefined;
+  }>;
   listeners: ImmutableArray<{event: string, handler: string}>;
   behaviorAssignments: ImmutableArray<ScannedReference<'behavior'>>;
   localIds: ImmutableArray<LocalId>;
@@ -318,6 +319,8 @@ export class PolymerElement extends Element implements PolymerExtension {
       [];
   readonly domModule?: dom5.Node;
   readonly localIds: ImmutableArray<LocalId> = [];
+  /** true iff element was defined using the legacy Polymer() function. */
+  readonly isLegacyFactoryCall: boolean;
 
   constructor(scannedElement: ScannedPolymerElement, document: Document) {
     super(scannedElement, document);
@@ -370,6 +373,7 @@ export class PolymerElement extends Element implements PolymerExtension {
     if (scannedElement.pseudo) {
       this.kinds.add('pseudo-element');
     }
+    this.isLegacyFactoryCall = scannedElement.isLegacyFactoryCall;
   }
 
   emitPropertyMetadata(property: PolymerProperty) {

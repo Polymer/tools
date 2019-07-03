@@ -5,8 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!--## Unreleased -->
+<!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
+
+## [0.27.15] (2019-01-10)
+* Add `--allow-origin` flag which sets the `Access-Control-Allow-Origin` header.
+
+## [0.27.14] (2018-12-19)
+* Fix `compile-cache` cli option not being respected.
+
+## [0.27.13] (2018-10-15)
+* Allow file requests to specify `?nocompile` to prevent any compilation
+
+## [0.27.12] (2018-06-28)
+* Updated dependencies.
 
 ## [0.27.11] (2018-05-08)
 * Updated dependencies.

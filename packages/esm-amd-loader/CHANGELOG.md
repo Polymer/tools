@@ -5,8 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- # Unreleased -->
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## [1.0.4] - 2018-12-06
+* Load AMD modules with the same crossorigin attribute as
+  document.currentScript, defaulting to `crossorigin=anonymous` to match
+  native module script behavior.
+
+## [1.0.3] - 2018-09-18
+* Fix incorrect resolution of absolute path URLs (e.g. loading `/foo.js` from
+  `/bar/baz.js`).
+
+## [1.0.2] - 2018-06-28
+* Update minimized version for latest minifier changes.
+
+## [1.0.1] - 2018-06-11
+* `import.meta.url` is now correct for scripts defined in HTML imports.
+* Executing the loader twice will no longer invalidate its global state.
 
 ## [1.0.0] - 2018-05-08
 * Fix bug where the ordering of module execution was not strict enough.

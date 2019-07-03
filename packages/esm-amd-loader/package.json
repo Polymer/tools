@@ -1,6 +1,6 @@
 {
   "name": "@polymer/esm-amd-loader",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "Minimal AMD-style loader for replicating ES module behavior.",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/esm-amd-loader",
   "repository": "github:Polymer/tools",
@@ -10,21 +10,19 @@
   "main": "lib/esm-amd-loader.min.js",
   "types": "lib/esm-amd-loader.d.ts",
   "scripts": {
-    "format": "find src/ -iname '*.ts' -o -iname '*.js' | xargs clang-format --style=file -i",
+    "build": "npm run clean && tsc && npm run minify && npm run lint",
     "clean": "rm -rf lib/",
-    "lint": "tslint --project . --format stylish",
-    "build": "npm run clean && tsc && npm run minify",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint -p . --format stylish",
     "minify": "babel-minify lib/esm-amd-loader.js --outFile=lib/esm-amd-loader.min.js",
     "get-size": "npm run build && cat lib/esm-amd-loader.min.js | gzip -9 > esm-amd-loader.min.js.gz && ls -a -l -h esm-amd-loader.min.js.gz && rm esm-amd-loader.min.js.gz",
-    "test:integration": "npm run lint && npm run build && cd test/ && npm run test:wct",
-    "test": "npm run test:integration",
+    "test:integration": "cd test/ && npm run test:wct",
+    "test": "npm run lint && npm run build && cd test/ && npm run test",
     "prepack": "npm run build",
     "prepublishOnly": "npm test"
   },
   "devDependencies": {
-    "babel-minify": "^0.4.0",
-    "clang-format": "^1.2.3",
-    "tslint": "^5.9.1",
-    "typescript": "^2.8.3"
-  }
+    "babel-minify": "^0.4.0"
+  },
+  "dependencies": {}
 }

@@ -78,7 +78,9 @@ class DomModuleInvalidAttrs extends HtmlRule {
           message: stripWhitespace(`
               Use the "id" attribute rather than "${badAttr}"
               to associate the tagName of an element with its dom-module.`),
-          severity: Severity.WARNING, sourceRange, fix,
+          severity: Severity.WARNING,
+          sourceRange,
+          fix,
         }));
       }
     }

@@ -1,0 +1,40 @@
+<!--
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!doctype html>
+<html lang="en">
+<head>
+
+  <meta charset="utf-8">
+    <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../perf-tester.js"></script>
+  <style>
+    summary {
+      font-family: sans-serif;
+      font-size: 1.5em;
+    }
+  </style>
+
+</head>
+<body>
+  <summary>Perf is go.</summary>
+  <perf-tester></perf-tester>
+
+  <script>
+  addEventListener('WebComponentsReady', function() {
+    document.querySelector('perf-tester').tests = [
+      'a.html',
+      'input.html'
+    ];
+
+  });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../marked-element/marked-element.html">
+<link rel="import" href="../prism-element/prism-highlighter.html">
+<link rel="import" href="../prism-element/prism-theme-default.html">
+
+<link rel="import" href="iron-doc-api.html">
+<link rel="import" href="iron-doc-function.html">
+<link rel="import" href="iron-doc-property.html">
+<link rel="import" href="iron-doc-viewer-behavior.html">
+<link rel="import" href="iron-doc-viewer-styles.html">
+
+<!--
+`iron-doc-behavior` renders documentation about a Polymer 1.x behavior from a
+JSON descriptor output by
+[Polymer Analyzer](https://github.com/Polymer/polymer-analyzer).
+-->
+
+<dom-module id="iron-doc-behavior">
+  <template>
+    <style include="iron-doc-viewer-styles prism-theme-default">
+      :host {
+        @apply --iron-doc-docs;
+      }
+    </style>
+
+    <prism-highlighter></prism-highlighter>
+
+    <h1>Behavior [[descriptor.name]]</h1>
+    <p hidden$="[[!descriptor.summary]]">[[descriptor.summary]]</p>
+
+    <div>Path: <code>[[descriptor.path]]</code></div>
+
+    <div hidden$="[[!descriptor.mixins]]">Mixins:
+      <span>
+        <template is="dom-repeat" items="[[descriptor.mixins]]" sort="_compareDescriptors"><!--
+       --><span hidden$="[[!index]]">, </span>
+          <a class="name deeplink mixin" href$="[[baseHref]]/mixins/[[item]]">[[item]]</a><!--
+     --></template>
+      </span>
+    </div>
+
+    <section id="description"
+             hidden$="[[!descriptor.description]]"
+             anchor-id$="[[fragmentPrefix]]description">
+      <h2>
+        <a href$="#[[fragmentPrefix]]description" class="deeplink">Description</a>
+      </h2>
+
+      <marked-element sanitize markdown="[[descriptor.description]]">
+        <div slot="markdown-html" class="markdown-html"></div>
+      </marked-element>
+    </section>
+
+    <iron-doc-api
+        descriptor="[[descriptor]]"
+        fragment-prefix="[[fragmentPrefix]]">
+    </iron-doc-api>
+
+  </template>
+
+  <script>
+    (function() {
+    Polymer({
+      is: 'iron-doc-behavior',
+
+      behaviors: [Polymer.IronDocViewerBehavior],
+
+      properties: {title: {computed: '_computeTitle(descriptor)', notify: true}},
+
+      _computeTitle: function(descriptor) {
+        return descriptor && 'Behavior ' + descriptor.name;
+      }
+    });
+    })();
+  </script>
+</dom-module>

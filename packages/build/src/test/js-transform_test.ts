@@ -82,6 +82,12 @@ suite('jsTransform', () => {
           jsTransform('const foo = 3;', {compile: true, minify: true}),
           'var foo=3;');
     });
+
+    test('minifies but does not try to remove dead code', () => {
+      assert.equal(
+          jsTransform('if (false) { never(); } always();', {minify: true}),
+          'if(!1){never()}always();');
+    });
   });
 
   suite('babel helpers', () => {
@@ -404,8 +410,8 @@ suite('jsTransform', () => {
         `console.log(new Promise((res, rej) => _require.default(['./bar.js'], res, rej)));`);
   });
 
-  // https://github.com/babel/babel/issues/7506
-  test('does not include empty native constructor wrappers', () => {
+  // https://github.com/babel/babel/pull/8501
+  test('includes the native function check', () => {
     const input = stripIndent(`
       class TestElement extends HTMLElement {
         constructor() {
@@ -418,7 +424,7 @@ suite('jsTransform', () => {
     `);
     const result = jsTransform(input, {compile: true});
 
-    assert.notInclude(result, '_wrapNativeSuper');
+    assert.include(result, '_isNativeFunction');
   });
 
   // https://github.com/babel/minify/issues/824

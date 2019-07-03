@@ -1,0 +1,41 @@
+{
+  "name": "wct-mocha",
+  "version": "1.0.1",
+  "description": "Client-side library for testing web-components with Mocha.",
+  "main": "lib/index.js",
+  "files": [
+    "wct-mocha.js",
+    "lib/",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "npm run build:compile && npm run build:browserjs",
+    "build:browserjs": "rollup -c",
+    "build:compile": "tsc",
+    "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint -c tslint.json --project .",
+    "test": "npm run test:integration",
+    "test:integration": "cd test && npm run test:wct"
+  },
+  "keywords": [
+    "wct",
+    "mocha",
+    "test",
+    "web-components"
+  ],
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Polymer/tools/issues"
+  },
+  "homepage": "https://github.com/Polymer/tools/tree/master/packages/web-component-tester",
+  "repository": "github:Polymer/tools",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/socket.io": "^1.4.36"
+  },
+  "peerDependencies": {
+    "mocha": "*"
+  }
+}

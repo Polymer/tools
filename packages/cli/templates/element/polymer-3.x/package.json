@@ -5,11 +5,14 @@
   } -%>
   "main": "<%= name %>.js",
   "dependencies": {
-    "@polymer/polymer": "^3.0.0-pre.13"
+    "@polymer/polymer": "^3.0.0"
   },
   "devDependencies": {
-    "@polymer/iron-demo-helpers": "^3.0.0-pre.12",
-    "@webcomponents/webcomponentsjs": "^2.0.0-beta.2",
-    "wct-browser-legacy": "^1.0.0"
+    "@polymer/iron-demo-helpers": "^3.1.0",
+    "@polymer/test-fixture": "^4.0.2",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "wct-mocha": "^1.0.1"
   }
 }

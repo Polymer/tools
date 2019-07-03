@@ -72,6 +72,7 @@ export class AnalysisContext {
   readonly parsers = new Map<string, Parser<ParsedDocument>>([
     ['html', new HtmlParser()],
     ['js', new JavaScriptParser()],
+    ['mjs', new JavaScriptParser()],
     ['css', new CssParser()],
     ['json', new JsonParser()],
   ]);
@@ -623,11 +624,8 @@ export class AnalysisContext {
         code: 'parse-error',
         message,
         severity: Severity.ERROR,
-        sourceRange: {
-          file: url,
-          start: {line: 0, column: 0},
-          end: {line: 0, column: 0}
-        }
+        sourceRange:
+            {file: url, start: {line: 0, column: 0}, end: {line: 0, column: 0}}
       }));
     }
   }

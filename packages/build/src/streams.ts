@@ -14,7 +14,7 @@
 
 import {fs} from 'mz';
 import {Deferred} from 'polymer-analyzer/lib/core/utils';
-import {PassThrough, Transform} from 'stream';
+import {PassThrough, Transform, TransformCallback} from 'stream';
 
 import File = require('vinyl');
 
@@ -223,8 +223,7 @@ export abstract class AsyncTransformStream<In extends {}, Out extends {}>
    * Passes input into this._inputs.
    */
   _transform(
-      input: In,
-      _encoding: string,
+      input: In, _encoding: string,
       callback: (error?: Error, value?: Out) => void) {
     this._initializeOnce();
     this._inputs.write(input).then(() => {
@@ -238,8 +237,7 @@ export abstract class AsyncTransformStream<In extends {}, Out extends {}>
    *
    * Finish writing out the outputs.
    */
-  protected async _flush(
-      callback: (err?: null|undefined|string|Partial<Error>) => void) {
+  async _flush(callback: TransformCallback) {
     try {
       // We won't get any more inputs. Wait for them all to be processed.
       await this._inputs.close();

@@ -12,12 +12,12 @@
 import {assert} from 'chai';
 import * as path from 'path';
 import {loadServiceWorkerConfig} from '../../../build/load-config';
+import {fixtureDir} from '../../util';
 
 suite('load-config', () => {
   suite('loadServiceWorkerConfig()', () => {
     test('should parse the given js file', async () => {
-      const configFile = path.resolve(
-          __dirname, '../', 'fixtures', 'service-worker-config.js');
+      const configFile = path.resolve(fixtureDir, 'service-worker-config.js');
       const config = await loadServiceWorkerConfig(configFile);
       assert.ok(config);
       assert.deepEqual(config!.staticFileGlobs, ['*']);

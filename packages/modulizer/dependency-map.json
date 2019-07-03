@@ -1,0 +1,438 @@
+{
+  "app-layout": {
+    "npm": "@polymer/app-layout",
+    "semver": "^3.0.0"
+  },
+  "app-localize-behavior": {
+    "npm": "@polymer/app-localize-behavior",
+    "semver": "^3.0.0"
+  },
+  "app-media": {
+    "npm": "@polymer/app-media",
+    "semver": "^3.0.0"
+  },
+  "app-route": {
+    "npm": "@polymer/app-route",
+    "semver": "^3.0.0"
+  },
+  "app-storage": {
+    "npm": "@polymer/app-storage",
+    "semver": "^3.0.0"
+  },
+  "iron-flex-layout": {
+    "npm": "@polymer/iron-flex-layout",
+    "semver": "^3.0.0"
+  },
+  "iron-media-query": {
+    "npm": "@polymer/iron-media-query",
+    "semver": "^3.0.0"
+  },
+  "iron-resizable-behavior": {
+    "npm": "@polymer/iron-resizable-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-scroll-target-behavior": {
+    "npm": "@polymer/iron-scroll-target-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-icon": {
+    "npm": "@polymer/iron-icon",
+    "semver": "^3.0.0"
+  },
+  "iron-icons": {
+    "npm": "@polymer/iron-icons",
+    "semver": "^3.0.0"
+  },
+  "iron-selector": {
+    "npm": "@polymer/iron-selector",
+    "semver": "^3.0.0"
+  },
+  "paper-drawer-panel": {
+    "npm": "@polymer/paper-drawer-panel",
+    "semver": "^3.0.0"
+  },
+  "paper-header-panel": {
+    "npm": "@polymer/paper-header-panel",
+    "semver": "^3.0.0"
+  },
+  "paper-icon-button": {
+    "npm": "@polymer/paper-icon-button",
+    "semver": "^3.0.0"
+  },
+  "paper-item": {
+    "npm": "@polymer/paper-item",
+    "semver": "^3.0.0"
+  },
+  "paper-material": {
+    "npm": "@polymer/paper-material",
+    "semver": "^3.0.0"
+  },
+  "paper-styles": {
+    "npm": "@polymer/paper-styles",
+    "semver": "^3.0.0"
+  },
+  "paper-toggle-button": {
+    "npm": "@polymer/paper-toggle-button",
+    "semver": "^3.0.0"
+  },
+  "paper-toolbar": {
+    "npm": "@polymer/paper-toolbar",
+    "semver": "^3.0.0"
+  },
+  "iron-ajax": {
+    "npm": "@polymer/iron-ajax",
+    "semver": "^3.0.0"
+  },
+  "iron-location": {
+    "npm": "@polymer/iron-location",
+    "semver": "^3.0.0"
+  },
+  "iron-component-page": {
+    "npm": "@polymer/iron-component-page",
+    "semver": "^4.0.0"
+  },
+  "iron-jsonp-library": {
+    "npm": "@polymer/iron-jsonp-library",
+    "semver": "^3.0.0"
+  },
+  "font-roboto": {
+    "npm": "@polymer/font-roboto",
+    "semver": "^3.0.0"
+  },
+  "font-roboto-local": {
+    "npm": "@polymer/font-roboto-local",
+    "semver": "^3.0.0"
+  },
+  "gold-cc-cvc-input": {
+    "npm": "@polymer/gold-cc-cvc-input",
+    "semver": "^3.0.0"
+  },
+  "iron-form-element-behavior": {
+    "npm": "@polymer/iron-form-element-behavior",
+    "semver": "^3.0.0"
+  },
+  "paper-input": {
+    "npm": "@polymer/paper-input",
+    "semver": "^3.0.0"
+  },
+  "gold-cc-expiration-input": {
+    "npm": "@polymer/gold-cc-expiration-input",
+    "semver": "^3.0.0"
+  },
+  "iron-a11y-keys-behavior": {
+    "npm": "@polymer/iron-a11y-keys-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-validator-behavior": {
+    "npm": "@polymer/iron-validator-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-validatable-behavior": {
+    "npm": "@polymer/iron-validatable-behavior",
+    "semver": "^3.0.0"
+  },
+  "gold-cc-input": {
+    "npm": "@polymer/gold-cc-input",
+    "semver": "^3.0.0"
+  },
+  "gold-email-input": {
+    "npm": "@polymer/gold-email-input",
+    "semver": "^3.0.0"
+  },
+  "gold-phone-input": {
+    "npm": "@polymer/gold-phone-input",
+    "semver": "^3.0.0"
+  },
+  "gold-zip-input": {
+    "npm": "@polymer/gold-zip-input",
+    "semver": "^3.0.0"
+  },
+  "iron-input": {
+    "npm": "@polymer/iron-input",
+    "semver": "^3.0.0"
+  },
+  "iron-a11y-announcer": {
+    "npm": "@polymer/iron-a11y-announcer",
+    "semver": "^3.0.0"
+  },
+  "iron-a11y-keys": {
+    "npm": "@polymer/iron-a11y-keys",
+    "semver": "^3.0.0"
+  },
+  "iron-autogrow-textarea": {
+    "npm": "@polymer/iron-autogrow-textarea",
+    "semver": "^3.0.0"
+  },
+  "iron-behaviors": {
+    "npm": "@polymer/iron-behaviors",
+    "semver": "^3.0.0"
+  },
+  "iron-range-behavior": {
+    "npm": "@polymer/iron-range-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-overlay-behavior": {
+    "npm": "@polymer/iron-overlay-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-scroll-threshold": {
+    "npm": "@polymer/iron-scroll-threshold",
+    "semver": "^3.0.0"
+  },
+  "iron-menu-behavior": {
+    "npm": "@polymer/iron-menu-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-checked-element-behavior": {
+    "npm": "@polymer/iron-checked-element-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-collapse": {
+    "npm": "@polymer/iron-collapse",
+    "semver": "^3.0.0"
+  },
+  "iron-doc-viewer": {
+    "npm": "@polymer/iron-doc-viewer",
+    "semver": "^3.0.0"
+  },
+  "iron-demo-helpers": {
+    "npm": "@polymer/iron-demo-helpers",
+    "semver": "^3.0.0"
+  },
+  "marked": {
+    "npm": "marked",
+    "semver": "~0.3.9"
+  },
+  "marked-element": {
+    "npm": "@polymer/marked-element",
+    "semver": "^3.0.0"
+  },
+  "prism": {
+    "npm": "prismjs",
+    "semver": "^1.11.0"
+  },
+  "prism-element": {
+    "npm": "@polymer/prism-element",
+    "semver": "^3.0.0"
+  },
+  "paper-button": {
+    "npm": "@polymer/paper-button",
+    "semver": "^3.0.0"
+  },
+  "iron-dropdown": {
+    "npm": "@polymer/iron-dropdown",
+    "semver": "^3.0.0"
+  },
+  "neon-animation": {
+    "npm": "@polymer/neon-animation",
+    "semver": "^3.0.0"
+  },
+  "icon-behaviors-collection": {
+    "npm": "@polymer/icon-behaviors-collection",
+    "semver": "^3.0.0"
+  },
+  "iron-fit-behavior": {
+    "npm": "@polymer/iron-fit-behavior",
+    "semver": "^3.0.0"
+  },
+  "iron-iconset": {
+    "npm": "@polymer/iron-iconset",
+    "semver": "^3.0.0"
+  },
+  "iron-iconset-svg": {
+    "npm": "@polymer/iron-iconset-svg",
+    "semver": "^3.0.0"
+  },
+  "iron-image": {
+    "npm": "@polymer/iron-image",
+    "semver": "^3.0.0"
+  },
+  "iron-list": {
+    "npm": "@polymer/iron-list",
+    "semver": "^3.0.0"
+  },
+  "iron-pages": {
+    "npm": "@polymer/iron-pages",
+    "semver": "^3.0.0"
+  },
+  "iron-swipeable-container": {
+    "npm": "@polymer/iron-swipeable-container",
+    "semver": "^3.0.0"
+  },
+  "iron-test-helpers": {
+    "npm": "@polymer/iron-test-helpers",
+    "semver": "^3.0.0"
+  },
+  "iron-form": {
+    "npm": "@polymer/iron-form",
+    "semver": "^3.0.0"
+  },
+  "iron-meta": {
+    "npm": "@polymer/iron-meta",
+    "semver": "^3.0.0"
+  },
+  "iron-label": {
+    "npm": "@polymer/iron-label",
+    "semver": "^3.0.0"
+  },
+  "iron-localstorage": {
+    "npm": "@polymer/iron-localstorage",
+    "semver": "^3.0.0"
+  },
+  "paper-badge": {
+    "npm": "@polymer/paper-badge",
+    "semver": "^3.0.0"
+  },
+  "paper-behaviors": {
+    "npm": "@polymer/paper-behaviors",
+    "semver": "^3.0.0"
+  },
+  "paper-ripple": {
+    "npm": "@polymer/paper-ripple",
+    "semver": "^3.0.0"
+  },
+  "paper-card": {
+    "npm": "@polymer/paper-card",
+    "semver": "^3.0.0"
+  },
+  "paper-checkbox": {
+    "npm": "@polymer/paper-checkbox",
+    "semver": "^3.0.0"
+  },
+  "paper-dialog": {
+    "npm": "@polymer/paper-dialog",
+    "semver": "^3.0.0"
+  },
+  "paper-dialog-behavior": {
+    "npm": "@polymer/paper-dialog-behavior",
+    "semver": "^3.0.0"
+  },
+  "paper-dialog-scrollable": {
+    "npm": "@polymer/paper-dialog-scrollable",
+    "semver": "^3.0.0"
+  },
+  "paper-dropdown-menu": {
+    "npm": "@polymer/paper-dropdown-menu",
+    "semver": "^3.0.0"
+  },
+  "paper-menu-button": {
+    "npm": "@polymer/paper-menu-button",
+    "semver": "^3.0.0"
+  },
+  "paper-fab": {
+    "npm": "@polymer/paper-fab",
+    "semver": "^3.0.0"
+  },
+  "paper-listbox": {
+    "npm": "@polymer/paper-listbox",
+    "semver": "^3.0.0"
+  },
+  "paper-radio-button": {
+    "npm": "@polymer/paper-radio-button",
+    "semver": "^3.0.0"
+  },
+  "paper-radio-group": {
+    "npm": "@polymer/paper-radio-group",
+    "semver": "^3.0.0"
+  },
+  "paper-slider": {
+    "npm": "@polymer/paper-slider",
+    "semver": "^3.0.0"
+  },
+  "paper-linear-progress": {
+    "npm": "@polymer/paper-linear-progress",
+    "semver": "^3.0.0"
+  },
+  "paper-progress": {
+    "npm": "@polymer/paper-progress",
+    "semver": "^3.0.0"
+  },
+  "paper-scroll-header-panel": {
+    "npm": "@polymer/paper-scroll-header-panel",
+    "semver": "^3.0.0"
+  },
+  "paper-spinner": {
+    "npm": "@polymer/paper-spinner",
+    "semver": "^3.0.0"
+  },
+  "paper-swatch-picker": {
+    "npm": "@polymer/paper-swatch-picker",
+    "semver": "^3.0.0"
+  },
+  "paper-tabs": {
+    "npm": "@polymer/paper-tabs",
+    "semver": "^3.0.0"
+  },
+  "paper-text-field": {
+    "npm": "@polymer/paper-text-field",
+    "semver": "^3.0.0"
+  },
+  "paper-toast": {
+    "npm": "@polymer/paper-toast",
+    "semver": "^3.0.0"
+  },
+  "paper-tooltip": {
+    "npm": "@polymer/paper-tooltip",
+    "semver": "^3.0.0"
+  },
+  "promise-polyfill": {
+    "npm": "@polymer/promise-polyfill",
+    "semver": "^3.0.0-pre.18"
+  },
+  "test-fixture": {
+    "npm": "@polymer/test-fixture",
+    "semver": "^4.0.0"
+  },
+  "shadycss": {
+    "npm": "@webcomponents/shadycss",
+    "semver": "^1.0.0"
+  },
+  "webcomponentsjs": {
+    "npm": "@webcomponents/webcomponentsjs",
+    "semver": "^2.0.0"
+  },
+  "polymer": {
+    "npm": "@polymer/polymer",
+    "semver": "^3.0.0"
+  },
+  "hydrolysis": {
+    "npm": "hydrolysis",
+    "semver": "^1.0.0"
+  },
+  "web-component-tester": {
+    "npm": "wct-browser-legacy",
+    "semver": "^1.0.1"
+  },
+  "web-animations-js": {
+    "npm": "web-animations-js",
+    "semver": "^2.3.1"
+  },
+  "intl-messageformat": {
+    "npm": "intl-messageformat",
+    "semver": "^2.2.0"
+  },
+  "intl": {
+    "npm": "intl",
+    "semver": "^1.2.0"
+  },
+  "imagecapture-polyfill": {
+    "npm": "image-capture",
+    "semver": "^0.3.0"
+  },
+  "fetch": {
+    "npm": "whatwg-fetch",
+    "semver": "^2.0.0"
+  },
+  "sw-toolbox": {
+    "npm": "sw-toolbox",
+    "semver": "^3.6.0"
+  },
+  "es6-promise": {
+    "npm": "es6-promise",
+    "semver": "^4.0.0"
+  },
+  "webrtc-adapter": {
+    "npm": "webrtc-adapter",
+    "semver": "^3.0.0"
+  }
+}

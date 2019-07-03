@@ -30,7 +30,7 @@
 import * as plylog from 'plylog';
 import * as util from 'util';
 import {RemoteConsole} from 'vscode-languageserver';
-import * as winston from 'winston';
+import * as Transport from 'winston-transport';
 
 // tslint:disable: no-any super hacky code that pokes at the insides of things.
 
@@ -40,19 +40,23 @@ import * as winston from 'winston';
  * This is written somewhat strangely as winston seems to require that it be an
  * ES5-style class with inheritance through util.inherits.
  */
-interface ForwardingTransport extends winston.TransportInstance {}
+interface ForwardingTransport extends Transport {}
 interface ForwardingTransportStatic {
-  new (options: any): ForwardingTransport;
+  new(options: any): ForwardingTransport;
 
   console: RemoteConsole|undefined;
 }
-const ForwardingTransport = function(this: ForwardingTransport, _options: any) {
-} as any as ForwardingTransportStatic;
-util.inherits(ForwardingTransport, winston.Transport);
+const ForwardingTransport = function(
+                                this: ForwardingTransport, _options: any) {} as
+    any as ForwardingTransportStatic;
+util.inherits(ForwardingTransport, Transport);
 ForwardingTransport.console = undefined;
 
 ForwardingTransport.prototype.log = function(
-    this: ForwardingTransport, level: plylog.Level, msg: string, _meta: any,
+    this: ForwardingTransport,
+    level: plylog.Level,
+    msg: string,
+    _meta: any,
     callback: (err: Error|null, success: boolean) => void) {
   if (typeof msg !== 'string') {
     msg = util.inspect(msg);

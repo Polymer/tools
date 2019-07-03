@@ -1,0 +1,16 @@
+{
+  "index.html": {
+    "src/my-app.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "bower_components/polymer/polymer.html": {
+      "type": "document",
+      "weight": 1
+    },
+    "src/elements/my-element.html": {
+      "type": "document",
+      "weight": 1
+    }
+  }
+}

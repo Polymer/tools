@@ -23,8 +23,8 @@ import {DocumentCollection} from '../document-collection';
 import {generateShellMergeStrategy, BundleManifest} from '../bundle-manifest';
 import {ensureTrailingSlash, getFileUrl, resolvePath} from '../url-utils';
 
-const prefixArgument = '[underline]{prefix}';
-const pathArgument = '[underline]{path}';
+const prefixArgument = '{underline prefix}';
+const pathArgument = '{underline path}';
 
 const optionDefinitions = [
   {name: 'help', type: Boolean, alias: 'h', description: 'Print this message'},
@@ -120,6 +120,12 @@ const optionDefinitions = [
     description: 'Create and process sourcemaps for scripts.'
   },
   {
+    name: 'treeshake',
+    type: Boolean,
+    description:
+        'Use Rollup\'s treeshake feature to remove unused code from bundled output.'
+  },
+  {
     name: 'root',
     alias: 'r',
     type: String,
@@ -206,6 +212,7 @@ options.inlineScripts = Boolean(options['inline-scripts']);
 options.inlineCss = Boolean(options['inline-css']);
 options.rewriteUrlsInTemplates = Boolean(options['rewrite-urls-in-templates']);
 options.moduleResolution = options['module-resolution'];
+options.treeshake = Boolean(options['treeshake']);
 
 const {moduleResolution} = options;
 const urlLoader = new FsUrlLoader(projectRoot);

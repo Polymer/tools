@@ -87,20 +87,6 @@ export interface Config {
   browsers?: Browser[]|Browser;
 }
 
-export interface NPMPackage {
-  /**
-   * Name of the node package. e.g. '@polymer/polymer'
-   */
-  name: string;
-
-  /**
-   * JS entrypoints relative to packageName e.g. lodash/index.js would simply
-   * be ['index.js'] and myPackage/dist/addon.js and myPackage/lib/core.js would
-   * be ['dist/addon.js', 'lib/core.js']
-   */
-  jsEntrypoint: string;
-}
-
 /**
  * config helper: A basic function to synchronously read JSON,
  * log any errors, and return null if no file or invalid JSON
@@ -153,53 +139,6 @@ function resolvePackageDir(
   // resolve that and then drop the filename.
   return path.dirname(
       resolve.sync(path.join(packageName, 'package.json'), opts));
-}
-
-/**
- * Resolves npm paths from current config root to ScriptNames.
- *
- * e.g. a/b.js is actually resolved in directory c's node modules, it would
- * return c/node_modules/a/b.js. These dependencies must be direct dependencies
- * to WCT.
- *
- * @param config Current config / options / scope
- * @param npmPackages List of NPMScript objects to be resolved
- * @param wctPackageName Name of wct package with browser.js (Defaults to
- * wct-browser-legacy)
- */
-export function resolveWctNpmEntrypointNames(
-    config: Config, npmPackages: NPMPackage[]): string[] {
-  let wctPackageName = config.wctPackageName;
-  if (wctPackageName === undefined) {
-    wctPackageName = 'wct-browser-legacy';
-  }
-
-  let wctPackageRoot;
-  try {
-    wctPackageRoot = resolvePackageDir(wctPackageName, {basedir: config.root});
-  } catch {
-    throw new Error(
-        `${wctPackageName} not installed. Please change --wct-package-name` +
-        ` flag or install the package.`);
-  }
-
-  // We want to find and inject WCT's version of these dependencies, not the
-  // version from the package being tested.
-  const resolvedEntrypoints: string[] = [];
-  const rootNodeModules = path.join(config.root, 'node_modules');
-
-  for (const npmPackage of npmPackages) {
-    const absoluteFilepath = resolve.sync(
-        path.join(npmPackage.name, npmPackage.jsEntrypoint),
-        {basedir: wctPackageRoot});
-    const relativeFilepath = path.relative(rootNodeModules, absoluteFilepath);
-    const relativeUrl = (process.platform === 'win32') ?
-        relativeFilepath.replace(/\\/g, '/') :
-        relativeFilepath;
-    resolvedEntrypoints.push(relativeUrl);
-  }
-
-  return resolvedEntrypoints;
 }
 
 // The full set of options, as a reference.
@@ -289,8 +228,9 @@ export function defaults(): Config {
       port: undefined,
       hostname: 'localhost',
     },
-    // The name of the NPM package that is vending wct's browser.js
-    wctPackageName: 'wct-browser-legacy',
+    // The name of the NPM package that is vending wct's browser.js will be
+    // determined automatically if no name is specified.
+    wctPackageName: undefined,
 
     moduleResolution: 'node'
   };
@@ -339,6 +279,7 @@ const ARG_CONFIG = {
   },
   simpleOutput: {
     help: 'Avoid fancy terminal output.',
+    full: 'simple-output',
     flag: true,
   },
   skipUpdateCheck: {
@@ -348,7 +289,7 @@ const ARG_CONFIG = {
   },
   configFile: {
     help: 'Config file that needs to be used by wct. ie: wct.config-sauce.js',
-    full: 'configFile',
+    full: 'config-file',
   },
   npm: {
     help: 'Use node_modules instead of bower_components for all browser ' +
@@ -389,8 +330,10 @@ const ARG_CONFIG = {
   },
   wctPackageName: {
     full: 'wct-package-name',
-    help: 'NPM package name that contains web-component-tester\'s browser.js.' +
-        ' Defaults to wct-browser-legacy. This is only used in NPM projects.'
+    help: 'NPM package name that contains web-component-tester\'s browser ' +
+        'code.  By default, WCT will detect the installed package, but ' +
+        'this flag allows explicitly naming the package. ' +
+        'This is only to be used with --npm option.'
   },
 
   // Deprecated
@@ -432,7 +375,8 @@ export function fromDisk(matcher: string, root?: string): Config {
   // Load a shared config from the user's home dir, if they have one, and then
   // try the project-specific path (starting at the current working directory).
   const paths = _.union([globalFile, projectFile]);
-  const configs = _.filter(paths, fs.existsSync).map(loadProjectFile);
+  const configs =
+      _.filter(paths, fs.existsSync).map((f) => loadProjectFile(f as string));
   const options: Config = merge.apply(null, configs);
 
   if (!options.root && projectFile && projectFile !== globalFile) {
@@ -552,7 +496,7 @@ export function merge(): Config {
   let configs: Config[] = Array.prototype.slice.call(arguments);
   const result = <Config>{};
   configs = configs.map(normalize);
-  _.merge.apply(_, [result].concat(configs));
+  _.merge.apply(_, [result, ...configs]);
 
   // false plugin configs are preserved.
   configs.forEach(function(config) {
@@ -665,7 +609,7 @@ function expandDeprecated(context: Context) {
 
   if (fragments.length > 0) {
     // We are careful to modify context.options in place.
-    _.merge(context.options, merge.apply(null, fragments));
+    _.merge(context.options, merge.apply(null, fragments as any));
   }
 }
 

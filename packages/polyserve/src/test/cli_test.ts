@@ -46,6 +46,7 @@ suite('cli', () => {
           e ? reject(e) : resolve();
         }));
 
+    let failed = false;
     try {
       const serverInfos = await cliRun();
       if (serverInfos) {
@@ -56,8 +57,15 @@ suite('cli', () => {
               serverInfos.servers.map((s) => closeServer(s.server)));
         }
       }
+    } catch (e) {
+      failed = true;
+      throw e;
     } finally {
       unintercept();
+      if (failed) {
+        console.log('stdout from failed cli invocation:');
+        console.log(stdout);
+      }
       process.argv = originalArgv;
     }
     return stdout;
@@ -76,5 +84,4 @@ suite('cli', () => {
   test('launches mainline server', async () => {
     await runCli([]);
   });
-
 });

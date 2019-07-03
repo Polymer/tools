@@ -184,8 +184,8 @@ you based on the suites you ask it to load._
 
 The `wct` command line tool will pick up custom configuration from a
 `wct.conf.json` file located in the root of your project.
-Or, you can specify your own file via the `--configFile` command line option.
-Example: `--configFile my.wct.conf.js`
+Or, you can specify your own file via the `--config-file` command line option.
+Example: `--config-file my.wct.conf.js`
 If you define your own configuration file, make sure you also provide the correct root if needed.
 By default it will use the directory in which the configuration file is found as rootpath, which can result in errors if the file is in a sub directory.
 
@@ -214,11 +214,27 @@ Note that by specifying a plugin's configuration, you are letting WCT know that
 it should load that plugin. If you wish to provide default configuration for a
 plugin, but not enable it, you can have it default to disabled:
 
+Requesting that plugin via `--plugin` on the command line (or overriding the
+plugin's configuration to `disabled: false`) will cause the plugin to kick in.
+
+### Sauce
+
+The **sauce** plugin runs your tests on [Sauce](https://saucelabs.com/).
+
+To use the sauce plugin you need to include credentials. To do this, either
+set the `SAUCE_USERNAME` and `SAUCE_ACCESS_KEY` environment variables, or
+set the `username` and `accessKey` fields in the `plugins.sauce` section of
+your `wct.conf.json`.
+
+You can configure the browsers that Sauce will run by setting the `browsers`
+array in the plugin configuration. The options are the same as the ones documented
+on the Sauce Wiki [here](https://wiki.saucelabs.com/display/DOCS/Test+Configuration+Options#TestConfigurationOptions-RequiredSeleniumTestConfigurationSettings).
+For example:
+
 ```js
 {
   "plugins": {
     "sauce": {
-      "disabled": true,
       "browsers": [{
           "browserName": "microsoftedge",
           "platform": "Windows 10",
@@ -238,11 +254,6 @@ plugin, but not enable it, you can have it default to disabled:
   }
 }
 ```
-
-For more information on Sauce configuration, [see their Wiki](https://wiki.saucelabs.com/display/DOCS/Test+Configuration+Options#TestConfigurationOptions-RequiredSeleniumTestConfigurationSettings)
-
-Requesting that plugin via `--plugin` on the command line (or overriding the
-plugin's configuration to `disabled: false`) will cause the plugin to kick in.
 
 ## Variant dependencies
 
@@ -315,7 +326,7 @@ Alternatively, you can specify these options via the `clientOptions`
 key in `wct.conf.json`.
 
 A reference of the default configuration can be found at
-[browser/config.js](browser/config.js).
+[browser/config.ts](browser/config.ts).
 
 
 ## Gulp
@@ -395,7 +406,7 @@ follow.
 
 WCT supports node versions 8 and up.
 
-WCT experimentally supports running tests for web-components which are installed via npm to `node_modules` (instead of via bower to `bower_components`) by use of an `--npm` flag. Components which wish to support npm-based installation should include `wct-browser-legacy` in their `devDependencies`, which is a package that contains only the client-side javascript necessary for executing WCT tests in an npm-based environment.
+WCT supports running tests for web-components which are installed via npm to `node_modules` (instead of via bower to `bower_components`) by use of an `--npm` flag. Components which wish to support npm-based installation should include `wct-browser-legacy` in their `devDependencies`, which is a package that contains only the client-side javascript necessary for executing WCT tests in an npm-based environment.  WCT will attempt to identify which package provides the client-side code by checking for compatible packages in the following order of preference: `wct-mocha`, `wct-browser-legacy` and `web-component-tester`.  If you want to specify which package provides WCT client-side code, use the `--wct-package-name` flag or `wctPackageName` option in wct.conf.json with the npm package name. 
 
 
 <!-- References -->

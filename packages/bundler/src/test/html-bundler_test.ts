@@ -30,7 +30,28 @@ const stripSpace = (html: string): string =>
     html.replace(/>\s+/g, '>').replace(/>/g, '>\n').trim();
 
 suite('HtmlBundler', () => {
-
+  test('external script tag inlines without imports/exports', async () => {
+    // This is a regression test added to ensure coverage for
+    // https://github.com/Polymer/tools/issues/3323
+    const analyzer = inMemoryAnalyzer({
+      'entrypoint.html': heredoc`
+        <script src="module.js" type="module"></script>
+      `,
+      'module.js': heredoc`
+        console.log('import/export-free code');
+      `,
+    });
+    const bundler = new Bundler({analyzer});
+    const entrypointUrl = analyzer.resolveUrl('entrypoint.html')!;
+    const {documents} =
+        await bundler.bundle(await bundler.generateManifest([entrypointUrl]));
+    const entrypointDoc = documents.getHtmlDoc(entrypointUrl)!;
+    assert.deepEqual(entrypointDoc.content, heredoc`
+        <script type="module">
+        console.log('import/export-free code');
+        </script>
+      `);
+  });
   test('external script tag inlines an es6 module', async () => {
     const root = 'test/html/inline-es6-modules';
     const analyzer = new Analyzer({
@@ -60,7 +81,7 @@ suite('HtmlBundler', () => {
     const analyzer = new Analyzer({
       urlResolver: new FsUrlResolver(root),
       urlLoader: new FsUrlLoader(root),
-      moduleResolution: 'node'
+      moduleResolution: 'node',
     });
     const bundler = new Bundler({analyzer});
     const importUsingNodeModuleResolutionUrl =
@@ -173,9 +194,7 @@ suite('HtmlBundler', () => {
     });
 
     suite('Path rewriting', async () => {
-
       test('Rewrite URLs', async () => {
-
         const css = `
           x-element {
             background-image: url(foo.jpg);
@@ -206,6 +225,23 @@ suite('HtmlBundler', () => {
       });
 
       suite('Resolve Paths', () => {
+        test('rewrite relative paths, not absolute paths', () => {
+          const html = `
+            <a href="/absolute/path">Absolute Path</a>
+            <a href="relative/path">Relative Path</a>
+          `;
+
+          const expected = `
+            <a href="/absolute/path">Absolute Path</a>
+            <a href="my-element/relative/path">Relative Path</a>
+          `;
+
+          const ast = parse(html);
+          htmlBundler['_rewriteAstBaseUrl'](ast, importDocUrl, mainDocUrl);
+
+          const actual = parse5.serialize(ast);
+          assert.deepEqual(stripSpace(actual), stripSpace(expected));
+        });
 
         test('excluding template elements', () => {
           const html = `
@@ -309,7 +345,6 @@ suite('HtmlBundler', () => {
     });
 
     suite('Document <base> tag emulation', () => {
-
       test('Resolve Paths with <base href> having a trailing /', () => {
         const htmlBase = `
           <base href="components/my-element/">

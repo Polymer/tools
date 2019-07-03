@@ -49,22 +49,27 @@ interface Window {
 }
 
 interface Window {
-  executed: {[url: string]: true};
+  executed: {[url: string]: HTMLScriptElement|true};
   checkExecuted: (key: string) => void;
   executionOrder: string[];
+  addExecutedForImport?: (key: string) => void;
+  testImportMeta?: (url: string) => void;
 }
 
 window.checkExecuted = (key) => {
-  if (window.executed[key] === true) {
+  if (window.executed[key]) {
     throw new Error('already executed: ' + key);
   }
-  window.executed[key] = true;
+  // Note: IE11 doesn't support document.currentScript so just set mark as excuted.
+  window.executed[key] = document.currentScript as HTMLScriptElement || true;
 };
 
 setup(() => {
   define._reset!();
   window.executed = {};
   window.executionOrder = [];
+  window.addExecutedForImport = undefined;
+  window.testImportMeta = undefined;
 });
 
 test('define an empty module', (done) => {
@@ -84,6 +89,45 @@ suite('static dependencies', () => {
       assert.equal(x.x, 'x');
       assert.equal(y.y, 'y');
       done();
+    });
+  });
+
+  test('loads absolute path url', (done) => {
+    define(
+        ['/components/@polymer/esm-amd-loader-test/static/y/y.js'],
+        (y: any) => {
+          assert.equal(y.y, 'y');
+          done();
+        });
+  });
+
+  suite('with base tag', () => {
+    let base: HTMLBaseElement;
+
+    suiteSetup(() => {
+      base = document.createElement('base');
+      base.href = '/components/@polymer/esm-amd-loader-test/';
+      document.head!.appendChild(base);
+    });
+
+    suiteTeardown(() => {
+      document.head!.removeChild(base);
+    });
+
+    test('loads relative path url', (done) => {
+      define(['./static/y/y.js'], (y: any) => {
+        assert.equal(y.y, 'y');
+        done();
+      });
+    });
+
+    test('loads absolute path url', (done) => {
+      define(
+          ['/components/@polymer/esm-amd-loader-test/static/y/y.js'],
+          (y: any) => {
+            assert.equal(y.y, 'y');
+            done();
+          });
     });
   });
 
@@ -264,19 +308,29 @@ suite('dynamic require', () => {
   });
 
   test('calls error callback only once on multiple 404s', (done) => {
-    let numErrors = 0;
+    let num404s = 0;
+    let numCallbackCalls = 0;
+
+    window.addEventListener('error', on404, true);
+
+    function on404() {
+      num404s++;
+      if (num404s === 2) {
+        window.removeEventListener('error', on404);
+        // Need a tick to ensure the loader error handlers have fired.
+        setTimeout(() => {
+          assert.equal(numCallbackCalls, 1);
+          done();
+        });
+      }
+    }
 
     define(['require'], (require: any) => {
       require(
           ['./not-found-a.js', './not-found-b.js'],
           () => assert.fail(),
-          () => numErrors++);
+          () => numCallbackCalls++);
     });
-
-    setTimeout(() => {
-      assert.equal(numErrors, 1);
-      done();
-    }, 1000);
   });
 });
 
@@ -304,11 +358,11 @@ suite('meta.url', () => {
       base = document.createElement('base');
       // Note that fragments are included in import.meta.url.
       base.href = 'http://example.com/?foo#bar';
-      document.head.appendChild(base);
+      document.head!.appendChild(base);
     });
 
     suiteTeardown(() => {
-      document.head.removeChild(base);
+      document.head!.removeChild(base);
     });
 
     test('top-level HTML document', (done) => {
@@ -389,6 +443,105 @@ suite('cyclical dependencies', () => {
       assert.deepEqual(b.getterForA(), 'a');
       assert.deepEqual(a.usesBAtExecution, undefined);
       assert.deepEqual(b.usesAAtExecution, 'a');
+      done();
+    });
+  });
+});
+
+suite('html imports', () => {
+  function importHref(href: string) {
+    const link = document.createElement('link');
+    link.rel = 'import';
+    link.href = href;
+    document.head!.appendChild(link);
+  }
+
+  function testImport(href: string, expectedOrder: string[], done: () => void) {
+    // Each time an amd module in the chain is executed, it registers itself.
+    // If we've reached the length of modules we are expecing to be loaded,
+    // we check if the right modules were loaded in the expected order
+    window.addExecutedForImport = (name: string) => {
+      window.executionOrder.push(name);
+      if (window.executionOrder.length === expectedOrder.length) {
+        assert.deepEqual(window.executionOrder, expectedOrder);
+        done();
+      }
+    };
+
+    importHref(href);
+  }
+
+  test('modules in root level html import', (done) => {
+    testImport('root-html-import.html', ['x', 'root-html-import'], done);
+  });
+
+  test('modules inside deeper level html import', (done) => {
+    testImport(
+        '../html-import/y/deep-import.html',
+        ['x', 'z', 'y', 'deep-import'],
+        done);
+  });
+
+  test('imports with child imports', (done) => {
+    testImport(
+        '../html-import/parent-import.html',
+        ['z', 'y', 'child-import', 'x', 'parent-import'],
+        done);
+  });
+
+  test('import with meta', (done) => {
+    window.testImportMeta = (url) => {
+      assert.match(url, /https?:\/\/.+\/html-import\/meta\/import-meta.html/);
+      done();
+    };
+    importHref('../html-import/meta/import-meta.html');
+  });
+});
+
+suite('crossorigin attribute', () => {
+  function assertCrossoriginAttribute(crossorigin: string|null) {
+    const moduleCurrentScript = window.executed['y'];
+    if (moduleCurrentScript instanceof HTMLScriptElement) {
+      assert.equal(moduleCurrentScript.getAttribute('crossorigin'), crossorigin);
+    }
+  }
+
+  test('modules without crossorigin attribute default to anonymous', (done) => {
+    define(['./y.js'], () => {
+      assertCrossoriginAttribute('anonymous');
+      done();
+    });
+  });
+
+  test('modules with empty crossorigin attribute default to anonymous', (done) => {
+    const script = document.createElement('script');
+    script.setAttribute('crossorigin', '');
+    script.textContent = 'define(["./y.js"])';
+    document.head!.appendChild(script);
+    define(['./y.js'], () => {
+      assertCrossoriginAttribute('anonymous');
+      done();
+    });
+  });
+
+  test('modules with crossorigin=use-credentials attribute', (done) => {
+    const script = document.createElement('script');
+    script.setAttribute('crossorigin', 'use-credentials');
+    script.textContent = 'define(["./y.js"])';
+    document.head!.appendChild(script);
+    define(['./y.js'], () => {
+      assertCrossoriginAttribute('use-credentials');
+      done();
+    });
+  });
+
+  test('modules with crossorigin=anonymous attribute', (done) => {
+    const script = document.createElement('script');
+    script.setAttribute('crossorigin', 'anonymous');
+    script.textContent = 'define(["./y.js"])';
+    document.head!.appendChild(script);
+    define(['./y.js'], () => {
+      assertCrossoriginAttribute('anonymous');
       done();
     });
   });

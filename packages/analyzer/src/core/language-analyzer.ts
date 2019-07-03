@@ -12,4 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-export interface LanguageAnalyzer<T> { analyze(url: string): T; }
+export interface LanguageAnalyzer<T> {
+  analyze(url: string): T;
+}

@@ -122,10 +122,10 @@ suite('BuildBundler', () => {
   const addHeaders = new FileTransform((stream, file) => {
     if (path.extname(file.path) === '.html') {
       file.contents =
-          new Buffer(`<!-- ${path.basename(file.path)} -->${file.contents}`);
+          Buffer.from(`<!-- ${path.basename(file.path)} -->${file.contents}`);
     } else if (path.extname(file.path).match(/^\.(js|css)$/)) {
       file.contents =
-          new Buffer(`/* ${path.basename(file.path)} */${file.contents}`);
+          Buffer.from(`/* ${path.basename(file.path)} */${file.contents}`);
     }
     stream.push(file);
   });

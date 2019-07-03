@@ -39,15 +39,17 @@ const logger = logging.getLogger('cli.main');
 
 process.on('uncaughtException', (error: null|undefined|Partial<Error>) => {
   logger.error(`Uncaught exception: ${error}`);
-  if (error && error.stack)
+  if (error && error.stack) {
     logger.error(error.stack);
+  }
   process.exit(1);
 });
 
 process.on('unhandledRejection', (error: null|undefined|Partial<Error>) => {
   logger.error(`Promise rejection: ${error}`);
-  if (error && error.stack)
+  if (error && error.stack) {
     logger.error(error.stack);
+  }
   process.exit(1);
 });
 
@@ -187,15 +189,17 @@ export class PolymerCli {
     const commandName = parsedArgs.command;
     const commandArgs = parsedArgs.argv;
     const command = this.commands.get(commandName)!;
-    if (command == null)
+    if (command == null) {
       throw new TypeError('command is null');
+    }
 
     logger.debug(
         `command '${commandName}' found, parsing command args:`,
         {args: commandArgs});
 
     const commandDefinitions = mergeArguments([command.args, globalArguments]);
-    const commandOptionsRaw = commandLineArgs(commandDefinitions, commandArgs);
+    const commandOptionsRaw =
+        commandLineArgs(commandDefinitions, {argv: commandArgs});
     const commandOptions = parseCLIArgs(commandOptionsRaw);
     logger.debug(`command options parsed from args:`, commandOptions);
 

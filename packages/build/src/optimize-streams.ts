@@ -94,7 +94,7 @@ export class GenericOptimizeTransform extends Transform {
       try {
         let contents = file.contents.toString();
         contents = this.optimizer(contents, file);
-        file.contents = new Buffer(contents);
+        file.contents = Buffer.from(contents);
       } catch (error) {
         logger.warn(
             `${this.optimizerName}: Unable to optimize ${file.path}`,
@@ -137,14 +137,12 @@ export class JsTransform extends GenericOptimizeTransform {
 
     const transformer = (content: string, file: File) => {
       let transformModulesToAmd: boolean|'auto' = false;
-      let moduleScriptIdx;
 
       if (jsOptions.transformModulesToAmd) {
         if (isHtmlSplitterFile(file)) {
           // This is a type=module script in an HTML file. Definitely AMD
           // transform.
           transformModulesToAmd = file.isModule === true;
-          moduleScriptIdx = file.moduleScriptIdx;
         } else {
           // This is an external script file. Only AMD transform it if it looks
           // like a module.
@@ -160,7 +158,6 @@ export class JsTransform extends GenericOptimizeTransform {
         filePath: file.path,
         rootDir: options.rootDir,
         transformModulesToAmd,
-        moduleScriptIdx,
       });
     };
 

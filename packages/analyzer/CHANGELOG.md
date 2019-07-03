@@ -6,13 +6,61 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## Unreleased
-* Better support for handling errors early on in the analysis process (load,
-  parse, scan). This should solve the vast majority of Internal Error warnings.
 * When constructing an analyzer you can provide a fileToContentType, a
   function that can override a file's content type, to change how it
   will be parsed and analyzed. It is a function from a fully qualified
   url to a content type, like `text/html`.
 <!-- Add new, unreleased changes here. -->
+
+## [3.2.3] - 2019-06-04
+* Fix "Scheme is missing" errors from `vscode-uri` dependency which was broken
+  from a bad patch release in
+  https://github.com/microsoft/vscode-uri/commit/7f15d244457fd4e09c88264c676dc915beffb634
+
+## [3.2.2] - 2019-01-10
+* Removed non-essential files from published package, such as tests.
+
+## [3.2.1] - 2018-12-19
+* Recognize .mjs as JavaScript files.
+
+## [3.2.0] - 2018-12-03
+* Support annotating mixin class properties and methods using
+  `MixinClass.prototype.foo` syntax.
+
+## [3.1.3] - 2018-10-15
+* Make `HtmlDocument#stringify()` faster by only cloning the ast and stringifing
+  inline documents into the cloned ast.
+* Add `prettyPrint` option to `StringifyOptions`
+* Implement behavior changes based on `prettyPrint` flag for
+  `HtmlDocument`, `JavascriptDocument`, `CssDocument`, and `JsonDocument`
+
+## [3.1.2] - 2018-08-23
+* Failing to resolve an exported identifier will now be a warning instead
+  of an uncaught exception.
+
+## [3.1.1] - 2018-08-15
+* Legacy Polymer function component features will no longer have a `_template`
+  property.
+* Functions defined within exported objects are no longer themselves emitted as
+  top-level functions.
+
+## [3.1.0] - 2018-07-25
+* The `Function` type is now exported from `index.js`.
+* `Import` features now have an `astNodePath`.
+* `WarningStringifyOptions` now takes an optional `maxCodeLines` to print.
+* Elements registered with the legacy `Polymer()` function now have
+  `isLegacyPolymerFactoryCall: true`.
+* `@extends {SuperClass}` annotations are now parsed. Previously the type was
+  not extracted if it had curly braces.
+* Expressions annotated with `@constructor` will now be scanned as classes.
+* Ephemeral super classes will now be collapsed into their child classes.
+
+## [3.0.2] - 2018-06-28
+* Better support for resolving `export {foo as bar}` statements.
+
+## [3.0.1] - 2018-05-11
+* Better support for handling errors early on in the analysis process (load,
+  parse, scan). This should solve the vast majority of Internal Error warnings.
 
 ## [3.0.0] - 2018-05-08
 * `Analyzer#analyze` when called with an explicit list of files, will ignore

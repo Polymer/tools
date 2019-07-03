@@ -105,7 +105,7 @@ export class ScannedImport implements Resolvable {
   protected addCouldNotLoadWarning(document: Document, warning?: Warning) {
     const error = this.error && this.error.message || this.error ||
         warning && warning.message || '';
-    if (error)
+    if (error) {
       document.warnings.push(new Warning({
         code: 'could-not-load',
         message: `Unable to load import: ${error}`,
@@ -113,6 +113,7 @@ export class ScannedImport implements Resolvable {
         severity: Severity.ERROR,
         parsedDocument: document.parsedDocument,
       }));
+    }
   }
 
   /**

@@ -74,7 +74,8 @@ export function loadJsSuites(
 }
 
 export function runSuites(
-    reporter: MultiReporter, childSuites: string[],
+    reporter: MultiReporter,
+    childSuites: string[],
     done: (error?: any) => void) {
   util.debug('runSuites');
 

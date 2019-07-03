@@ -16,19 +16,13 @@ import * as polymerInit from '../../../init/init';
 import {PolymerCli} from '../../../polymer-cli';
 
 suite('init', () => {
-  let sandbox: sinon.SinonSandbox;
-
-  setup(() => {
-    sandbox = sinon.sandbox.create();
-  });
-
   teardown(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   test('runs the given generator when name argument is provided', async () => {
     const runGeneratorStub =
-        sandbox.stub(polymerInit, 'runGenerator').returns(Promise.resolve());
+        sinon.stub(polymerInit, 'runGenerator').returns(Promise.resolve());
     const cli = new PolymerCli(['init', 'shop']);
     await cli.run();
     assert.isOk(runGeneratorStub.calledOnce);
@@ -41,11 +35,10 @@ suite('init', () => {
       'prompts the user to select a generator when no argument is provided';
   test(testName, async () => {
     const promptSelectionStub =
-        sandbox.stub(polymerInit, 'promptGeneratorSelection')
+        sinon.stub(polymerInit, 'promptGeneratorSelection')
             .returns(Promise.resolve());
     const cli = new PolymerCli(['init']);
     await cli.run();
     assert.isOk(promptSelectionStub.calledOnce);
   });
-
 });

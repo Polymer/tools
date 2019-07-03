@@ -19,7 +19,7 @@ declare module 'command-line-args' {
    *     used.
    */
   function commandLineArgs(
-      descriptors: commandLineArgs.ArgDescriptor[], args?: string[]): any;
+      descriptors: commandLineArgs.ArgDescriptor[], options: {argv?: string[]}): any;
 
   export = commandLineArgs;
 }

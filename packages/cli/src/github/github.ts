@@ -18,7 +18,7 @@ import * as semver from 'semver';
 
 import request = require('request');
 import rimraf = require('rimraf');
-import GitHubApi = require('github');
+import GitHubApi = require('@octokit/rest');
 
 const gunzip = require('gunzip-maybe');
 const tar = require('tar-fs');
@@ -40,8 +40,7 @@ export class GithubResponseError extends Error {
   readonly url: string;
 
   constructor(
-      url: string,
-      statusCode: number|undefined,
+      url: string, statusCode: number|undefined,
       statusMessage: string|undefined) {
     super(`${statusCode} fetching ${url} - ${statusMessage}`);
     this.url = url;
@@ -84,15 +83,9 @@ export class Github {
     this._token = opts.githubToken || Github.tokenFromFile('token');
     this._owner = opts.owner;
     this._repo = opts.repo;
-    this._github = opts.githubApi || new GitHubApi({
-                     protocol: 'https',
-                   });
-    if (this._token != null) {
-      this._github.authenticate({
-        type: 'oauth',
-        token: this._token,
-      });
-    }
+    this._github = opts.githubApi ||
+        (this._token ? new GitHubApi({auth: `token ${this._token}`}) :
+                       new GitHubApi());
     this._request = opts.requestApi || request;
   }
 
@@ -165,11 +158,12 @@ export class Github {
     // Note that we only see the 100 most recent releases. If we ever release
     // enough versions that this becomes a concern, we'll need to improve this
     // call to request multiple pages of results.
-    const releases: GitHubApi.Release[] = await this._github.repos.getReleases({
+    const response = await this._github.repos.listReleases({
       owner: this._owner,
       repo: this._repo,
       per_page: 100,
     });
+    const releases = response.data;
     const validReleaseVersions =
         releases.filter((r) => semver.valid(r.tag_name)).map((r) => r.tag_name);
     const maxSatisfyingReleaseVersion =
@@ -187,17 +181,20 @@ export class Github {
   }
 
   async getBranch(branchName: string): Promise<CodeSource> {
-    // GitHubApi.Branch is not correct.
-    interface ActualBranch {
-      name: string;
-      commit: {sha: string};
-    }
-    const branch: ActualBranch = await this._github.repos.getBranch(
+    const response = await this._github.repos.getBranch(
         {owner: this._owner, repo: this._repo, branch: branchName});
+    const branch = response.data;
     return {
       name: branch.name,
       tarball_url: `https://codeload.github.com/${this._owner}/${
           this._repo}/legacy.tar.gz/${branch.commit.sha}`
     };
+  }
+
+  async getTag(tagName: string): Promise<CodeSource> {
+    const response = await this._github.repos.getReleaseByTag(
+        {owner: this._owner, repo: this._repo, tag: tagName});
+    const tag = response.data;
+    return {name: tag.name, tarball_url: tag.tarball_url};
   }
 }

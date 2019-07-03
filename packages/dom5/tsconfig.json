@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig-base.json",
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "outDir": "./lib",
+    "baseUrl": "./",
+    "paths": {
+      "parse5": [
+        "node_modules/@types/parse5",
+        "*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}

@@ -98,7 +98,8 @@ async function _runSauceTunnel(args: string[], output: NodeJS.WritableStream) {
   new CliReporter(emitter, output, <config.Config>{});
   const tunnelId = await new Promise<string>((resolve, reject) => {
     wctSauce.startTunnel(
-        options, emitter,
+        options,
+        emitter,
         (error: any, tunnelId: string) =>
             error ? reject(error) : resolve(tunnelId));
   });
@@ -110,6 +111,7 @@ async function _runSauceTunnel(args: string[], output: NodeJS.WritableStream) {
       'To use this tunnel for other WCT runs, export the following:\n');
   output.write('\n');
   output.write(chalk.cyan('export SAUCE_TUNNEL_ID=' + tunnelId) + '\n');
+  output.write('Press CTRL+C to close the sauce tunnel\n');
 }
 
 async function wrapResult(

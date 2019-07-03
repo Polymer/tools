@@ -55,7 +55,9 @@ export async function build(
 
   const compiledToES5 = (options.js === undefined) ?
       false :
-      options.js.compile === true || options.js.compile === 'es5';
+      options.js.compile === true || options.js.compile === 'es5' ||
+          (typeof options.js.compile === 'object' &&
+           options.js.compile.target === 'es5');
   if (compiledToES5) {
     buildStream =
         buildStream.pipe(polymerProject.addCustomElementsEs5Adapter());

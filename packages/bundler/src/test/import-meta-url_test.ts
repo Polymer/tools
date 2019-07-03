@@ -11,17 +11,11 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-import * as babel from 'babel-types';
 import {assert} from 'chai';
-import {Bundle} from 'magic-string';
-import {PackageRelativeUrl} from 'polymer-analyzer';
-
 import {Bundler} from '../bundler';
-
 import {heredoc, inMemoryAnalyzer} from './test-utils';
 
 suite('import.meta.url', () => {
-
   const analyzer = inMemoryAnalyzer({
     'a.js': `
       const myUrl = import.meta.url;
@@ -76,7 +70,7 @@ suite('import.meta.url', () => {
         aUrl: myUrl,
         bDefinedImportMeta: bundledImportMeta$1
       };
-      export { a as $a, b as $b, myUrl as myUrl$1, myUrl$1 as myUrl, myUrl as aUrl, bundledImportMeta$1 as bDefinedImportMeta };`);
+      export { a as $a, b as $b, myUrl as aUrl, bundledImportMeta$1 as bDefinedImportMeta, myUrl$1 as myUrl, myUrl as myUrl$1 };`);
   });
 
   test('multiple corrected import.meta.url values', async () => {
@@ -107,6 +101,6 @@ suite('import.meta.url', () => {
         bUrl: myUrl$1,
         myMeta: myMeta
       };
-      export { a as $a, c as $c, b as $b, myUrl, myUrl as aUrl, myUrl$1 as bUrl, myMeta, myUrl$1, myUrl as aUrl$1, bundledImportMeta$2 as bDefinedImportMeta };`);
+      export { a as $a, b as $b, c as $c, myUrl as aUrl, myUrl as aUrl$1, bundledImportMeta$2 as bDefinedImportMeta, myUrl$1 as bUrl, myMeta, myUrl, myUrl$1 };`);
   });
 });

@@ -41,7 +41,7 @@ export type TransitiveDependenciesMap = Map<ResolvedUrl, Set<ResolvedUrl>>;
 /**
  * The output format of the bundle.
  */
-export type BundleType = 'html-fragment' | 'es6-module';
+export type BundleType = 'html-fragment'|'es6-module';
 
 export const bundleTypeExtnames = new Map<BundleType, string>([
   ['es6-module', '.js'],

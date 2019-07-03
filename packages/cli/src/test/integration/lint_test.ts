@@ -15,14 +15,10 @@ import * as os from 'os';
 import {assert} from 'chai';
 import * as path from 'path';
 import {runCommand} from './run-command';
-import {invertPromise} from '../util';
+import {invertPromise, fixtureDir as fixturePath} from '../util';
 import {child_process} from 'mz';
 
-const fixturePath =
-    path.join(__dirname, '../../../src/test/integration/fixtures/');
-
 suite('polymer lint', function() {
-
   const binPath = path.join(__dirname, '../../../bin/polymer.js');
 
   this.timeout(8 * 1000);
@@ -56,8 +52,7 @@ suite('polymer lint', function() {
     const cwd = getTempCopy(fixtureDir);
     const output = await runCommand(binPath, ['lint', '--fix'], {cwd});
     assert.deepEqual(
-        fs.readFileSync(path.join(cwd, 'toplevel-bad.html'), 'utf-8'),
-        `<style>
+        fs.readFileSync(path.join(cwd, 'toplevel-bad.html'), 'utf-8'), `<style>
   div {
     @apply --foo;
   }
@@ -88,8 +83,7 @@ Fixed 2 warnings.
     const output = await runCommand(
         binPath, ['lint', '--fix', '-i', 'toplevel-bad.html'], {cwd});
     assert.deepEqual(
-        fs.readFileSync(path.join(cwd, 'toplevel-bad.html'), 'utf-8'),
-        `<style>
+        fs.readFileSync(path.join(cwd, 'toplevel-bad.html'), 'utf-8'), `<style>
   div {
     @apply --foo;
   }
@@ -210,7 +204,6 @@ Fixed 4 warnings.
       });
 
   suite('--watch', function() {
-
     this.timeout(12 * 1000);
 
     const delimiter =
@@ -221,7 +214,7 @@ Fixed 4 warnings.
       const cwd = getTempCopy(fixtureDir);
       const forkedProcess =
           child_process.fork(binPath, ['lint', '--watch'], {cwd, silent: true});
-      const reader = new StreamReader(forkedProcess.stdout);
+      const reader = new StreamReader(forkedProcess.stdout!);
       assert.deepEqual(await reader.readUntil(delimiter), '');
       fs.writeFileSync(
           path.join(cwd, 'my-elem.html'),
@@ -256,7 +249,7 @@ Found 1 error. 1 can be automatically fixed with --fix.
       const cwd = getTempCopy(fixtureDir);
       const forkedProcess = child_process.fork(
           binPath, ['lint', '--watch', '--fix'], {cwd, silent: true});
-      const reader = new StreamReader(forkedProcess.stdout);
+      const reader = new StreamReader(forkedProcess.stdout!);
       // The first pass yields no warnings:
       assert.deepEqual(
           await reader.readUntil(delimiter), 'No fixes to apply.\n');

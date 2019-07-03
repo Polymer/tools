@@ -7,12 +7,14 @@
 import * as commandLineArgs from 'command-line-args';
 
 const optionDescriptors = [
-  {name: 'help', type: Boolean}, {name: 'version', type: Boolean},
+  {name: 'help', type: Boolean},
+  {name: 'version', type: Boolean},
   {name: 'logToFile', type: String},
   // these args are passed in by vscode by default, even though
   // we don't care about them right now we don't want to fail
   // if they're given.
-  {name: 'stdio'}, {name: 'clientProcessId', type: Number}
+  {name: 'stdio'},
+  {name: 'clientProcessId', type: Number}
 ];
 
 interface Options {
@@ -21,7 +23,7 @@ interface Options {
   logToFile?: string;
 }
 
-const options = commandLineArgs(optionDescriptors, {});
+const options = commandLineArgs(optionDescriptors, {}) as Options;
 
 /**
  * Implements the [language server protocol][1] v3.0 for Web Components and

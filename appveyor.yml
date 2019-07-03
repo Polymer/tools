@@ -1,11 +1,13 @@
 environment:
-  nodejs_version: "9"
+  nodejs_version: "10"
 
 branches:
   only:
     - master
 
 install:
+  # Ignore checksum because of https://github.com/appveyor/ci/issues/2089
+  - choco install googlechrome --ignore-checksum
   - ps: Install-Product node $env:nodejs_version
   - npm i -g npm@latest
   - npm ci

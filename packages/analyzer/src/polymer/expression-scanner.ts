@@ -38,7 +38,9 @@ const isDataBindingTemplate = p.AND(
             p.hasTagName('dom-repeat'),
             p.hasTagName('dom-module')))));
 
-export interface Template extends parse5.ASTNode { content: parse5.ASTNode; }
+export interface Template extends parse5.ASTNode {
+  content: parse5.ASTNode;
+}
 
 /**
  * Given a node, return all databinding templates inside it.

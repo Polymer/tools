@@ -26,10 +26,10 @@ import constants from './constants';
  * Produces:
  *     'file:///something/something.html_omg.js?ponies'
  */
-export function appendUrlPath(url_: string, extension: string): string {
-  const uri = Uri.parse(url_);
-  uri['_path'] = `${uri.path}${extension}`;
-  return uri.toString();
+export function appendUrlPath(url: string, extension: string): string {
+  const {scheme, authority, path, query, fragment} = Uri.parse(url);
+  return Uri.from({scheme, authority, path: path + extension, query, fragment})
+      .toString();
 }
 /**
  * Given a string representing a relative path of some form, ensure a `./`
@@ -111,16 +111,6 @@ export function isTemplatedUrl(href: string): boolean {
 }
 
 /**
- * TODO(usergenic): Remove this hack if nodejs bug is fixed:
- * https://github.com/nodejs/node/issues/13683
- */
-function pathPosixRelative(from: string, to: string): string {
-  const relative = path.posix.relative(from, to);
-  return path === path.win32 ? relative.replace(/\.\.\.\./g, '../..') :
-                               relative;
-}
-
-/**
  * The path library's resolve function drops the trailing slash from the input
  * when returning the result.  This is bad because clients of the function then
  * have to ensure it is reapplied conditionally.  This function resolves the
@@ -134,45 +124,4 @@ export function resolvePath(...segments: string[]): string {
   const lastSegment = segments[segments.length - 1];
   const resolved = path.resolve(...segments);
   return lastSegment.endsWith('/') ? ensureTrailingSlash(resolved) : resolved;
-}
-
-/**
- * Modifies an href by the relative difference between the old base URL and
- * the new base URL.
- */
-export function rewriteHrefBaseUrl<T extends string>(
-    href: T, oldBaseUrl: ResolvedUrl, newBaseUrl: ResolvedUrl): T|
-    FileRelativeUrl {
-  if (isAbsolutePath(href)) {
-    return href;
-  }
-  const relativeUrl = url.resolve(oldBaseUrl, href);
-  const parsedFrom = url.parse(newBaseUrl);
-  const parsedTo = url.parse(relativeUrl);
-  if (parsedFrom.protocol === parsedTo.protocol &&
-      parsedFrom.host === parsedTo.host) {
-    let dirFrom = path.posix.dirname(
-        // Have to append a '_' to the path because path.posix.dirname('foo/')
-        // returns '.' instead of 'foo'.
-        parsedFrom.pathname ? parsedFrom.pathname + '_' : '');
-    let pathTo = parsedTo.pathname || '';
-    if (isAbsolutePath(oldBaseUrl) || isAbsolutePath(newBaseUrl)) {
-      dirFrom = ensureLeadingSlash(dirFrom);
-      pathTo = ensureLeadingSlash(pathTo);
-    }
-    const pathname = pathPosixRelative(dirFrom, pathTo);
-    return url.format({
-      pathname: pathname,
-      search: parsedTo.search,
-      hash: parsedTo.hash,
-    }) as FileRelativeUrl;
-  }
-  return relativeUrl as FileRelativeUrl;
-}
-
-/**
- * Ensures a leading slash on given string.
- */
-function ensureLeadingSlash(path: string): string {
-  return path.startsWith('/') ? path : '/' + path;
 }

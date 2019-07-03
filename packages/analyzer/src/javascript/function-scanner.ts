@@ -197,6 +197,14 @@ class FunctionVisitor implements Visitor {
 
   private isExported(path: NodePath): boolean {
     const node = path.node;
+    if (babel.isObjectExpression(node)) {
+      // This function recurses up the AST until it finds an exported statement.
+      // That's a little crude, since being within an exported statement doesn't
+      // necessarily mean the function itself is exported. There are lots of
+      // cases where this fails, but a method defined on an object is a common
+      // one.
+      return false;
+    }
     if (babel.isStatement(node)) {
       const parent = path.parent;
       if (parent && babel.isExportDefaultDeclaration(parent) ||

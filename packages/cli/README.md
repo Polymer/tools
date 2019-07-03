@@ -9,7 +9,7 @@ The command-line tool for Polymer projects and Web Components.
 ## Features
 
   - **init** - Create a new Polymer project from pre-configured starter templates
-  - **install** - Install dependencies and [dependency variants](https://www.polymer-project.org/2.0/docs/glossary#dependency-variants) via Bower
+  - **install** - Install dependencies and [dependency variants](https://www.polymer-project.org/3.0/docs/glossary#dependency-variants) via Bower
   - **serve**	- Serve elements and applications during development
   - **lint** - Lint a project to find and diagnose errors quickly
   - **test** - Test your project with [`web-component-tester`](https://github.com/Polymer/web-component-tester/)
@@ -17,7 +17,7 @@ The command-line tool for Polymer projects and Web Components.
   - **analyze** - Generate an analyzed JSON representation of your element or application
 
 > **For a detailed overview of the CLI, how it works and when to use it, check out the official
-[Polymer CLI guide](https://www.polymer-project.org/2.0/docs/tools/polymer-cli).**
+[Polymer CLI guide](https://www.polymer-project.org/3.0/docs/tools/polymer-cli).**
 > This README will focus on the individual CLI commands and how to run them.
 
 
@@ -39,15 +39,15 @@ When developing a web application, defining some configuration is recommended. S
 
 Here's a brief summary of the configuration options you can use to describe your web application structure:
 
-  - [`entrypoint`](https://www.polymer-project.org/2.0/docs/tools/polymer-json#entrypoint) (Defaults to `index.html`): The main entrypoint to your app.
-  - [`shell`](https://www.polymer-project.org/2.0/docs/tools/polymer-json#shell) (Optional): The app shell.
-  - [`fragments`](https://www.polymer-project.org/2.0/docs/tools/polymer-json#fragments) (Optional): A list of other entrypoints into your application.
+  - [`entrypoint`](https://www.polymer-project.org/3.0/docs/tools/polymer-json#entrypoint) (Defaults to `index.html`): The main entrypoint to your app.
+  - [`shell`](https://www.polymer-project.org/3.0/docs/tools/polymer-json#shell) (Optional): The app shell.
+  - [`fragments`](https://www.polymer-project.org/3.0/docs/tools/polymer-json#fragments) (Optional): A list of other entrypoints into your application.
   - `root` (Defaults to current working directory): The web root of your application, can be a subfolder of your project directory.
   - `sources` (Defaults to `src/**/*`): The source files in your application.
 
 Configuration can be passed to all commands via global CLI flags: `--entrypoint`, `--shell`, etc. However we recommend saving your configuration to a `polymer.json` configuration file in your project. This guarantees a single shared configuration that will be read automatically for every command. Other project settings, like build and lint rules, can also be defined here.
 
-Read the [polymer.json spec](https://www.polymer-project.org/2.0/docs/tools/polymer-json) for a full list of all supported fields with examples.
+Read the [polymer.json spec](https://www.polymer-project.org/3.0/docs/tools/polymer-json) for a full list of all supported fields with examples.
 
 
 ## Command Overview
@@ -70,7 +70,7 @@ Run `polymer init` to choose a template from a list of all installed templates. 
 
 Installs your dependencies from Bower or npm.
 
-If the `--variants` option is provided, the command will also search your project's `bower.json` for a `"variants"` property and install any dependency variants listed there. [Dependency variants](https://www.polymer-project.org/2.0/docs/glossary#dependency-variants) describe alternative sets of dependencies to install alongside your normal `bower_components/` folder. Other CLI commands like `polymer test` and `polymer serve` are able to read these alternative dependency sets and test/serve them in parallel. This is especially useful if you need to test your elements against multiple versions of Polymer and/or other dependencies.
+If the `--variants` option is provided, the command will also search your project's `bower.json` for a `"variants"` property and install any dependency variants listed there. [Dependency variants](https://www.polymer-project.org/3.0/docs/glossary#dependency-variants) describe alternative sets of dependencies to install alongside your normal `bower_components/` folder. Other CLI commands like `polymer test` and `polymer serve` are able to read these alternative dependency sets and test/serve them in parallel. This is especially useful if you need to test your elements against multiple versions of Polymer and/or other dependencies.
 
 By default, `polymer install` installs dependencies from Bower, similar to running `bower install`. If the `--npm` option is provided or `"npm": true` is specified in your `polymer.json`, then this command is equivalent to running `npm install`.
 
@@ -110,7 +110,7 @@ Run `polymer help test` for the full list of available options.
 
 Build a Polymer application for production. This includes support for optimizations like code bundling, minification, and ES6 compilation to run on older browsers.
 
-Most optimizations are disabled by default. To make sure the correct build enhancements are always used, you can provide a set of build configurations via the ["builds"](https://www.polymer-project.org/2.0/docs/tools/polymer-json#builds) field of your `polymer.json` file:
+Most optimizations are disabled by default. To make sure the correct build enhancements are always used, you can provide a set of build configurations via the ["builds"](https://www.polymer-project.org/3.0/docs/tools/polymer-json#builds) field of your `polymer.json` file:
 
 ```json
 "builds": [{
@@ -123,7 +123,7 @@ Most optimizations are disabled by default. To make sure the correct build enhan
 
 Run `polymer help build` for the full list of available options & optimizations.
 
-If you need support for something that is missing from the CLI, check out the [polymer-build](https://github.com/Polymer/polymer-build) library. Is the JS library that powers the CLI, and calling it directly gives you much greater control than the CLI can provide. Visit the repo for usage information and examples.
+If you need support for something that is missing from the CLI, check out the [polymer-build](https://github.com/Polymer/tools/tree/master/packages/build) library. Is the JS library that powers the CLI, and calling it directly gives you much greater control than the CLI can provide. Visit the repo for usage information and examples.
 
 
 ### `polymer analyze [files...]`
@@ -135,7 +135,7 @@ Run `polymer help analyze` for the full list of available options.
 
 ## Supported Node.js Versions
 
-Polymer CLI supports the [current & active LTS versions](https://github.com/nodejs/LTS) of Node.js and later. See the [Polymer Tools Node.js Support Policy](https://www.polymer-project.org/2.0/docs/tools/node-support) for more information.
+Polymer CLI supports the [current & active LTS versions](https://github.com/nodejs/LTS) of Node.js and later. See the [Polymer Tools Node.js Support Policy](https://www.polymer-project.org/3.0/docs/tools/node-support) for more information.
 
 ## Compiling from Source
 

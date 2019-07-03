@@ -65,35 +65,33 @@ export async function bundle(
 async function prepareBundleModule(
     bundler: Bundler, manifest: BundleManifest, assignedBundle: AssignedBundle):
     Promise<string> {
-      const bundleSource = babel.program([]);
-      const sourceAnalysis =
-          await bundler.analyzer.analyze([...assignedBundle.bundle.files]);
-      for (const sourceUrl of [...assignedBundle.bundle.files].sort()) {
-        const rebasedSourceUrl =
-            ensureLeadingDot(bundler.analyzer.urlResolver.relative(
-                stripUrlFileSearchAndHash(assignedBundle.url), sourceUrl));
-        const moduleDocument = getAnalysisDocument(sourceAnalysis, sourceUrl);
-        const moduleExports = getModuleExportNames(moduleDocument);
-        const starExportName =
-            getOrSetBundleModuleExportName(assignedBundle, sourceUrl, '*');
-        bundleSource.body.push(babel.importDeclaration(
-            [babel.importNamespaceSpecifier(babel.identifier(starExportName))],
-            babel.stringLiteral(rebasedSourceUrl)));
-        if (moduleExports.size > 0) {
-          bundleSource.body.push(babel.exportNamedDeclaration(
-              undefined, [babel.exportSpecifier(
-                             babel.identifier(starExportName),
-                             babel.identifier(starExportName))]));
-          bundleSource.body.push(babel.exportNamedDeclaration(
-              undefined,
-              [...moduleExports].map(
-                  (e) => babel.exportSpecifier(
-                      babel.identifier(e),
-                      babel.identifier(getOrSetBundleModuleExportName(
-                          assignedBundle, sourceUrl, e)))),
-              babel.stringLiteral(rebasedSourceUrl)));
-        }
-      }
-      const {code} = generate(bundleSource);
-      return code;
+  const bundleSource = babel.program([]);
+  const sourceAnalysis =
+      await bundler.analyzer.analyze([...assignedBundle.bundle.files]);
+  for (const resolvedSourceUrl of [...assignedBundle.bundle.files].sort()) {
+    const moduleDocument =
+        getAnalysisDocument(sourceAnalysis, resolvedSourceUrl);
+    const moduleExports = getModuleExportNames(moduleDocument);
+    const starExportName =
+        getOrSetBundleModuleExportName(assignedBundle, resolvedSourceUrl, '*');
+    bundleSource.body.push(babel.importDeclaration(
+        [babel.importNamespaceSpecifier(babel.identifier(starExportName))],
+        babel.stringLiteral(resolvedSourceUrl)));
+    if (moduleExports.size > 0) {
+      bundleSource.body.push(babel.exportNamedDeclaration(
+          undefined, [babel.exportSpecifier(
+                         babel.identifier(starExportName),
+                         babel.identifier(starExportName))]));
+      bundleSource.body.push(babel.exportNamedDeclaration(
+          undefined,
+          [...moduleExports].map(
+              (e) => babel.exportSpecifier(
+                  babel.identifier(e),
+                  babel.identifier(getOrSetBundleModuleExportName(
+                      assignedBundle, resolvedSourceUrl, e)))),
+          babel.stringLiteral(resolvedSourceUrl)));
     }
+  }
+  const {code} = generate(bundleSource);
+  return code;
+}

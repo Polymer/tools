@@ -12,8 +12,6 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-/// <reference path="../../../node_modules/@types/mocha/index.d.ts" />
-
 import {assert, use} from 'chai';
 import {Url} from 'url';
 

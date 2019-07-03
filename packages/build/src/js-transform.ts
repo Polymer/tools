@@ -98,13 +98,26 @@ const babelSyntaxPlugins = [
 ];
 
 const babelPresetMinify = require('babel-preset-minify')({}, {
-  // Disable the minify-constant-folding plugin because it has a bug relating to
-  // invalid substitution of constant values into export specifiers:
+
+  // Disable this or you get `{ err: 'Couldn\'t find intersection' }` now.
+  // https://github.com/babel/minify/issues/904
+  builtIns: false,
+
+  // Disable the minify-constant-folding plugin because it has a bug relating
+  // to invalid substitution of constant values into export specifiers:
   // https://github.com/babel/minify/issues/820
   evaluate: false,
 
   // TODO(aomarks) Find out why we disabled this plugin.
   simplifyComparisons: false,
+
+  // Prevent removal of things that babel thinks are unreachable, but sometimes
+  // gets wrong: https://github.com/Polymer/tools/issues/724
+  deadcode: false,
+
+  // Prevents this `isPure` on null problem from blowing up minification.
+  // https://github.com/babel/minify/issues/790
+  removeUndefined: false,
 
   // Disable the simplify plugin because it can eat some statements preceeding
   // loops. https://github.com/babel/minify/issues/824
@@ -158,13 +171,6 @@ export interface JsTransformOptions {
   // Whether to replace ES modules with AMD modules. If `auto`, run the
   // transform if the script contains any ES module import/export syntax.
   transformModulesToAmd?: boolean|'auto';
-
-  // If transformModulesToAmd is true, setting this option will update the
-  // generated AMD module to be 1) defined with an auto-generated name (instead
-  // of with no name), and 2) if > 0, to depend on the previously auto-generated
-  // module. This can be used to generate a dependency chain between module
-  // scripts.
-  moduleScriptIdx?: number;
 
   // If true, parsing of invalid JavaScript will not throw an exception.
   // Instead, a console error will be logged, and the original JavaScript will

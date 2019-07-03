@@ -33,6 +33,7 @@ import {getPushManifest, pushResources} from './util/push';
 import {getTLSCertificate} from './util/tls';
 
 import compression = require('compression');
+import cors = require('cors');
 
 const httpProxy = require('http-proxy-middleware');
 
@@ -100,6 +101,9 @@ export interface ServerOptions {
 
   /** Proxy to redirect for all matching `path` to `target` */
   proxy?: {path: string, target: string};
+
+  /** Sets the value of the Access-Control-Allow-Origin header */
+  allowOrigin?: string;
 
   /**
    * An optional list of routes & route handlers to attach to the polyserve
@@ -306,10 +310,13 @@ export async function startControlServer(
     res.send(JSON.stringify({
       packageName: options.packageName,
       mainlineServer: {
-        port: mainlineInfo.server.address().port,
+        port: assertNotString(mainlineInfo.server.address()).port,
       },
       variants: variantInfos.map((info) => {
-        return {name: info.variantName, port: info.server.address().port};
+        return {
+          name: info.variantName,
+          port: assertNotString(info.server.address()).port,
+        };
       })
     }));
     res.end();
@@ -368,7 +375,7 @@ export function getApp(options: ServerOptions): express.Express {
 
     let escapedPath = options.proxy.path;
 
-    for (const char of ['*', '?', '+']) {
+    for (const char of['*', '?', '+']) {
       if (escapedPath.indexOf(char) > -1) {
         console.warn(
             `Proxy path includes character "${char}"` +
@@ -404,6 +411,9 @@ export function getApp(options: ServerOptions): express.Express {
           options.componentUrl,
           options.componentDir));
 
+  if (options.allowOrigin) {
+    app.use(cors({origin: options.allowOrigin}));
+  }
 
   app.use(`/${componentUrl}/`, polyserve);
 
@@ -454,7 +464,7 @@ function isHttps(protocol: string): boolean {
  */
 export function getServerUrls(options: ServerOptions, server: http.Server) {
   options = applyDefaultServerOptions(options);
-  const address = server.address();
+  const address = assertNotString(server.address());
   const serverUrl: url.Url = {
     protocol: isHttps(options.protocol) ? 'https' : 'http',
     hostname: address.address,
@@ -554,4 +564,14 @@ async function tryStartWithPort(
       resolve(null);
     });
   });
+}
+
+// TODO(usergenic): Something changed in the typings of net.Server.address() in
+// that it can now return AddressInfo OR string.  I don't know the circumstances
+// where the the address() returns a string or how to handle it, so I made this
+// assert function when calling on the address to fix compilation errors and
+// have a runtime error as soon as the address is fetched.
+export function assertNotString<T>(value: string|T): T {
+  assert(typeof value !== 'string');
+  return value as T;
 }

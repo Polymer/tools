@@ -42,7 +42,9 @@ class DeprecatedShadowPiercingCombinators extends CssRule {
               parsedDocument.sourceRangeForShadyRange({start, end});
           warnings.push(new Warning({
             code: 'deprecated-shadow-dom-selectors',
-            severity: Severity.WARNING, parsedDocument, sourceRange,
+            severity: Severity.WARNING,
+            parsedDocument,
+            sourceRange,
             message:
                 'The /deep/ (>>>) combinator and ::shadow pseudo-element ' +
                 'have been deprecated.',

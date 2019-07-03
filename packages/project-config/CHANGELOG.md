@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## [4.0.3] - 2019-03-01
+* Added support for `treeshake` option to remove dead JavaScript code when bundling.
+
+## [4.0.2] - 2018-06-28
+* Add `modules` to the browser capabilities of the `uncompiled-bundled` and 
+  `uncompiled-unbundled` build presets.
+* Fix NPM audit warnings.
+
+## [4.0.1] - 2018-05-09
+* Fix names of `uncompiled-bundled` and `uncompiled-unbundled` build presets.
+
 ## [4.0.0] - 2018-05-08
 * Change the default value of `--module-resolution` to "node".
 

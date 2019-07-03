@@ -22,6 +22,7 @@ import {startServers, ServerOptions} from 'polyserve';
 import {ProjectConfig, ProjectOptions} from 'polymer-project-config';
 import * as tempMod from 'temp';
 import * as fs from 'fs';
+import {isNull} from 'util';
 
 const debugging = !!process.env['DEBUG_CLI_TESTS'];
 
@@ -52,7 +53,15 @@ async function serve(dirToServe: string, options: ServerOptions = {}) {
     startResult.server.close();
   });
   const address = startResult.server.address();
-  return `http://${address.address}:${address.port}`;
+  if (typeof address === 'string') {
+    return `http://${address}`;
+  } else if (!isNull(address)) {
+    return `http://${address.address}:${address.port}`;
+  } else {
+    // How you gonna serve without an address?  How is that even a server?  If a
+    // server can't respond to requests, is it *really* a server?
+    throw new Error(`No address returned when starting server. ${startResult}`);
+  }
 }
 
 async function requestAnimationFrame(page: puppeteer.Page) {
@@ -72,8 +81,8 @@ async function requestAnimationFrame(page: puppeteer.Page) {
  * ready.
  */
 async function gotoOrDie(page: puppeteer.Page, url: string) {
-  let error: string|undefined;
-  const handler = (e: string) => error = error || e;
+  let error: Error|undefined;
+  const handler = (e: Error) => (error = error || e);
   // Grab the first page error, if any.
   page.on('pageerror', handler);
   await page.goto(url);
@@ -92,7 +101,7 @@ async function gotoOrDie(page: puppeteer.Page, url: string) {
 
 suite('integration tests', function() {
   // Extend timeout limit to 90 seconds for slower systems
-  this.timeout(120000);
+  this.timeout(4 * 60 * 1000);
 
   suiteTeardown(async () => {
     await Promise.all(disposables.map((d) => d()));
@@ -164,7 +173,12 @@ suite('integration tests', function() {
       const ShopGenerator = createGithubGenerator({
         owner: 'Polymer',
         repo: 'shop',
+        semverRange: '^2.0.0',
         githubToken,
+        installDependencies: {
+          bower: true,
+          npm: false,
+        },
       });
 
       const dir = await runGenerator(ShopGenerator).toPromise();
@@ -186,12 +200,17 @@ suite('integration tests', function() {
         repo: 'polymer-starter-kit',
         semverRange: '^2.0.0',
         githubToken,
+        installDependencies: {
+          bower: true,
+          npm: false,
+        },
       });
 
       const dir = await runGenerator(PSKGenerator).toPromise();
       await runCommand(binPath, ['install'], {cwd: dir});
-      await runCommand(
-          binPath, ['lint', '--rules=polymer-2-hybrid'], {cwd: dir});
+      await runCommand(binPath, ['lint', '--rules=polymer-2-hybrid'], {
+        cwd: dir,
+      });
       // await runCommand(binPath, ['test'], {cwd: dir})
       await runCommand(binPath, ['build'], {cwd: dir});
     });
@@ -205,6 +224,10 @@ suite('integration tests', function() {
         repo: 'polymer-starter-kit',
         semverRange: '^3.0.0',
         githubToken,
+        installDependencies: {
+          bower: true,
+          npm: false,
+        },
       });
 
       const dir = await runGenerator(PSKGenerator).toPromise();
@@ -263,7 +286,7 @@ suite('import.meta support', async () => {
         js: {minify: true},
         css: {minify: true},
         html: {minify: true},
-        bundle: true
+        bundle: true,
       },
       {
         name: 'es6-bundled',
@@ -271,18 +294,18 @@ suite('import.meta support', async () => {
         js: {minify: true, transformModulesToAmd: true},
         css: {minify: true},
         html: {minify: true},
-        bundle: true
+        bundle: true,
       },
       {
         name: 'es5-bundled',
         js: {compile: true, minify: true, transformModulesToAmd: true},
         css: {minify: true},
         html: {minify: true},
-        bundle: true
-      }
+        bundle: true,
+      },
     ],
     moduleResolution: 'node',
-    npm: true
+    npm: true,
   };
   suiteSetup(function() {
     tempDir = temp.mkdirSync('-import-meta');
@@ -376,8 +399,9 @@ suite('import.meta support', async () => {
       const buildName = buildOption.name || 'default';
       testName = `import.meta works in build configuration ${buildName}`;
       test(testName, async function() {
-        const url = await serve(
-            path.join(tempDir, 'build', buildName), {compile: 'always'});
+        const url = await serve(path.join(tempDir, 'build', buildName), {
+          compile: 'always',
+        });
         const page = await assertPageWorksCorrectly(url, true);
         await gotoOrDie(page, `${url}/`);
         if (buildName !== 'esm-bundle') {
@@ -406,11 +430,15 @@ suite('polymer shop', function() {
     if (debugging) {
       browser = await puppeteer.launch({headless: false, slowMo: 250});
     } else {
-      browser = await puppeteer.launch();
+      // TODO(usergenic): For some unknown reason, tests failed in headless
+      // Chrome involving the `/cart` route for the Polymer/shop lit-element
+      // branch only.  Remove the `{headless: false}` when this problem is
+      // fixed.
+      browser = await puppeteer.launch({headless: false});
     }
     disposables.push(() => browser.close());
     const page = await browser.newPage();
-    page.on('pageerror', (e) => error = error || e);
+    page.on('pageerror', (e) => (error = error || e));
     // Evaluate an expression as a string in the browser.
     const evaluate = async (expression: string) => {
       try {
@@ -426,9 +454,10 @@ suite('polymer shop', function() {
           await evaluate(expression),
           `Expected \`${expression}\` to evaluate to true in the browser`);
     };
-    const waitFor = async (name: string, expression: string) => {
+    const waitFor =
+        async (name: string, expression: string, timeout?: number) => {
       try {
-        await page.waitForFunction(expression);
+        await page.waitForFunction(expression, {timeout});
       } catch (e) {
         throw new Error(`Error waiting for ${name} in the browser`);
       }
@@ -477,10 +506,11 @@ suite('polymer shop', function() {
     // successfully!
     await waitFor(
         'shop-cart to be defined',
-        `this.customElements.get('shop-cart') !== undefined`);
+        `this.customElements.get('shop-cart') !== undefined`,
+        3 * 60 * 1000);
   }
 
-  let error: string|undefined;
+  let error: Error|undefined;
   setup(async () => {
     error = undefined;
   });
@@ -501,10 +531,18 @@ suite('polymer shop', function() {
       if (debugDir != null) {
         dir = debugDir;
       } else {
-        // Cloning and installing takes a minute
-        this.timeout(2 * 60 * 1000);
-        const ShopGenerator = createGithubGenerator(
-            {owner: 'Polymer', repo: 'shop', githubToken, branch: '3.0'});
+        // Cloning and installing can take a few minutes
+        this.timeout(4 * 60 * 1000);
+        const ShopGenerator = createGithubGenerator({
+          owner: 'Polymer',
+          repo: 'shop',
+          githubToken,
+          tag: 'v3.0.0',
+          installDependencies: {
+            bower: false,
+            npm: true,
+          },
+        });
 
         dir = await runGenerator(ShopGenerator).toPromise();
         await runCommand(binPath, ['install'], {cwd: dir});
@@ -512,8 +550,10 @@ suite('polymer shop', function() {
     });
 
     test('serving sources with polyserve and `never` compile', async () => {
-      const baseUrl =
-          await serve(dir, {compile: 'never', moduleResolution: 'node'});
+      const baseUrl = await serve(dir, {
+        compile: 'never',
+        moduleResolution: 'node',
+      });
       await assertThatShopWorks(baseUrl);
     });
 
@@ -521,29 +561,32 @@ suite('polymer shop', function() {
     test(testName, async function() {
       // Compiling is a little slow.
       this.timeout(30 * 1000);
-      const baseUrl =
-          await serve(dir, {compile: 'always', moduleResolution: 'node'});
+      const baseUrl = await serve(dir, {
+        compile: 'always',
+        moduleResolution: 'node',
+      });
       await assertThatShopWorks(baseUrl);
     });
 
     test('serving sources with polyserve and `auto` compile', async () => {
-      const baseUrl =
-          await serve(dir, {compile: 'auto', moduleResolution: 'node'});
+      const baseUrl = await serve(dir, {
+        compile: 'auto',
+        moduleResolution: 'node',
+      });
       await assertThatShopWorks(baseUrl);
     });
 
     suite('when built with polymer build', () => {
-      const expectedBuildNames =
-          ['es5-bundled', 'es6-bundled', 'esm-bundled'].sort();
+      const expectedBuildNames = [
+        'es5-bundled',
+        'es6-bundled',
+        'esm-bundled',
+      ].sort();
       suiteSetup(async function() {
         // Building takes a few minutes.
         this.timeout(10 * 60 * 1000);
-        await Promise.all([
-          // Does not lint clean at the moment.
-          // TODO: https://github.com/Polymer/tools/issues/274
-          // runCommand(binPath, ['lint', '--rules=polymer-3'], {cwd: dir}),
-          runCommand(binPath, ['build'], {cwd: dir}),
-        ]);
+        await runCommand(binPath, ['lint'], { cwd: dir });
+        await runCommand(binPath, ['build'], { cwd: dir });
         const config =
             ProjectConfig.loadConfigFromFile(path.join(dir, 'polymer.json'));
         if (config == null) {
@@ -553,7 +596,6 @@ suite('polymer shop', function() {
             config.builds.map((b) => b.name || 'default').sort(),
             expectedBuildNames);
       });
-
 
       for (const buildName of expectedBuildNames) {
         test(`works in the ${buildName} configuration`, async () => {
@@ -571,13 +613,17 @@ suite('polymer shop', function() {
       if (debugDir != null) {
         dir = debugDir;
       } else {
-        // Cloning and installing takes a minute
-        this.timeout(2 * 60 * 1000);
+        // Cloning and installing can take a few minutes
+        this.timeout(4 * 60 * 1000);
         const ShopGenerator = createGithubGenerator({
           owner: 'Polymer',
           repo: 'shop',
           githubToken,
-          branch: 'lit-element'
+          branch: 'lit-element',
+          installDependencies: {
+            bower: false,
+            npm: true,
+          },
         });
 
         dir = await runGenerator(ShopGenerator).toPromise();
@@ -586,8 +632,10 @@ suite('polymer shop', function() {
     });
 
     test('serving sources with polyserve and `never` compile', async () => {
-      const baseUrl =
-          await serve(dir, {compile: 'never', moduleResolution: 'node'});
+      const baseUrl = await serve(dir, {
+        compile: 'never',
+        moduleResolution: 'node',
+      });
       await assertThatShopWorks(baseUrl);
     });
 
@@ -595,20 +643,27 @@ suite('polymer shop', function() {
     test(testName, async function() {
       // Compiling is a little slow.
       this.timeout(30 * 1000);
-      const baseUrl =
-          await serve(dir, {compile: 'always', moduleResolution: 'node'});
+      const baseUrl = await serve(dir, {
+        compile: 'always',
+        moduleResolution: 'node',
+      });
       await assertThatShopWorks(baseUrl);
     });
 
     test('serving sources with polyserve and `auto` compile', async () => {
-      const baseUrl =
-          await serve(dir, {compile: 'auto', moduleResolution: 'node'});
+      const baseUrl = await serve(dir, {
+        compile: 'auto',
+        moduleResolution: 'node',
+      });
       await assertThatShopWorks(baseUrl);
     });
 
     suite('when built with polymer build', () => {
-      const expectedBuildNames =
-          ['es5-bundled', 'es6-bundled', 'esm-bundled'].sort();
+      const expectedBuildNames = [
+        'es5-bundled',
+        'es6-bundled',
+        'esm-bundled',
+      ].sort();
       suiteSetup(async function() {
         // Building takes a few minutes.
         this.timeout(10 * 60 * 1000);

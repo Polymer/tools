@@ -13,7 +13,7 @@
  */
 
 import * as path from 'path';
-import {Analyzer, Import, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
+import {Analyzer, FsUrlResolver, Import, PackageRelativeUrl, ResolvedUrl} from 'polymer-analyzer';
 import {buildDepsIndex} from 'polymer-bundler/lib/deps-index';
 import {ProjectConfig} from 'polymer-project-config';
 
@@ -175,13 +175,15 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
   private basePath: PackageRelativeUrl;
 
   constructor(
-      config: ProjectConfig,
-      outPath?: LocalFsPath,
+      config: ProjectConfig, outPath?: LocalFsPath,
       basePath?: PackageRelativeUrl) {
     super({objectMode: true});
     this.files = new Map();
     this.config = config;
-    this.analyzer = new Analyzer({urlLoader: new FileMapUrlLoader(this.files)});
+    this.analyzer = new Analyzer({
+      urlLoader: new FileMapUrlLoader(this.files),
+      urlResolver: new FsUrlResolver(config.root),
+    });
     this.outPath =
         path.join(this.config.root, outPath || 'push-manifest.json') as
         LocalFsPath;
@@ -204,7 +206,7 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     // Push the new push manifest into the stream.
     yield new File({
       path: this.outPath,
-      contents: new Buffer(pushManifestContents),
+      contents: Buffer.from(pushManifestContents),
     });
   }
 
@@ -212,13 +214,15 @@ export class AddPushManifest extends AsyncTransformStream<File, File> {
     // Bundler's buildDepsIndex code generates an index with all fragments and
     // all lazy-imports encountered are the keys, so we'll use that function to
     // produce the set of all fragments to generate push-manifest entries for.
-    const allFragments = new Set(
-        (await buildDepsIndex(
-             this.config.allFragments.map(
-                 (path) => this.analyzer.resolveUrl(urlFromPath(
-                     this.config.root as LocalFsPath, path as LocalFsPath))!),
-             this.analyzer))
-            .keys());
+    const depsIndex = await buildDepsIndex(
+        this.config.allFragments.map(
+            (path) => this.analyzer.resolveUrl(urlFromPath(
+                this.config.root as LocalFsPath, path as LocalFsPath))!),
+        this.analyzer);
+    // Don't include bundler's fake "sub-bundle" URLs (e.g.
+    // "foo.html>external#1>bar.js").
+    const allFragments =
+        new Set([...depsIndex.keys()].filter((url) => !url.includes('>')));
 
     // If an app-shell exists, use that as our main push URL because it has a
     // reliable URL. Otherwise, support the single entrypoint URL.

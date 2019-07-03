@@ -28,7 +28,7 @@ export async function runCommand(
   options.silent = true;
   const forkedProcess = childProcess.fork(path, args, options);
   const outputPromise =
-      pipesToString(forkedProcess.stdout, forkedProcess.stderr);
+      pipesToString(forkedProcess.stdout!, forkedProcess.stderr!);
   // listen for errors as they may prevent the exit event from firing
   forkedProcess.on('error', (error) => {
     commandError = error;

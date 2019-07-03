@@ -24,8 +24,8 @@ import * as http from 'spdy';
 import * as supertest from 'supertest';
 import * as tmp from 'tmp';
 
-import {getApp, ServerOptions} from '../start_server';
-import {MainlineServer, startServer, startServers} from '../start_server';
+import {getApp, ServerOptions, StartServerResult} from '../start_server';
+import {assertNotString, startServer, startServers} from '../start_server';
 
 
 chai.use(chaiAsPromised);
@@ -161,8 +161,8 @@ suite('startServer', () => {
     const testCompilation = (options: {
       url: string,
       agent?: string,
-      compile: 'always' | 'never' | 'auto',
-      result: 'compiled' | 'uncompiled'
+           compile: 'always'|'never'|'auto',
+           result: 'compiled'|'uncompiled'
     }) => async () => {
       const url = options.url;
       const agent = options.agent;
@@ -257,7 +257,8 @@ suite('startServer', () => {
                root: __dirname,
                proxy: {
                  path: path,
-                 target: `http://localhost:${app.address().port}/`
+                 target:
+                     `http://localhost:${assertNotString(app.address()).port}/`
                }
              });
     }
@@ -484,7 +485,10 @@ suite('startServer', () => {
           // tslint:disable-next-line: no-any
           () => sinon.createStubInstance(http['Server']) as any as http.Server);
       createServerStub = sinon.stub(http, 'createServer').returns(_stubServer);
-      _stubServer.close = (cb) => cb.call(_stubServer);
+      _stubServer.close = (cb) => {
+        cb.call(_stubServer);
+        return _stubServer;
+      };
     }
 
     function _teardownStubServer() {
@@ -537,6 +541,24 @@ suite('startServer', () => {
   });
 });
 
+const disposables: Array<() => void> = [];
+teardown(() => {
+  for (const disposable of disposables) {
+    disposable();
+  }
+  disposables.length = 0;
+});
+
+function registerDisposalOfServers(servers: StartServerResult) {
+  if (servers.kind === 'mainline') {
+    disposables.push(() => servers.server.close());
+  } else {
+    disposables.push(() => {
+      servers.servers.forEach((s) => s.server.close());
+    });
+  }
+}
+
 suite('startServers', () => {
   suite('replace generated app with optional appMapper argument', () => {
     let prevCwd: string;
@@ -550,17 +572,18 @@ suite('startServers', () => {
     });
 
     test('allows replacing app with parent app', async () => {
-      const server = <MainlineServer>await startServers(
-          {}, async (app: express.Express) => {
-            const newApp = express();
-            newApp.use('x', function(_, res) {
-              res.send('x');
-            });
-            newApp.use('*', app);
-            return newApp;
-          });
-
-      assert.equal(server.kind, 'mainline');
+      const server = await startServers({}, async (app: express.Express) => {
+        const newApp = express();
+        newApp.use('x', function(_, res) {
+          res.send('x');
+        });
+        newApp.use('*', app);
+        return newApp;
+      });
+      registerDisposalOfServers(server);
+      if (server.kind !== 'mainline') {
+        throw new Error('Expected a mainline server');
+      }
 
       supertest(server.server).get('/x').expect(200, 'have an x\n');
       supertest(server.server).get('/test-file.txt').expect(200, 'PASS\n');
@@ -582,7 +605,7 @@ suite('startServers', () => {
 
     test('serves files out of a given components directory', async () => {
       const servers = await startServers({});
-
+      registerDisposalOfServers(servers);
       if (servers.kind !== 'MultipleServers') {
         throw new Error('Expected startServers to start multiple servers');
       }
@@ -608,10 +631,11 @@ suite('startServers', () => {
           await dispatchTester.get('/api/serverInfo').expect(200);
       assert.deepEqual(JSON.parse(apiResponse.text), {
         packageName: 'variants-test',
-        mainlineServer: {port: mainlineServer.server.address().port},
+        mainlineServer:
+            {port: assertNotString(mainlineServer.server.address()).port},
         variants: [
-          {name: 'bar', port: barServer.server.address().port},
-          {name: 'foo', port: fooServer.server.address().port}
+          {name: 'bar', port: assertNotString(barServer.server.address()).port},
+          {name: 'foo', port: assertNotString(fooServer.server.address()).port}
         ]
       });
       const pageResponse = await dispatchTester.get('/').expect(200);
@@ -637,6 +661,8 @@ suite('startServers', () => {
         'serves files out of the components directory specified by .bowerrc',
         async () => {
           const servers = await startServers({});
+          registerDisposalOfServers(servers);
+
           if (servers.kind !== 'MultipleServers') {
             throw new Error('Expected startServers to start multiple servers');
           }
@@ -664,10 +690,17 @@ suite('startServers', () => {
               await dispatchTester.get('/api/serverInfo').expect(200);
           assert.deepEqual(JSON.parse(apiResponse.text), {
             packageName: 'variants-bowerrc-test',
-            mainlineServer: {port: mainlineServer.server.address().port},
+            mainlineServer:
+                {port: assertNotString(mainlineServer.server.address()).port},
             variants: [
-              {name: 'bar', port: barServer.server.address().port},
-              {name: 'foo', port: fooServer.server.address().port}
+              {
+                name: 'bar',
+                port: assertNotString(barServer.server.address()).port
+              },
+              {
+                name: 'foo',
+                port: assertNotString(fooServer.server.address()).port
+              }
             ]
           });
           const pageResponse = await dispatchTester.get('/').expect(200);

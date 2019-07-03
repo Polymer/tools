@@ -33,7 +33,6 @@ export async function run(): Promise<StartServerResult> {
     description: 'Shows this help message',
     type: Boolean,
   });
-
   // tslint:disable-next-line: no-any We should declare/infer a type for this.
   let cliOptions: any;
 
@@ -67,6 +66,7 @@ export async function run(): Promise<StartServerResult> {
     certPath: cliOptions['cert'],
     pushManifestPath: cliOptions['manifest'],
     proxy: proxyArgs.path && proxyArgs.target && proxyArgs,
+    allowOrigin: cliOptions['allow-origin'],
   };
 
   if (cliOptions.help) {
@@ -80,7 +80,7 @@ export async function run(): Promise<StartServerResult> {
 
   if (typeof cliOptions['compile-cache'] === 'number') {
     console.log(`compile cache set to ${cliOptions['compile-cache']}`);
-    babelCompileCache['max'] = cliOptions['compiler-cache'];
+    babelCompileCache['max'] = cliOptions['compile-cache'];
   }
 
   const serverInfos = await startServers(options);

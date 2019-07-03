@@ -98,7 +98,6 @@ export function htmlTransform(
       !allScripts.some((node) => dom5.hasAttribute(node, 'nomodule'));
 
   let wctScript, firstModuleScript;
-  let moduleScriptIdx = 0;
 
   for (const script of allScripts) {
     const isModule = dom5.getAttribute(script, 'type') === 'module';
@@ -107,7 +106,7 @@ export function htmlTransform(
         firstModuleScript = script;
       }
       if (shouldTransformEsModuleToAmd) {
-        transformEsModuleToAmd(script, moduleScriptIdx++, options.js);
+        transformEsModuleToAmd(script, options.js);
         continue;  // Bypass the standard jsTransform below.
       }
     }
@@ -124,7 +123,8 @@ export function htmlTransform(
     } else if (wctScript === undefined) {
       const src = dom5.getAttribute(script, 'src') || '';
       if (src.includes('web-component-tester/browser.js') ||
-          src.includes('wct-browser-legacy/browser.js')) {
+          src.includes('wct-browser-legacy/browser.js') ||
+          src.includes('wct-mocha/wct-mocha.js')) {
         wctScript = script;
       }
     }
@@ -204,7 +204,7 @@ export function htmlTransform(
 }
 
 function transformEsModuleToAmd(
-    script: dom5.Node, idx: number, jsOptions: JsTransformOptions|undefined) {
+    script: dom5.Node, jsOptions: JsTransformOptions|undefined) {
   // We're not a module anymore.
   dom5.removeAttribute(script, 'type');
 
@@ -225,7 +225,6 @@ function transformEsModuleToAmd(
     const newJs = jsTransform(dom5.getTextContent(script), {
       ...jsOptions,
       transformModulesToAmd: true,
-      moduleScriptIdx: idx,
     });
     dom5.setTextContent(script, newJs);
   }

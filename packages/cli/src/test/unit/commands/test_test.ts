@@ -15,21 +15,15 @@ import * as wct from 'web-component-tester';
 import {PolymerCli} from '../../../polymer-cli';
 
 suite('test', () => {
-  let sandbox: sinon.SinonSandbox;
-
-  setup(() => {
-    sandbox = sinon.sandbox.create();
-  });
-
   teardown(() => {
-    sandbox.restore();
+    sinon.restore();
   });
 
   test(
       '--npm flag is passed to WCT and sets the --component-dir flag',
       async () => {
         const wctCliRunStub =
-            sandbox.stub(wct.cli, 'run').returns(Promise.resolve());
+            sinon.stub(wct.cli, 'run').returns(Promise.resolve());
         const cli = new PolymerCli(['test', '--npm']);
         await cli.run();
 
@@ -43,7 +37,7 @@ suite('test', () => {
           '--npm flag',
       async () => {
         const wctCliRunStub =
-            sandbox.stub(wct.cli, 'run').returns(Promise.resolve());
+            sinon.stub(wct.cli, 'run').returns(Promise.resolve());
         const cli =
             new PolymerCli(['test', '--npm', '--component-dir=path/to/deps/']);
         await cli.run();
@@ -54,8 +48,7 @@ suite('test', () => {
       });
 
   test('--component-dir flag is passed to WCT', async () => {
-    const wctCliRunStub =
-        sandbox.stub(wct.cli, 'run').returns(Promise.resolve());
+    const wctCliRunStub = sinon.stub(wct.cli, 'run').returns(Promise.resolve());
     const cli = new PolymerCli(['test', '--component-dir=path/to/deps/']);
     await cli.run();
 
@@ -65,8 +58,7 @@ suite('test', () => {
   });
 
   test('--module-resolution flag is passed to WCT', async () => {
-    const wctCliRunStub =
-        sandbox.stub(wct.cli, 'run').returns(Promise.resolve());
+    const wctCliRunStub = sinon.stub(wct.cli, 'run').returns(Promise.resolve());
     const cli = new PolymerCli(['test', '--module-resolution=none']);
     await cli.run();
 

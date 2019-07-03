@@ -37,8 +37,7 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
   files = new Map<ResolvedUrl, File>();
 
   constructor(
-      config: ProjectConfig,
-      buildAnalyzer: BuildAnalyzer,
+      config: ProjectConfig, buildAnalyzer: BuildAnalyzer,
       options: Options = {}) {
     super({objectMode: true});
 
@@ -46,41 +45,22 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
 
     this._buildAnalyzer = buildAnalyzer;
 
-    const {
-      analyzer,
-      excludes,
-      inlineCss,
-      inlineScripts,
-      rewriteUrlsInTemplates,
-      sourcemaps,
-      stripComments,
-      urlMapper
-    } = options;
-    let {strategy} = options;
+    const bundlerOptions = {...options};
 
-    const urlLoader =
-        new FileMapUrlLoader(this.files, analyzer || buildAnalyzer.analyzer);
-    const forkedAnalyzer =
-        (analyzer || buildAnalyzer.analyzer)._fork({urlLoader});
+    const urlLoader = new FileMapUrlLoader(
+        this.files, bundlerOptions.analyzer || buildAnalyzer.analyzer);
+    bundlerOptions.analyzer =
+        (bundlerOptions.analyzer || buildAnalyzer.analyzer)._fork({urlLoader});
 
-    if (strategy === undefined && this.config.shell !== undefined) {
-      strategy =
-          generateShellMergeStrategy(forkedAnalyzer.resolveUrl(urlFromPath(
+    if (bundlerOptions.strategy === undefined &&
+        this.config.shell !== undefined) {
+      bundlerOptions.strategy = generateShellMergeStrategy(
+          bundlerOptions.analyzer.resolveUrl(urlFromPath(
               this.config.root as LocalFsPath,
               this.config.shell as LocalFsPath))!);
     }
 
-    this._bundler = new Bundler({
-      analyzer: forkedAnalyzer,
-      excludes,
-      inlineCss,
-      inlineScripts,
-      rewriteUrlsInTemplates,
-      sourcemaps,
-      stripComments,
-      strategy,
-      urlMapper,
-    });
+    this._bundler = new Bundler(bundlerOptions);
   }
 
   protected async *
@@ -111,7 +91,7 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
         path: pathFromUrl(
             this.config.root as LocalFsPath,
             this._bundler.analyzer.urlResolver.relative(url)),
-        contents: new Buffer(document.content),
+        contents: Buffer.from(document.content),
       }));
     }
   }
@@ -169,3 +149,4 @@ export class BuildBundler extends AsyncTransformStream<File, File> {
       }
     }
   }
+}

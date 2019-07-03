@@ -1,0 +1,19 @@
+{
+  "excludeFiles": [
+    "exclude-me.js"
+  ],
+  "excludeIdentifiers": [
+    "ExcludeThisClass",
+    "exclude_this_method",
+    "exclude_this_property"
+  ],
+  "autoImport": {
+    "./module-a.js": [
+      "ClassA1",
+      "ClassA2"
+    ],
+    "@polymer/external-package": [
+      "ExternalPackageClass"
+    ]
+  }
+}

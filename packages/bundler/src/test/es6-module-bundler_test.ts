@@ -11,9 +11,8 @@
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
-/// <reference path="../../node_modules/@types/chai/index.d.ts" />
+
 /// <reference path="../../node_modules/@types/node/index.d.ts" />
-/// <reference path="../../node_modules/@types/mocha/index.d.ts" />
 import {assert} from 'chai';
 
 import {Bundle, mergeBundles} from '../bundle-manifest';
@@ -22,7 +21,6 @@ import {bundle} from '../es6-module-bundler';
 import {heredoc, inMemoryAnalyzer} from './test-utils';
 
 suite('Es6ModuleBundler', () => {
-
   const analyzer = inMemoryAnalyzer({
     'multiple-inline-modules.html': `
       <script type="module">
@@ -86,7 +84,7 @@ suite('Es6ModuleBundler', () => {
         manifest.getBundleForFile(multipleInlineModulesUrl)!;
     const sharedBundle = {
       url: sharedBundleUrl,
-      bundle: manifest.bundles.get(sharedBundleUrl)!
+      bundle: manifest.bundles.get(sharedBundleUrl)!,
     };
     assert.deepEqual(manifest.getBundleForFile(abcUrl)!, sharedBundle);
     assert.deepEqual(
@@ -117,12 +115,14 @@ suite('Es6ModuleBundler', () => {
         Y: Y,
         Z: Z
       };
-      export { abc as $abc, upcase$1 as $upcase, xyz as $xyz, A, B, C, upcase, X, Y, Z };`);
+      export { abc as $abc, upcase$1 as $upcase, xyz as $xyz, A, B, C, X, Y, Z, upcase };`);
   });
 
   test('resolving name conflict in a shared bundle', async () => {
-    const bundler = new Bundler(
-        {analyzer, strategy: (bundles: Bundle[]) => [mergeBundles(bundles)]});
+    const bundler = new Bundler({
+      analyzer,
+      strategy: (bundles: Bundle[]) => [mergeBundles(bundles)],
+    });
     const manifest = await bundler.generateManifest([xyzUrl, omgzUrl]);
     const sharedBundleDocument =
         await bundle(bundler, manifest, sharedBundleUrl);
@@ -146,6 +146,6 @@ suite('Es6ModuleBundler', () => {
         Y: Y,
         Z: Z$1
       };
-      export { omgz as $omgz, upcase$1 as $upcase, xyz as $xyz, Z, upcase, X, Y, Z$1 };`);
+      export { omgz as $omgz, upcase$1 as $upcase, xyz as $xyz, X, Y, Z, Z$1, upcase };`);
   });
 });

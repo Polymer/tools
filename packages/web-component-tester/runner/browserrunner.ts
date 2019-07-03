@@ -109,7 +109,10 @@ export class BrowserRunner {
       this.browser.on('http', (method: any, path: any, data: any) => {
         if (data) {
           emitter.emit(
-              'log:debug', this.def, chalk.magenta(method), chalk.cyan(path),
+              'log:debug',
+              this.def,
+              chalk.magenta(method),
+              chalk.cyan(path),
               data);
         } else {
           emitter.emit(
@@ -239,8 +242,10 @@ export class BrowserRunner {
     browser.quit((quitError) => {
       if (quitError) {
         this.emitter.emit(
-            'log:warn', this.def,
-            'Failed to quit:', quitError.data || quitError);
+            'log:warn',
+            this.def,
+            'Failed to quit:',
+            quitError.data || quitError);
       }
       if (error) {
         this._reject(error);

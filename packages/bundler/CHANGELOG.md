@@ -8,6 +8,42 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## 4.0.10 - 2019-06-04
+* Fix "Scheme is missing" errors from `vscode-uri` dependency which was broken
+  from a bad patch release in
+  https://github.com/microsoft/vscode-uri/commit/7f15d244457fd4e09c88264c676dc915beffb634
+
+## 4.0.9 - 2019-03-01
+* Upgraded Rollup to version 1.3.0.
+* Added support for `treeshake` option to remove dead JavaScript code when bundling.
+
+## 4.0.8 - 2019-02-12
+* Fixed issue involving absolute paths being rewritten as relative paths when bundled https://github.com/Polymer/tools/issues/3348.
+
+## 4.0.7 - 2019-01-31
+* URLs in bundled output will now honor developer's intent to render URLs with protocols instead of as relative URLs where applicable.
+
+## 4.0.6 - 2019-01-18
+* Fixed issue involving rewriting relative URLs involving crossing `--redirect` boundaries (polymer-bundler CLI feature).
+* Removed a couple of exported functions from `url-utils`: `pathPosixRelative` and `rewriteHrefBaseUrl`.
+
+## 4.0.5 - 2019-01-10
+* Fixed issue where excluded URLs were not resolved by the analyzer when bundler was initialized, resulting in some imports not being treated as excluded.
+* Fixed issue where `<script type="module" src="x.js">` tags would not inline if the referenced script contained no `import` or `export` statements.
+* Removed non-essential files from published package, such as tests.
+
+## 4.0.4 - 2018-10-18
+* Fixed issue with newer version of chalk that broke `polymer-bundler -h` output. https://github.com/Polymer/tools/issues/741
+
+## 4.0.3 - 2018-10-15
+* Fix issue with multiple dynamic imports of the same fragment.  https://github.com/Polymer/tools/issues/568
+
+## 4.0.2 - 2018-06-28
+* Fix NPM audit warnings.
+
+## 4.0.1 - 2018-05-11
+* Added missing `babel-types` to dependencies instead of relying on it transitively.
+
 ## 4.0.0 - 2018-05-08
 * Fixed inline module scripts which used bare name specifiers to correctly resolve them using the module resolutions of the Analyzer.
 

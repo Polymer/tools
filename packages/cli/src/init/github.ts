@@ -18,12 +18,20 @@ import {Github} from '../github/github';
 
 const logger = logging.getLogger('cli.init');
 
+export interface InstallOptions {
+  bower?: boolean;
+  npm?: boolean;
+  yarn?: boolean;
+}
+
 export interface GithubGeneratorOptions {
   githubToken?: string;
   owner: string;
   repo: string;
   semverRange?: string;
   branch?: string;
+  tag?: string;
+  installDependencies?: InstallOptions;
 }
 
 export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
@@ -33,12 +41,14 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
   const repo = githubOptions.repo;
   const semverRange = githubOptions.semverRange || '*';
   const branch = githubOptions.branch;
+  const tag = githubOptions.tag;
+  const installDependencies = githubOptions.installDependencies;
 
   return class GithubGenerator extends Generator {
     _github: Github;
 
     constructor(args: string|string[], options: {}|null|undefined) {
-      super(args, options);
+      super(args, options || {});
       this._github = new Github({owner, repo, githubToken});
     }
 
@@ -53,14 +63,16 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
     async _writing() {
       let codeSource;
 
-      if (branch === undefined) {
+      if (branch) {
+        codeSource = await this._github.getBranch(branch!);
+      } else if (tag) {
+        codeSource = await this._github.getTag(tag);
+      } else {
         logger.info(
             (semverRange === '*') ?
                 `Finding latest release of ${owner}/${repo}` :
                 `Finding latest ${semverRange} release of ${owner}/${repo}`);
         codeSource = await this._github.getSemverRelease(semverRange);
-      } else {
-        codeSource = await this._github.getBranch(branch);
       }
 
       await this._github.extractReleaseTarball(
@@ -69,12 +81,16 @@ export function createGithubGenerator(githubOptions: GithubGeneratorOptions):
     }
 
     async writing(): Promise<void> {
-      const done = this.async();
+      // TODO(usergenic): Cast here to any because the yeoman-generator typings
+      // for 2.x are not surfacing the async() method placed onto the Generator
+      // in the constructor.
+      // tslint:disable-next-line
+      const done = (this as any).async();
       this._writing().then(() => done(), (err) => done(err));
     }
 
     install() {
-      this.installDependencies();
+      this.installDependencies(installDependencies);
     }
   };
 }

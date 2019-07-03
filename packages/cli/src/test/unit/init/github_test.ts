@@ -24,7 +24,7 @@ import yeoGen = require('yeoman-generator');
 function createTestGenerator(
     generatorOptions: {owner: string, repo: string, semverRange?: string},
     generatorWillRun: (generator: yeoGen) => void) {
-  return function TestGenerator(args: string[]|string, options?: {}) {
+  return function TestGenerator(args: string[]|string, options: {} = {}) {
     const GithubGenerator = createGithubGenerator(generatorOptions);
     const githubGenerator = new GithubGenerator(args, options);
     generatorWillRun(githubGenerator);
@@ -33,9 +33,7 @@ function createTestGenerator(
 }
 
 suite('init/github', () => {
-
   suite('createGithubGenerator()', () => {
-
     const semverMatchingRelease = {
       tarball_url: 'MATCHING_RELEASE_TARBALL_URL',
       tag_name: 'MATCHING_RELEASE_TAG_NAME',
@@ -53,13 +51,17 @@ suite('init/github', () => {
             repo: 'shop',
           },
           function setupGeneratorStubs(generator) {
+            const {_github} = (generator as unknown as {
+              _github:
+                  {getSemverRelease: unknown, extractReleaseTarball: unknown}
+            });
             getSemverReleaseStub =
                 // tslint:disable-next-line: no-any
-                sinon.stub((generator as any)._github, 'getSemverRelease')
+                sinon.stub(_github, 'getSemverRelease')
                     .returns(Promise.resolve(semverMatchingRelease));
             extractReleaseTarballStub =
                 // tslint:disable-next-line: no-any
-                sinon.stub((generator as any)._github, 'extractReleaseTarball')
+                sinon.stub(_github, 'extractReleaseTarball')
                     .returns(Promise.resolve());
           });
 
@@ -86,13 +88,17 @@ suite('init/github', () => {
             semverRange: testSemverRange,
           },
           function setupGeneratorStubs(generator) {
+            const {_github} = generator as unknown as {
+              _github:
+                  {getSemverRelease: unknown, extractReleaseTarball: unknown}
+            };
             getSemverReleaseStub =
                 // tslint:disable-next-line: no-any
-                sinon.stub((generator as any)._github, 'getSemverRelease')
+                sinon.stub(_github, 'getSemverRelease')
                     .returns(Promise.resolve(semverMatchingRelease));
             extractReleaseTarballStub =
                 // tslint:disable-next-line: no-any
-                sinon.stub((generator as any)._github, 'extractReleaseTarball')
+                sinon.stub(_github, 'extractReleaseTarball')
                     .returns(Promise.resolve());
           });
 
@@ -104,7 +110,5 @@ suite('init/github', () => {
         done();
       });
     });
-
   });
-
 });

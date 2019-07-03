@@ -1,0 +1,72 @@
+{
+  "name": "iron-doc-viewer",
+  "version": "3.3.2",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "description": "Elements for rendering Polymer component documentation.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-doc-viewer.git"
+  },
+  "main": [
+    "iron-doc-viewer.html",
+    "default-theme.html",
+    "iron-doc-nav.html"
+  ],
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/PolymerElements/iron-doc-viewer/",
+  "ignore": [
+    "/.*",
+    "/tests/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#1.9 - 2",
+    "iron-location": "PolymerElements/iron-location#1 - 2",
+    "marked-element": "PolymerElements/marked-element#1 - 2",
+    "paper-styles": "PolymerElements/paper-styles#1 - 2",
+    "prism-element": "PolymerElements/prism-element#1 - 2"
+  },
+  "devDependencies": {
+    "iron-ajax": "PolymerElements/iron-ajax#1 - 2",
+    "iron-component-page": "PolymerElements/iron-component-page#1 - 2",
+    "test-fixture": "PolymerElements/test-fixture#^3.0.0-rc.1",
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  },
+  "variants": {
+    "1.x": {
+      "dependencies": {
+        "polymer": "Polymer/polymer#^1.9",
+        "iron-location": "PolymerElements/iron-location#^1.0.0",
+        "marked-element": "PolymerElements/marked-element#^1.0.0",
+        "paper-styles": "PolymerElements/paper-styles#^1.0.0",
+        "prism-element": "PolymerElements/prism-element#^1.0.0"
+      },
+      "devDependencies": {
+        "iron-ajax": "PolymerElements/iron-ajax#^1.0.0",
+        "iron-component-page": "PolymerElements/iron-component-page#^1.0.0"
+      },
+      "resolutions": {
+        "webcomponentsjs": "^0.7"
+      }
+    }
+  },
+  "resolutions": {
+    "webcomponentsjs": "^1.0.0"
+  },
+  "_release": "3.3.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.3.2",
+    "commit": "f8088a1d0f02e6c7768a394f5e979080c474f484"
+  },
+  "_source": "https://github.com/PolymerElements/iron-doc-viewer.git",
+  "_target": "^3.0.0",
+  "_originalSource": "PolymerElements/iron-doc-viewer"
+}

@@ -8,6 +8,32 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased items here. -->
 
+## 6.9.2 - 2018-12-23
+* Fix gulpfile to actually build browser.js.
+
+## 6.9.1 - 2018-12-19
+* Update WCT dependencies to reduce vulnerabilities in npm security audit.
+
+## 6.9.0 - 2018-10-25
+* Official release with `wct-mocha` support after verifying it in active projects.
+
+## 6.9.0-pre.1 - 2018-10-15
+* Added support for `wct-mocha` as an npm package.
+* The `wctPackageName` config option is now optional as `wct` will scan for appropriate installed client-side package (`wct-mocha`, `wct-browser-legacy` or `web-component-tester`).
+
+## 6.8.0 - 2018-08-15
+* Fixed client-side memory leak.
+* Updated wct-sauce to v2.1.0, which changes the set of browsers when testing
+  on Travis CI.
+
+## 6.7.1 - 2018-06-25
+* Converted from promisify-node to native Node version of promisify.  Officially breaks support for node v6.
+
+## 6.7.0 - 2018-06-19
+* Updated Mocha to v5
+* Updated wct-st to *not* force-exit process after `runSauceTunnel()` promise is rejected/resolved. 
+* Fixed incorrect CLI arguments
+
 ## 6.6.0 - 2018-05-08
 * Dropped support for node v6. This is a soft break, as we aren't
   making any changes that are known to break node v6, but we're no longer testing against it. See our [node version support policy](https://www.polymer-project.org/2.0/docs/tools/node-support)

@@ -44,15 +44,23 @@ export interface Config {
 export let _config: Config = {
   environmentScripts: !!window.__wctUseNpm ?
       [
-        'stacky/browser.js', 'async/lib/async.js', 'lodash/index.js',
-        'mocha/mocha.js', 'chai/chai.js', '@polymer/sinonjs/sinon.js',
+        'stacky/browser.js',
+        'async/lib/async.js',
+        'lodash/index.js',
+        'mocha/mocha.js',
+        'chai/chai.js',
+        '@polymer/sinonjs/sinon.js',
         'sinon-chai/lib/sinon-chai.js',
         'accessibility-developer-tools/dist/js/axs_testing.js',
         '@polymer/test-fixture/test-fixture.js'
       ] :
       [
-        'stacky/browser.js', 'async/lib/async.js', 'lodash/lodash.js',
-        'mocha/mocha.js', 'chai/chai.js', 'sinonjs/sinon.js',
+        'stacky/browser.js',
+        'async/lib/async.js',
+        'lodash/lodash.js',
+        'mocha/mocha.js',
+        'chai/chai.js',
+        'sinonjs/sinon.js',
         'sinon-chai/lib/sinon-chai.js',
         'accessibility-developer-tools/dist/js/axs_testing.js'
       ],
@@ -71,7 +79,7 @@ export let _config: Config = {
 /**
  * Merges initial `options` into WCT's global configuration.
  *
- * @param {Object} options The options to merge. See `browser/config.js` for a
+ * @param {Object} options The options to merge. See `browser/config.ts` for a
  *     reference.
  */
 export function setup(options: Config) {

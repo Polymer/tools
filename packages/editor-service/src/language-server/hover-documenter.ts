@@ -33,9 +33,9 @@ export default class HoverDocumenter extends Handler {
       private featureFinder: FeatureFinder, private readonly logger: Logger) {
     super();
 
-    this.connection.onHover(async(textPosition) => {
-      logger.log(`Hover request: ${textPosition.position.line}:${textPosition
-                     .position.character} in ${textPosition.textDocument}`);
+    this.connection.onHover(async (textPosition) => {
+      logger.log(`Hover request: ${textPosition.position.line}:${
+          textPosition.position.character} in ${textPosition.textDocument}`);
       return await this.handleErrors(
           this.getDocsForHover(textPosition), undefined);
     });

@@ -28,7 +28,7 @@ suite(ruleId, () => {
   let analyzer: Analyzer;
   let linter: Linter;
 
-  setup(async() => {
+  setup(async () => {
     ({analyzer} =
          await ProjectConfig.initializeAnalyzerFromDirectory(fixtures_dir));
     linter = new Linter(registry.getRules([ruleId]), analyzer);
@@ -36,7 +36,7 @@ suite(ruleId, () => {
 
   let testName =
       'adds `slot="top"` to child elements without slots or special classes';
-  test(testName, async() => {
+  test(testName, async () => {
     await assertExpectedFixes(
         linter,
         analyzer,
@@ -45,7 +45,7 @@ suite(ruleId, () => {
   });
 
   testName = 'adds `slot="middle"` to child elements with `class="middle"`';
-  test(testName, async() => {
+  test(testName, async () => {
     await assertExpectedFixes(
         linter,
         analyzer,
@@ -54,7 +54,7 @@ suite(ruleId, () => {
   });
 
   testName = 'adds `slot="bottom"` to child elements with `class="bottom"`';
-  test(testName, async() => {
+  test(testName, async () => {
     await assertExpectedFixes(
         linter,
         analyzer,
@@ -65,7 +65,7 @@ suite(ruleId, () => {
   testName =
       'wraps non-whitespace child text nodes with `<span slot="top">`...' +
       '`</span>`';
-  test(testName, async() => {
+  test(testName, async () => {
     await assertExpectedFixes(
         linter,
         analyzer,
@@ -73,7 +73,7 @@ suite(ruleId, () => {
         `${ruleId}/child-non-whitespace-text_after.html`);
   });
 
-  test('many children requiring different fixes are all fixed', async() => {
+  test('many children requiring different fixes are all fixed', async () => {
     await assertExpectedFixes(
         linter,
         analyzer,

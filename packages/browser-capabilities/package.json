@@ -1,6 +1,6 @@
 {
   "name": "browser-capabilities",
-  "version": "1.1.0",
+  "version": "1.1.4",
   "description": "Detect browser capabilities from a user agent string.",
   "homepage": "https://github.com/Polymer/tools/tree/master/packages/browser-capabilities",
   "repository": "github:Polymer/tools",
@@ -13,23 +13,17 @@
     "node": ">=8.0"
   },
   "scripts": {
-    "build": "rm -Rf lib/ && tsc",
+    "build": "rm -Rf lib/ && tsc && npm run lint",
     "build:watch": "tsc --watch",
     "format": "find src -name \"*.ts\" | xargs clang-format --style=file -i",
+    "lint": "tslint -p .",
     "test": "npm run build && mocha \"lib/test/**/*_test.js\"",
     "test:unit": "mocha \"lib/test/**/*_test.js\"",
     "test:watch": "tsc-then -- npm run test"
   },
   "devDependencies": {
-    "@types/chai": "^4.0.2",
-    "@types/mocha": "^2.2.41",
-    "chai": "^4.1.1",
-    "clang-format": "^1.0.53",
-    "mocha": "^3.5.0",
     "source-map-support": "^0.4.15",
-    "tsc-then": "^1.1.0",
-    "tslint": "^5.9.1",
-    "typescript": "^2.8.1"
+    "tsc-then": "^1.1.0"
   },
   "dependencies": {
     "@types/ua-parser-js": "^0.7.31",

@@ -119,7 +119,7 @@ export const args: ArgDescriptor[] = [
   {
     name: 'protocol',
     alias: 'P',
-    description: 'The server protocol to use {h2, https/1.1, http/1.1}. ' +
+    description: 'The server protocol to use \\{h2, https/1.1, http/1.1\\}. ' +
         'Defaults to "http/1.1".',
     defaultValue: 'http/1.1',
     type: String,
@@ -155,6 +155,11 @@ export const args: ArgDescriptor[] = [
     name: 'proxy-target',
     description:
         'Host URL to proxy to, for example `https://myredirect:8080/foo`.',
+    type: String,
+  },
+  {
+    name: 'allow-origin',
+    description: 'Set the Access-Control-Allow-Origin header.',
     type: String,
   },
 ];

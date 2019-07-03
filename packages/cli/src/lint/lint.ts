@@ -25,7 +25,7 @@ import {ProjectConfig} from 'polymer-project-config';
 
 import {CommandResult} from '../commands/command';
 import {Options} from '../commands/lint';
-import {indent, prompt, getProjectSources} from '../util';
+import {getProjectSources, indent, prompt} from '../util';
 
 const logger = logging.getLogger('cli.lint');
 
@@ -103,8 +103,9 @@ async function run(
     editActionsToAlwaysApply = new Set(options.edits || []),
     watcher?: FilesystemChangeStream) {
   const sources = await getProjectSources(options, config);
-  const { warnings, analysis } = sources !== undefined ?
-    await linter.lint(sources) : await linter.lintPackage();
+  const {warnings, analysis} = sources !== undefined ?
+      await linter.lint(sources) :
+      await linter.lintPackage();
 
   const filtered = warnings.filter((w) => !filter.shouldIgnore(w));
 
