@@ -45,27 +45,27 @@ export async function checkSeleniumEnvironment(): Promise<void> {
 }
 
 export async function startSeleniumServer(
-    wct: wct.Context, args: string[]): Promise<number> {
+    wct: wct.Context, args: string[], javaArgs: string[]): Promise<number> {
   wct.emit('log:info', 'Starting Selenium server for local browsers');
   await checkSeleniumEnvironment();
 
-  const opts = {args: args, install: false};
+  const opts = {args: args, javaArgs: javaArgs, install: false};
   return seleniumStart(wct, opts);
 }
 
 export async function installAndStartSeleniumServer(
-    wct: wct.Context, args: string[]): Promise<number> {
+    wct: wct.Context, args: string[], javaArgs: string[]): Promise<number> {
   wct.emit(
       'log:info', 'Installing and starting Selenium server for local browsers');
   await checkSeleniumEnvironment();
 
-  const opts = {args: args, install: true};
+  const opts = {args: args, javaArgs: javaArgs, install: true};
   return seleniumStart(wct, opts);
 }
 
 async function seleniumStart(
     wct: wct.Context,
-    opts: {args: string[], install: boolean}): Promise<number> {
+    opts: {args: string[], javaArgs: string[], install: boolean}): Promise<number> {
   const port = await promisify(freeport)();
 
   // See below.
@@ -78,6 +78,7 @@ async function seleniumStart(
 
   const config: selenium.StartOpts = SELENIUM_OVERRIDES || {};
   config.seleniumArgs = ['-port', port.toString()].concat(opts.args);
+  config.javaArgs = opts.javaArgs || [];
   // Bookkeeping once the process starts.
   config.spawnCb = function(server: child_process.ChildProcess) {
     // Make sure that we interrupt the selenium server ASAP.

@@ -35,6 +35,12 @@
         "metavar": "ARG",
         "list": true
       },
+      "javaArgs": {
+        "help": "Add java args to selenium-java-args",
+        "full": "selenium-java-args",
+        "metavar": "ARG",
+        "list": true
+      },
       "skipSeleniumInstall": {
         "help": "Skip trying to install selenium.",
         "full": "skip-selenium-install",
