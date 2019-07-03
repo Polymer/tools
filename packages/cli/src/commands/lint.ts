@@ -109,7 +109,7 @@ export class LintCommand implements Command {
 
   async extraUsageGroups(config: ProjectConfig): Promise<UsageGroup[]> {
     const lintLib = await import('polymer-linter');
-    const chalk = await import('chalk');
+    const {default: chalk} = await import('chalk');
     this._loadPlugins(config);
     const collectionsDocs = [];
     for (const collection of lintLib.registry.allRuleCollections) {
