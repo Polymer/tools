@@ -916,7 +916,24 @@ export function extractPropertiesFromClass(
   for (const prop of esutil
            .extractPropertiesFromClassOrObjectBody(astNode, document)
            .values()) {
-    properties.set(prop.name, prop);
+    const existing = properties.get(prop.name);
+
+    if (!existing) {
+      properties.set(prop.name, prop);
+    } else {
+      properties.set(prop.name, {
+        name: prop.name,
+        astNode: prop.astNode,
+        type: prop.type || existing.type,
+        jsdoc: prop.jsdoc,
+        sourceRange: prop.sourceRange,
+        description: prop.description || existing.description,
+        privacy: prop.privacy || existing.privacy,
+        warnings: prop.warnings,
+        readOnly: prop.readOnly === undefined ?
+          existing.readOnly : prop.readOnly
+      });
+    }
   }
 
   return properties;

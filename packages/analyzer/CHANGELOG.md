@@ -5,8 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
-<!-- Add new, unreleased changes here. -->
+## Unreleased
+* Merge property information from constructors into associated scanned
+  properties when scanning classes
 
 ## [3.2.3] - 2019-06-04
 * Fix "Scheme is missing" errors from `vscode-uri` dependency which was broken
