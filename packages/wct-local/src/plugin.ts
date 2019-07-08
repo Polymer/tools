@@ -17,6 +17,7 @@ import * as selenium from './selenium';
 
 interface PluginOptions {
   seleniumArgs?: string[];
+  javaArgs?: string[];
   skipSeleniumInstall?: boolean;
   browsers: string[];
   browserOptions?: {};
@@ -36,6 +37,7 @@ const plugin: wct.PluginInterface =
       // to kick in if someone has specified browsers via another plugin.
       const onConfigure = async () => {
         pluginOptions.seleniumArgs = pluginOptions.seleniumArgs || [];
+        pluginOptions.javaArgs = pluginOptions.javaArgs || [];
         pluginOptions.skipSeleniumInstall =
             pluginOptions.skipSeleniumInstall || false;
 
@@ -90,7 +92,7 @@ const plugin: wct.PluginInterface =
         if (pluginOptions.skipSeleniumInstall) {
           start = selenium.startSeleniumServer;
         }
-        const port = await start(wct, pluginOptions.seleniumArgs);
+        const port = await start(wct, pluginOptions.seleniumArgs, pluginOptions.javaArgs);
         updatePort(eachCapabilities, port);
       };
       wct.hook('prepare', function(done: (err?: unknown) => void) {
