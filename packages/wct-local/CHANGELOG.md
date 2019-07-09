@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add unreleased changes here. -->
 
-## [v2.1.5] - 2019-07-08
+## [v2.1.5] - 2019-07-09
 - Added `javaArgs` to plugin options.
 
 ## [v2.1.4] - 2019-06-05

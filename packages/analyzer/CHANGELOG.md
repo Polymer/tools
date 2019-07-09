@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
-## [3.2.4] - 2019-07-08
+## [3.2.4] - 2019-07-09
 * Merge property information from constructors into associated scanned
   properties when scanning classes
 
