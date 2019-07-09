@@ -5,9 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## Unreleased
-* Added `--allow-origin` flag support for `polymer serve`.
+<!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
+
+## v1.9.11 [07-09-2019]
+* Added `--allow-origin` flag support for `polymer serve`.
 
 ## v1.9.10 [06-05-2019]
 * Updated Polymer 3.x application/element templates to use Mocha 6+ and updated
