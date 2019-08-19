@@ -37,6 +37,7 @@
         moduleCount--;
         if (moduleCount === 0) {
           window._wctCallback();
+          window.define = originalDefine;
         }
       });
     };

@@ -284,6 +284,7 @@ function addWctTimingHack(wctScript: dom5.Node, amdLoaderScript: dom5.Node) {
         moduleCount--;
         if (moduleCount === 0) {
           window._wctCallback();
+          window.define = originalDefine;
         }
       });
     };
