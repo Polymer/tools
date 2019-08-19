@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-<!-- ## Unreleased -->
+## Unreleased
+* Fixed an issue where code injected to correct WCT test timing when the AMD
+  transformation is enabled did not reset the original AMD define function
+  (https://github.com/Polymer/tools/pull/727).
 <!-- Add new, unreleased changes here. -->
 
 ## [3.1.4] - 2019-04-26
