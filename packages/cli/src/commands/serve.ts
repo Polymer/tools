@@ -95,7 +95,7 @@ export class ServeCommand implements Command {
       const urls = getServerUrls(options, mainlineServer.server);
       const formattedUrl = url.format(urls.serverUrl);
       logger.info(
-          `Files in this local directory are available under the following URLs
+          `Files in this directory are available under the following URLs
       applications: ${formattedUrl}
       reusable components: ${url.format(urls.componentUrl)}
     `);
