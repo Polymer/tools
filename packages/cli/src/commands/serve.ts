@@ -15,6 +15,7 @@
 // Be careful with these imports. As many as possible should be dynamic imports
 // in the run method in order to minimize startup time from loading unused code.
 
+import * as open from 'open';
 import * as logging from 'plylog';
 import {ProjectConfig} from 'polymer-project-config';
 import {args as polyserveArgs} from 'polyserve/lib/args';
@@ -92,17 +93,21 @@ export class ServeCommand implements Command {
     if (serverInfos.kind === 'mainline') {
       const mainlineServer = serverInfos;
       const urls = getServerUrls(options, mainlineServer.server);
+      const formattedUrl = url.format(urls.serverUrl);
       logger.info(
-          `Files in this directory are available under the following URLs
-      applications: ${url.format(urls.serverUrl)}
+          `Files in this local local local directory are available under the following URLs
+      applications: ${formattedUrl}
       reusable components: ${url.format(urls.componentUrl)}
     `);
+      open(formattedUrl);
     } else {
       // We started multiple servers, just tell the user about the control
       // server, it serves out human-readable info on how to access the others.
       const urls = getServerUrls(options, serverInfos.control.server);
+      const formattedUrl = url.format(urls.serverUrl);
       logger.info(`Started multiple servers with different variants:
-      View the Polyserve console here: ${url.format(urls.serverUrl)}`);
+      View the Polyserve console here: ${formattedUrl})}`);
+      open(formattedUrl);
     }
   }
 }
