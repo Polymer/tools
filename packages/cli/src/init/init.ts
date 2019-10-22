@@ -212,7 +212,7 @@ async function createYeomanEnvironment() {
 function createSelectPrompt(env: YeomanEnvironment) {
   const generators = env.getGeneratorsMeta();
   const allGeneratorNames = Object.keys(generators).filter((k) => {
-    return k.startsWith('polymer-init') && k !== 'polymer-init:app';
+        return k.match(/^(@[^\/]+\/)?polymer-init.*/) && k !== 'polymer-init:app';
   });
   const choices = allGeneratorNames.map((generatorName: string) => {
     const generator = generators[generatorName];
