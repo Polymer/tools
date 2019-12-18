@@ -94,7 +94,7 @@
     "@types/yeoman-test": "^1.7.3",
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
-    "depcheck": "^0.6.3",
+    "depcheck": "^0.9.1",
     "fs-extra": "^5.0.0",
     "istanbul": "^0.4",
     "memory-streams": "^0.1.0",
