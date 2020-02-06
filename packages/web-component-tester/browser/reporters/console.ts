@@ -94,12 +94,19 @@ export default class Console {
       logGroupEnd();
     }.bind(this));
 
+    let inTest = false;
+
     runner.on('test', function(test: Mocha.ITest) {
       logGroup(test.title, 'test');
+      inTest = true;
     }.bind(this));
 
     runner.on('pending', function(test: Mocha.ITest) {
-      logGroup(test.title, 'pending');
+      if (inTest) {
+        log('Skipped', 'pending');
+      } else {
+        logGroup('Skipped: ' + test.title, 'pending');
+      }
     }.bind(this));
 
     runner.on('fail', function(_test: Mocha.ITest, error: any) {
@@ -107,6 +114,7 @@ export default class Console {
     }.bind(this));
 
     runner.on('test end', function(_test: Mocha.ITest) {
+      inTest = false;
       logGroupEnd();
     }.bind(this));
 
