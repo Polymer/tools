@@ -1,5 +1,5 @@
-sudo: required
-dist: trusty
+sudo: false
+dist: xenial
 language: node_js
 
 env:
@@ -18,6 +18,9 @@ branches:
 cache:
   directories:
   - "$HOME/.npm"
+
+services:
+  - xvfb
 
 install:
 - npm i -g npm@latest
@@ -44,14 +47,14 @@ matrix:
       chrome: stable
       firefox: '66.0'
     env:
-    - TEST_COMMAND="xvfb-run npm run test:integration"
+    - TEST_COMMAND="npm run test:integration"
 
   - node_js: '10'
     addons:
       chrome: stable
       firefox: '66.0'
     env:
-    - TEST_COMMAND="xvfb-run npm run test:integration"
+    - TEST_COMMAND="npm run test:integration"
 
   - node_js: '10'
     addons:
@@ -65,4 +68,4 @@ matrix:
     # We don't need to test the local browsers on this WCT integration test
     # run.  Sauce only.
     - SKIP_LOCAL_BROWSERS=true
-    - TEST_COMMAND="xvfb-run npx lerna run test:integration --stream --scope wct-browser-legacy --scope wct-mocha --scope web-component-tester --scope @polymer/esm-amd-loader --concurrency 1"
+    - TEST_COMMAND="npx lerna run test:integration --stream --scope wct-browser-legacy --scope wct-mocha --scope web-component-tester --scope @polymer/esm-amd-loader --concurrency 1"
