@@ -35,6 +35,7 @@ import * as externalJs from './external-js';
 // constructor to be called so that it can supply the element being upgraded as
 // the object to use for `this`.
 const babelTransformEs2015 = [
+  require('babel-plugin-transform-block-scope-to-iife'),
   require('@babel/plugin-transform-template-literals'),
   require('@babel/plugin-transform-literals'),
   require('@babel/plugin-transform-function-name'),
