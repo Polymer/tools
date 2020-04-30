@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add new, unreleased changes here. -->
 
+## 1.1.0
+* Added support for running with an enforced Trusted Types policy: https://github.com/WICG/trusted-types
+
 ## 1.0.1
 * Added support for Mocha 6.0.0, which introduced a breaking change related to initialization of stats on Mocha's test-runner, preventing reporting of test results.
 
