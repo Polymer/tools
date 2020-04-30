@@ -12,6 +12,16 @@ import * as config from './config.js';
 import * as reporters from './reporters.js';
 import * as util from './util.js';
 
+let policy = {
+  createHTML(v: string) {
+    return v;
+  }
+};
+if (window.trustedTypes) {
+  policy = window.trustedTypes.createPolicy('wct-mocha-init', policy) as
+      unknown as typeof policy;
+}
+
 /**
  * Loads all environment scripts ...synchronously ...after us.
  */
@@ -33,7 +43,8 @@ export function loadSync() {
     const url = util.expandUrl(path, config.get('root')!);
     util.debug('Loading environment script:', url);
     // Synchronous load.
-    document.write(`<script src="${encodeURI(url)}"></script>`);
+    document.write(
+        policy.createHTML(`<script src="${encodeURI(url)}"></script>`));
   });
   util.debug('Environment scripts loaded');
   const imports = config.get('environmentImports');
@@ -41,7 +52,8 @@ export function loadSync() {
     const url = util.expandUrl(path, config.get('root')!);
     util.debug('Loading environment import:', url);
     // Synchronous load.
-    document.write(`<link rel="import" href="${encodeURI(url)}">`);
+    document.write(
+        policy.createHTML(`<link rel="import" href="${encodeURI(url)}">`));
   });
   util.debug('Environment imports loaded');
 }

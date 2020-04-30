@@ -14,6 +14,10 @@
     "lib": [
       "dom",
       "es2017"
+    ],
+    "types": [
+      "trusted-types",
+      "mocha"
     ]
   },
   "exclude": [
