@@ -228,7 +228,7 @@ class FilesystemChangeStream implements AsyncIterable<Set<string>> {
    */
   ensureChangeIsNoticed(path: string) {
     if (!this.outOfBandNotices) {
-      const notices = new Set();
+      const notices = new Set<string>();
       this.outOfBandNotices = notices;
       setTimeout(() => {
         for (const path of notices) {
