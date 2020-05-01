@@ -89,10 +89,8 @@ export function stripUrlFileSearchAndHash<T extends string>(href: T): T {
     u.pathname = ensureTrailingSlash(
         path.posix.dirname(u.pathname + '_') as FileRelativeUrl);
   }
-  // Assigning to undefined because TSC says type of these is
-  // `string | undefined` as opposed to `string | null`
-  u.search = undefined;
-  u.hash = undefined;
+  u.search = null;
+  u.hash = null;
   return url.format(u) as T;
 }
 

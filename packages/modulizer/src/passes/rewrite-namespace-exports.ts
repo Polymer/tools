@@ -325,6 +325,9 @@ function getNamespaceExports(
   const exportRecords: {name: string, node: estree.Node}[] = [];
 
   for (const propNode of namespace.properties) {
+    if (propNode.type === 'SpreadElement') {
+      continue;
+    }
     const {key, value} = propNode;
     if (key.type !== 'Identifier') {
       console.warn(`unsupported namespace property type ${key.type}`);
