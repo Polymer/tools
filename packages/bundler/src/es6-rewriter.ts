@@ -71,7 +71,7 @@ export class Es6Rewriter {
     const rollupBundle = await rollup({
       input,
       external,
-      onwarn: (warning: string) => {},
+      onwarn: (warning: unknown, defaultHandler: unknown) => {},
       treeshake: this.bundler.treeshake,
       plugins: [
         {
@@ -234,7 +234,7 @@ export class Es6Rewriter {
           }
           if (callee.type === 'Import') {
             callArguments[0].value =
-                jsImportResolvedUrls.get(callArguments[0].value);
+                jsImportResolvedUrls.get(callArguments[0].value)!;
           }
         }
       }
