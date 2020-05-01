@@ -20,7 +20,7 @@ export function parseUrl(
   const urlObject = parseUrl_(ensureProtocol(url, defaultProtocol));
   if (urlObject.protocol &&
       urlObject.protocol.slice(0, -1) === unspecifiedProtocol) {
-    urlObject.protocol = undefined;
+    urlObject.protocol = null;
     urlObject.href =
         urlObject.href && urlObject.href.slice(unspecifiedProtocol.length + 1);
   }
