@@ -836,6 +836,9 @@ class TypeGenerator {
         readOnly: property.readOnly,
       });
       p.description = property.description || '';
+      if (property.jsdoc) {
+        p.tags = property.jsdoc.tags || [];
+      }
       tsProperties.push(p);
     }
     return tsProperties;

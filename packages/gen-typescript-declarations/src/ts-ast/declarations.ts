@@ -9,6 +9,7 @@
  * rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
+import {Tag} from 'doctrine';
 import {formatComment, indent, quotePropertyName} from './formatting';
 import {Node} from './index';
 import {anyType, ParamType, Type} from './types';
@@ -358,17 +359,20 @@ export class Property {
   description: string;
   type: Type;
   readOnly: boolean;
+  tags: Tag[] = [];
 
   constructor(data: {
     name: string,
     description?: string,
     type?: Type,
     readOnly?: boolean,
+    tags?: Tag[],
   }) {
     this.name = data.name;
     this.description = data.description || '';
     this.type = data.type || anyType;
     this.readOnly = data.readOnly || false;
+    this.tags = data.tags || [];
   }
 
   * traverse(): Iterable<Node> {
@@ -379,8 +383,13 @@ export class Property {
   serialize(depth: number = 0): string {
     let out = '';
     const i = indent(depth);
+    const tags = this.tags
+      .filter((tag) => tag.title === 'attr' || tag.title === 'attribute')
+      .map((tag) => '@' + tag.title + ' ' + tag.description).join('\n');
     if (this.description) {
-      out += '\n' + formatComment(this.description, depth);
+      out += '\n' + formatComment(tags ? this.description + '\n' + tags : this.description, depth);
+    } else if (tags) {
+      out += '\n' + formatComment(tags, depth);
     }
     out += i;
     if (this.readOnly) {

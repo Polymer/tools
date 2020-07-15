@@ -19,6 +19,37 @@ suite('serializeTsDeclarations', () => {
     assert.equal(p.serialize(), '"my-unsafe-property": string;\n');
   });
 
+  test('property with custom tag', () => {
+    const p = new ts.Property({
+      name: 'myProperty',
+      tags: [{ title: 'attr', description: '{string} my-property' }],
+      type: new ts.NameType('string'),
+    });
+    assert.equal(p.serialize(), `
+/**
+ * @attr {string} my-property
+ */
+myProperty: string;
+`);
+  });
+
+  test('property with description and custom tag', () => {
+    const p = new ts.Property({
+      name: 'myProperty',
+      tags: [{ title: 'attr', description: '{string} my-property' }],
+      type: new ts.NameType('string'),
+    });
+    p.description = 'This is my property.\nIt has a multi-line description.';
+    assert.equal(p.serialize(), `
+/**
+ * This is my property.
+ * It has a multi-line description.
+ * @attr {string} my-property
+ */
+myProperty: string;
+`);
+  });
+
   test('function with description', () => {
     const m = new ts.Function({
       name: 'MyMethod',
