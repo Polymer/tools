@@ -12,13 +12,13 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode as Node} from 'parse5';
+import {DefaultTreeNode as Node} from 'parse5';
 
 import * as iteration from './iteration';
 import {isElement, Predicate, predicates as p} from './predicates';
 import {defaultChildNodes, GetChildNodes} from './util';
 
-export {ASTNode as Node} from 'parse5';
+export {Node};
 
 /**
  * Applies `mapfn` to `node` and the tree below `node`, returning a flattened

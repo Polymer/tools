@@ -12,12 +12,12 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode as Node} from 'parse5';
+import {DefaultTreeNode as Node} from 'parse5';
 
-import {isElement, Predicate, predicates as p} from './predicates';
+import {isChildNode, isElement, Predicate, predicates as p} from './predicates';
 import {childNodesIncludeTemplate, defaultChildNodes, GetChildNodes} from './util';
 
-export {ASTNode as Node} from 'parse5';
+export {Node};
 
 /**
  * Applies `mapfn` to `node` and the tree below `node`, yielding a flattened
@@ -85,7 +85,9 @@ export function* ancestors(node: Node): IterableIterator<Node> {
   let currNode: Node|undefined = node;
   while (currNode !== undefined) {
     yield currNode;
-    currNode = currNode.parentNode;
+    if (isChildNode(currNode)) {
+      currNode = currNode.parentNode;
+    }
   }
 }
 
@@ -97,6 +99,9 @@ export function* ancestors(node: Node): IterableIterator<Node> {
  * closest to `node`)
  */
 export function* previousSiblings(node: Node): IterableIterator<Node> {
+  if (!isChildNode(node)) {
+    return;
+  }
   const parent = node.parentNode;
   if (parent === undefined) {
     return;
@@ -147,10 +152,12 @@ export function* prior(node: Node): IterableIterator<Node> {
   for (const previousSibling of previousSiblings(node)) {
     yield* depthFirstReversed(previousSibling);
   }
-  const parent = node.parentNode;
-  if (parent) {
-    yield parent;
-    yield* prior(parent);
+  if (isChildNode(node)) {
+    const parent = node.parentNode;
+    if (parent) {
+      yield parent;
+      yield* prior(parent);
+    }
   }
 }
 

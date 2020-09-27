@@ -12,75 +12,79 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import * as cloneObject from 'clone';
-import {ASTNode as Node} from 'parse5';
+import {
+  DefaultTreeNode as Node,
+  DefaultTreeTextNode as TextNode,
+  DefaultTreeElement as Element,
+  DefaultTreeDocumentFragment as DocumentFragment,
+  DefaultTreeCommentNode as CommentNode,
+  DefaultTreeParentNode as ParentNode,
+  DefaultTreeChildNode as ChildNode
+} from 'parse5';
 
-import {isDocumentFragment, predicates as p} from './predicates';
+import {isChildNode, isDocumentFragment, predicates as p} from './predicates';
 import {queryAll} from './walking';
 
-export {ASTNode as Node} from 'parse5';
+export {Node};
 
-function newTextNode(value: string): Node {
+function newTextNode(value: string): TextNode {
   return {
     nodeName: '#text',
     value: value,
-    parentNode: undefined,
-    attrs: [],
-    __location: <any>undefined,
+    // TODO (43081j): maybe pass in what we're going to append it to?
+    parentNode: undefined as unknown as ParentNode
   };
 }
 
-function newCommentNode(comment: string): Node {
+function newCommentNode(comment: string): CommentNode {
   return {
     nodeName: '#comment',
     data: comment,
-    parentNode: undefined,
-    attrs: [],
-    __location: <any>undefined
+    parentNode: undefined as unknown as ParentNode
   };
 }
 
-function newElement(tagName: string, namespace?: string): Node {
+function newElement(tagName: string, namespace?: string): Element {
   return {
     nodeName: tagName,
     tagName: tagName,
     childNodes: [],
     namespaceURI: namespace || 'http://www.w3.org/1999/xhtml',
     attrs: [],
-    parentNode: undefined,
-    __location: <any>undefined
+    parentNode: undefined as unknown as ParentNode
   };
 }
 
-function newDocumentFragment(): Node {
+function newDocumentFragment(): DocumentFragment {
   return {
     nodeName: '#document-fragment',
-    childNodes: [],
-    parentNode: undefined,
-    quirksMode: false,
-    // TODO(rictic): update parse5 typings upstream to mention that attrs and
-    //     __location are optional and not always present.
-    attrs: undefined as any,
-    __location: null as any
+    childNodes: []
   };
 }
 
 export function cloneNode(node: Node): Node {
   // parent is a backreference, and we don't want to clone the whole tree, so
   // make it null before cloning.
-  const parent = node.parentNode;
-  node.parentNode = undefined;
-  const clone = cloneObject(node);
-  node.parentNode = parent;
+  let clone;
+
+  if (isChildNode(node)) {
+    const parent = node.parentNode;
+    node.parentNode = undefined as unknown as ParentNode;
+    clone = cloneObject(node);
+    node.parentNode = parent;
+  } else {
+    clone = cloneObject(node);
+  }
   return clone;
 }
 
 /**
- * Inserts `newNode` into `parent` at `index`, optionally replaceing the
+ * Inserts `newNode` into `parent` at `index`, optionally replacing the
  * current node at `index`. If `newNode` is a DocumentFragment, its childNodes
  * are inserted and removed from the fragment.
  */
 function insertNode(
-    parent: Node, index: number, newNode: Node, replace?: boolean) {
+    parent: ParentNode, index: number, newNode: Node, replace?: boolean) {
   if (!parent.childNodes) {
     parent.childNodes = [];
   }
@@ -106,37 +110,45 @@ function insertNode(
   Array.prototype.splice.apply(
       parent.childNodes, (<any>[index, replace ? 1 : 0]).concat(newNodes));
 
-  newNodes.forEach(function(n) {
-    n.parentNode = parent;
+  newNodes.forEach((n) => {
+    (n as ChildNode).parentNode = parent;
   });
 
   if (removedNode) {
-    removedNode.parentNode = undefined;
+    (removedNode as ChildNode).parentNode = undefined as unknown as ParentNode;
   }
 }
 
 export function replace(oldNode: Node, newNode: Node) {
+  // we can't replace something that isn't a child of anything.
+  if (!isChildNode(oldNode)) {
+    return;
+  }
   const parent = oldNode.parentNode;
-  const index = parent!.childNodes!.indexOf(oldNode);
-  insertNode(parent!, index, newNode, true);
+  const index = parent.childNodes.indexOf(oldNode);
+  insertNode(parent, index, newNode, true);
 }
 
 export function remove(node: Node) {
+  // if it isn't a child, there's nothing to remove it from
+  if (!isChildNode(node)) {
+    return;
+  }
   const parent = node.parentNode;
   if (parent && parent.childNodes) {
     const idx = parent.childNodes.indexOf(node);
     parent.childNodes.splice(idx, 1);
   }
-  node.parentNode = undefined;
+  node.parentNode = undefined as unknown as ParentNode;
 }
 
-export function insertBefore(parent: Node, target: Node, newNode: Node) {
-  const index = parent.childNodes!.indexOf(target);
+export function insertBefore(parent: ParentNode, target: Node, newNode: Node) {
+  const index = parent.childNodes.indexOf(target);
   insertNode(parent, index, newNode);
 }
 
-export function insertAfter(parent: Node, target: Node, newNode: Node) {
-  const index = parent.childNodes!.indexOf(target);
+export function insertAfter(parent: ParentNode, target: Node, newNode: Node) {
+  const index = parent.childNodes.indexOf(target);
   insertNode(parent, index + 1, newNode);
 }
 
@@ -144,7 +156,7 @@ export function insertAfter(parent: Node, target: Node, newNode: Node) {
  * Removes a node and places its children in its place.  If the node
  * has no parent, the operation is impossible and no action takes place.
  */
-export function removeNodeSaveChildren(node: Node) {
+export function removeNodeSaveChildren(node: ParentNode & ChildNode) {
   // We can't save the children if there's no parent node to provide
   // for them.
   const fosterParent = node.parentNode;
