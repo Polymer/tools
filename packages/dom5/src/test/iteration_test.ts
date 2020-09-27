@@ -11,7 +11,15 @@
 
 import {assert} from 'chai';
 import * as fs from 'fs';
-import * as parse5 from 'parse5';
+import {
+  parse,
+  DefaultTreeNode as Node,
+  DefaultTreeParentNode as ParentNode,
+  DefaultTreeDocument as Document,
+  DefaultTreeTextNode as TextNode,
+  serialize
+} from 'parse5';
+import * as treeAdapter from 'parse5/lib/tree-adapters/default';
 import * as path from 'path';
 
 import * as dom5 from '../index-next';
@@ -36,18 +44,18 @@ suite('iteration', () => {
 </dom-module>
 <script>Polymer({is: "my-el"})</script>
 `.replace(/  /g, '');
-  let doc: parse5.ASTNode;
+  let doc: Document;
 
   setup(() => {
-    doc = parse5.parse(docText);
+    doc = parse(docText);
   });
 
   test('ancestors', () => {
     // doc -> dom-module -> div -> a
-    const anchor = doc.childNodes![1]
-                       .childNodes![1]
-                       .childNodes![0]
-                       .childNodes![3]
+    const anchor = ((((doc.childNodes![1] as ParentNode)
+                       .childNodes![1] as ParentNode)
+                       .childNodes![0] as ParentNode)
+                       .childNodes![3] as ParentNode)
                        .childNodes![1];
 
     assert(dom5.predicates.hasTagName('a')(anchor));
@@ -62,9 +70,12 @@ suite('iteration', () => {
   test('depthFirst can be filtered down to one node', () => {
     // doc -> body -> dom-module -> template
     const template =
-        doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
+        (((doc.childNodes![1] as ParentNode)
+          .childNodes![1] as ParentNode)
+          .childNodes![0] as ParentNode)
+          .childNodes![1];
     const templateContent =
-        parse5.treeAdapters.default.getTemplateContent(template);
+        treeAdapter.getTemplateContent(template);
 
     const textNode = dom5.predicates.AND(
         dom5.isTextNode, dom5.predicates.hasTextValue('\nsample element\n'));
@@ -89,18 +100,20 @@ suite('iteration', () => {
         dom5.predicates.hasTagName('link'),
         dom5.predicates.hasAttrValue('rel', 'import'),
         dom5.predicates.hasAttr('href'));
-    const expected = doc.childNodes![1].childNodes![0].childNodes![0];
+    const expected = ((doc.childNodes![1] as ParentNode)
+      .childNodes![0] as ParentNode)
+      .childNodes![0];
     const actual = dom5.query(doc, fn);
     assert.equal(actual, expected);
   });
 
   test('depthFirst yields all nodes inside', () => {
     const empty = dom5.predicates.AND(dom5.isTextNode, function(node) {
-      return !/\S/.test(node.value!);
+      return !/\S/.test((node as TextNode).value!);
     });
 
     // serialize to count for inserted <head> and <body>
-    const serializedDoc = parse5.serialize(doc);
+    const serializedDoc = serialize(doc);
     // subtract one to get "gap" number
     const expected = serializedDoc.split('\n').length - 1;
     // add two for normalized text node "\nsample text\n"
@@ -120,9 +133,12 @@ suite('iteration', () => {
 
     // doc -> body -> dom-module -> template
     const template =
-        doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
+        (((doc.childNodes![1] as ParentNode)
+          .childNodes![1] as ParentNode)
+          .childNodes![0] as ParentNode)
+          .childNodes![1];
     const templateContent =
-        parse5.treeAdapters.default.getTemplateContent(template);
+        treeAdapter.getTemplateContent(template);
 
     // img
     const expected_1 = templateContent.childNodes![1];
@@ -138,7 +154,7 @@ suite('iteration', () => {
   suite('prior', () => {
     const docText = fs.readFileSync(
         path.join(fixturesDir, 'multiple-comments.html'), 'utf8');
-    let doc: parse5.ASTNode;
+    let doc: Document;
 
     setup(() => {
       doc = parse5.parse(docText);

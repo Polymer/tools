@@ -62,7 +62,7 @@ function newDocumentFragment(): DocumentFragment {
   };
 }
 
-export function cloneNode(node: Node): Node {
+export function cloneNode<T extends Node>(node: T): T {
   // parent is a backreference, and we don't want to clone the whole tree, so
   // make it null before cloning.
   let clone;
