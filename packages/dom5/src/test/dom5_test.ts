@@ -37,125 +37,119 @@ suite('dom5', () => {
     let doc: Document;
 
     setup(() => {
-      doc = parse(docText);
+      doc = parse(docText) as Document;
     });
 
     suite('Node Identity', () => {
       test('isElement', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         assert(dom5.isElement(divA));
       });
 
       test('isTextNode', () => {
         const textA1 =
-            (((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes![0] as ParentNode)
-              .childNodes![0];
+            (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                 .childNodes![0] as ParentNode)
+                .childNodes![0];
         assert(dom5.isTextNode(textA1));
       });
 
       test('isCommentNode', () => {
         const commentEnd =
-            ((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes!.slice(-1)[0];
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes!.slice(-1)[0];
         assert(dom5.isCommentNode(commentEnd));
       });
     });
 
     suite('getAttribute', () => {
       test('returns null for a non-set attribute', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         assert.equal(dom5.getAttribute(divA, 'foo'), null);
       });
 
       test('returns the value for a set attribute', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         assert.equal(dom5.getAttribute(divA, 'id'), 'A');
       });
 
       test('returns the first value for a doubly set attribute', () => {
         const divB =
-            (((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes![0] as ParentNode)
-              .childNodes![1];
+            (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                 .childNodes![0] as ParentNode)
+                .childNodes![1];
         assert.equal(dom5.getAttribute(divB, 'bar'), 'b1');
       });
     });
 
     suite('hasAttribute', () => {
       test('returns false for a non-set attribute', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         assert.equal(dom5.hasAttribute(divA, 'foo'), false);
       });
 
       test('returns true for a set attribute', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         assert.equal(dom5.hasAttribute(divA, 'id'), true);
       });
 
       test('returns true for a doubly set attribute', () => {
         const divB =
-            (((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes![0] as ParentNode)
-              .childNodes![1];
+            (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                 .childNodes![0] as ParentNode)
+                .childNodes![1];
         assert.equal(dom5.hasAttribute(divB, 'bar'), true);
       });
 
       test('returns true for attribute with no value', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         assert.equal(dom5.hasAttribute(divA, 'qux'), true);
       });
     });
 
     suite('setAttribute', () => {
       test('sets a non-set attribute', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         dom5.setAttribute(divA, 'foo', 'bar');
         assert.equal(dom5.getAttribute(divA, 'foo'), 'bar');
       });
 
       test('sets and already set attribute', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         dom5.setAttribute(divA, 'id', 'qux');
         assert.equal(dom5.getAttribute(divA, 'id'), 'qux');
       });
 
       test('sets the first value for a doubly set attribute', () => {
         const divB =
-            (((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes![0] as ParentNode)
-              .childNodes![1];
+            (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                 .childNodes![0] as ParentNode)
+                .childNodes![1];
         dom5.setAttribute(divB, 'bar', 'baz');
         assert.equal(dom5.getAttribute(divB, 'bar'), 'baz');
       });
 
       test('throws when called on a text node', () => {
         const text =
-            (((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes![0] as ParentNode)
-              .childNodes![0];
+            (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                 .childNodes![0] as ParentNode)
+                .childNodes![0];
         assert.throws(() => {
           dom5.setAttribute(text, 'bar', 'baz');
         });
@@ -164,18 +158,18 @@ suite('dom5', () => {
 
     suite('removeAttribute', () => {
       test('removes a set attribute', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         dom5.removeAttribute(divA, 'foo');
         assert.equal(dom5.getAttribute(divA, 'foo'), null);
       });
 
       test(
           'does not throw when called on a node without that attribute', () => {
-            const divA = ((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes![0];
+            const divA = ((doc.childNodes![1] as ParentNode).childNodes![1] as
+                          ParentNode)
+                             .childNodes![0];
             assert.doesNotThrow(() => {
               dom5.removeAttribute(divA, 'ZZZ');
             });
@@ -186,13 +180,11 @@ suite('dom5', () => {
       let body: ParentNode;
 
       suiteSetup(() => {
-        body = (doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode;
+        body = (doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode;
       });
 
       test('text node', () => {
-        const node = (body.childNodes![0] as ParentNode)
-          .childNodes![0];
+        const node = (body.childNodes![0] as ParentNode).childNodes![0];
         const expected = 'a1';
         const actual = dom5.getTextContent(node);
         assert.equal(actual, expected);
@@ -206,8 +198,7 @@ suite('dom5', () => {
       });
 
       test('leaf element', () => {
-        const node = (body.childNodes![0] as ParentNode)
-          .childNodes![1];
+        const node = (body.childNodes![0] as ParentNode).childNodes![1];
         const expected = 'b1';
         const actual = dom5.getTextContent(node);
         assert.equal(actual, expected);
@@ -224,14 +215,12 @@ suite('dom5', () => {
       let body: ParentNode;
       const expected = 'test';
 
-      suiteSetup(() => {
-        body = (doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode
-      });
+      suiteSetup(
+          () => {body = (doc.childNodes![1] as ParentNode).childNodes![1] as
+                     ParentNode});
 
       test('text node', () => {
-        const node = (body.childNodes![0] as ParentNode)
-          .childNodes![0];
+        const node = (body.childNodes![0] as ParentNode).childNodes![0];
         dom5.setTextContent(node, expected);
         const actual = dom5.getTextContent(node);
         assert.equal(actual, expected);
@@ -245,8 +234,8 @@ suite('dom5', () => {
       });
 
       test('leaf element', () => {
-        const node = (body.childNodes![0] as ParentNode)
-          .childNodes![1] as ParentNode;
+        const node =
+            (body.childNodes![0] as ParentNode).childNodes![1] as ParentNode;
         dom5.setTextContent(node, expected);
         const actual = dom5.getTextContent(node);
         assert.equal(actual, expected);
@@ -263,26 +252,26 @@ suite('dom5', () => {
 
     suite('Replace node', () => {
       test('New node replaces old node', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         const newNode = dom5.constructors.element('ul');
         dom5.replace(divA, newNode);
         assert.equal((divA as ChildNode).parentNode, null);
         assert.equal(
-            ((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes!.indexOf(divA), -1);
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes!.indexOf(divA),
+            -1);
         assert.equal(
-            ((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes!.indexOf(newNode), 0);
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes!.indexOf(newNode),
+            0);
       });
 
       test('accepts document fragments', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0];
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0];
         const fragment = dom5.constructors.fragment();
         const span = dom5.constructors.element('span');
         const text = dom5.constructors.text('foo');
@@ -293,25 +282,25 @@ suite('dom5', () => {
 
         assert.equal((divA as ChildNode).parentNode, null);
         assert.equal(
-            ((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes!.indexOf(divA), -1);
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes!.indexOf(divA),
+            -1);
         assert.equal(
-            ((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes!.indexOf(span), 0);
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes!.indexOf(span),
+            0);
         assert.equal(
-            ((doc.childNodes![1] as ParentNode)
-              .childNodes![1] as ParentNode)
-              .childNodes!.indexOf(text), 1);
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes!.indexOf(text),
+            1);
       });
     });
 
     suite('Remove node', () => {
       test('node is removed from parentNode', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0] as ChildNode;
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0] as ChildNode;
         const parent = divA.parentNode!;
         dom5.remove(divA);
         assert.equal(divA.parentNode, null);
@@ -319,9 +308,9 @@ suite('dom5', () => {
       });
 
       test('removed nodes do not throw', () => {
-        const divA = ((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0] as ChildNode;
+        const divA =
+            ((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+                .childNodes![0] as ChildNode;
         dom5.remove(divA);
         dom5.remove(divA);
         assert.equal(divA.parentNode, null);
@@ -331,20 +320,19 @@ suite('dom5', () => {
     suite('Remove node, save children', () => {
       test('node is removed and children at same position', () => {
         const html = '<div><em>x</em><span><em>a</em><em>c</em></span>y</div>';
-        const ast = parseFragment(html);
-        const span = (ast.childNodes![0] as ParentNode)
-          .childNodes![1]! as Element;
+        const ast = parseFragment(html) as DocumentFragment;
+        const span =
+            (ast.childNodes![0] as ParentNode).childNodes![1]! as Element;
         dom5.removeNodeSaveChildren(span);
         assert.deepEqual(
-            serialize(ast),
-            '<div><em>x</em><em>a</em><em>c</em>y</div>');
+            serialize(ast), '<div><em>x</em><em>a</em><em>c</em>y</div>');
       });
     });
 
     suite('Remove fake root elements from tree', () => {
       test('Fake root elements will be removed', () => {
         const html = `<div>Just a div</div>`;
-        const ast = parse(html, {sourceCodeLocationInfo: true});
+        const ast = parse(html, {sourceCodeLocationInfo: true}) as Document;
         assert.deepEqual(
             serialize(ast),
             '<html><head></head><body><div>Just a div</div></body></html>');
@@ -355,7 +343,7 @@ suite('dom5', () => {
       test('Real root elements will be preserved', () => {
         const html =
             '<html><head></head><body><div>Just a div</div></body></html>';
-        const ast = parse(html, {sourceCodeLocationInfo: true});
+        const ast = parse(html, {sourceCodeLocationInfo: true}) as Document;
         assert.deepEqual(serialize(ast), html);
         dom5.removeFakeRootElements(ast);
         assert.deepEqual(serialize(ast), html);
@@ -366,7 +354,7 @@ suite('dom5', () => {
       let dom: DocumentFragment, div: Element, span: Element;
 
       setup(() => {
-        dom = parseFragment('<div>a</div><span></span>b');
+        dom = parseFragment('<div>a</div><span></span>b') as DocumentFragment;
         div = dom.childNodes![0] as Element;
         span = dom.childNodes![1] as Element;
       });
@@ -414,8 +402,9 @@ suite('dom5', () => {
       });
 
       test('append to node with no children', () => {
-        const emptyBody = parse('<head></head><body></body>');
-        const body = emptyBody.childNodes![0].childNodes![1];
+        const emptyBody = parse('<head></head><body></body>') as Document;
+        const body = (emptyBody.childNodes![0] as ParentNode).childNodes![1] as
+            ParentNode;
         const span = dom5.constructors.element('span');
         dom5.append(body, span);
 
@@ -424,11 +413,10 @@ suite('dom5', () => {
     });
 
     suite('InsertBefore', () => {
-      let dom: DocumentFragment, div: Element, span: Element,
-          text: Node;
+      let dom: DocumentFragment, div: Element, span: Element, text: Node;
 
       setup(() => {
-        dom = parseFragment('<div></div><span></span>text');
+        dom = parseFragment('<div></div><span></span>text') as DocumentFragment;
         div = dom.childNodes![0] as Element;
         span = dom.childNodes![1] as Element;
         text = dom.childNodes![2];
@@ -466,7 +454,7 @@ suite('dom5', () => {
       let text: Node;
 
       setup(() => {
-        dom = parseFragment('<div></div><span></span>text');
+        dom = parseFragment('<div></div><span></span>text') as DocumentFragment;
         [div, span, text] = dom.childNodes!;
       });
 
@@ -478,18 +466,18 @@ suite('dom5', () => {
       });
 
       test('accepts document fragments', () => {
-        const fragment = parseFragment('<span></span>foo');
+        const fragment = parseFragment('<span></span>foo') as DocumentFragment;
         dom5.insertAfter(dom, span, fragment);
         assert.equal(
-            serialize(dom),
-            '<div></div><span></span><span></span>footext');
+            serialize(dom), '<div></div><span></span><span></span>footext');
         assert.equal(fragment.childNodes!.length, 0);
       });
     });
 
     suite('cloneNode', () => {
       test('clones a node', () => {
-        const dom = parseFragment('<div><span foo="bar">a</span></div>');
+        const dom = parseFragment('<div><span foo="bar">a</span></div>') as
+            DocumentFragment;
         const div = dom.childNodes![0] as Element;
         const span = div.childNodes![0] as Element;
 
@@ -513,10 +501,11 @@ suite('dom5', () => {
   suite('Query Predicates', () => {
     const fragText =
         '<div id="a" class="b c"><!-- nametag -->Hello World</div>';
-    let frag: DocumentFragment;
+    let frag: Element;
 
     suiteSetup(() => {
-      frag = parseFragment(fragText).childNodes![0];
+      frag = (parseFragment(fragText) as DocumentFragment).childNodes![0] as
+          Element;
     });
 
     test('hasTagName', () => {
@@ -629,12 +618,14 @@ suite('dom5', () => {
     test('parentMatches', () => {
       const fragText =
           '<div class="a"><div class="b"><div class="c"></div></div></div>';
-      const frag = parseFragment(fragText);
+      const frag = parseFragment(fragText) as DocumentFragment;
       const fn = dom5.predicates.parentMatches(dom5.predicates.hasClass('a'));
-      assert.isFalse(fn(frag.childNodes![0]));                // a
-      assert.isTrue(fn(frag.childNodes![0].childNodes![0]));  // b
+      assert.isFalse(fn(frag.childNodes![0]));  // a
       assert.isTrue(
-          fn(frag.childNodes![0].childNodes![0].childNodes![0]));  // c
+          fn((frag.childNodes![0] as ParentNode).childNodes![0]));  // b
+      assert.isTrue(
+          fn(((frag.childNodes![0] as ParentNode).childNodes![0] as ParentNode)
+                 .childNodes![0]));  // c
     });
   });
 
@@ -747,8 +738,9 @@ suite('dom5', () => {
     });
 
     test('document can be normalized', () => {
-      const doc = parse('<!DOCTYPE html>');
-      const body = doc.childNodes![1].childNodes![1];
+      const doc = parse('<!DOCTYPE html>') as Document;
+      const body =
+          (doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode;
       const div = con.element('div');
       const tn1 = con.text('foo');
       const space = con.text('');

@@ -47,16 +47,16 @@ suite('iteration', () => {
   let doc: Document;
 
   setup(() => {
-    doc = parse(docText);
+    doc = parse(docText) as Document;
   });
 
   test('ancestors', () => {
     // doc -> dom-module -> div -> a
-    const anchor = ((((doc.childNodes![1] as ParentNode)
-                       .childNodes![1] as ParentNode)
-                       .childNodes![0] as ParentNode)
-                       .childNodes![3] as ParentNode)
-                       .childNodes![1];
+    const anchor =
+        ((((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+              .childNodes![0] as ParentNode)
+             .childNodes![3] as ParentNode)
+            .childNodes![1];
 
     assert(dom5.predicates.hasTagName('a')(anchor));
     const domModule = [...dom5.ancestors(anchor)].filter(
@@ -70,12 +70,10 @@ suite('iteration', () => {
   test('depthFirst can be filtered down to one node', () => {
     // doc -> body -> dom-module -> template
     const template =
-        (((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0] as ParentNode)
-          .childNodes![1];
-    const templateContent =
-        treeAdapter.getTemplateContent(template);
+        (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+             .childNodes![0] as ParentNode)
+            .childNodes![1];
+    const templateContent = treeAdapter.getTemplateContent(template);
 
     const textNode = dom5.predicates.AND(
         dom5.isTextNode, dom5.predicates.hasTextValue('\nsample element\n'));
@@ -100,9 +98,9 @@ suite('iteration', () => {
         dom5.predicates.hasTagName('link'),
         dom5.predicates.hasAttrValue('rel', 'import'),
         dom5.predicates.hasAttr('href'));
-    const expected = ((doc.childNodes![1] as ParentNode)
-      .childNodes![0] as ParentNode)
-      .childNodes![0];
+    const expected =
+        ((doc.childNodes![1] as ParentNode).childNodes![0] as ParentNode)
+            .childNodes![0];
     const actual = dom5.query(doc, fn);
     assert.equal(actual, expected);
   });
@@ -133,12 +131,10 @@ suite('iteration', () => {
 
     // doc -> body -> dom-module -> template
     const template =
-        (((doc.childNodes![1] as ParentNode)
-          .childNodes![1] as ParentNode)
-          .childNodes![0] as ParentNode)
-          .childNodes![1];
-    const templateContent =
-        treeAdapter.getTemplateContent(template);
+        (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
+             .childNodes![0] as ParentNode)
+            .childNodes![1];
+    const templateContent = treeAdapter.getTemplateContent(template);
 
     // img
     const expected_1 = templateContent.childNodes![1];
@@ -157,7 +153,7 @@ suite('iteration', () => {
     let doc: Document;
 
     setup(() => {
-      doc = parse5.parse(docText);
+      doc = parse(docText) as Document;
     });
 
     test('prior', () => {

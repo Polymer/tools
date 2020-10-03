@@ -56,10 +56,7 @@ function newElement(tagName: string, namespace?: string): Element {
 }
 
 function newDocumentFragment(): DocumentFragment {
-  return {
-    nodeName: '#document-fragment',
-    childNodes: []
-  };
+  return {nodeName: '#document-fragment', childNodes: []};
 }
 
 export function cloneNode<T extends Node>(node: T): T {
@@ -156,7 +153,7 @@ export function insertAfter(parent: ParentNode, target: Node, newNode: Node) {
  * Removes a node and places its children in its place.  If the node
  * has no parent, the operation is impossible and no action takes place.
  */
-export function removeNodeSaveChildren(node: ParentNode & ChildNode) {
+export function removeNodeSaveChildren(node: ParentNode&ChildNode) {
   // We can't save the children if there's no parent node to provide
   // for them.
   const fosterParent = node.parentNode;
@@ -180,17 +177,20 @@ export function removeFakeRootElements(ast: Node) {
   const injectedNodes = queryAll(
       ast,
       p.AND(
-          (node) => !node.__location,
+          (node) => !(node as Element).sourceCodeLocation,
           p.hasMatchingTagName(/^(html|head|body)$/i)),
       undefined,
       // Don't descend past 3 levels 'document > html > head|body'
-      (node) => node.parentNode && node.parentNode.parentNode ?
-          undefined :
-          node.childNodes);
+      (node) => {
+        const nodeAsElement = node as Element;
+        const parentAsElement =
+            (nodeAsElement && nodeAsElement.parentNode) as Element;
+        return parentAsElement ? undefined : nodeAsElement.childNodes;
+      })
   injectedNodes.reverse().forEach(removeNodeSaveChildren);
 }
 
-export function append(parent: Node, newNode: Node) {
+export function append(parent: ParentNode, newNode: Node) {
   const index = parent.childNodes && parent.childNodes.length || 0;
   insertNode(parent, index, newNode);
 }

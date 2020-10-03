@@ -16,7 +16,7 @@ import {DefaultTreeNode as Node, DefaultTreeParentNode as ParentNode} from 'pars
 import * as treeAdapter from 'parse5/lib/tree-adapters/default';
 
 import {constructors} from './modification';
-import {isParentNode, isCommentNode, isDocument, isDocumentFragment, isElement, isTextNode} from './predicates';
+import {isCommentNode, isDocument, isDocumentFragment, isElement, isParentNode, isTextNode} from './predicates';
 import {nodeWalkAll} from './walking';
 
 export {Node};
