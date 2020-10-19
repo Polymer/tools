@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {DefaultTreeNode as Node} from 'parse5';
+import {Node} from 'parse5';
 
 import {isChildNode, isElement, Predicate, predicates as p} from './predicates';
 import {childNodesIncludeTemplate, defaultChildNodes, GetChildNodes} from './util';
@@ -85,9 +85,7 @@ export function* ancestors(node: Node): IterableIterator<Node> {
   let currNode: Node|undefined = node;
   while (currNode !== undefined) {
     yield currNode;
-    if (isChildNode(currNode)) {
-      currNode = currNode.parentNode;
-    }
+    currNode = isChildNode(currNode) ? currNode.parentNode : undefined;
   }
 }
 

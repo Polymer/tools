@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {DefaultTreeNode as Node} from 'parse5';
+import {Node} from 'parse5';
 
 import * as iteration from './iteration';
 import {isElement, Predicate, predicates as p} from './predicates';

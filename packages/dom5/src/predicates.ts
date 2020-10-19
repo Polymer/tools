@@ -12,16 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {
-  DefaultTreeNode as Node,
-  DefaultTreeChildNode as ChildNode,
-  DefaultTreeDocumentFragment as DocumentFragment,
-  DefaultTreeDocument as Document,
-  DefaultTreeElement as Element,
-  DefaultTreeCommentNode as CommentNode,
-  DefaultTreeParentNode as ParentNode,
-  DefaultTreeTextNode as TextNode
-} from 'parse5';
+import {ChildNode, CommentNode, Document, DocumentFragment, Element, Node, ParentNode, TextNode} from 'parse5';
 
 import {getAttribute, getAttributeIndex, getTextContent} from './util';
 

@@ -11,15 +11,9 @@
 
 import {assert} from 'chai';
 import * as fs from 'fs';
-import {
-  parse,
-  DefaultTreeNode as Node,
-  DefaultTreeParentNode as ParentNode,
-  DefaultTreeDocument as Document,
-  DefaultTreeTextNode as TextNode,
-  serialize
-} from 'parse5';
-import * as treeAdapter from 'parse5/lib/tree-adapters/default';
+import {Document, Element, Node, ParentNode, parse, serialize, TextNode} from 'parse5';
+
+import treeAdapter = require('parse5/lib/tree-adapters/default');
 import * as path from 'path';
 
 import * as dom5 from '../index-next';
@@ -47,16 +41,15 @@ suite('iteration', () => {
   let doc: Document;
 
   setup(() => {
-    doc = parse(docText) as Document;
+    doc = parse(docText);
   });
 
   test('ancestors', () => {
     // doc -> dom-module -> div -> a
-    const anchor =
-        ((((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
-              .childNodes![0] as ParentNode)
-             .childNodes![3] as ParentNode)
-            .childNodes![1];
+    const anchor = ((((doc.childNodes[1] as Element).childNodes[1] as Element)
+                         .childNodes[0] as Element)
+                        .childNodes[3] as Element)
+                       .childNodes[1] as Element;
 
     assert(dom5.predicates.hasTagName('a')(anchor));
     const domModule = [...dom5.ancestors(anchor)].filter(
@@ -70,23 +63,23 @@ suite('iteration', () => {
   test('depthFirst can be filtered down to one node', () => {
     // doc -> body -> dom-module -> template
     const template =
-        (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
-             .childNodes![0] as ParentNode)
-            .childNodes![1];
+        (((doc.childNodes[1] as Element).childNodes[1] as Element)
+             .childNodes[0] as Element)
+            .childNodes[1] as Element;
     const templateContent = treeAdapter.getTemplateContent(template);
 
     const textNode = dom5.predicates.AND(
         dom5.isTextNode, dom5.predicates.hasTextValue('\nsample element\n'));
 
     // 'sample element' text node
-    let expected = templateContent.childNodes![4];
+    let expected = templateContent.childNodes[4];
     let actual =
         [...dom5.depthFirst(doc, dom5.childNodesIncludeTemplate)].filter(
             textNode)[0];
     assert.equal(actual, expected);
 
     // <!-- comment node -->
-    expected = templateContent.childNodes![5];
+    expected = templateContent.childNodes[5];
     actual =
         [...dom5.depthFirst(template, dom5.childNodesIncludeTemplate)].filter(
             dom5.isCommentNode)[0];
@@ -98,9 +91,8 @@ suite('iteration', () => {
         dom5.predicates.hasTagName('link'),
         dom5.predicates.hasAttrValue('rel', 'import'),
         dom5.predicates.hasAttr('href'));
-    const expected =
-        ((doc.childNodes![1] as ParentNode).childNodes![0] as ParentNode)
-            .childNodes![0];
+    const expected = ((doc.childNodes[1] as Element).childNodes[0] as Element)
+                         .childNodes[0] as Element;
     const actual = dom5.query(doc, fn);
     assert.equal(actual, expected);
   });
@@ -131,15 +123,15 @@ suite('iteration', () => {
 
     // doc -> body -> dom-module -> template
     const template =
-        (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
-             .childNodes![0] as ParentNode)
-            .childNodes![1];
+        (((doc.childNodes[1] as Element).childNodes[1] as Element)
+             .childNodes[0] as Element)
+            .childNodes[1] as Element;
     const templateContent = treeAdapter.getTemplateContent(template);
 
     // img
-    const expected_1 = templateContent.childNodes![1];
+    const expected_1 = templateContent.childNodes[1];
     // anchor
-    const expected_2 = templateContent.childNodes![3];
+    const expected_2 = templateContent.childNodes[3];
     const actual = [...dom5.queryAll(doc, fn, dom5.childNodesIncludeTemplate)];
 
     assert.equal(actual.length, 3);
@@ -153,7 +145,7 @@ suite('iteration', () => {
     let doc: Document;
 
     setup(() => {
-      doc = parse(docText) as Document;
+      doc = parse(docText);
     });
 
     test('prior', () => {

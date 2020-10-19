@@ -12,8 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {DefaultTreeNode as Node, DefaultTreeParentNode as ParentNode} from 'parse5';
-import * as treeAdapter from 'parse5/lib/tree-adapters/default';
+import {Element, Node, ParentNode} from 'parse5';
+
+import treeAdapter = require('parse5/lib/tree-adapters/default');
 
 import {constructors} from './modification';
 import {isCommentNode, isDocument, isDocumentFragment, isElement, isParentNode, isTextNode} from './predicates';
@@ -75,7 +76,7 @@ export function hasAttribute(element: Node, name: string): boolean {
 
 export function setAttribute(element: Node, name: string, value: string) {
   if (!isElement(element)) {
-    return;
+    throw new Error('Only elements support attributes.');
   }
   const i = getAttributeIndex(element, name);
   if (i > -1) {
@@ -176,7 +177,7 @@ export const defaultChildNodes = function defaultChildNodes(node: ParentNode) {
 export const childNodesIncludeTemplate = function childNodesIncludeTemplate(
     node: ParentNode) {
   if (node.nodeName === 'template') {
-    return treeAdapter.getTemplateContent(node).childNodes;
+    return treeAdapter.getTemplateContent(node as Element).childNodes;
   }
 
   return node.childNodes;

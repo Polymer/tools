@@ -11,18 +11,12 @@
 
 import {assert} from 'chai';
 import * as fs from 'fs';
-import {
-  DefaultTreeNode as Node,
-  DefaultTreeTextNode as TextNode,
-  DefaultTreeParentNode as ParentNode,
-  DefaultTreeDocument as Document,
-  parse,
-  serialize
-} from 'parse5';
+import {Document, Element, Node, ParentNode, parse, serialize, TextNode} from 'parse5';
 import * as treeAdapter from 'parse5/lib/tree-adapters/default';
 import * as path from 'path';
 
 import * as dom5 from '../index';
+
 import {fixturesDir} from './utils';
 
 /// <reference path="mocha" />
@@ -52,11 +46,10 @@ suite('walking', () => {
 
   test('nodeWalkAncestors', () => {
     // doc -> dom-module -> div -> a
-    const anchor =
-        ((((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
-              .childNodes![0] as ParentNode)
-             .childNodes![3] as ParentNode)
-            .childNodes![1];
+    const anchor = ((((doc.childNodes![1] as Element).childNodes![1] as Element)
+                         .childNodes![0] as Element)
+                        .childNodes![3] as Element)
+                       .childNodes![1] as Element;
 
     assert(dom5.predicates.hasTagName('a')(anchor));
     const domModule = dom5.nodeWalkAncestors(
@@ -70,9 +63,9 @@ suite('walking', () => {
   test('nodeWalk', () => {
     // doc -> body -> dom-module -> template
     const template =
-        (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
-             .childNodes![0] as ParentNode)
-            .childNodes![1];
+        (((doc.childNodes![1] as Element).childNodes![1] as Element)
+             .childNodes![0] as Element)
+            .childNodes![1] as Element;
     const templateContent = treeAdapter.getTemplateContent(template);
 
     const textNode = dom5.predicates.AND(
@@ -95,9 +88,8 @@ suite('walking', () => {
         dom5.predicates.hasTagName('link'),
         dom5.predicates.hasAttrValue('rel', 'import'),
         dom5.predicates.hasAttr('href'));
-    const expected =
-        ((doc.childNodes![1] as ParentNode).childNodes![0] as ParentNode)
-            .childNodes![0];
+    const expected = ((doc.childNodes![1] as Element).childNodes![0] as Element)
+                         .childNodes![0] as Element;
     const actual = dom5.query(doc, fn);
     assert.equal(actual, expected);
   });
@@ -128,9 +120,9 @@ suite('walking', () => {
 
     // doc -> body -> dom-module -> template
     const template =
-        (((doc.childNodes![1] as ParentNode).childNodes![1] as ParentNode)
-             .childNodes![0] as ParentNode)
-            .childNodes![1];
+        (((doc.childNodes![1] as Element).childNodes![1] as Element)
+             .childNodes![0] as Element)
+            .childNodes![1] as Element;
     const templateContent = treeAdapter.getTemplateContent(template);
 
     // img

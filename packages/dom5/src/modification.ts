@@ -12,15 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 import * as cloneObject from 'clone';
-import {
-  DefaultTreeNode as Node,
-  DefaultTreeTextNode as TextNode,
-  DefaultTreeElement as Element,
-  DefaultTreeDocumentFragment as DocumentFragment,
-  DefaultTreeCommentNode as CommentNode,
-  DefaultTreeParentNode as ParentNode,
-  DefaultTreeChildNode as ChildNode
-} from 'parse5';
+import {ChildNode, CommentNode, DocumentFragment, Element, Node, ParentNode, TextNode} from 'parse5';
 
 import {isChildNode, isDocumentFragment, predicates as p} from './predicates';
 import {queryAll} from './walking';
@@ -112,7 +104,7 @@ function insertNode(
   });
 
   if (removedNode) {
-    (removedNode as ChildNode).parentNode = undefined as unknown as ParentNode;
+    removedNode.parentNode = undefined as unknown as ParentNode;
   }
 }
 
@@ -139,12 +131,14 @@ export function remove(node: Node) {
   node.parentNode = undefined as unknown as ParentNode;
 }
 
-export function insertBefore(parent: ParentNode, target: Node, newNode: Node) {
+export function insertBefore(
+    parent: ParentNode, target: ChildNode, newNode: Node) {
   const index = parent.childNodes.indexOf(target);
   insertNode(parent, index, newNode);
 }
 
-export function insertAfter(parent: ParentNode, target: Node, newNode: Node) {
+export function insertAfter(
+    parent: ParentNode, target: ChildNode, newNode: Node) {
   const index = parent.childNodes.indexOf(target);
   insertNode(parent, index + 1, newNode);
 }
@@ -182,11 +176,11 @@ export function removeFakeRootElements(ast: Node) {
       undefined,
       // Don't descend past 3 levels 'document > html > head|body'
       (node) => {
-        const nodeAsElement = node as Element;
-        const parentAsElement =
-            (nodeAsElement && nodeAsElement.parentNode) as Element;
-        return parentAsElement ? undefined : nodeAsElement.childNodes;
-      })
+        return isChildNode(node) && node.parentNode &&
+                isChildNode(node.parentNode) && node.parentNode.parentNode ?
+            undefined :
+            (node as ParentNode).childNodes;
+      });
   injectedNodes.reverse().forEach(removeNodeSaveChildren);
 }
 
