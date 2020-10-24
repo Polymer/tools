@@ -14,7 +14,12 @@
 import * as cloneObject from 'clone';
 import {ChildNode, CommentNode, DocumentFragment, Element, Node, ParentNode, TextNode} from 'parse5';
 
-import {isChildNode, isDocumentFragment, predicates as p} from './predicates';
+import {
+  isChildNode,
+  isParentNode,
+  isDocumentFragment,
+  predicates as p
+} from './predicates';
 import {queryAll} from './walking';
 
 export {Node};
@@ -73,10 +78,16 @@ export function cloneNode<T extends Node>(node: T): T {
  * are inserted and removed from the fragment.
  */
 function insertNode(
-    parent: ParentNode, index: number, newNode: Node, replace?: boolean) {
-  if (!parent.childNodes) {
+    maybeParent: Node, index: number, newNode: Node, replace?: boolean) {
+  let parent: ParentNode;
+
+  if (!isParentNode(maybeParent)) {
+    parent = maybeParent as ParentNode;
     parent.childNodes = [];
+  } else {
+    parent = maybeParent;
   }
+
   let newNodes: Node[] = [];
   let removedNode = replace ? parent.childNodes[index] : null;
 
@@ -132,14 +143,20 @@ export function remove(node: Node) {
 }
 
 export function insertBefore(
-    parent: ParentNode, target: ChildNode, newNode: Node) {
-  const index = parent.childNodes.indexOf(target);
+    parent: Node, target: Node, newNode: Node) {
+  let index: number = 0;
+  if (isParentNode(parent)) {
+    index = parent.childNodes.indexOf(target as ChildNode);
+  }
   insertNode(parent, index, newNode);
 }
 
 export function insertAfter(
-    parent: ParentNode, target: ChildNode, newNode: Node) {
-  const index = parent.childNodes.indexOf(target);
+    parent: Node, target: Node, newNode: Node) {
+  let index: number = 0;
+  if (isParentNode(parent)) {
+    index = parent.childNodes.indexOf(target as ChildNode);
+  }
   insertNode(parent, index + 1, newNode);
 }
 
@@ -147,16 +164,15 @@ export function insertAfter(
  * Removes a node and places its children in its place.  If the node
  * has no parent, the operation is impossible and no action takes place.
  */
-export function removeNodeSaveChildren(node: ParentNode&ChildNode) {
+export function removeNodeSaveChildren(node: Node) {
   // We can't save the children if there's no parent node to provide
   // for them.
-  const fosterParent = node.parentNode;
-  if (!fosterParent) {
+  if (!isParentNode(node) || !isChildNode(node)) {
     return;
   }
   const children = (node.childNodes || []).slice();
   for (const child of children) {
-    insertBefore(node.parentNode!, node, child);
+    insertBefore(node.parentNode, node, child);
   }
   remove(node);
 }
@@ -184,8 +200,11 @@ export function removeFakeRootElements(ast: Node) {
   injectedNodes.reverse().forEach(removeNodeSaveChildren);
 }
 
-export function append(parent: ParentNode, newNode: Node) {
-  const index = parent.childNodes && parent.childNodes.length || 0;
+export function append(parent: Node, newNode: Node) {
+  let index = 0;
+  if (isParentNode(parent)) {
+    index = parent.childNodes.length;
+  }
   insertNode(parent, index, newNode);
 }
 

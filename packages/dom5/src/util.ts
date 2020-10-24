@@ -97,7 +97,7 @@ export function removeAttribute(element: Node, name: string) {
 }
 
 function collapseTextRange(parent: Node, start: number, end: number) {
-  if (!isParentNode(parent) || !parent.childNodes) {
+  if (!isParentNode(parent)) {
     return;
   }
   let text = '';
@@ -175,7 +175,10 @@ export const defaultChildNodes = function defaultChildNodes(node: ParentNode) {
 };
 
 export const childNodesIncludeTemplate = function childNodesIncludeTemplate(
-    node: ParentNode) {
+    node: Node) {
+  if (!isParentNode(node)) {
+    return [];
+  }
   if (node.nodeName === 'template') {
     return treeAdapter.getTemplateContent(node as Element).childNodes;
   }
