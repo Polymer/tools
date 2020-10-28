@@ -55,20 +55,20 @@ suite('dom5', () => {
     suite('getAttribute', () => {
       test('returns null for a non-set attribute', () => {
         const divA = ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         assert.equal(dom5.getAttribute(divA, 'foo'), null);
       });
 
       test('returns the value for a set attribute', () => {
         const divA = ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         assert.equal(dom5.getAttribute(divA, 'id'), 'A');
       });
 
       test('returns the first value for a doubly set attribute', () => {
         const divB = (((doc.childNodes[1] as Element).childNodes[1] as Element)
                           .childNodes[0] as Element)
-                         .childNodes[1];
+                         .childNodes[1] as Element;
         assert.equal(dom5.getAttribute(divB, 'bar'), 'b1');
       });
     });
@@ -76,26 +76,26 @@ suite('dom5', () => {
     suite('hasAttribute', () => {
       test('returns false for a non-set attribute', () => {
         const divA = ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         assert.equal(dom5.hasAttribute(divA, 'foo'), false);
       });
 
       test('returns true for a set attribute', () => {
         const divA = ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         assert.equal(dom5.hasAttribute(divA, 'id'), true);
       });
 
       test('returns true for a doubly set attribute', () => {
         const divB = (((doc.childNodes[1] as Element).childNodes[1] as Element)
                           .childNodes[0] as Element)
-                         .childNodes[1];
+                         .childNodes[1] as Element;
         assert.equal(dom5.hasAttribute(divB, 'bar'), true);
       });
 
       test('returns true for attribute with no value', () => {
         const divA = ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         assert.equal(dom5.hasAttribute(divA, 'qux'), true);
       });
     });
@@ -103,14 +103,14 @@ suite('dom5', () => {
     suite('setAttribute', () => {
       test('sets a non-set attribute', () => {
         const divA = ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         dom5.setAttribute(divA, 'foo', 'bar');
         assert.equal(dom5.getAttribute(divA, 'foo'), 'bar');
       });
 
       test('sets and already set attribute', () => {
         const divA = ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         dom5.setAttribute(divA, 'id', 'qux');
         assert.equal(dom5.getAttribute(divA, 'id'), 'qux');
       });
@@ -118,7 +118,7 @@ suite('dom5', () => {
       test('sets the first value for a doubly set attribute', () => {
         const divB = (((doc.childNodes[1] as Element).childNodes[1] as Element)
                           .childNodes[0] as Element)
-                         .childNodes[1];
+                         .childNodes[1] as Element;
         dom5.setAttribute(divB, 'bar', 'baz');
         assert.equal(dom5.getAttribute(divB, 'bar'), 'baz');
       });
@@ -126,7 +126,7 @@ suite('dom5', () => {
       test('throws when called on a text node', () => {
         const text = (((doc.childNodes[1] as Element).childNodes[1] as Element)
                           .childNodes[0] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         assert.throws(() => {
           dom5.setAttribute(text, 'bar', 'baz');
         });
@@ -136,7 +136,7 @@ suite('dom5', () => {
     suite('removeAttribute', () => {
       test('removes a set attribute', () => {
         const divA = ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                         .childNodes[0];
+                         .childNodes[0] as Element;
         dom5.removeAttribute(divA, 'foo');
         assert.equal(dom5.getAttribute(divA, 'foo'), null);
       });
@@ -145,7 +145,7 @@ suite('dom5', () => {
           'does not throw when called on a node without that attribute', () => {
             const divA =
                 ((doc.childNodes[1] as Element).childNodes[1] as Element)
-                    .childNodes[0];
+                    .childNodes[0] as Element;
             assert.doesNotThrow(() => {
               dom5.removeAttribute(divA, 'ZZZ');
             });
@@ -153,7 +153,7 @@ suite('dom5', () => {
     });
 
     suite('getTextContent', () => {
-      let body: ParentNode;
+      let body: Element;
 
       suiteSetup(() => {
         body = (doc.childNodes[1] as Element).childNodes[1] as Element;
@@ -599,8 +599,6 @@ suite('dom5', () => {
                  .childNodes[0]));  // c
     });
   });
-
-
 
   suite('Constructors', () => {
     test('text node', () => {

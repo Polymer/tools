@@ -12,7 +12,7 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Element, Node, ParentNode} from 'parse5';
+import {ChildNode, Element, Node, ParentNode} from 'parse5';
 
 import treeAdapter = require('parse5/lib/tree-adapters/default');
 
@@ -41,10 +41,7 @@ export function getTextContent(node: Node): string {
 /**
  * @returns The string value of attribute `name`, or `null`.
  */
-export function getAttribute(element: Node, name: string): string|null {
-  if (!isElement(element)) {
-    return null;
-  }
+export function getAttribute(element: Element, name: string): string|null {
   const i = getAttributeIndex(element, name);
   if (i > -1) {
     return element.attrs[i].value;
@@ -52,8 +49,8 @@ export function getAttribute(element: Node, name: string): string|null {
   return null;
 }
 
-export function getAttributeIndex(element: Node, name: string): number {
-  if (!isElement(element) || !element.attrs) {
+export function getAttributeIndex(element: Element, name: string): number {
+  if (!element.attrs) {
     return -1;
   }
   const n = name.toLowerCase();
@@ -68,16 +65,13 @@ export function getAttributeIndex(element: Node, name: string): number {
 /**
  * @returns `true` iff [element] has the attribute [name], `false` otherwise.
  */
-export function hasAttribute(element: Node, name: string): boolean {
+export function hasAttribute(element: Element, name: string): boolean {
   return getAttributeIndex(element, name) !== -1;
 }
 
 
 
-export function setAttribute(element: Node, name: string, value: string) {
-  if (!isElement(element)) {
-    throw new Error('Only elements support attributes.');
-  }
+export function setAttribute(element: Element, name: string, value: string) {
   const i = getAttributeIndex(element, name);
   if (i > -1) {
     element.attrs[i].value = value;
@@ -86,20 +80,14 @@ export function setAttribute(element: Node, name: string, value: string) {
   }
 }
 
-export function removeAttribute(element: Node, name: string) {
-  if (!isElement(element)) {
-    return;
-  }
+export function removeAttribute(element: Element, name: string) {
   const i = getAttributeIndex(element, name);
   if (i > -1) {
     element.attrs.splice(i, 1);
   }
 }
 
-function collapseTextRange(parent: Node, start: number, end: number) {
-  if (!isParentNode(parent)) {
-    return;
-  }
+function collapseTextRange(parent: ParentNode, start: number, end: number) {
   let text = '';
   for (let i = start; i <= end; i++) {
     text += getTextContent(parent.childNodes[i]);
@@ -168,19 +156,16 @@ export function setTextContent(node: Node, value: string) {
   }
 }
 
-export type GetChildNodes = ((node: Node) => Node[]|undefined);
+export type GetChildNodes = ((node: ParentNode) => ChildNode[]|undefined);
 
 export const defaultChildNodes = function defaultChildNodes(node: ParentNode) {
   return node.childNodes;
 };
 
 export const childNodesIncludeTemplate = function childNodesIncludeTemplate(
-    node: Node) {
-  if (!isParentNode(node)) {
-    return [];
-  }
-  if (node.nodeName === 'template') {
-    return treeAdapter.getTemplateContent(node as Element).childNodes;
+    node: ParentNode) {
+  if (isElement(node) && node.nodeName === 'template') {
+    return treeAdapter.getTemplateContent(node).childNodes;
   }
 
   return node.childNodes;

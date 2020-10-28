@@ -78,34 +78,20 @@ export function cloneNode<T extends Node>(node: T): T {
  * are inserted and removed from the fragment.
  */
 function insertNode(
-    maybeParent: Node, index: number, newNode: Node, replace?: boolean) {
-  let parent: ParentNode;
-
-  if (!isParentNode(maybeParent)) {
-    parent = maybeParent as ParentNode;
-    parent.childNodes = [];
-  } else {
-    parent = maybeParent;
-  }
-
+    parent: ParentNode, index: number, newNode: ChildNode|DocumentFragment, replace?: boolean) {
   let newNodes: Node[] = [];
-  let removedNode = replace ? parent.childNodes[index] : null;
 
   if (newNode) {
     if (isDocumentFragment(newNode)) {
-      if (newNode.childNodes) {
-        newNodes = Array.from(newNode.childNodes);
-        newNode.childNodes.length = 0;
-      }
+      newNodes = Array.from(newNode.childNodes);
+      newNode.childNodes.length = 0;
     } else {
       newNodes = [newNode];
       remove(newNode);
     }
   }
 
-  if (replace) {
-    removedNode = parent.childNodes[index];
-  }
+  const removedNode = replace ? parent.childNodes[index] : null;
 
   Array.prototype.splice.apply(
       parent.childNodes, (<any>[index, replace ? 1 : 0]).concat(newNodes));
@@ -119,23 +105,15 @@ function insertNode(
   }
 }
 
-export function replace(oldNode: Node, newNode: Node) {
-  // we can't replace something that isn't a child of anything.
-  if (!isChildNode(oldNode)) {
-    return;
-  }
+export function replace(oldNode: ChildNode, newNode: ChildNode|DocumentFragment) {
   const parent = oldNode.parentNode;
   const index = parent.childNodes.indexOf(oldNode);
   insertNode(parent, index, newNode, true);
 }
 
-export function remove(node: Node) {
-  // if it isn't a child, there's nothing to remove it from
-  if (!isChildNode(node)) {
-    return;
-  }
+export function remove(node: ChildNode) {
   const parent = node.parentNode;
-  if (parent && parent.childNodes) {
+  if (parent) {
     const idx = parent.childNodes.indexOf(node);
     parent.childNodes.splice(idx, 1);
   }
@@ -143,20 +121,14 @@ export function remove(node: Node) {
 }
 
 export function insertBefore(
-    parent: Node, target: Node, newNode: Node) {
-  let index: number = 0;
-  if (isParentNode(parent)) {
-    index = parent.childNodes.indexOf(target as ChildNode);
-  }
+    parent: ParentNode, target: ChildNode, newNode: ChildNode|DocumentFragment) {
+  const index = parent.childNodes.indexOf(target);
   insertNode(parent, index, newNode);
 }
 
 export function insertAfter(
-    parent: Node, target: Node, newNode: Node) {
-  let index: number = 0;
-  if (isParentNode(parent)) {
-    index = parent.childNodes.indexOf(target as ChildNode);
-  }
+    parent: ParentNode, target: ChildNode, newNode: ChildNode|DocumentFragment) {
+  const index = parent.childNodes.indexOf(target);
   insertNode(parent, index + 1, newNode);
 }
 
@@ -164,13 +136,8 @@ export function insertAfter(
  * Removes a node and places its children in its place.  If the node
  * has no parent, the operation is impossible and no action takes place.
  */
-export function removeNodeSaveChildren(node: Node) {
-  // We can't save the children if there's no parent node to provide
-  // for them.
-  if (!isParentNode(node) || !isChildNode(node)) {
-    return;
-  }
-  const children = (node.childNodes || []).slice();
+export function removeNodeSaveChildren(node: Element) {
+  const children = node.childNodes.slice();
   for (const child of children) {
     insertBefore(node.parentNode, node, child);
   }
@@ -183,7 +150,7 @@ export function removeNodeSaveChildren(node: Node) {
  * these from the AST if they have no location info, so it requires that
  * the `parse5.parse` be used with the `locationInfo` option of `true`.
  */
-export function removeFakeRootElements(ast: Node) {
+export function removeFakeRootElements(ast: ParentNode) {
   const injectedNodes = queryAll(
       ast,
       p.AND(
@@ -191,7 +158,7 @@ export function removeFakeRootElements(ast: Node) {
           p.hasMatchingTagName(/^(html|head|body)$/i)),
       undefined,
       // Don't descend past 3 levels 'document > html > head|body'
-      (node) => {
+      (node: Node) => {
         return isChildNode(node) && node.parentNode &&
                 isChildNode(node.parentNode) && node.parentNode.parentNode ?
             undefined :
@@ -200,11 +167,8 @@ export function removeFakeRootElements(ast: Node) {
   injectedNodes.reverse().forEach(removeNodeSaveChildren);
 }
 
-export function append(parent: Node, newNode: Node) {
-  let index = 0;
-  if (isParentNode(parent)) {
-    index = parent.childNodes.length;
-  }
+export function append(parent: ParentNode, newNode: ChildNode|DocumentFragment) {
+  const index = parent.childNodes.length;
   insertNode(parent, index, newNode);
 }
 

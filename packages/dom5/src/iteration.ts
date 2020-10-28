@@ -12,9 +12,9 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {Node} from 'parse5';
+import {Element, ChildNode, ParentNode, Node} from 'parse5';
 
-import {isChildNode, isElement, Predicate, predicates as p} from './predicates';
+import {isParentNode, isChildNode, isElement, Predicate, predicates as p} from './predicates';
 import {childNodesIncludeTemplate, defaultChildNodes, GetChildNodes} from './util';
 
 export {Node};
@@ -43,6 +43,9 @@ export function*
     depthFirst(node: Node, getChildNodes: GetChildNodes = defaultChildNodes):
         IterableIterator<Node> {
   yield node;
+  if (!isParentNode(node)) {
+    return;
+  }
   const childNodes = getChildNodes(node);
   if (childNodes === undefined) {
     return;
@@ -62,10 +65,12 @@ export function*
     depthFirstReversed(
         node: Node, getChildNodes: GetChildNodes = defaultChildNodes):
         IterableIterator<Node> {
-  const childNodes = getChildNodes(node);
-  if (childNodes !== undefined) {
-    for (const child of reversedView(childNodes)) {
-      yield* depthFirstReversed(child, getChildNodes);
+  if (isParentNode(node)) {
+    const childNodes = getChildNodes(node);
+    if (childNodes !== undefined) {
+      for (const child of reversedView(childNodes)) {
+        yield* depthFirstReversed(child, getChildNodes);
+      }
     }
   }
   yield node;
@@ -96,10 +101,7 @@ export function* ancestors(node: Node): IterableIterator<Node> {
  * Nodes are yielded in reverse document order (i.e. starting with the one
  * closest to `node`)
  */
-export function* previousSiblings(node: Node): IterableIterator<Node> {
-  if (!isChildNode(node)) {
-    return;
-  }
+export function* previousSiblings(node: ChildNode): IterableIterator<ChildNode> {
   const parent = node.parentNode;
   if (parent === undefined) {
     return;
@@ -146,14 +148,15 @@ function* reversedView<U>(arr: U[], initialIndex = arr.length - 1) {
  *
  * (`<head>` and `#document` are hallucinated by the html parser)
  */
-export function* prior(node: Node): IterableIterator<Node> {
+export function* prior(node: ChildNode): IterableIterator<Node> {
   for (const previousSibling of previousSiblings(node)) {
     yield* depthFirstReversed(previousSibling);
   }
-  if (isChildNode(node)) {
-    const parent = node.parentNode;
-    if (parent) {
-      yield parent;
+
+  const parent = node.parentNode;
+  if (parent) {
+    yield parent;
+    if (isChildNode(parent)) {
       yield* prior(parent);
     }
   }
@@ -163,9 +166,9 @@ export function* prior(node: Node): IterableIterator<Node> {
  * Like queryAll, but just returns the first result.
  */
 export function query(
-    node: Node,
+    node: ParentNode,
     predicate: Predicate,
-    getChildNodes: GetChildNodes = defaultChildNodes): Node|null {
+    getChildNodes: GetChildNodes = defaultChildNodes): Element|null {
   for (const result of queryAll(node, predicate, getChildNodes)) {
     return result;
   }
@@ -178,13 +181,13 @@ export function query(
  */
 export function*
     queryAll(
-        node: Node,
+        node: ParentNode,
         predicate: Predicate,
-        getChildNodes: GetChildNodes = defaultChildNodes) {
+        getChildNodes: GetChildNodes = defaultChildNodes): IterableIterator<Element> {
   const elementPredicate = p.AND(isElement, predicate);
   for (const desc of depthFirst(node, getChildNodes)) {
     if (elementPredicate(desc)) {
-      yield desc;
+      yield desc as Element;
     }
   }
 }

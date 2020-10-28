@@ -105,12 +105,18 @@ function parentMatches(predicateFn: Predicate): Predicate {
 
 function hasAttr(attr: string): Predicate {
   return function(node) {
+    if (!isElement(node)) {
+      return false;
+    }
     return getAttributeIndex(node, attr) > -1;
   };
 }
 
 function hasAttrValue(attr: string, value: string): Predicate {
   return function(node) {
+    if (!isElement(node)) {
+      return false;
+    }
     return getAttribute(node, attr) === value;
   };
 }
@@ -146,6 +152,9 @@ function hasMatchingTagName(regex: RegExp): Predicate {
 export function hasSpaceSeparatedAttrValue(
     name: string, value: string): Predicate {
   return function(element: Node) {
+    if (!isElement(element)) {
+      return false;
+    }
     const attributeValue = getAttribute(element, name);
     if (typeof attributeValue !== 'string') {
       return false;
@@ -155,23 +164,23 @@ export function hasSpaceSeparatedAttrValue(
 }
 
 export function isDocument(node: Node): node is Document {
-  return node.nodeName === '#document';
+  return (node as Document).nodeName === '#document';
 }
 
 export function isDocumentFragment(node: Node): node is DocumentFragment {
-  return node.nodeName === '#document-fragment';
+  return (node as DocumentFragment).nodeName === '#document-fragment';
 }
 
 export function isElement(node: Node): node is Element {
-  return node.nodeName === (node as Element).tagName;
+  return (node as Element).nodeName === (node as Element).tagName;
 }
 
 export function isTextNode(node: Node): node is TextNode {
-  return node.nodeName === '#text';
+  return (node as TextNode).nodeName === '#text';
 }
 
 export function isCommentNode(node: Node): node is CommentNode {
-  return node.nodeName === '#comment';
+  return (node as CommentNode).nodeName === '#comment';
 }
 
 export function isChildNode(node: Node): node is ChildNode {

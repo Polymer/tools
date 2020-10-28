@@ -147,7 +147,7 @@ suite('walking', () => {
     test('nodeWalkAllPrior', () => {
       const domModule = dom5.nodeWalkAll(
           doc, dom5.predicates.hasAttrValue('id', 'test-element'))[0];
-      const comments = dom5.nodeWalkAllPrior(domModule, dom5.isCommentNode);
+      const comments = dom5.nodeWalkAllPrior(domModule as Element, dom5.isCommentNode);
       assert.include(dom5.getTextContent(comments[0]), 'test element');
       assert.include(
           dom5.getTextContent(comments[1]), 'hash or path based routing');
