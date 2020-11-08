@@ -164,23 +164,23 @@ export function hasSpaceSeparatedAttrValue(
 }
 
 export function isDocument(node: Node): node is Document {
-  return (node as Document).nodeName === '#document';
+  return node.nodeName === '#document';
 }
 
 export function isDocumentFragment(node: Node): node is DocumentFragment {
-  return (node as DocumentFragment).nodeName === '#document-fragment';
+  return node.nodeName === '#document-fragment';
 }
 
 export function isElement(node: Node): node is Element {
-  return (node as Element).nodeName === (node as Element).tagName;
+  return node.nodeName === (node as Element).tagName;
 }
 
 export function isTextNode(node: Node): node is TextNode {
-  return (node as TextNode).nodeName === '#text';
+  return node.nodeName === '#text';
 }
 
 export function isCommentNode(node: Node): node is CommentNode {
-  return (node as CommentNode).nodeName === '#comment';
+  return node.nodeName === '#comment';
 }
 
 export function isChildNode(node: Node): node is ChildNode {
