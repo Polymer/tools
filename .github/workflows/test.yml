@@ -1,0 +1,26 @@
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        platform: [
+          ubuntu-latest, 
+          # in wct-local we pin to a git commit for launchpad, but something is
+          #   wrong with the way that lerna invokes npm install on windows,
+          #   causing the version of launchpad to fail integrity checksumming
+          # windows-latest
+        ]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - run: npm ci
+      - run: npm run bootstrap
+      - run: npm test
