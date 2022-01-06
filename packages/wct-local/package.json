@@ -56,7 +56,7 @@
     "chalk": "^2.3.0",
     "cleankill": "^2.0.0",
     "freeport": "^1.0.4",
-    "launchpad": "^0.7.0",
+    "launchpad": "git://github.com/418sec/launchpad.git#de5aca11dc16a8e530195281c77614bdbb08e7be",
     "selenium-standalone": "^6.7.0",
     "which": "^1.0.8"
   },
