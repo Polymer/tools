@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add unreleased changes here. -->
 
+## Unreleased
+- Pin to a version of launchpad without CVE-2021-23330
+
 ## [v2.1.5] - 2019-07-09
 - Added `javaArgs` to plugin options.
 
