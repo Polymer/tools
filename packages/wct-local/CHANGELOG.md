@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- ## Unreleased -->
 <!-- Add unreleased changes here. -->
 
-## Unreleased
+## [v2.1.7] - 2022-01-11
 - Use an https URL rather than a git URL for launchpad, hopefully that will be more compatible with https://github.blog/2021-09-01-improving-git-protocol-security-github/
 
 ## [v2.1.6] - 2022-01-06
