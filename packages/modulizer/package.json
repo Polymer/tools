@@ -59,7 +59,7 @@
     "jscodeshift": "^0.5.1",
     "mkdirp": "^0.5.1",
     "mz": "^2.6.0",
-    "node-fetch": "^2.1.1",
+    "node-fetch": "^3.1.1",
     "parse5": "^4.0.0",
     "polymer-analyzer": "^3.0.2",
     "polymer-workspaces": "^2.1.0",
