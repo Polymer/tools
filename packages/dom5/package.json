@@ -17,9 +17,9 @@
     "test:watch": "tsc-then -- mocha -c --ui tdd \"lib/test/*_test.js\""
   },
   "dependencies": {
-    "@types/parse5": "^2.2.34",
+    "@types/parse5": "^6.0.0",
     "clone": "^2.1.0",
-    "parse5": "^4.0.0"
+    "parse5": "^6.0.1"
   },
   "devDependencies": {
     "@types/clone": "^0.1.29",

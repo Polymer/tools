@@ -12,11 +12,11 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode as Node} from 'parse5';
+import {ChildNode, CommentNode, Document, DocumentFragment, Element, Node, ParentNode, TextNode} from 'parse5';
 
 import {getAttribute, getAttributeIndex, getTextContent} from './util';
 
-export {ASTNode as Node} from 'parse5';
+export {Node};
 
 
 /**
@@ -86,10 +86,16 @@ function NOT(predicateFn: Predicate): Predicate {
  */
 function parentMatches(predicateFn: Predicate): Predicate {
   return function(node) {
+    if (!isChildNode(node)) {
+      return false;
+    }
     let parent = node.parentNode;
     while (parent !== undefined) {
       if (predicateFn(parent)) {
         return true;
+      }
+      if (!isChildNode(parent)) {
+        return false;
       }
       parent = parent.parentNode;
     }
@@ -99,12 +105,18 @@ function parentMatches(predicateFn: Predicate): Predicate {
 
 function hasAttr(attr: string): Predicate {
   return function(node) {
+    if (!isElement(node)) {
+      return false;
+    }
     return getAttributeIndex(node, attr) > -1;
   };
 }
 
 function hasAttrValue(attr: string, value: string): Predicate {
   return function(node) {
+    if (!isElement(node)) {
+      return false;
+    }
     return getAttribute(node, attr) === value;
   };
 }
@@ -116,7 +128,7 @@ function hasClass(name: string): Predicate {
 function hasTagName(name: string): Predicate {
   const n = name.toLowerCase();
   return function(node) {
-    if (!node.tagName) {
+    if (!isElement(node) || !node.tagName) {
       return false;
     }
     return node.tagName.toLowerCase() === n;
@@ -130,7 +142,7 @@ function hasTagName(name: string): Predicate {
  */
 function hasMatchingTagName(regex: RegExp): Predicate {
   return function(node) {
-    if (!node.tagName) {
+    if (!isElement(node) || !node.tagName) {
       return false;
     }
     return regex.test(node.tagName.toLowerCase());
@@ -140,6 +152,9 @@ function hasMatchingTagName(regex: RegExp): Predicate {
 export function hasSpaceSeparatedAttrValue(
     name: string, value: string): Predicate {
   return function(element: Node) {
+    if (!isElement(element)) {
+      return false;
+    }
     const attributeValue = getAttribute(element, name);
     if (typeof attributeValue !== 'string') {
       return false;
@@ -148,24 +163,32 @@ export function hasSpaceSeparatedAttrValue(
   };
 }
 
-export function isDocument(node: Node): boolean {
+export function isDocument(node: Node): node is Document {
   return node.nodeName === '#document';
 }
 
-export function isDocumentFragment(node: Node): boolean {
+export function isDocumentFragment(node: Node): node is DocumentFragment {
   return node.nodeName === '#document-fragment';
 }
 
-export function isElement(node: Node): boolean {
-  return node.nodeName === node.tagName;
+export function isElement(node: Node): node is Element {
+  return node.nodeName === (node as Element).tagName;
 }
 
-export function isTextNode(node: Node): boolean {
+export function isTextNode(node: Node): node is TextNode {
   return node.nodeName === '#text';
 }
 
-export function isCommentNode(node: Node): boolean {
+export function isCommentNode(node: Node): node is CommentNode {
   return node.nodeName === '#comment';
+}
+
+export function isChildNode(node: Node): node is ChildNode {
+  return (node as ChildNode).parentNode !== undefined;
+}
+
+export function isParentNode(node: Node): node is ParentNode {
+  return (node as ParentNode).childNodes !== undefined;
 }
 
 export const predicates = {

@@ -12,19 +12,19 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode as Node} from 'parse5';
+import {ParentNode, ChildNode, Node} from 'parse5';
 
 import * as iteration from './iteration';
 import {isElement, Predicate, predicates as p} from './predicates';
 import {defaultChildNodes, GetChildNodes} from './util';
 
-export {ASTNode as Node} from 'parse5';
+export {Node};
 
 /**
  * Applies `mapfn` to `node` and the tree below `node`, returning a flattened
  * list of results.
  */
-export function treeMap<U>(node: Node, mapfn: (node: Node) => U[]): U[] {
+export function treeMap<U>(node: ParentNode, mapfn: (node: Node) => U[]): U[] {
   return Array.from(iteration.treeMap(node, mapfn));
 }
 
@@ -80,7 +80,7 @@ export function nodeWalkAll(
  * Nodes are searched in reverse document order, starting from the sibling
  * prior to `node`.
  */
-export function nodeWalkPrior(node: Node, predicate: Predicate): Node|
+export function nodeWalkPrior(node: ChildNode, predicate: Predicate): Node|
     undefined {
   const result = find(iteration.prior(node), predicate);
   if (result === null) {
@@ -89,7 +89,7 @@ export function nodeWalkPrior(node: Node, predicate: Predicate): Node|
   return result;
 }
 
-function* iteratePriorIncludingNode(node: Node) {
+function* iteratePriorIncludingNode(node: ChildNode) {
   yield node;
   yield* iteration.prior(node);
 }
@@ -101,7 +101,7 @@ function* iteratePriorIncludingNode(node: Node) {
  * Nodes are returned in reverse document order, starting from `node`.
  */
 export function nodeWalkAllPrior(
-    node: Node, predicate: Predicate, matches?: Node[]): Node[] {
+    node: ChildNode, predicate: Predicate, matches?: Node[]): Node[] {
   return filter(iteratePriorIncludingNode(node), predicate, matches);
 }
 
@@ -110,7 +110,7 @@ export function nodeWalkAllPrior(
  * the root of the tree.  Return the first ancestor that matches the given
  * predicate.
  */
-export function nodeWalkAncestors(node: Node, predicate: Predicate): Node|
+export function nodeWalkAncestors(node: ChildNode, predicate: Predicate): Node|
     undefined {
   const result = find(iteration.ancestors(node), predicate);
   if (result === null) {
@@ -123,7 +123,7 @@ export function nodeWalkAncestors(node: Node, predicate: Predicate): Node|
  * Equivalent to `nodeWalk`, but only matches elements
  */
 export function query(
-    node: Node,
+    node: ParentNode,
     predicate: Predicate,
     getChildNodes: GetChildNodes = defaultChildNodes): Node|null {
   const elementPredicate = p.AND(isElement, predicate);
@@ -134,7 +134,7 @@ export function query(
  * Equivalent to `nodeWalkAll`, but only matches elements
  */
 export function queryAll(
-    node: Node,
+    node: ParentNode,
     predicate: Predicate,
     matches?: Node[],
     getChildNodes: GetChildNodes = defaultChildNodes): Node[] {

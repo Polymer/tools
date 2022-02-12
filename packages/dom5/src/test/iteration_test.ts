@@ -11,7 +11,9 @@
 
 import {assert} from 'chai';
 import * as fs from 'fs';
-import * as parse5 from 'parse5';
+import {Document, Element, Node, ParentNode, parse, serialize, TextNode} from 'parse5';
+
+import treeAdapter = require('parse5/lib/tree-adapters/default');
 import * as path from 'path';
 
 import * as dom5 from '../index-next';
@@ -36,19 +38,18 @@ suite('iteration', () => {
 </dom-module>
 <script>Polymer({is: "my-el"})</script>
 `.replace(/  /g, '');
-  let doc: parse5.ASTNode;
+  let doc: Document;
 
   setup(() => {
-    doc = parse5.parse(docText);
+    doc = parse(docText);
   });
 
   test('ancestors', () => {
     // doc -> dom-module -> div -> a
-    const anchor = doc.childNodes![1]
-                       .childNodes![1]
-                       .childNodes![0]
-                       .childNodes![3]
-                       .childNodes![1];
+    const anchor = ((((doc.childNodes[1] as Element).childNodes[1] as Element)
+                         .childNodes[0] as Element)
+                        .childNodes[3] as Element)
+                       .childNodes[1] as Element;
 
     assert(dom5.predicates.hasTagName('a')(anchor));
     const domModule = [...dom5.ancestors(anchor)].filter(
@@ -62,22 +63,23 @@ suite('iteration', () => {
   test('depthFirst can be filtered down to one node', () => {
     // doc -> body -> dom-module -> template
     const template =
-        doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
-    const templateContent =
-        parse5.treeAdapters.default.getTemplateContent(template);
+        (((doc.childNodes[1] as Element).childNodes[1] as Element)
+             .childNodes[0] as Element)
+            .childNodes[1] as Element;
+    const templateContent = treeAdapter.getTemplateContent(template);
 
     const textNode = dom5.predicates.AND(
         dom5.isTextNode, dom5.predicates.hasTextValue('\nsample element\n'));
 
     // 'sample element' text node
-    let expected = templateContent.childNodes![4];
+    let expected = templateContent.childNodes[4];
     let actual =
         [...dom5.depthFirst(doc, dom5.childNodesIncludeTemplate)].filter(
             textNode)[0];
     assert.equal(actual, expected);
 
     // <!-- comment node -->
-    expected = templateContent.childNodes![5];
+    expected = templateContent.childNodes[5];
     actual =
         [...dom5.depthFirst(template, dom5.childNodesIncludeTemplate)].filter(
             dom5.isCommentNode)[0];
@@ -89,18 +91,19 @@ suite('iteration', () => {
         dom5.predicates.hasTagName('link'),
         dom5.predicates.hasAttrValue('rel', 'import'),
         dom5.predicates.hasAttr('href'));
-    const expected = doc.childNodes![1].childNodes![0].childNodes![0];
+    const expected = ((doc.childNodes[1] as Element).childNodes[0] as Element)
+                         .childNodes[0] as Element;
     const actual = dom5.query(doc, fn);
     assert.equal(actual, expected);
   });
 
   test('depthFirst yields all nodes inside', () => {
     const empty = dom5.predicates.AND(dom5.isTextNode, function(node) {
-      return !/\S/.test(node.value!);
+      return !/\S/.test((node as TextNode).value!);
     });
 
     // serialize to count for inserted <head> and <body>
-    const serializedDoc = parse5.serialize(doc);
+    const serializedDoc = serialize(doc);
     // subtract one to get "gap" number
     const expected = serializedDoc.split('\n').length - 1;
     // add two for normalized text node "\nsample text\n"
@@ -120,14 +123,15 @@ suite('iteration', () => {
 
     // doc -> body -> dom-module -> template
     const template =
-        doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
-    const templateContent =
-        parse5.treeAdapters.default.getTemplateContent(template);
+        (((doc.childNodes[1] as Element).childNodes[1] as Element)
+             .childNodes[0] as Element)
+            .childNodes[1] as Element;
+    const templateContent = treeAdapter.getTemplateContent(template);
 
     // img
-    const expected_1 = templateContent.childNodes![1];
+    const expected_1 = templateContent.childNodes[1];
     // anchor
-    const expected_2 = templateContent.childNodes![3];
+    const expected_2 = templateContent.childNodes[3];
     const actual = [...dom5.queryAll(doc, fn, dom5.childNodesIncludeTemplate)];
 
     assert.equal(actual.length, 3);
@@ -138,10 +142,10 @@ suite('iteration', () => {
   suite('prior', () => {
     const docText = fs.readFileSync(
         path.join(fixturesDir, 'multiple-comments.html'), 'utf8');
-    let doc: parse5.ASTNode;
+    let doc: Document;
 
     setup(() => {
-      doc = parse5.parse(docText);
+      doc = parse(docText);
     });
 
     test('prior', () => {

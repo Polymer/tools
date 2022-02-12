@@ -11,10 +11,12 @@
 
 import {assert} from 'chai';
 import * as fs from 'fs';
-import * as parse5 from 'parse5';
+import {Document, Element, Node, ParentNode, parse, serialize, TextNode} from 'parse5';
+import * as treeAdapter from 'parse5/lib/tree-adapters/default';
 import * as path from 'path';
 
 import * as dom5 from '../index';
+
 import {fixturesDir} from './utils';
 
 /// <reference path="mocha" />
@@ -36,19 +38,18 @@ suite('walking', () => {
 </dom-module>
 <script>Polymer({is: "my-el"})</script>
 `.replace(/  /g, '');
-  let doc: parse5.ASTNode;
+  let doc: Document;
 
   setup(() => {
-    doc = parse5.parse(docText);
+    doc = parse(docText) as Document;
   });
 
   test('nodeWalkAncestors', () => {
     // doc -> dom-module -> div -> a
-    const anchor = doc.childNodes![1]
-                       .childNodes![1]
-                       .childNodes![0]
-                       .childNodes![3]
-                       .childNodes![1];
+    const anchor = ((((doc.childNodes![1] as Element).childNodes![1] as Element)
+                         .childNodes![0] as Element)
+                        .childNodes![3] as Element)
+                       .childNodes![1] as Element;
 
     assert(dom5.predicates.hasTagName('a')(anchor));
     const domModule = dom5.nodeWalkAncestors(
@@ -62,9 +63,10 @@ suite('walking', () => {
   test('nodeWalk', () => {
     // doc -> body -> dom-module -> template
     const template =
-        doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
-    const templateContent =
-        parse5.treeAdapters.default.getTemplateContent(template);
+        (((doc.childNodes![1] as Element).childNodes![1] as Element)
+             .childNodes![0] as Element)
+            .childNodes![1] as Element;
+    const templateContent = treeAdapter.getTemplateContent(template);
 
     const textNode = dom5.predicates.AND(
         dom5.isTextNode, dom5.predicates.hasTextValue('\nsample element\n'));
@@ -86,18 +88,19 @@ suite('walking', () => {
         dom5.predicates.hasTagName('link'),
         dom5.predicates.hasAttrValue('rel', 'import'),
         dom5.predicates.hasAttr('href'));
-    const expected = doc.childNodes![1].childNodes![0].childNodes![0];
+    const expected = ((doc.childNodes![1] as Element).childNodes![0] as Element)
+                         .childNodes![0] as Element;
     const actual = dom5.query(doc, fn);
     assert.equal(actual, expected);
   });
 
   test('nodeWalkAll', () => {
     const empty = dom5.predicates.AND(dom5.isTextNode, function(node) {
-      return !/\S/.test(node.value!);
+      return !/\S/.test((node as TextNode).value!);
     });
 
     // serialize to count for inserted <head> and <body>
-    const serializedDoc = parse5.serialize(doc);
+    const serializedDoc = serialize(doc);
     // subtract one to get "gap" number
     const expected = serializedDoc.split('\n').length - 1;
     // add two for normalized text node "\nsample text\n"
@@ -117,9 +120,10 @@ suite('walking', () => {
 
     // doc -> body -> dom-module -> template
     const template =
-        doc.childNodes![1].childNodes![1].childNodes![0].childNodes![1];
-    const templateContent =
-        parse5.treeAdapters.default.getTemplateContent(template);
+        (((doc.childNodes![1] as Element).childNodes![1] as Element)
+             .childNodes![0] as Element)
+            .childNodes![1] as Element;
+    const templateContent = treeAdapter.getTemplateContent(template);
 
     // img
     const expected_1 = templateContent.childNodes![1];
@@ -134,16 +138,16 @@ suite('walking', () => {
   suite('NodeWalkAllPrior', () => {
     const docText = fs.readFileSync(
         path.join(fixturesDir, 'multiple-comments.html'), 'utf8');
-    let doc: parse5.ASTNode;
+    let doc: Document;
 
     setup(() => {
-      doc = parse5.parse(docText);
+      doc = parse(docText) as Document;
     });
 
     test('nodeWalkAllPrior', () => {
       const domModule = dom5.nodeWalkAll(
           doc, dom5.predicates.hasAttrValue('id', 'test-element'))[0];
-      const comments = dom5.nodeWalkAllPrior(domModule, dom5.isCommentNode);
+      const comments = dom5.nodeWalkAllPrior(domModule as Element, dom5.isCommentNode);
       assert.include(dom5.getTextContent(comments[0]), 'test element');
       assert.include(
           dom5.getTextContent(comments[1]), 'hash or path based routing');

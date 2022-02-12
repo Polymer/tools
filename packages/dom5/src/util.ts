@@ -12,13 +12,15 @@
  * http://polymer.github.io/PATENTS.txt
  */
 
-import {ASTNode as Node, treeAdapters} from 'parse5';
+import {ChildNode, Element, Node, ParentNode} from 'parse5';
+
+import treeAdapter = require('parse5/lib/tree-adapters/default');
 
 import {constructors} from './modification';
-import {isCommentNode, isDocument, isDocumentFragment, isElement, isTextNode} from './predicates';
+import {isCommentNode, isDocument, isDocumentFragment, isElement, isParentNode, isTextNode} from './predicates';
 import {nodeWalkAll} from './walking';
 
-export {ASTNode as Node} from 'parse5';
+export {Node};
 
 /**
  * Return the text value of a node or element
@@ -39,7 +41,7 @@ export function getTextContent(node: Node): string {
 /**
  * @returns The string value of attribute `name`, or `null`.
  */
-export function getAttribute(element: Node, name: string): string|null {
+export function getAttribute(element: Element, name: string): string|null {
   const i = getAttributeIndex(element, name);
   if (i > -1) {
     return element.attrs[i].value;
@@ -47,7 +49,7 @@ export function getAttribute(element: Node, name: string): string|null {
   return null;
 }
 
-export function getAttributeIndex(element: Node, name: string): number {
+export function getAttributeIndex(element: Element, name: string): number {
   if (!element.attrs) {
     return -1;
   }
@@ -63,13 +65,13 @@ export function getAttributeIndex(element: Node, name: string): number {
 /**
  * @returns `true` iff [element] has the attribute [name], `false` otherwise.
  */
-export function hasAttribute(element: Node, name: string): boolean {
+export function hasAttribute(element: Element, name: string): boolean {
   return getAttributeIndex(element, name) !== -1;
 }
 
 
 
-export function setAttribute(element: Node, name: string, value: string) {
+export function setAttribute(element: Element, name: string, value: string) {
   const i = getAttributeIndex(element, name);
   if (i > -1) {
     element.attrs[i].value = value;
@@ -78,17 +80,14 @@ export function setAttribute(element: Node, name: string, value: string) {
   }
 }
 
-export function removeAttribute(element: Node, name: string) {
+export function removeAttribute(element: Element, name: string) {
   const i = getAttributeIndex(element, name);
   if (i > -1) {
     element.attrs.splice(i, 1);
   }
 }
 
-function collapseTextRange(parent: Node, start: number, end: number) {
-  if (!parent.childNodes) {
-    return;
-  }
+function collapseTextRange(parent: ParentNode, start: number, end: number) {
   let text = '';
   for (let i = start; i <= end; i++) {
     text += getTextContent(parent.childNodes[i]);
@@ -150,22 +149,23 @@ export function setTextContent(node: Node, value: string) {
   } else if (isTextNode(node)) {
     node.value = value;
   } else {
+    const nodeAsParent = node as ParentNode;
     const tn = constructors.text(value);
-    tn.parentNode = node;
-    node.childNodes = [tn];
+    tn.parentNode = nodeAsParent;
+    nodeAsParent.childNodes = [tn];
   }
 }
 
-export type GetChildNodes = ((node: Node) => Node[]|undefined);
+export type GetChildNodes = ((node: ParentNode) => ChildNode[]|undefined);
 
-export const defaultChildNodes = function defaultChildNodes(node: Node) {
+export const defaultChildNodes = function defaultChildNodes(node: ParentNode) {
   return node.childNodes;
 };
 
 export const childNodesIncludeTemplate = function childNodesIncludeTemplate(
-    node: Node) {
-  if (node.nodeName === 'template') {
-    return treeAdapters.default.getTemplateContent(node).childNodes;
+    node: ParentNode) {
+  if (isElement(node) && node.nodeName === 'template') {
+    return treeAdapter.getTemplateContent(node).childNodes;
   }
 
   return node.childNodes;
