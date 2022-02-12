@@ -131,8 +131,8 @@ export function browserCapabilities(userAgent: string): Set<BrowserCapability> {
   const ua = new UAParser(userAgent);
   const capabilities = new Set<BrowserCapability>();
   let browserName = ua.getBrowser().name || '';
-  if (browserName === 'Chrome' && ua.getOS().name === 'iOS') {
-    // Chrome on iOS is really Safari.
+  if (ua.getOS().name === 'iOS') {
+    // iOS is really Safari.
     browserName = 'Mobile Safari';
   }
   const predicates = browserPredicates[browserName] || {};
