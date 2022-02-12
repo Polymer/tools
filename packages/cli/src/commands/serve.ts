@@ -69,6 +69,7 @@ export class ServeCommand implements Command {
       npm: config.npm,
       moduleResolution: config.moduleResolution,
       componentDir: config.componentDir,
+      componentUrl: options['component-url'],
       packageName: options['package-name'],
       protocol: options['protocol'],
       keyPath: options['key'],
@@ -91,7 +92,7 @@ export class ServeCommand implements Command {
 
     if (serverInfos.kind === 'mainline') {
       const mainlineServer = serverInfos;
-      const urls = getServerUrls(options, mainlineServer.server);
+      const urls = getServerUrls(serverOptions, mainlineServer.server);
       logger.info(
           `Files in this directory are available under the following URLs
       applications: ${url.format(urls.serverUrl)}
@@ -100,7 +101,7 @@ export class ServeCommand implements Command {
     } else {
       // We started multiple servers, just tell the user about the control
       // server, it serves out human-readable info on how to access the others.
-      const urls = getServerUrls(options, serverInfos.control.server);
+      const urls = getServerUrls(serverOptions, serverInfos.control.server);
       logger.info(`Started multiple servers with different variants:
       View the Polyserve console here: ${url.format(urls.serverUrl)}`);
     }
