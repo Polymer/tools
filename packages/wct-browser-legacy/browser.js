@@ -922,16 +922,24 @@ var Console = /** @class */ (function () {
             }
             logGroupEnd();
         }.bind(this));
+        var inTest = false;
         runner.on('test', function (test) {
             logGroup(test.title, 'test');
+            inTest = true;
         }.bind(this));
         runner.on('pending', function (test) {
-            logGroup(test.title, 'pending');
+            if (inTest) {
+                log('Skipped', 'pending');
+            }
+            else {
+                logGroup('Skipped: ' + test.title, 'pending');
+            }
         }.bind(this));
         runner.on('fail', function (_test, error) {
             logException(error);
         }.bind(this));
         runner.on('test end', function (_test) {
+            inTest = false;
             logGroupEnd();
         }.bind(this));
         runner.on('end', this.logSummary.bind(this));
