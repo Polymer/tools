@@ -145,7 +145,13 @@ export abstract class DocumentProcessor {
         continue;
       }
       const scriptProgram =
-          recast.parse(scriptDocument.parsedDocument.contents).program;
+          recast.parse(scriptDocument.parsedDocument.contents, {
+            parser: {
+              parse(source: any) {
+                return require("espree").parse(source, { ecmaVersion: 2022 });
+              }
+            }
+          }).program;
       rewriteToplevelThis(scriptProgram);
       removeToplevelUseStrict(scriptProgram);
       // We need to inline templates on a per-script basis, otherwise we run

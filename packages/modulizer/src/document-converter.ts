@@ -338,7 +338,13 @@ export class DocumentConverter extends DocumentProcessor {
       }
       const offsets = htmlDocument.sourceRangeToOffsets(sourceRange);
 
-      const file = recast.parse(script.parsedDocument.contents);
+      const file = recast.parse(script.parsedDocument.contents, {
+        parser: {
+          parse(source: any) {
+            return require("espree").parse(source, { ecmaVersion: 2022 });
+          }
+        }
+      });
       const program = this.rewriteInlineScript(file.program, namespacedExports);
 
       if (program === undefined) {
@@ -385,7 +391,13 @@ export class DocumentConverter extends DocumentProcessor {
       }
       const offsets = htmlDocument.sourceRangeToOffsets(sourceRange);
 
-      const file = recast.parse(dom5.getTextContent(astNode));
+      const file = recast.parse(dom5.getTextContent(astNode), {
+        parser: {
+          parse(source: any) {
+            return require("espree").parse(source, { ecmaVersion: 2022 });
+          }
+        }
+      });
       const program = this.rewriteInlineScript(file.program, namespacedExports);
 
       if (program === undefined) {
