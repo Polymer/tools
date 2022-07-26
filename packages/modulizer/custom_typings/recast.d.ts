@@ -13,7 +13,7 @@ declare module 'recast' {
     tabWidth?: number;
   }
 
-  export function parse(source: string): File;
+  export function parse(source: string, options?: any): File;
 
   export function print(node: estree.Node, options?: Options): {code: string};
 }

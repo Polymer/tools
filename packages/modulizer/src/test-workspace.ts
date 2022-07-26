@@ -144,7 +144,7 @@ export async function testWorkspace(
         try {
           await installNpmDependencies(repo);
           return await testRepo(repo, wctFlags);
-        } catch (err) {
+        } catch (err: any) {
           logRepoError(err, repo);
           throw err;
         }
@@ -172,7 +172,7 @@ export async function testWorkspaceInstallOnly(
       await run([...setupRepoResults.successes.keys()], async (repo) => {
         try {
           return await installNpmDependencies(repo);
-        } catch (err) {
+        } catch (err: any) {
           logRepoError(err, repo);
           throw err;
         }

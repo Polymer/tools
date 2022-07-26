@@ -78,7 +78,7 @@ export async function exec(
     const {stdout, stderr} = await execFile(command, args, commandOptions);
     // Trim unneccesary extra newlines/whitespace from exec/execFile output
     return {stdout: stdout.trim(), stderr: stderr.trim()};
-  } catch (err) {
+  } catch (err: any) {
     // If an error happens, attach the working directory to the error object
     err.cwd = cwd;
     throw err;

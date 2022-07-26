@@ -36,7 +36,7 @@ export function lookupNpmPackageName(bowerJsonPath: string): string|undefined {
   try {
     const bowerJson = fse.readJSONSync(bowerJsonPath);
     bowerPackageName = bowerJson.name as string;
-  } catch (err) {
+  } catch (err: any) {
     console.warn(
         `WARNING: "${bowerJsonPath}" not found / could not be read` +
         `(${err.message})`);

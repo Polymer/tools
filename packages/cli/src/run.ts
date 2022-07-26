@@ -36,7 +36,7 @@ updateNotifier({pkg: packageJson}).notify();
         result.constructor.name === 'CommandResult') {
       process.exit(result.exitCode);
     }
-  } catch (err) {
+  } catch (err: any) {
     logger.error('cli runtime exception: ' + err);
     if (err.stack) {
       logger.error(err.stack);

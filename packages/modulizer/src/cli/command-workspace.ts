@@ -90,7 +90,7 @@ function loadGitHubToken(): string|null {
   }
   try {
     return fs.readFileSync(githubFilename, 'utf8').trim();
-  } catch (e) {
+  } catch (e: any) {
     console.error(`Unable to load file ${githubFilename}: ${e.message}`);
   }
   return null;
@@ -106,7 +106,7 @@ export default async function run(options: CliOptions) {
       const [bowerName, npmName, npmSemver] =
           parseDependencyMappingInput(rawMapping);
       saveDependencyMapping(bowerName, npmName, npmSemver);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err.message);
       process.exit(1);
     }

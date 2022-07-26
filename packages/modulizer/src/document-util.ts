@@ -293,7 +293,7 @@ export function filterClone(
 export function collectIdentifierNames(
     program: estree.Program,
     ignored: ReadonlySet<estree.Identifier>): Set<string> {
-  const identifiers = new Set();
+  const identifiers = new Set<string>();
   astTypes.visit(program, {
     visitIdentifier(path: NodePath<estree.Identifier>): (boolean | void) {
       const node = path.node;

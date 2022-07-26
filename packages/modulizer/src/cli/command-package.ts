@@ -33,7 +33,7 @@ export default async function run(options: CliOptions) {
   let isRepo = true;
   try {
     ({stdout, stderr} = await exec(inDir, 'git', ['status', '-s']));
-  } catch (e) {
+  } catch (e: any) {
     // Grab command execution results from exception info.
     ({stdout, stderr} = e);
     isRepo =
@@ -54,7 +54,7 @@ export default async function run(options: CliOptions) {
       const [bowerName, npmName, npmSemver] =
           parseDependencyMappingInput(rawMapping);
       saveDependencyMapping(bowerName, npmName, npmSemver);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err.message);
       process.exit(1);
     }

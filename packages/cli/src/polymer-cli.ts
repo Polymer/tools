@@ -170,7 +170,7 @@ export class PolymerCli {
 
     try {
       parsedArgs = commandLineCommands(commandNames, this.args);
-    } catch (error) {
+    } catch (error: any) {
       // Polymer CLI needs a valid command name to do anything. If the given
       // command is invalid, run the generalized help command with default
       // config. This should print the general usage information.

@@ -51,7 +51,7 @@ async function setupOutDir(outDir: string, clean = false) {
   }
   try {
     await mkdirp(outDir);
-  } catch (e) {
+  } catch (e: any) {
     if (e.errno === -17) {
       // directory exists, do nothing
     } else {

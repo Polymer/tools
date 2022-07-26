@@ -147,7 +147,7 @@ function getGeneratorMeta(
       const meta = JSON.parse(fs.readFileSync(metapath, 'utf8'));
       description = meta.description || description;
       name = meta.name || name;
-    } catch (error) {
+    } catch (error: any) {
       if (error.message === 'not found') {
         logger.debug('no package.json found for generator');
       } else {
@@ -198,7 +198,7 @@ async function createYeomanEnvironment() {
     const generatorInfo = localGenerators[generatorName];
     env.registerStub(generatorInfo.generator, generatorInfo.id);
   });
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     env.lookup((error?: Error) => error ? reject(error) : resolve());
   });
   return env;
