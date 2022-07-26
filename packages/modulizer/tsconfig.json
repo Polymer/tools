@@ -14,5 +14,6 @@
     "custom_typings/*.d.ts",
     "src/**/*.js",
     "src/**/*.ts"
-  ]
+  ],
+  "exclude": ["**/test/**/*"]
 }

@@ -9,5 +9,6 @@
   "include": [
     "custom_typings/**/*.d.ts",
     "src/**/*.ts"
-  ]
+  ],
+  "exclude": ["**/test/**/*.ts"]
 }

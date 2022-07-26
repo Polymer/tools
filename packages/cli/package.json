@@ -16,7 +16,7 @@
   },
   "scripts": {
     "clean": "rm -rf lib/",
-    "build": "npm run clean && tsc && npm run lint",
+    "build": "npm run clean && tsc",
     "format": "find src -name \"*.ts\" -not -path \"*/fixtures/*\" | xargs clang-format --style=file -i",
     "lint": "tslint -p . && node scripts/depcheck.js",
     "prepublishOnly": "ls npm-shrinkwrap.json",

@@ -19,7 +19,7 @@
     "src/"
   ],
   "scripts": {
-    "build": "tsc && npm run lint",
+    "build": "tsc --skipLibCheck",
     "build:fixtures": "npm run build && node lib/tools/update-fixtures",
     "clean": "rm -rf ./lib/",
     "format": "find bin src -name \"*.[jt]s\" | xargs clang-format --style=file -i",
