@@ -84,7 +84,7 @@
     "sw-precache": "^5.1.1",
     "uuid": "^3.2.1",
     "vinyl": "^1.2.0",
-    "vinyl-fs": "^2.4.4"
+    "vinyl-fs": "^4.0.0"
   },
   "devDependencies": {
     "@types/fs-extra": "0.0.37",
