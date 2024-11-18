@@ -42,7 +42,7 @@
     "@types/parse5": "^2.2.34",
     "@types/source-map": "=0.5.2",
     "eslint": "^2.8.0",
-    "firebase": "^2.4.1",
+    "firebase": "^10.9.0",
     "rewire": "^2.5.2",
     "source-map-support": "^0.4.2",
     "tsc-then": "^1.1.0"
