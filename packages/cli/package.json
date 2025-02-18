@@ -31,7 +31,7 @@
     "update-goldens": "tsc && UPDATE_POLYMER_CLI_GOLDENS=true mocha lib/test/integration/build_test.js || echo ''"
   },
   "dependencies": {
-    "@octokit/rest": "^16.2.0",
+    "@octokit/rest": "^21.1.1",
     "@types/chalk": "^2.2.0",
     "@types/del": "^3.0.0",
     "@types/findup-sync": "^0.3.29",
