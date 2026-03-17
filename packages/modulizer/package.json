@@ -73,7 +73,7 @@
   "devDependencies": {
     "@types/diff": "^3.2.0",
     "diff": "^3.3.0",
-    "dir-compare": "^1.4.0",
+    "dir-compare": "^5.0.0",
     "tsc-then": "^1.1.0"
   }
 }
