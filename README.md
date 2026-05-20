@@ -19,3 +19,5 @@
 
   code ./tools.code-workspace # opens vscode in workspace mode, configured for the monorepo
 ```
+
+<!-- audit marker for non-draft auto-merge permission verification -->
