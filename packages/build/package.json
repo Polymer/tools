@@ -82,7 +82,7 @@
     "regenerator-runtime": "^0.11.1",
     "stream": "0.0.2",
     "sw-precache": "^5.1.1",
-    "uuid": "^3.2.1",
+    "uuid": "^14.0.0",
     "vinyl": "^1.2.0",
     "vinyl-fs": "^2.4.4"
   },
