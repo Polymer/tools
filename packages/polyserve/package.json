@@ -73,7 +73,7 @@
     "sinon": "^5.0.7",
     "source-map-support": "^0.4.6",
     "supertest": "^3.0.0",
-    "tmp": "0.0.28",
+    "tmp": "0.2.6",
     "tsc-then": "^1.1.0"
   },
   "typings": "./lib/polyserve.d.ts"
